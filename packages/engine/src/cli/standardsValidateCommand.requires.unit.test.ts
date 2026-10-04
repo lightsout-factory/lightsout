@@ -1,9 +1,9 @@
 import { describe, expect, jest, test } from '@jest/globals';
 import { parseFlags } from '#src/cli/common/args/parseFlags.ts';
 import { standardsValidateCommand } from '#src/cli/standardsValidateCommand.ts';
+import type { LoadedStandardsLibrary } from '#src/common/types/LoadedStandardsLibrary.ts';
+import type { LoadedStandardsRule } from '#src/common/types/LoadedStandardsRule.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
-import type { LoadedStandardsLibrary } from '#src/standardsLibraries/common/types/LoadedStandardsLibrary.ts';
-import type { LoadedStandardsRule } from '#src/standardsLibraries/common/types/LoadedStandardsRule.ts';
 import { captureCommandOutput } from '#tests/helpers/captureCommandOutput.ts';
 
 // Mocked Imports
@@ -13,7 +13,7 @@ import { captureCommandOutput } from '#tests/helpers/captureCommandOutput.ts';
 // validator's warnings and how it ends when warnings are all there is.
 const mockReadStandardsLibrary = jest.fn<(params: { packPath: string }) => Promise<LoadedStandardsLibrary>>();
 
-jest.mock('#src/standardsLibraries/readStandardsLibrary.ts', () => ({
+jest.mock('#src/standardsLibraries/readStandardsLibrary/readStandardsLibrary.ts', () => ({
 	readStandardsLibrary: (params: { packPath: string }) => mockReadStandardsLibrary(params),
 }));
 // -------------------------
@@ -33,7 +33,7 @@ jest.mock('#src/common/config/readOptionalConfig.ts', () => ({ readOptionalConfi
 const mockResolveStandardsLibraries =
 	jest.fn<(params: { cwd: string; config?: LightsoutConfig; builtIn?: LoadedStandardsLibrary }) => Promise<LoadedStandardsLibrary[]>>();
 
-jest.mock('#src/standardsLibraries/resolveStandardsLibraries.ts', () => ({
+jest.mock('#src/standardsLibraries/resolveStandardsLibraries/resolveStandardsLibraries.ts', () => ({
 	resolveStandardsLibraries: (params: { cwd: string; config?: LightsoutConfig; builtIn?: LoadedStandardsLibrary }) => mockResolveStandardsLibraries(params),
 }));
 // -------------------------

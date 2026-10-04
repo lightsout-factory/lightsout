@@ -1,8 +1,8 @@
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
+import { listFixtureFiles } from '#src/common/listFixtureFiles.ts';
 import { FixtureSide } from '#src/contracts/views/FixtureSide.ts';
 import type { StandardsPackFixture } from '#src/contracts/views/StandardsPackFixture.ts';
-import { listFixtureFiles } from '#src/standardsLibraries/common/utils/listFixtureFiles.ts';
 
 interface Params {
 	fixturesPath: string;

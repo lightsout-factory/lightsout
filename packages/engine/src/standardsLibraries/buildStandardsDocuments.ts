@@ -1,8 +1,8 @@
 import { StandardsSet } from '@lightsout/standards-contracts';
+import type { LoadedStandardsTopic } from '#src/common/types/LoadedStandardsTopic.ts';
 import type { StandardsGroup } from '#src/common/types/StandardsGroup.ts';
 import { collectGroupItems } from '#src/common/utils/collectGroupItems.ts';
 import { describePackageSet } from '#src/common/workspace/describePackageSet.ts';
-import type { LoadedStandardsTopic } from '#src/standardsLibraries/common/types/LoadedStandardsTopic.ts';
 
 interface Params {
 	groups: StandardsGroup[];

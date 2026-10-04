@@ -1,4 +1,5 @@
 import { readOptionalConfig } from '#src/common/config/readOptionalConfig.ts';
+import type { LoadedStandardsRule } from '#src/common/types/LoadedStandardsRule.ts';
 import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFinding.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 import type { StandardsRuleView } from '#src/contracts/views/StandardsRuleView.ts';
@@ -10,7 +11,6 @@ import type { StandardsRuleListing } from '#src/standardsCheck/common/types/Stan
 import { listStandardsRules } from '#src/standardsCheck/listStandardsRules.ts';
 import { listStandardsSnapshots } from '#src/standardsCheck/listStandardsSnapshots.ts';
 import { readStandardsSnapshot } from '#src/standardsCheck/readStandardsSnapshot.ts';
-import type { LoadedStandardsRule } from '#src/standardsLibraries/common/types/LoadedStandardsRule.ts';
 import { mapPackRules } from '#src/standardsLibraries/mapPackRules.ts';
 
 const countByRule = ({ findings }: { findings: StandardsFinding[] }) => {

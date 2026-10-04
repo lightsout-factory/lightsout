@@ -2,15 +2,15 @@ import { readdir } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import { join } from 'node:path';
 import type ts from 'typescript';
+import type { LoadedStandardsLibrary } from '#src/common/types/LoadedStandardsLibrary.ts';
 import { messageOf } from '#src/common/utils/messageOf.ts';
 import { findMissingRequirements } from '#src/standards/findMissingRequirements.ts';
 import { typescriptInputKinds } from '#src/standardsCheck/internal/common/constants/typescriptInputKinds.ts';
 import { checkFixtureTree } from '#src/standardsCheck/internal/common/utils/fixtureChecks/checkFixtureTree.ts';
 import { checkRuleExample } from '#src/standardsCheck/internal/common/utils/fixtureChecks/checkRuleExample.ts';
 import { checkLibraryProse } from '#src/standardsCheck/internal/common/utils/proseChecks/checkLibraryProse.ts';
-import type { LoadedStandardsLibrary } from '#src/standardsLibraries/common/types/LoadedStandardsLibrary.ts';
 import { findUnresolvedRequirements } from '#src/standardsLibraries/findUnresolvedRequirements.ts';
-import { resolveStandardsPack } from '#src/standardsLibraries/resolveStandardsPack.ts';
+import { resolveStandardsPack } from '#src/standardsLibraries/resolveStandardsPack/resolveStandardsPack.ts';
 
 interface Params {
 	library: LoadedStandardsLibrary;

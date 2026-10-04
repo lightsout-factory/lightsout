@@ -1,9 +1,9 @@
 import { describe, expect, test } from '@jest/globals';
+import type { LoadedStandardsRule } from '#src/common/types/LoadedStandardsRule.ts';
+import type { ResolvedPackRule } from '#src/common/types/ResolvedPackRule.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 import { findMissingRequirements } from '#src/standards/findMissingRequirements.ts';
 import type { ResolvedRuleState } from '#src/standardsCheck/common/types/ResolvedRuleState.ts';
-import type { LoadedStandardsRule } from '#src/standardsLibraries/common/types/LoadedStandardsRule.ts';
-import type { ResolvedPackRule } from '#src/standardsLibraries/common/types/ResolvedPackRule.ts';
 
 /** A loaded rule `house/<id>` with its requires list and every other field at a neutral value. */
 const rule = ({ id, requires }: { id: string; requires: string[] }): LoadedStandardsRule => ({

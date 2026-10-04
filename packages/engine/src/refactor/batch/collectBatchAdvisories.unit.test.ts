@@ -2,13 +2,13 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
 import type { Driver } from '#src/common/types/Driver.ts';
+import type { LoadedStandardsRule } from '#src/common/types/LoadedStandardsRule.ts';
 import type { StandardsGroup } from '#src/common/types/StandardsGroup.ts';
 import type { RefactorBatch } from '#src/contracts/refactor/RefactorBatch.ts';
 import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFinding.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 import { collectBatchAdvisories } from '#src/refactor/batch/collectBatchAdvisories.ts';
 import type { ResolvedRuleState } from '#src/standardsCheck/common/types/ResolvedRuleState.ts';
-import type { LoadedStandardsRule } from '#src/standardsLibraries/common/types/LoadedStandardsRule.ts';
 import { freshCwd } from '#tests/helpers/freshCwd.ts';
 
 const finding = (overrides: Partial<StandardsFinding> = {}): StandardsFinding => ({

@@ -1,7 +1,7 @@
 import { RawStandardsFinding, type StandardsCheckFunction, type StandardsCheckInputs } from '@lightsout/standards-contracts';
 import { z } from 'zod';
+import type { LoadedStandardsRule } from '#src/common/types/LoadedStandardsRule.ts';
 import { messageOf } from '#src/common/utils/messageOf.ts';
-import type { LoadedStandardsRule } from '#src/standardsLibraries/common/types/LoadedStandardsRule.ts';
 
 const rawFindings = z.array(RawStandardsFinding);
 

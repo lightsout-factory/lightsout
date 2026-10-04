@@ -7,13 +7,13 @@ import { green } from '#src/cli/internal/common/terminal/green.ts';
 import { red } from '#src/cli/internal/common/terminal/red.ts';
 import { yellow } from '#src/cli/internal/common/terminal/yellow.ts';
 import { readOptionalConfig } from '#src/common/config/readOptionalConfig.ts';
+import type { LoadedStandardsLibrary } from '#src/common/types/LoadedStandardsLibrary.ts';
 import { messageOf } from '#src/common/utils/messageOf.ts';
 import { builtInStandardsLibraryName } from '#src/contracts/standards/builtInStandardsLibraryName.ts';
 import { validateStandardsLibrary } from '#src/standardsCheck/validateStandardsLibrary.ts';
-import type { LoadedStandardsLibrary } from '#src/standardsLibraries/common/types/LoadedStandardsLibrary.ts';
-import { readStandardsLibrary } from '#src/standardsLibraries/readStandardsLibrary.ts';
+import { readStandardsLibrary } from '#src/standardsLibraries/readStandardsLibrary/readStandardsLibrary.ts';
 import { resolveDefaultStandardsLibrary } from '#src/standardsLibraries/resolveDefaultStandardsLibrary.ts';
-import { resolveStandardsLibraries } from '#src/standardsLibraries/resolveStandardsLibraries.ts';
+import { resolveStandardsLibraries } from '#src/standardsLibraries/resolveStandardsLibraries/resolveStandardsLibraries.ts';
 
 /**
  * The validated library takes the place of the library sharing its name, and

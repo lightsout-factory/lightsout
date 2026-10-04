@@ -2,14 +2,14 @@ import { existsSync, mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
+import type { LoadedStandardsRule } from '#src/common/types/LoadedStandardsRule.ts';
+import type { ResolvedPackRule } from '#src/common/types/ResolvedPackRule.ts';
 import type { StandardsGroup } from '#src/common/types/StandardsGroup.ts';
 import { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 import { resolveStandardsGroups } from '#src/standards/resolveStandardsGroups/resolveStandardsGroups.ts';
 import type { ResolvedRuleState } from '#src/standardsCheck/common/types/ResolvedRuleState.ts';
 import { listStandardsRules } from '#src/standardsCheck/listStandardsRules.ts';
-import type { LoadedStandardsRule } from '#src/standardsLibraries/common/types/LoadedStandardsRule.ts';
-import type { ResolvedPackRule } from '#src/standardsLibraries/common/types/ResolvedPackRule.ts';
 import { getRejectionError } from '#tests/helpers/getRejectionError.ts';
 
 /** Standards are opt-in, so the config a case starts from names the shipped standards pack; a case on another pack, or none, overrides it. */

@@ -1,7 +1,7 @@
 import { join } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
 import { validateStandardsLibrary } from '#src/standardsCheck/validateStandardsLibrary.ts';
-import { readStandardsLibrary } from '#src/standardsLibraries/readStandardsLibrary.ts';
+import { readStandardsLibrary } from '#src/standardsLibraries/readStandardsLibrary/readStandardsLibrary.ts';
 
 /**
  * The shipped default pack, so the validator runs every rule's real check

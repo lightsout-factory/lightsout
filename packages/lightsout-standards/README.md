@@ -31,7 +31,7 @@ agent reads the rest.
 
 `<NN>` decides the order the rules read in and nothing else. The `<id>` —
 everything after the first dash group, as
-`packages/engine/src/standardsLibraries/internal/common/parsing/parseRuleFolder.ts`
+`packages/engine/src/standardsLibraries/readStandardsLibrary/parseTopicFolder/parseRuleFolder/parseRuleFolder.ts`
 derives it — is the rule's durable key, and its full name is `lightsout/<id>`.
 Findings, baselines and frozen refactor work-lists are written with the full
 name, so it outlives the folder it came from. A repository names a rule in

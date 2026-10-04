@@ -11,11 +11,11 @@ import {
 	type SyntaxTreeInput,
 	type TypeCheckerInput,
 } from '@lightsout/standards-contracts';
+import type { LoadedStandardsRule } from '#src/common/types/LoadedStandardsRule.ts';
 import type { StandardsGroup } from '#src/common/types/StandardsGroup.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 import type { ResolvedRuleState } from '#src/standardsCheck/common/types/ResolvedRuleState.ts';
 import { runPackageChecks } from '#src/standardsCheck/runPackageChecks.ts';
-import type { LoadedStandardsRule } from '#src/standardsLibraries/common/types/LoadedStandardsRule.ts';
 import { linkTypescript } from '#tests/helpers/linkTypescript.ts';
 
 /** One group whose pack holds a single rule of the asked-for kind, plus the recorder of what it was handed. */

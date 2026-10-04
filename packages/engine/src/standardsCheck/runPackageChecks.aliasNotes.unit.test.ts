@@ -3,11 +3,11 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
 import { type StandardsCheckFunction, StandardsInputKind } from '@lightsout/standards-contracts';
+import type { LoadedStandardsRule } from '#src/common/types/LoadedStandardsRule.ts';
 import type { StandardsGroup } from '#src/common/types/StandardsGroup.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 import type { ResolvedRuleState } from '#src/standardsCheck/common/types/ResolvedRuleState.ts';
 import { runPackageChecks } from '#src/standardsCheck/runPackageChecks.ts';
-import type { LoadedStandardsRule } from '#src/standardsLibraries/common/types/LoadedStandardsRule.ts';
 
 /** A repo that declares its path aliases nowhere: no tsconfig above anything, and a manifest only when one is asked for. */
 const setupUndeclaredRepo = ({ manifest, folders = ['src', 'src/feature'] }: { manifest?: string; folders?: string[] } = {}) => {

@@ -1,11 +1,11 @@
 import { describe, expect, jest, test } from '@jest/globals';
 import type { Driver } from '#src/common/types/Driver.ts';
 import type { DriverResult } from '#src/common/types/DriverResult.ts';
+import type { LoadedStandardsRule } from '#src/common/types/LoadedStandardsRule.ts';
 import type { StandardsGroup } from '#src/common/types/StandardsGroup.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 import type { ResolvedRuleState } from '#src/standardsCheck/common/types/ResolvedRuleState.ts';
 import { runStandardsReview } from '#src/standardsCheck/runStandardsReview.ts';
-import type { LoadedStandardsRule } from '#src/standardsLibraries/common/types/LoadedStandardsRule.ts';
 import { reviewReport } from '#tests/helpers/reviewReport.ts';
 
 // What the caller hears while the review runs: the opening line, the heartbeat

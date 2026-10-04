@@ -6,6 +6,7 @@ import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
+import type { LoadedStandardsRule } from '#src/common/types/LoadedStandardsRule.ts';
 import type { StandardsGroup } from '#src/common/types/StandardsGroup.ts';
 import type { BatchReport } from '#src/contracts/refactor/BatchReport.ts';
 import type { RefactorBatch } from '#src/contracts/refactor/RefactorBatch.ts';
@@ -14,7 +15,6 @@ import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFi
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 import { buildStandardsHealth } from '#src/standardsCheck/buildStandardsHealth.ts';
 import type { ResolvedRuleState } from '#src/standardsCheck/common/types/ResolvedRuleState.ts';
-import type { LoadedStandardsRule } from '#src/standardsLibraries/common/types/LoadedStandardsRule.ts';
 import { runDirFor } from '#tests/helpers/runDirFor.ts';
 
 const rule = (overrides: Partial<LoadedStandardsRule> & { id: string }): LoadedStandardsRule => ({

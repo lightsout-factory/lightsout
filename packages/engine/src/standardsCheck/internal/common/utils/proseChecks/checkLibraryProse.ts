@@ -1,6 +1,6 @@
 import { dirname, join } from 'node:path';
+import type { LoadedStandardsLibrary } from '#src/common/types/LoadedStandardsLibrary.ts';
 import { findBrokenLinks } from '#src/standardsCheck/internal/common/utils/proseChecks/findBrokenLinks.ts';
-import type { LoadedStandardsLibrary } from '#src/standardsLibraries/common/types/LoadedStandardsLibrary.ts';
 
 interface Params {
 	library: LoadedStandardsLibrary;

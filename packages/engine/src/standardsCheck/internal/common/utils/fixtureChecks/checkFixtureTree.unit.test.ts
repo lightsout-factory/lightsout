@@ -4,9 +4,9 @@ import { join } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
 import { type StandardsCheckFunction, StandardsInputKind } from '@lightsout/standards-contracts';
 import ts from 'typescript';
+import type { LoadedStandardsRule } from '#src/common/types/LoadedStandardsRule.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 import { checkFixtureTree } from '#src/standardsCheck/internal/common/utils/fixtureChecks/checkFixtureTree.ts';
-import type { LoadedStandardsRule } from '#src/standardsLibraries/common/types/LoadedStandardsRule.ts';
 import { getRejectionError } from '#tests/helpers/getRejectionError.ts';
 
 /** A check that objects to any file named `banned.ts` — small enough to reason about, real enough to fail. */

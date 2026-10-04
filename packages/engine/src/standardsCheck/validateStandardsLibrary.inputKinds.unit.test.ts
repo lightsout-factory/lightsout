@@ -3,10 +3,10 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
 import { type StandardsCheckFunction, StandardsInputKind } from '@lightsout/standards-contracts';
+import type { LoadedStandardsLibrary } from '#src/common/types/LoadedStandardsLibrary.ts';
+import type { LoadedStandardsRule } from '#src/common/types/LoadedStandardsRule.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 import { validateStandardsLibrary } from '#src/standardsCheck/validateStandardsLibrary.ts';
-import type { LoadedStandardsLibrary } from '#src/standardsLibraries/common/types/LoadedStandardsLibrary.ts';
-import type { LoadedStandardsRule } from '#src/standardsLibraries/common/types/LoadedStandardsRule.ts';
 import { duplicatedSources, sharedImportSources, writeSampleSources } from '#tests/helpers/duplicationSamples.ts';
 
 /** A ban on any file named `banned.ts`, asked of the files the engine could type rather than of the path list. */

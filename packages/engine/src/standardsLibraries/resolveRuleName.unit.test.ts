@@ -1,6 +1,6 @@
 import { describe, expect, test } from '@jest/globals';
+import type { LoadedStandardsRule } from '#src/common/types/LoadedStandardsRule.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
-import type { LoadedStandardsRule } from '#src/standardsLibraries/common/types/LoadedStandardsRule.ts';
 import { resolveRuleName } from '#src/standardsLibraries/resolveRuleName.ts';
 
 /** A loaded rule `<library>/<id>` with every other field at a neutral value. */

@@ -3,10 +3,10 @@ import type ts from 'typescript';
 import { defaultPackagesDir } from '#src/common/constants/defaultPackagesDir.ts';
 import { isTestFile } from '#src/common/sourceFiles/isTestFile.ts';
 import { listSourceFiles } from '#src/common/sourceFiles/listSourceFiles.ts';
+import type { LoadedStandardsRule } from '#src/common/types/LoadedStandardsRule.ts';
 import { buildCheckInput } from '#src/standardsCheck/internal/common/checkInputs/buildCheckInput.ts';
 import { buildCheckInputs } from '#src/standardsCheck/internal/common/checkInputs/buildCheckInputs.ts';
 import { runRuleCheck } from '#src/standardsCheck/internal/common/utils/runRuleCheck.ts';
-import type { LoadedStandardsRule } from '#src/standardsLibraries/common/types/LoadedStandardsRule.ts';
 
 interface Params {
 	/** Absolute path of the tree to check, run against as if it were a whole repo. */

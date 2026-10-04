@@ -1,5 +1,5 @@
-import type { LoadedStandardsLibrary } from '#src/standardsLibraries/common/types/LoadedStandardsLibrary.ts';
-import { libraryOfRequirement } from '#src/standardsLibraries/common/utils/libraryOfRequirement.ts';
+import type { LoadedStandardsLibrary } from '#src/common/types/LoadedStandardsLibrary.ts';
+import { libraryOfRequirement } from '#src/standardsLibraries/common/libraryOfRequirement.ts';
 import { resolveRuleName } from '#src/standardsLibraries/resolveRuleName.ts';
 
 interface Params {

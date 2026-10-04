@@ -3,12 +3,12 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
 import { type FileListInput, type StandardsCheckFunction, type StandardsCheckInputs, StandardsInputKind } from '@lightsout/standards-contracts';
+import type { LoadedStandardsRule } from '#src/common/types/LoadedStandardsRule.ts';
+import type { LoadedStandardsTopic } from '#src/common/types/LoadedStandardsTopic.ts';
 import type { StandardsGroup } from '#src/common/types/StandardsGroup.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 import type { ResolvedRuleState } from '#src/standardsCheck/common/types/ResolvedRuleState.ts';
 import { runPackageChecks } from '#src/standardsCheck/runPackageChecks.ts';
-import type { LoadedStandardsRule } from '#src/standardsLibraries/common/types/LoadedStandardsRule.ts';
-import type { LoadedStandardsTopic } from '#src/standardsLibraries/common/types/LoadedStandardsTopic.ts';
 import { getRejectionError } from '#tests/helpers/getRejectionError.ts';
 
 /** A repo the checks run against. */

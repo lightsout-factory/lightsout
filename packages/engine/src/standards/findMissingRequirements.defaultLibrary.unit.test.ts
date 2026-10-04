@@ -1,8 +1,8 @@
 import { join } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
 import { findMissingRequirements } from '#src/standards/findMissingRequirements.ts';
-import { readStandardsLibrary } from '#src/standardsLibraries/readStandardsLibrary.ts';
-import { resolveStandardsPack } from '#src/standardsLibraries/resolveStandardsPack.ts';
+import { readStandardsLibrary } from '#src/standardsLibraries/readStandardsLibrary/readStandardsLibrary.ts';
+import { resolveStandardsPack } from '#src/standardsLibraries/resolveStandardsPack/resolveStandardsPack.ts';
 
 /** The requires lists the lightsout rules declare, stated here as the contract their rule.md headers must meet. */
 const listedRequires: Record<string, string[]> = {

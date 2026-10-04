@@ -2,9 +2,9 @@ import { mkdirSync, mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
+import type { LoadedStandardsLibrary } from '#src/common/types/LoadedStandardsLibrary.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 import { checkLibraryProse } from '#src/standardsCheck/internal/common/utils/proseChecks/checkLibraryProse.ts';
-import type { LoadedStandardsLibrary } from '#src/standardsLibraries/common/types/LoadedStandardsLibrary.ts';
 
 /** A library holding one topic and one rule in it, with the given rule prose and topic intro. */
 const setupLibrary = ({ prose, intro = '# Module API' }: { prose: string; intro?: string }) => {

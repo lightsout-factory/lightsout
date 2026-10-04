@@ -3,11 +3,11 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
 import { type StandardsCheckFunction, StandardsInputKind } from '@lightsout/standards-contracts';
+import type { LoadedStandardsLibrary } from '#src/common/types/LoadedStandardsLibrary.ts';
+import type { LoadedStandardsPackFile } from '#src/common/types/LoadedStandardsPackFile.ts';
+import type { LoadedStandardsRule } from '#src/common/types/LoadedStandardsRule.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 import { validateStandardsLibrary } from '#src/standardsCheck/validateStandardsLibrary.ts';
-import type { LoadedStandardsLibrary } from '#src/standardsLibraries/common/types/LoadedStandardsLibrary.ts';
-import type { LoadedStandardsPackFile } from '#src/standardsLibraries/common/types/LoadedStandardsPackFile.ts';
-import type { LoadedStandardsRule } from '#src/standardsLibraries/common/types/LoadedStandardsRule.ts';
 
 /** A check that objects to any file named `banned.ts` — its fail fixture below holds none, so the rule reports a problem of its own. */
 const bansTheBannedFile: StandardsCheckFunction = ({ inputs }) =>

@@ -1,4 +1,4 @@
-import type { LoadedStandardsRule } from '#src/standardsLibraries/common/types/LoadedStandardsRule.ts';
+import type { LoadedStandardsRule } from '#src/common/types/LoadedStandardsRule.ts';
 
 interface Params {
 	/** A full `<library>/<rule-id>` name, or a short rule id. */

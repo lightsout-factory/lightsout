@@ -1,9 +1,9 @@
+import type { LoadedStandardsLibrary } from '#src/common/types/LoadedStandardsLibrary.ts';
+import type { LoadedStandardsPackFile } from '#src/common/types/LoadedStandardsPackFile.ts';
+import type { LoadedStandardsRule } from '#src/common/types/LoadedStandardsRule.ts';
+import type { LoadedStandardsTopic } from '#src/common/types/LoadedStandardsTopic.ts';
 import type { StandardsRuleSettings } from '#src/contracts/StandardsRuleSettings.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
-import type { LoadedStandardsLibrary } from '#src/standardsLibraries/common/types/LoadedStandardsLibrary.ts';
-import type { LoadedStandardsPackFile } from '#src/standardsLibraries/common/types/LoadedStandardsPackFile.ts';
-import type { LoadedStandardsRule } from '#src/standardsLibraries/common/types/LoadedStandardsRule.ts';
-import type { LoadedStandardsTopic } from '#src/standardsLibraries/common/types/LoadedStandardsTopic.ts';
 
 interface RuleSpec {
 	id: string;
