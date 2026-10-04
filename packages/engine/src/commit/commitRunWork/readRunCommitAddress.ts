@@ -1,5 +1,5 @@
 import { basename, extname } from 'node:path';
-import type { CommitAddress } from '#src/commit/internal/common/types/CommitAddress.ts';
+import type { CommitAddress } from '#src/commit/common/types/CommitAddress.ts';
 import { parsePlanAddress } from '#src/common/planAddress/parsePlanAddress.ts';
 import { readRunLabel } from '#src/common/utils/readRunLabel.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';

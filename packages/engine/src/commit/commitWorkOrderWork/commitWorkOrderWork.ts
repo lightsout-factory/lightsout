@@ -1,8 +1,8 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
+import type { CommitFailure } from '#src/commit/commitWorkOrderWork/CommitFailure.ts';
+import { toLiteralPathspecs } from '#src/commit/common/toLiteralPathspecs.ts';
 import { discardGeneratedChanges } from '#src/commit/discardGeneratedChanges.ts';
-import type { CommitFailure } from '#src/commit/internal/common/types/CommitFailure.ts';
-import { toLiteralPathspecs } from '#src/commit/internal/common/utils/toLiteralPathspecs.ts';
 import { readGitChangedFiles } from '#src/common/git/readGitChangedFiles.ts';
 import { quoteShellArgument } from '#src/common/processes/quoteShellArgument.ts';
 import { runOrDescribeFailure } from '#src/common/processes/runOrDescribeFailure.ts';

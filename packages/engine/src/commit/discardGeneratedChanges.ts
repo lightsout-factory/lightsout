@@ -1,4 +1,4 @@
-import { toLiteralPathspecs } from '#src/commit/internal/common/utils/toLiteralPathspecs.ts';
+import { toLiteralPathspecs } from '#src/commit/common/toLiteralPathspecs.ts';
 import { gitTimeoutMs } from '#src/common/constants/gitTimeoutMs.ts';
 import { runCommand } from '#src/common/processes/runCommand.ts';
 import { runOrDescribeFailure } from '#src/common/processes/runOrDescribeFailure.ts';

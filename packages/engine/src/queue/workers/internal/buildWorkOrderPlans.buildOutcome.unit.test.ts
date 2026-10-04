@@ -54,7 +54,7 @@ const mockCommitTicketWork =
 		}) => Promise<{ committed: false } | { committed: true; message: string } | QueueFailure>
 	>();
 
-jest.mock('#src/commit/commitWorkOrderWork.ts', () => ({
+jest.mock('#src/commit/commitWorkOrderWork/commitWorkOrderWork.ts', () => ({
 	commitWorkOrderWork: (params: { cwd: string; composeMessage: ({ cwd }: { cwd: string }) => Promise<string>; runDir: string }) => mockCommitTicketWork(params),
 }));
 // -------------------------

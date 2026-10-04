@@ -1,5 +1,5 @@
-import { commitWorkOrderWork } from '#src/commit/commitWorkOrderWork.ts';
-import { composeCommitMessage } from '#src/commit/composeCommitMessage.ts';
+import { commitWorkOrderWork } from '#src/commit/commitWorkOrderWork/commitWorkOrderWork.ts';
+import { composeCommitMessage } from '#src/commit/composeCommitMessage/composeCommitMessage.ts';
 import type { WorkOrderPlanStep } from '#src/queue/workers/internal/common/types/WorkOrderPlanStep.ts';
 
 interface Params {

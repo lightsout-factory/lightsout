@@ -1,4 +1,4 @@
-import { commitRunWork } from '#src/commit/commitRunWork.ts';
+import { commitRunWork } from '#src/commit/commitRunWork/commitRunWork.ts';
 import type { RunState } from '#src/common/services/RunState.ts';
 import { headingOf } from '#src/common/utils/headingOf.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';

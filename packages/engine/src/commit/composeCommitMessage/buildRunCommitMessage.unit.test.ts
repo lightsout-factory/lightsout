@@ -1,5 +1,5 @@
 import { describe, expect, test } from '@jest/globals';
-import { buildRunCommitMessage } from '#src/commit/internal/buildRunCommitMessage.ts';
+import { buildRunCommitMessage } from '#src/commit/composeCommitMessage/buildRunCommitMessage.ts';
 
 describe('buildRunCommitMessage', () => {
 	test('puts the subject first and the run id in the body', () => {

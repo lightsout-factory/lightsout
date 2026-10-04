@@ -1,5 +1,5 @@
-import { commitWorkOrderWork } from '#src/commit/commitWorkOrderWork.ts';
-import { composeCommitMessage } from '#src/commit/composeCommitMessage.ts';
+import { commitWorkOrderWork } from '#src/commit/commitWorkOrderWork/commitWorkOrderWork.ts';
+import { composeCommitMessage } from '#src/commit/composeCommitMessage/composeCommitMessage.ts';
 import { readGitCommitsAhead } from '#src/common/git/readGitCommitsAhead.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { BranchPhase } from '#src/contracts/queue/BranchPhase.ts';

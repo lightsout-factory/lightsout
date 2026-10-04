@@ -60,7 +60,7 @@ jest.mock('#src/direct/runDirectWork/runDirectWork.ts', () => ({ runDirectWork: 
 // -------------------------
 const mockCommitTicketWork = jest.fn<(params: CommitParams) => Promise<{ committed: false } | { committed: true; message: string } | { error: string }>>();
 
-jest.mock('#src/commit/commitWorkOrderWork.ts', () => ({ commitWorkOrderWork: (params: CommitParams) => mockCommitTicketWork(params) }));
+jest.mock('#src/commit/commitWorkOrderWork/commitWorkOrderWork.ts', () => ({ commitWorkOrderWork: (params: CommitParams) => mockCommitTicketWork(params) }));
 // -------------------------
 const mockShipAfterImplement = jest.fn<(params: ShipAfterImplementParams) => Promise<number>>();
 

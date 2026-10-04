@@ -56,8 +56,8 @@ jest.mock('#src/direct/runDirectWork/runDirectWork.ts', () => ({ runDirectWork: 
 const mockCommitRunWork = jest.fn<(params: CommitRunWorkParams) => Promise<string | undefined>>();
 const mockCommitTicketWork = jest.fn<(params: CommitParams) => Promise<{ committed: false } | { committed: true; message: string } | { error: string }>>();
 
-jest.mock('#src/commit/commitRunWork.ts', () => ({ commitRunWork: (params: CommitRunWorkParams) => mockCommitRunWork(params) }));
-jest.mock('#src/commit/commitWorkOrderWork.ts', () => ({ commitWorkOrderWork: (params: CommitParams) => mockCommitTicketWork(params) }));
+jest.mock('#src/commit/commitRunWork/commitRunWork.ts', () => ({ commitRunWork: (params: CommitRunWorkParams) => mockCommitRunWork(params) }));
+jest.mock('#src/commit/commitWorkOrderWork/commitWorkOrderWork.ts', () => ({ commitWorkOrderWork: (params: CommitParams) => mockCommitTicketWork(params) }));
 // -------------------------
 const mockRequireImplementLifecycle = jest.fn<(params: GuardParams) => Promise<string | undefined>>();
 

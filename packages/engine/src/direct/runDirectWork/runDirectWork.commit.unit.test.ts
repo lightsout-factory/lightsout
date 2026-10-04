@@ -55,7 +55,7 @@ jest.mock('#src/gates/runGates.ts', () => ({
 // -------------------------
 const mockCommitRunWork = jest.fn<(params: CommitRunWorkParams) => Promise<string | undefined>>();
 
-jest.mock('#src/commit/commitRunWork.ts', () => ({ commitRunWork: (params: CommitRunWorkParams) => mockCommitRunWork(params) }));
+jest.mock('#src/commit/commitRunWork/commitRunWork.ts', () => ({ commitRunWork: (params: CommitRunWorkParams) => mockCommitRunWork(params) }));
 // -------------------------
 
 const driver: Driver = { name: 'claude-code', invoke: () => Promise.resolve({ text: '', exitCode: 0 }) };

@@ -24,7 +24,7 @@ interface CommitRunWorkParams {
 // disk is real, because the record a stopped run leaves is what a resume reads.
 const mockCommitRunWork = jest.fn<(params: CommitRunWorkParams) => Promise<string | undefined>>();
 
-jest.mock('#src/commit/commitRunWork.ts', () => ({ commitRunWork: (params: CommitRunWorkParams) => mockCommitRunWork(params) }));
+jest.mock('#src/commit/commitRunWork/commitRunWork.ts', () => ({ commitRunWork: (params: CommitRunWorkParams) => mockCommitRunWork(params) }));
 // -------------------------
 
 const config: LightsoutConfig = { gates: { check: 'true', test: 'true', 'test-coverage': false } };

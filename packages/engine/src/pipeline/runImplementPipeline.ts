@@ -1,5 +1,5 @@
 import type { ActivityLevel } from '#src/activity/common/types/ActivityLevel.ts';
-import { commitRunWork } from '#src/commit/commitRunWork.ts';
+import { commitRunWork } from '#src/commit/commitRunWork/commitRunWork.ts';
 import { defaultPackagesDir } from '#src/common/constants/defaultPackagesDir.ts';
 import { readGitChangedFiles } from '#src/common/git/readGitChangedFiles.ts';
 import { readGitPrefix } from '#src/common/git/readGitPrefix.ts';

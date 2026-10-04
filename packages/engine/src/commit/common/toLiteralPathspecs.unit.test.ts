@@ -1,5 +1,5 @@
 import { describe, expect, test } from '@jest/globals';
-import { toLiteralPathspecs } from '#src/commit/internal/common/utils/toLiteralPathspecs.ts';
+import { toLiteralPathspecs } from '#src/commit/common/toLiteralPathspecs.ts';
 
 const setupPaths = () => ({ paths: ['app/[slug].tsx', "docs/it's here.md"] });
 

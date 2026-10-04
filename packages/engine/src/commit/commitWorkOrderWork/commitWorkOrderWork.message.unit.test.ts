@@ -2,7 +2,7 @@ import { execSync } from 'node:child_process';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
-import { commitWorkOrderWork } from '#src/commit/commitWorkOrderWork.ts';
+import { commitWorkOrderWork } from '#src/commit/commitWorkOrderWork/commitWorkOrderWork.ts';
 import { generatedPaths } from '#tests/helpers/generatedPaths.ts';
 import { headSubject } from '#tests/helpers/headSubject.ts';
 import { setupTicketBranch } from '#tests/helpers/setupTicketBranch.ts';

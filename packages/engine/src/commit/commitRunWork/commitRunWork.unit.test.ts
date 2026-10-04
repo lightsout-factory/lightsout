@@ -2,7 +2,7 @@ import { execSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
-import { commitRunWork } from '#src/commit/commitRunWork.ts';
+import { commitRunWork } from '#src/commit/commitRunWork/commitRunWork.ts';
 import { WorktreeOwner } from '#src/contracts/worktree/WorktreeOwner.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import type { DriverInvocation } from '#src/drivers/common/types/DriverInvocation.ts';

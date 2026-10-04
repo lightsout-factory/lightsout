@@ -32,7 +32,7 @@ const mockCommitTicketWork = jest.fn<(params: CommitParams) => Promise<{ committ
 jest.mock('#src/direct/runDirectWork/runDirectWork.ts', () => ({
 	runDirectWork: (params: { ticketBody: string; ticketRef: string; willShip?: boolean }) => mockRunDirectWork(params),
 }));
-jest.mock('#src/commit/commitWorkOrderWork.ts', () => ({ commitWorkOrderWork: (params: CommitParams) => mockCommitTicketWork(params) }));
+jest.mock('#src/commit/commitWorkOrderWork/commitWorkOrderWork.ts', () => ({ commitWorkOrderWork: (params: CommitParams) => mockCommitTicketWork(params) }));
 // -------------------------
 
 const manifestOf = (status: RunStatus): RunManifest => ({
