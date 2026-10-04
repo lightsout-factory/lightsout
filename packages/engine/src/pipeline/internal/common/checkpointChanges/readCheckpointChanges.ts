@@ -1,7 +1,7 @@
-import { GitChangeKind } from '#src/common/constants/GitChangeKind.ts';
-import { readGitCommittedFile } from '#src/common/git/readGitCommittedFile.ts';
-import { readGitWorkingChanges } from '#src/common/git/readGitWorkingChanges.ts';
 import { isGeneratedPath } from '#src/common/sourceFiles/isGeneratedPath.ts';
+import { readGitCommittedFile } from '#src/pipeline/common/readGitCommittedFile.ts';
+import { GitChangeKind } from '#src/pipeline/internal/common/constants/GitChangeKind.ts';
+import { readGitWorkingChanges } from '#src/pipeline/internal/common/readGitWorkingChanges/readGitWorkingChanges.ts';
 import type { PipelineRun } from '#src/pipeline/internal/PipelineRun.ts';
 
 interface Params {

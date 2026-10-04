@@ -20,7 +20,7 @@ import { planSyncPhasesCommand } from '#src/cli/plan/planSyncPhasesCommand.ts';
 import { planVerifyFactsCommand } from '#src/cli/plan/planVerifyFactsCommand.ts';
 import { readPlanningStandards } from '#src/cli/plan/readPlanningStandards.ts';
 import { readOptionalConfig } from '#src/common/config/readOptionalConfig.ts';
-import { parsePlanAddress } from '#src/common/planAddress/parsePlanAddress.ts';
+import { parsePlanAddress } from '#src/common/planAddress/parsePlanAddress/parsePlanAddress.ts';
 
 /**
  * An unknown subcommand is left unopened so it still reaches the usage error with

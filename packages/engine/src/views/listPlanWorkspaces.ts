@@ -1,6 +1,6 @@
 import { readdir } from 'node:fs/promises';
 import { formatPlanAddress } from '#src/common/planAddress/formatPlanAddress.ts';
-import { parsePlanAddress } from '#src/common/planAddress/parsePlanAddress.ts';
+import { parsePlanAddress } from '#src/common/planAddress/parsePlanAddress/parsePlanAddress.ts';
 import { workOrdersDir } from '#src/common/workspace/workOrdersDir.ts';
 import { GradeReport } from '#src/contracts/plan/grade/GradeReport.ts';
 import type { PlanWorkspaceListing } from '#src/contracts/views/planWorkspace/PlanWorkspaceListing.ts';

@@ -1,5 +1,5 @@
+import { messageOf } from '#src/common/messageOf.ts';
 import type { StandardsGroup } from '#src/common/types/StandardsGroup.ts';
-import { messageOf } from '#src/common/utils/messageOf.ts';
 import { describePackageSet } from '#src/common/workspace/describePackageSet.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { DoctorCheck } from '#src/doctor/runDoctor/common/types/DoctorCheck.ts';

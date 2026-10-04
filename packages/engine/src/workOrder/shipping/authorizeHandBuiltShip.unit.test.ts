@@ -253,6 +253,6 @@ describe('authorizeHandBuiltShip', () => {
 			.filter((path) => path !== 'workOrder/shipping/authorizeHandBuiltShip.ts')
 			.filter((path) => /\bauthorizeHandBuiltShip\b/.test(readFileSync(join(srcDir, path), 'utf8')));
 
-		expect(naming).toStrictEqual(['cli/shipCommand.ts']);
+		expect(naming).toStrictEqual(['cli/shipCommand/shipCommand.ts']);
 	});
 });

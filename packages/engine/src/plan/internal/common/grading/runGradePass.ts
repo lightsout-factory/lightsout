@@ -1,5 +1,5 @@
 import { basename, join } from 'node:path';
-import { writeJsonFile } from '#src/common/utils/writeJsonFile.ts';
+import { writeJsonFile } from '#src/common/writeJsonFile.ts';
 import { ActivityLevelKind } from '#src/contracts/activity/ActivityLevelKind.ts';
 import type { GradeReport } from '#src/contracts/plan/grade/GradeReport.ts';
 import type { StructuralFinding } from '#src/contracts/plan/grade/StructuralFinding.ts';

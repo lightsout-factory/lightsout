@@ -1,9 +1,9 @@
-import { isTestSideFile } from '#src/common/sourceFiles/isTestSideFile.ts';
 import { getAgentOutcomeStatus } from '#src/invoke/getAgentOutcomeStatus.ts';
 import { approveTestFiles } from '#src/pipeline/approvedTests/approveTestFiles.ts';
 import { applyTestDispositions } from '#src/pipeline/approvedTests/internal/applyTestDispositions.ts';
 import { collectTestChanges } from '#src/pipeline/approvedTests/internal/collectTestChanges.ts';
 import { consultTestChangeReviewer } from '#src/pipeline/approvedTests/internal/consultTestChangeReviewer.ts';
+import { isTestSideFile } from '#src/pipeline/common/isTestSideFile.ts';
 import type { PipelineRun } from '#src/pipeline/internal/PipelineRun.ts';
 import { appendTestReview } from '#src/runState/appendTestReview.ts';
 

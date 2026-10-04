@@ -1,6 +1,6 @@
+import { messageOf } from '#src/common/messageOf.ts';
 import type { TrackerFailure } from '#src/common/types/TrackerFailure.ts';
 import type { LinearTrackerSettings } from '#src/common/types/TrackerSettings.ts';
-import { messageOf } from '#src/common/utils/messageOf.ts';
 import { collectNodes } from '#src/ticketTracker/linear/common/collectNodes.ts';
 import { runLinear } from '#src/ticketTracker/linear/common/runLinear.ts';
 

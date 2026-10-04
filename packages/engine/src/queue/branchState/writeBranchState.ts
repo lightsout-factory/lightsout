@@ -1,7 +1,7 @@
 import { mkdir, rename } from 'node:fs/promises';
 import { dirname } from 'node:path';
-import { messageOf } from '#src/common/utils/messageOf.ts';
-import { writeJsonFile } from '#src/common/utils/writeJsonFile.ts';
+import { messageOf } from '#src/common/messageOf.ts';
+import { writeJsonFile } from '#src/common/writeJsonFile.ts';
 import type { BranchPhase } from '#src/contracts/queue/BranchPhase.ts';
 import type { BranchState } from '#src/contracts/queue/BranchState.ts';
 import { getBranchStatePath } from '#src/queue/branchState/internal/common/utils/getBranchStatePath.ts';

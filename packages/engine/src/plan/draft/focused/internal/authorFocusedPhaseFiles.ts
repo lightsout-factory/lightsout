@@ -1,6 +1,5 @@
 import { join } from 'node:path';
 import { buildFocusedPlanWriterInvocation } from '#src/agents/buildFocusedPlanWriterInvocation/buildFocusedPlanWriterInvocation.ts';
-import { createdFileCeiling } from '#src/common/constants/createdFileCeiling.ts';
 import { touchedFileCeiling } from '#src/common/constants/touchedFileCeiling.ts';
 import type { ActivityLevel } from '#src/common/types/ActivityLevel.ts';
 import type { Driver } from '#src/common/types/Driver.ts';
@@ -13,6 +12,7 @@ import { PlanDraftReport } from '#src/contracts/plan/draft/PlanDraftReport.ts';
 import { PlanVariant } from '#src/contracts/plan/draft/PlanVariant.ts';
 import type { SourceEvidenceIndex } from '#src/contracts/plan/evidence/SourceEvidenceIndex.ts';
 import type { PlanFacts } from '#src/contracts/plan/facts/PlanFacts.ts';
+import { createdFileCeiling } from '#src/plan/common/constants/createdFileCeiling.ts';
 import type { PhaseDeclaration } from '#src/plan/common/types/PhaseDeclaration.ts';
 import { selectPhaseEvidence } from '#src/plan/draft/focused/internal/common/utils/selectPhaseEvidence.ts';
 import { planWriterEnvironment } from '#src/plan/draft/internal/common/constants/planWriterEnvironment.ts';

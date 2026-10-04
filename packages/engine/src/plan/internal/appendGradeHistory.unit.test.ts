@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, test } from '@jest/globals';
-import { readJsonlRecords } from '#src/common/utils/readJsonlRecords.ts';
+import { readJsonlRecords } from '#src/common/readJsonlRecords.ts';
 import { GapCheckLens } from '#src/contracts/plan/grade/GapCheckLens.ts';
 import { GradeReport } from '#src/contracts/plan/grade/GradeReport.ts';
 import { PlanGrade } from '#src/contracts/plan/grade/PlanGrade.ts';

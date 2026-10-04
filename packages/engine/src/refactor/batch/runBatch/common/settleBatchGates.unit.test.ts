@@ -16,7 +16,7 @@ import { seedRunFolder } from '#tests/helpers/seedRunFolder.ts';
 // -------------------------
 const mockConsultSupervisor = jest.fn<() => Promise<AgentOutcome<SupervisorVerdict>>>();
 
-jest.mock('#src/common/utils/consultSupervisor.ts', () => ({
+jest.mock('#src/common/consultSupervisor.ts', () => ({
 	consultSupervisor: () => mockConsultSupervisor(),
 }));
 // -------------------------

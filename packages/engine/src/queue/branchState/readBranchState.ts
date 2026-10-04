@@ -1,4 +1,4 @@
-import { readJsonFile } from '#src/common/utils/readJsonFile.ts';
+import { readJsonFile } from '#src/common/readJsonFile.ts';
 import { BranchState } from '#src/contracts/queue/BranchState.ts';
 import { getBranchStatePath } from '#src/queue/branchState/internal/common/utils/getBranchStatePath.ts';
 

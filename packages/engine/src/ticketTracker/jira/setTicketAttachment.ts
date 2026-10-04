@@ -1,6 +1,6 @@
+import { messageOf } from '#src/common/messageOf.ts';
 import type { TrackerFailure } from '#src/common/types/TrackerFailure.ts';
 import type { JiraTrackerSettings } from '#src/common/types/TrackerSettings.ts';
-import { messageOf } from '#src/common/utils/messageOf.ts';
 import { runJira } from '#src/ticketTracker/jira/common/runJira.ts';
 import type { JiraAttachment } from '#src/ticketTracker/jira/getTicketAttachments.ts';
 

@@ -1,4 +1,4 @@
-import { messageOf } from '#src/common/utils/messageOf.ts';
+import { messageOf } from '#src/common/messageOf.ts';
 import type { GateHold } from '#src/contracts/gates/GateHold.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { writeGateBlockedLabel } from '#src/gates/gateHolds/internal/common/utils/writeGateBlockedLabel.ts';

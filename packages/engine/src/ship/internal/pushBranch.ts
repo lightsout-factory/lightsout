@@ -1,6 +1,6 @@
+import { messageOf } from '#src/common/messageOf.ts';
 import { quoteShellArgument } from '#src/common/processes/quoteShellArgument.ts';
 import { runCommand } from '#src/common/processes/runCommand.ts';
-import { messageOf } from '#src/common/utils/messageOf.ts';
 import type { ShipStepFailure } from '#src/ship/common/types/ShipStepFailure.ts';
 
 interface Params {

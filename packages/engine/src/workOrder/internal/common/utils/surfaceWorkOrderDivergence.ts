@@ -1,5 +1,5 @@
 import { join } from 'node:path';
-import { messageOf } from '#src/common/utils/messageOf.ts';
+import { messageOf } from '#src/common/messageOf.ts';
 import { workOrderFileNames } from '#src/workOrder/internal/common/constants/workOrderFileNames.ts';
 import { writeWorkOrderFolderFile } from '#src/workOrder/internal/common/utils/writeWorkOrderFolderFile.ts';
 

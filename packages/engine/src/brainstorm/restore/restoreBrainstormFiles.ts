@@ -6,11 +6,11 @@ import { scopeAttachments } from '#src/common/attachmentManifest/scopeAttachment
 import { brainstormAttachmentFileNames } from '#src/common/constants/brainstormAttachmentFileNames.ts';
 import { brainstormAttachmentManifestName } from '#src/common/constants/brainstormAttachmentManifestName.ts';
 import { brainstormNotesFileName } from '#src/common/constants/brainstormNotesFileName.ts';
+import { messageOf } from '#src/common/messageOf.ts';
+import { sha256 } from '#src/common/sha256.ts';
 import type { AttachmentManifest } from '#src/common/types/AttachmentManifest.ts';
 import type { TrackerAttachment } from '#src/common/types/TrackerAttachment.ts';
 import type { TrackerSettings } from '#src/common/types/TrackerSettings.ts';
-import { messageOf } from '#src/common/utils/messageOf.ts';
-import { sha256 } from '#src/common/utils/sha256.ts';
 import { pathExists } from '#src/plan/common/paths/pathExists.ts';
 import { planWorkspaceDir } from '#src/plan/planWorkspaceDir.ts';
 import { getTicketAttachments } from '#src/ticketTracker/getTicketAttachments.ts';

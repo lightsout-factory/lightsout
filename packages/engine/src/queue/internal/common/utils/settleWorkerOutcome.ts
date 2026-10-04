@@ -1,10 +1,10 @@
 import { commitWorkOrderWork } from '#src/commit/commitWorkOrderWork/commitWorkOrderWork.ts';
 import { composeCommitMessage } from '#src/commit/composeCommitMessage/composeCommitMessage.ts';
-import { readGitCommitsAhead } from '#src/common/git/readGitCommitsAhead.ts';
 import type { Driver } from '#src/common/types/Driver.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { BranchPhase } from '#src/contracts/queue/BranchPhase.ts';
 import { writeBranchState } from '#src/queue/branchState/writeBranchState.ts';
+import { readGitCommitsAhead } from '#src/queue/common/readGitCommitsAhead.ts';
 import type { WorkOrderRunOutcome } from '#src/queue/common/types/WorkOrderRunOutcome.ts';
 import type { RunnableTicket } from '#src/queue/internal/common/types/RunnableTicket.ts';
 import type { WorkerOutcome } from '#src/queue/internal/common/types/WorkerOutcome.ts';

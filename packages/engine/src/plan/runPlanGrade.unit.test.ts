@@ -3,9 +3,9 @@ import { existsSync, mkdtempSync, readFileSync, realpathSync, writeFileSync } fr
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { expect, test } from '@jest/globals';
+import { readJsonlRecords } from '#src/common/readJsonlRecords.ts';
 import type { Driver } from '#src/common/types/Driver.ts';
 import type { DriverInvocation } from '#src/common/types/DriverInvocation.ts';
-import { readJsonlRecords } from '#src/common/utils/readJsonlRecords.ts';
 import { Effort } from '#src/contracts/Effort.ts';
 import { Permissions } from '#src/contracts/Permissions.ts';
 import { DecisionSource } from '#src/contracts/plan/decisions/DecisionSource.ts';

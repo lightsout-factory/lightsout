@@ -1,7 +1,7 @@
 import { type ImportGraphInput, StandardsInputKind } from '@lightsout/standards-contracts';
 import type ts from 'typescript';
-import { collectImportEdges } from '#src/common/moduleGraph/collectImportEdges.ts';
-import { readPackageDependencies } from '#src/common/workspace/readPackageDependencies.ts';
+import { collectImportEdges } from '#src/common/moduleGraph/collectImportEdges/collectImportEdges.ts';
+import { readPackageDependencies } from '#src/standardsCheck/internal/common/checkInputs/common/readPackageDependencies.ts';
 
 interface Params {
 	cwd: string;

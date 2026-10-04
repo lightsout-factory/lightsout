@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { mkdirSync, readFileSync, renameSync, unlinkSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { z } from 'zod';
-import { messageOf } from '#src/common/utils/messageOf.ts';
+import { messageOf } from '#src/common/messageOf.ts';
 import { isPidAlive } from '#src/runState/isPidAlive.ts';
 import { workOrderFileNames } from '#src/workOrder/internal/common/constants/workOrderFileNames.ts';
 

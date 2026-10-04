@@ -1,4 +1,4 @@
-import { readJsonFile } from '#src/common/utils/readJsonFile.ts';
+import { readJsonFile } from '#src/common/readJsonFile.ts';
 import { ShipResult } from '#src/contracts/ship/ShipResult.ts';
 import { getShipResultPath } from '#src/ship/internal/common/utils/getShipResultPath.ts';
 

@@ -1,10 +1,10 @@
 import { BuildMode } from '#src/common/constants/BuildMode.ts';
-import { createdFileCeiling } from '#src/common/constants/createdFileCeiling.ts';
 import { touchedFileCeiling } from '#src/common/constants/touchedFileCeiling.ts';
 import { FindingSeverity } from '#src/contracts/plan/grade/FindingSeverity.ts';
 import { StructuralCheck } from '#src/contracts/plan/grade/StructuralCheck.ts';
 import type { StructuralFinding } from '#src/contracts/plan/grade/StructuralFinding.ts';
 import { buildModeBulletLabels } from '#src/plan/common/constants/buildModeBulletLabels.ts';
+import { createdFileCeiling } from '#src/plan/common/constants/createdFileCeiling.ts';
 import type { PhaseDeclaration } from '#src/plan/common/types/PhaseDeclaration.ts';
 import { getDeclarationDefects } from '#src/plan/common/utils/getDeclarationDefects.ts';
 import type { ParsedPlan } from '#src/plan/internal/common/types/ParsedPlan.ts';

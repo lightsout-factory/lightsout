@@ -1,4 +1,4 @@
-import { renderBranchTemplate } from '#src/common/utils/renderBranchTemplate.ts';
+import { renderBranchTemplate } from '#src/common/renderBranchTemplate.ts';
 import type { TicketSummary } from '#src/queue/common/types/TicketSummary.ts';
 
 interface Params {

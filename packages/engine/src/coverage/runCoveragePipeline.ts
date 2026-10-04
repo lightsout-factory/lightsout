@@ -1,8 +1,8 @@
 import { defaultPackagesDir } from '#src/common/constants/defaultPackagesDir.ts';
+import { runPreflightGate } from '#src/common/runPreflightGate.ts';
 import { listSourceFiles } from '#src/common/sourceFiles/listSourceFiles.ts';
 import type { Driver } from '#src/common/types/Driver.ts';
 import type { LoadedConfig } from '#src/common/types/LoadedConfig.ts';
-import { runPreflightGate } from '#src/common/utils/runPreflightGate.ts';
 import { resolveConsumerTypescript } from '#src/common/workspace/resolveConsumerTypescript.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';

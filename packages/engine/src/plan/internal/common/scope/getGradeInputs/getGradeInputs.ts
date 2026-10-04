@@ -1,9 +1,9 @@
 import { readFile } from 'node:fs/promises';
 import { basename, join } from 'node:path';
+import { canonicalJson } from '#src/common/canonicalJson.ts';
 import { readGitChangedFiles } from '#src/common/git/readGitChangedFiles.ts';
 import { readGitHeadCommit } from '#src/common/git/readGitHeadCommit.ts';
-import { canonicalJson } from '#src/common/utils/canonicalJson.ts';
-import { sha256 } from '#src/common/utils/sha256.ts';
+import { sha256 } from '#src/common/sha256.ts';
 import type { Effort } from '#src/contracts/Effort.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { DecisionRow } from '#src/contracts/plan/decisions/DecisionRow.ts';

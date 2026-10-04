@@ -2,7 +2,7 @@ import type ts from 'typescript';
 import { defaultPackagesDir } from '#src/common/constants/defaultPackagesDir.ts';
 import { chunkFileGroup } from '#src/common/fileGroups/chunkFileGroup.ts';
 import { groupConnectedFiles } from '#src/common/fileGroups/groupConnectedFiles.ts';
-import { collectImportEdges } from '#src/common/moduleGraph/collectImportEdges.ts';
+import { collectImportEdges } from '#src/common/moduleGraph/collectImportEdges/collectImportEdges.ts';
 import type { TestTargetGroup } from '#src/pipeline/internal/common/types/TestTargetGroup.ts';
 import { partitionByPackage } from '#src/pipeline/internal/common/utils/partitionByPackage.ts';
 import type { PipelineRun } from '#src/pipeline/internal/PipelineRun.ts';

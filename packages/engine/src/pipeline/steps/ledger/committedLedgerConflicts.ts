@@ -1,4 +1,4 @@
-import { holdsTestTitle } from '#src/common/sourceFiles/holdsTestTitle.ts';
+import { holdsTestTitle } from '#src/common/sourceFiles/holdsTestTitle/holdsTestTitle.ts';
 import { readCommittedTestSource } from '#src/pipeline/steps/ledger/internal/readCommittedTestSource.ts';
 
 interface Params {

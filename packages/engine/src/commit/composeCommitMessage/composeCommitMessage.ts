@@ -1,9 +1,9 @@
 import { buildCommitMessageInvocation } from '#src/agents/buildCommitMessageInvocation.ts';
 import type { CommitAddress } from '#src/commit/common/types/CommitAddress.ts';
 import { buildRunCommitMessage } from '#src/commit/composeCommitMessage/buildRunCommitMessage.ts';
-import { readGitStagedChange } from '#src/common/git/readGitStagedChange.ts';
+import { readGitStagedChange } from '#src/commit/composeCommitMessage/readGitStagedChange.ts';
+import { messageOf } from '#src/common/messageOf.ts';
 import type { Driver } from '#src/common/types/Driver.ts';
-import { messageOf } from '#src/common/utils/messageOf.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { Permissions } from '#src/contracts/Permissions.ts';
 import type { AgentUsage } from '#src/contracts/run/AgentUsage.ts';

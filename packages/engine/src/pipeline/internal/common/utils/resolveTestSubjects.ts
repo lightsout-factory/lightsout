@@ -1,7 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import type ts from 'typescript';
-import { collectImportEdges } from '#src/common/moduleGraph/collectImportEdges.ts';
+import { collectImportEdges } from '#src/common/moduleGraph/collectImportEdges/collectImportEdges.ts';
 import { isInertSourceFile } from '#src/common/sourceFiles/isInertSourceFile.ts';
 import { isTestFile } from '#src/common/sourceFiles/isTestFile.ts';
 import { partitionByPackage } from '#src/pipeline/internal/common/utils/partitionByPackage.ts';

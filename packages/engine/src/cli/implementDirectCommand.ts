@@ -1,6 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { getStringFlag } from '#src/cli/common/args/getStringFlag.ts';
+import { readLoadedConfig } from '#src/cli/common/readLoadedConfig.ts';
 import type { CommandContext } from '#src/cli/common/types/CommandContext.ts';
 import { exitCli } from '#src/cli/common/utils/exitCli.ts';
 import { getRequiredFlag } from '#src/cli/internal/common/args/getRequiredFlag.ts';
@@ -13,11 +14,10 @@ import type { RunWorkspace } from '#src/cli/internal/common/types/RunWorkspace.t
 import { createProgressPrinter } from '#src/cli/internal/common/utils/createProgressPrinter.ts';
 import { resolveCommandShipIntent } from '#src/cli/internal/common/utils/resolveCommandShipIntent.ts';
 import { resolveEffectiveConfigAndDriver } from '#src/cli/internal/common/utils/resolveEffectiveConfigAndDriver.ts';
-import { readLoadedConfig } from '#src/common/config/readLoadedConfig.ts';
 import { readGitCurrentBranch } from '#src/common/git/readGitCurrentBranch.ts';
+import { readRunLabel } from '#src/common/readRunLabel.ts';
 import type { Driver } from '#src/common/types/Driver.ts';
 import type { LoadedConfig } from '#src/common/types/LoadedConfig.ts';
-import { readRunLabel } from '#src/common/utils/readRunLabel.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { runDirectWork } from '#src/direct/runDirectWork/runDirectWork.ts';
 import { requireImplementLifecycle } from '#src/ticketLifecycle/requireImplementLifecycle.ts';

@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { usage } from '#src/cli/common/constants/usage.ts';
+import { readLoadedConfig } from '#src/cli/common/readLoadedConfig.ts';
 import type { CommandContext } from '#src/cli/common/types/CommandContext.ts';
 import { exitCli } from '#src/cli/common/utils/exitCli.ts';
 import { launchDetached } from '#src/cli/internal/common/detach/launchDetached.ts';
@@ -15,7 +16,6 @@ import { resolveCommandHarness } from '#src/cli/internal/common/utils/resolveCom
 import { resolveCommandShipIntent } from '#src/cli/internal/common/utils/resolveCommandShipIntent.ts';
 import { runPhasesOrFailFast } from '#src/cli/internal/common/utils/runPhasesOrFailFast.ts';
 import { runPipelineOrFailFast } from '#src/cli/internal/common/utils/runPipelineOrFailFast.ts';
-import { readLoadedConfig } from '#src/common/config/readLoadedConfig.ts';
 import type { Driver } from '#src/common/types/Driver.ts';
 import type { LoadedConfig } from '#src/common/types/LoadedConfig.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';

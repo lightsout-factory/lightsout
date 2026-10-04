@@ -1,4 +1,4 @@
-import { readJsonFile } from '#src/common/utils/readJsonFile.ts';
+import { readJsonFile } from '#src/common/readJsonFile.ts';
 import { QueueSummary } from '#src/contracts/queue/QueueSummary.ts';
 import { getQueueSummaryPath } from '#src/queue/board/getQueueSummaryPath.ts';
 

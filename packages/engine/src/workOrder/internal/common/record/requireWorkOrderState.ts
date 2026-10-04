@@ -1,4 +1,4 @@
-import { describeMissingWorkOrder } from '#src/common/utils/describeMissingWorkOrder.ts';
+import { describeMissingWorkOrder } from '#src/common/describeMissingWorkOrder.ts';
 import type { WorkOrderState } from '#src/contracts/workOrder/WorkOrderState.ts';
 
 interface Params {

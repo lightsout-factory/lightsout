@@ -79,7 +79,7 @@ jest.mock('#src/queue/workers/runWorkerWithRelay.ts', () => ({
 jest.mock('#src/commit/commitWorkOrderWork/commitWorkOrderWork.ts', () => ({
 	commitWorkOrderWork: (params: CommitTicketWorkParams) => mockCommitTicketWork(params),
 }));
-jest.mock('#src/common/git/readGitCommitsAhead.ts', () => ({
+jest.mock('#src/queue/common/readGitCommitsAhead.ts', () => ({
 	readGitCommitsAhead: (params: { cwd: string; defaultBranch: string }) => mockReadGitCommitsAhead(params),
 }));
 // -------------------------

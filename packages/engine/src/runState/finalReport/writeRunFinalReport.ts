@@ -1,4 +1,4 @@
-import { writeJsonFile } from '#src/common/utils/writeJsonFile.ts';
+import { writeJsonFile } from '#src/common/writeJsonFile.ts';
 import type { RunFinalReport } from '#src/contracts/run/RunFinalReport.ts';
 import { getRunFinalReportPath } from '#src/runState/finalReport/getRunFinalReportPath.ts';
 

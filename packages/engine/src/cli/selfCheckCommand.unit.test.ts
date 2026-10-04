@@ -45,7 +45,7 @@ interface SelfCheckResult {
 
 const mockRunSelfCheck = jest.fn<(params: SelfCheckParams) => Promise<SelfCheckResult>>();
 
-jest.mock('#src/gates/runSelfCheck.ts', () => ({ runSelfCheck: (params: SelfCheckParams) => mockRunSelfCheck(params) }));
+jest.mock('#src/gates/runSelfCheck/runSelfCheck.ts', () => ({ runSelfCheck: (params: SelfCheckParams) => mockRunSelfCheck(params) }));
 // -------------------------
 
 const redGate: GateResult = { kind: 'check', group: 'api', command: 'pnpm check', exitCode: 1, outputTail: 'src/thing.ts:3 unused import' };

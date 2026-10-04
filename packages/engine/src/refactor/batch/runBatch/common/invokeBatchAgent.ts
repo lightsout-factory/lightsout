@@ -1,9 +1,9 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
+import { createEventFileSink } from '#src/common/createEventFileSink.ts';
 import { runFormatter } from '#src/common/processes/runFormatter.ts';
 import { resolveRunDir } from '#src/common/resolveRunDir.ts';
 import type { Driver } from '#src/common/types/Driver.ts';
-import { createEventFileSink } from '#src/common/utils/createEventFileSink.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { Permissions } from '#src/contracts/Permissions.ts';
 import type { RefactorBatch } from '#src/contracts/refactor/RefactorBatch.ts';

@@ -1,5 +1,5 @@
+import { renderBranchTemplate } from '#src/common/renderBranchTemplate.ts';
 import type { Driver } from '#src/common/types/Driver.ts';
-import { renderBranchTemplate } from '#src/common/utils/renderBranchTemplate.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { WorkOrderMode } from '#src/contracts/workOrder/WorkOrderMode.ts';
 import type { WorkOrderState } from '#src/contracts/workOrder/WorkOrderState.ts';

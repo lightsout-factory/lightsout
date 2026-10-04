@@ -1,12 +1,12 @@
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
+import { formatResumeCommand } from '#src/common/formatResumeCommand.ts';
 import { readGitChangedFiles } from '#src/common/git/readGitChangedFiles.ts';
 import { resolveNewRunDir } from '#src/common/resolveNewRunDir.ts';
 import { resolveRunDir } from '#src/common/resolveRunDir.ts';
 import type { Driver } from '#src/common/types/Driver.ts';
 import type { LoadedConfig } from '#src/common/types/LoadedConfig.ts';
-import { formatResumeCommand } from '#src/common/utils/formatResumeCommand.ts';
-import { writeJsonFile } from '#src/common/utils/writeJsonFile.ts';
+import { writeJsonFile } from '#src/common/writeJsonFile.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { RefactorWorklist } from '#src/contracts/refactor/RefactorWorklist.ts';
 import { PipelineKind } from '#src/contracts/run/PipelineKind.ts';

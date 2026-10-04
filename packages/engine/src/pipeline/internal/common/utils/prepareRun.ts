@@ -1,5 +1,5 @@
 import { defaultPackagesDir } from '#src/common/constants/defaultPackagesDir.ts';
-import { messageOf } from '#src/common/utils/messageOf.ts';
+import { messageOf } from '#src/common/messageOf.ts';
 import { listWorkspacePackages } from '#src/common/workspace/listWorkspacePackages.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { readPlanSources } from '#src/pipeline/internal/common/utils/readPlanSources.ts';

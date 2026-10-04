@@ -1,5 +1,5 @@
 import { stat } from 'node:fs/promises';
-import { parsePlanAddress } from '#src/common/planAddress/parsePlanAddress.ts';
+import { parsePlanAddress } from '#src/common/planAddress/parsePlanAddress/parsePlanAddress.ts';
 import { workOrderNameOf } from '#src/common/planAddress/workOrderNameOf.ts';
 import { DedupReport } from '#src/contracts/dedup/DedupReport.ts';
 import { BrainstormDecisions } from '#src/contracts/plan/decisions/BrainstormDecisions.ts';

@@ -1,5 +1,5 @@
 import { join } from 'node:path';
-import { readJsonFile } from '#src/common/utils/readJsonFile.ts';
+import { readJsonFile } from '#src/common/readJsonFile.ts';
 import { WorkOrderSyncState } from '#src/contracts/workOrder/WorkOrderSyncState.ts';
 import { workOrderFileNames } from '#src/workOrder/internal/common/constants/workOrderFileNames.ts';
 

@@ -1,7 +1,7 @@
 import { describe, expect, test } from '@jest/globals';
+import { messageOf } from '#src/common/messageOf.ts';
 import type { LoadedStandardsLibrary } from '#src/common/types/LoadedStandardsLibrary.ts';
 import type { ResolvedStandardsPack } from '#src/common/types/ResolvedStandardsPack.ts';
-import { messageOf } from '#src/common/utils/messageOf.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 import { resolveStandardsPack } from '#src/standardsLibraries/resolveStandardsPack/resolveStandardsPack.ts';
 import { setupStandardsLibraries } from '#tests/helpers/setupStandardsLibraries.ts';

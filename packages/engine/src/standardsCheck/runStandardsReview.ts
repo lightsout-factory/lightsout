@@ -1,9 +1,9 @@
 import { formatDuration } from '@lightsout/shared';
 import { buildStandardsReviewInvocation } from '#src/agents/buildStandardsReviewInvocation.ts';
+import { collectGroupItems } from '#src/common/collectGroupItems.ts';
 import type { Driver } from '#src/common/types/Driver.ts';
 import type { LoadedStandardsRule } from '#src/common/types/LoadedStandardsRule.ts';
 import type { StandardsGroup } from '#src/common/types/StandardsGroup.ts';
-import { collectGroupItems } from '#src/common/utils/collectGroupItems.ts';
 import { describePackageSet } from '#src/common/workspace/describePackageSet.ts';
 import { listWorkspacePackages } from '#src/common/workspace/listWorkspacePackages.ts';
 import { Permissions } from '#src/contracts/Permissions.ts';

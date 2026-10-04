@@ -43,7 +43,7 @@ interface CollectBatchChangesParams {
 
 const mockCollectBatchChanges = jest.fn<(params: CollectBatchChangesParams) => Promise<string[]>>();
 
-jest.mock('#src/common/utils/collectBatchChanges.ts', () => ({
+jest.mock('#src/common/collectBatchChanges.ts', () => ({
 	collectBatchChanges: (params: CollectBatchChangesParams) => mockCollectBatchChanges(params),
 }));
 // -------------------------

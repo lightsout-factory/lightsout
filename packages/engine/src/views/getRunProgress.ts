@@ -1,8 +1,8 @@
 import { formatShortRunId } from '@lightsout/shared';
 import { buildCleanupSummary } from '#src/common/buildCleanupSummary.ts';
+import { formatResumeCommand } from '#src/common/formatResumeCommand.ts';
 import type { RunProgress } from '#src/common/types/RunProgress.ts';
 import type { RunProgressRow } from '#src/common/types/RunProgressRow.ts';
-import { formatResumeCommand } from '#src/common/utils/formatResumeCommand.ts';
 import { PipelineKind } from '#src/contracts/run/PipelineKind.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';

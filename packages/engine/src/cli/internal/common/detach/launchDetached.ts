@@ -4,8 +4,8 @@ import { dirname } from 'node:path';
 import { setTimeout as delay } from 'node:timers/promises';
 import { launchRunIdVariable } from '#src/cli/internal/common/constants/launchRunIdVariable.ts';
 import { getLaunchLogPath } from '#src/cli/internal/common/detach/getLaunchLogPath.ts';
+import { messageOf } from '#src/common/messageOf.ts';
 import { readProcessStartTime } from '#src/common/processes/readProcessStartTime.ts';
-import { messageOf } from '#src/common/utils/messageOf.ts';
 import { readRunOwner } from '#src/runState/owner/readRunOwner.ts';
 import { readRunManifest } from '#src/runState/readRunManifest.ts';
 

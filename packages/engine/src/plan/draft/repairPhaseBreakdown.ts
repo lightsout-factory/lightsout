@@ -1,7 +1,6 @@
 import { readFile } from 'node:fs/promises';
 import { basename, join } from 'node:path';
 import { buildPlanReshapeInvocation } from '#src/agents/buildPlanReshapeInvocation.ts';
-import { createdFileCeiling } from '#src/common/constants/createdFileCeiling.ts';
 import { touchedFileCeiling } from '#src/common/constants/touchedFileCeiling.ts';
 import type { ActivityLevel } from '#src/common/types/ActivityLevel.ts';
 import type { Driver } from '#src/common/types/Driver.ts';
@@ -11,6 +10,7 @@ import type { Permissions } from '#src/contracts/Permissions.ts';
 import { PlanFixReport } from '#src/contracts/plan/draft/PlanFixReport.ts';
 import type { StructuralFinding } from '#src/contracts/plan/grade/StructuralFinding.ts';
 import { getAgentOutcomeStatus } from '#src/invoke/getAgentOutcomeStatus.ts';
+import { createdFileCeiling } from '#src/plan/common/constants/createdFileCeiling.ts';
 import { convergeFindings } from '#src/plan/draft/internal/common/utils/convergeFindings.ts';
 import type { PlanRepairResult } from '#src/plan/internal/common/types/PlanRepairResult.ts';
 import { createPlanAgentRunner } from '#src/plan/internal/common/utils/createPlanAgentRunner.ts';

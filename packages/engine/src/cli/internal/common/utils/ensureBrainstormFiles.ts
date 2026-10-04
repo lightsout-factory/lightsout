@@ -1,6 +1,6 @@
 import { restoreBrainstormFiles } from '#src/brainstorm/restore/restoreBrainstormFiles.ts';
 import { readOptionalConfig } from '#src/common/config/readOptionalConfig.ts';
-import { parsePlanAddress } from '#src/common/planAddress/parsePlanAddress.ts';
+import { parsePlanAddress } from '#src/common/planAddress/parsePlanAddress/parsePlanAddress.ts';
 import { planWorkspaceDir } from '#src/plan/planWorkspaceDir.ts';
 import { readPlanWorkOrderRef } from '#src/plan/readPlanWorkOrderRef.ts';
 import { resolveTrackerSettings } from '#src/ticketTracker/resolveTrackerSettings.ts';

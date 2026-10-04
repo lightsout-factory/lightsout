@@ -1,5 +1,5 @@
 import { maxConsecutiveDeclines } from '#src/common/constants/maxConsecutiveDeclines.ts';
-import { formatResumeCommand } from '#src/common/utils/formatResumeCommand.ts';
+import { formatResumeCommand } from '#src/common/formatResumeCommand.ts';
 import { CoverageBatchReport } from '#src/contracts/coverage/CoverageBatchReport.ts';
 import { BatchOutcome } from '#src/contracts/refactor/BatchOutcome.ts';
 import { PipelineKind } from '#src/contracts/run/PipelineKind.ts';

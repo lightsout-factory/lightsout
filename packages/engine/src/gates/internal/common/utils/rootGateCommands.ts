@@ -1,4 +1,4 @@
-import type { resolveGates } from '#src/common/config/resolveGates.ts';
+import type { resolveGates } from '#src/gates/common/resolveGates.ts';
 import type { GateCommands } from '#src/gates/internal/common/types/GateCommands.ts';
 
 interface Params {

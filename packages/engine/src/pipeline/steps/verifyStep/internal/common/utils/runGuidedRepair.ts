@@ -1,4 +1,4 @@
-import { consultSupervisor } from '#src/common/utils/consultSupervisor.ts';
+import { consultSupervisor } from '#src/common/consultSupervisor.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import type { StepRecord } from '#src/contracts/run/StepRecord.ts';
 import { SupervisorDecision } from '#src/contracts/work/SupervisorDecision.ts';

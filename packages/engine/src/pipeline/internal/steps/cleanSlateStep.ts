@@ -1,10 +1,10 @@
 import { readGitChangedFiles } from '#src/common/git/readGitChangedFiles.ts';
+import { messageOf } from '#src/common/messageOf.ts';
 import { isGeneratedPath } from '#src/common/sourceFiles/isGeneratedPath.ts';
-import { isTestSideFile } from '#src/common/sourceFiles/isTestSideFile.ts';
-import { messageOf } from '#src/common/utils/messageOf.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import { checkTestResultsCapability } from '#src/gates/testResults/checkTestResultsCapability.ts';
 import { approveTestFiles } from '#src/pipeline/approvedTests/approveTestFiles.ts';
+import { isTestSideFile } from '#src/pipeline/common/isTestSideFile.ts';
 import { runVerificationGates } from '#src/pipeline/internal/common/utils/runVerificationGates.ts';
 import { stopOnGateCoordination } from '#src/pipeline/internal/common/utils/stopOnGateCoordination.ts';
 import type { PipelineRun } from '#src/pipeline/internal/PipelineRun.ts';

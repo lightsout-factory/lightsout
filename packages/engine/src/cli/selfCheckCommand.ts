@@ -1,3 +1,4 @@
+import { readRunConfig } from '#src/cli/common/readRunConfig.ts';
 import type { CommandContext } from '#src/cli/common/types/CommandContext.ts';
 import { exitCli } from '#src/cli/common/utils/exitCli.ts';
 import { getRequiredFlag } from '#src/cli/internal/common/args/getRequiredFlag.ts';
@@ -5,12 +6,11 @@ import { bold } from '#src/cli/internal/common/terminal/bold.ts';
 import { green } from '#src/cli/internal/common/terminal/green.ts';
 import { red } from '#src/cli/internal/common/terminal/red.ts';
 import { createProgressPrinter } from '#src/cli/internal/common/utils/createProgressPrinter.ts';
-import { readRunConfig } from '#src/common/config/readRunConfig.ts';
-import { messageOf } from '#src/common/utils/messageOf.ts';
+import { messageOf } from '#src/common/messageOf.ts';
 import { PipelineKind } from '#src/contracts/run/PipelineKind.ts';
 import { SelfCheckReason } from '#src/gates/common/constants/SelfCheckReason.ts';
 import type { SelfCheckResult } from '#src/gates/common/types/SelfCheckResult.ts';
-import { runSelfCheck } from '#src/gates/runSelfCheck.ts';
+import { runSelfCheck } from '#src/gates/runSelfCheck/runSelfCheck.ts';
 import { readRunManifest } from '#src/runState/readRunManifest.ts';
 
 interface StepSelfCheck {

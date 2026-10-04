@@ -1,4 +1,3 @@
-import { defaultRefactorMaxRounds } from '#src/common/constants/defaultRefactorMaxRounds.ts';
 import { isTestFile } from '#src/common/sourceFiles/isTestFile.ts';
 import { CleanupEndReason } from '#src/contracts/run/CleanupEndReason.ts';
 import type { RefactorStepReport } from '#src/contracts/run/RefactorStepReport.ts';
@@ -7,6 +6,7 @@ import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFi
 import { sourceFiles } from '#src/pipeline/internal/common/utils/sourceFiles.ts';
 import type { PipelineRun } from '#src/pipeline/internal/PipelineRun.ts';
 import type { PipelineStep } from '#src/pipeline/internal/PipelineStep.ts';
+import { defaultRefactorMaxRounds } from '#src/pipeline/steps/refactorStep/defaultRefactorMaxRounds.ts';
 import type { CleanupContext } from '#src/pipeline/steps/refactorStep/internal/common/types/CleanupContext.ts';
 import type { CleanupState } from '#src/pipeline/steps/refactorStep/internal/common/types/CleanupState.ts';
 import { buildCleanupRecord } from '#src/pipeline/steps/refactorStep/internal/common/utils/buildCleanupRecord.ts';

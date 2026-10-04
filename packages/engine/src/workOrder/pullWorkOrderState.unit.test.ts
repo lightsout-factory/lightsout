@@ -1,9 +1,9 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
+import { sha256 } from '#src/common/sha256.ts';
 import type { TrackerAttachment } from '#src/common/types/TrackerAttachment.ts';
 import type { TrackerSettings } from '#src/common/types/TrackerSettings.ts';
-import { sha256 } from '#src/common/utils/sha256.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { WorkOrderEventKind } from '#src/contracts/workOrder/WorkOrderEventKind.ts';
 import { WorkOrderMode } from '#src/contracts/workOrder/WorkOrderMode.ts';

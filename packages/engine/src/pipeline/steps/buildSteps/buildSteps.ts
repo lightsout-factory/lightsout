@@ -1,7 +1,7 @@
 import { BuildMode } from '#src/common/constants/BuildMode.ts';
 import { buildSelfCheckCommand } from '#src/common/selfCheck/buildSelfCheckCommand.ts';
-import { isTestSideFile } from '#src/common/sourceFiles/isTestSideFile.ts';
 import type { PlanBuildMode } from '#src/common/types/PlanBuildMode.ts';
+import { isTestSideFile } from '#src/pipeline/common/isTestSideFile.ts';
 import type { PipelineRun } from '#src/pipeline/internal/PipelineRun.ts';
 import type { PipelineStep } from '#src/pipeline/internal/PipelineStep.ts';
 import { cleanSlateStep } from '#src/pipeline/internal/steps/cleanSlateStep.ts';

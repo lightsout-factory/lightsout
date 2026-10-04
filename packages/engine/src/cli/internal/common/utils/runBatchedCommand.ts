@@ -1,14 +1,14 @@
 import { getStringFlag } from '#src/cli/common/args/getStringFlag.ts';
+import { readLoadedConfig } from '#src/cli/common/readLoadedConfig.ts';
+import { readRunConfig } from '#src/cli/common/readRunConfig.ts';
 import type { CommandContext } from '#src/cli/common/types/CommandContext.ts';
 import { exitCli } from '#src/cli/common/utils/exitCli.ts';
 import { printConfigSource } from '#src/cli/internal/common/render/printConfigSource.ts';
 import { exitForRunResult } from '#src/cli/internal/common/utils/exitForRunResult.ts';
 import { resolveCommandHarness } from '#src/cli/internal/common/utils/resolveCommandHarness.ts';
-import { readLoadedConfig } from '#src/common/config/readLoadedConfig.ts';
-import { readRunConfig } from '#src/common/config/readRunConfig.ts';
+import { messageOf } from '#src/common/messageOf.ts';
 import type { Driver } from '#src/common/types/Driver.ts';
 import type { LoadedConfig } from '#src/common/types/LoadedConfig.ts';
-import { messageOf } from '#src/common/utils/messageOf.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import { getDriver } from '#src/drivers/getDriver/getDriver.ts';

@@ -1,6 +1,6 @@
 import { StandardsInputKind, type SyntaxTreeInput } from '@lightsout/standards-contracts';
 import type ts from 'typescript';
-import { readPackageDependencies } from '#src/common/workspace/readPackageDependencies.ts';
+import { readPackageDependencies } from '#src/standardsCheck/internal/common/checkInputs/common/readPackageDependencies.ts';
 import { readIntoCache } from '#src/standardsCheck/internal/common/checkInputs/readIntoCache.ts';
 
 interface Params {

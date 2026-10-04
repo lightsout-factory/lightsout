@@ -1,9 +1,9 @@
 import { rename, rm } from 'node:fs/promises';
 import { join } from 'node:path';
 import { scopeAttachments } from '#src/common/attachmentManifest/scopeAttachments.ts';
+import { messageOf } from '#src/common/messageOf.ts';
 import { formatPlanAddress } from '#src/common/planAddress/formatPlanAddress.ts';
-import { messageOf } from '#src/common/utils/messageOf.ts';
-import { sha256 } from '#src/common/utils/sha256.ts';
+import { sha256 } from '#src/common/sha256.ts';
 import { workOrderFolderDir } from '#src/common/workspace/workOrderFolderDir.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { WorkOrderState } from '#src/contracts/workOrder/WorkOrderState.ts';

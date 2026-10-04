@@ -1,7 +1,7 @@
 import { buildWorkOrderNameInvocation } from '#src/agents/buildWorkOrderNameInvocation.ts';
+import { messageOf } from '#src/common/messageOf.ts';
+import { toBranchSlug } from '#src/common/toBranchSlug.ts';
 import type { Driver } from '#src/common/types/Driver.ts';
-import { messageOf } from '#src/common/utils/messageOf.ts';
-import { toBranchSlug } from '#src/common/utils/toBranchSlug.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { Permissions } from '#src/contracts/Permissions.ts';
 import { WorkOrderName } from '#src/contracts/work/WorkOrderName.ts';

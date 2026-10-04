@@ -58,7 +58,7 @@ const mockWriteWorktreeRecord = jest.fn<(params: WriteRecordParams) => Promise<v
 const mockPrepareTicketBranch = jest.fn<(params: TicketBranchParams) => Promise<{ startPoint?: string } | WorktreeFailure>>();
 
 jest.mock('#src/worktree/createWorktree.ts', () => ({ createWorktree: (params: CreateParams) => mockCreateWorktree(params) }));
-jest.mock('#src/worktree/prepareWorkOrderBranch.ts', () => ({
+jest.mock('#src/worktree/prepareWorkOrderBranch/prepareWorkOrderBranch.ts', () => ({
 	prepareWorkOrderBranch: (params: TicketBranchParams) => mockPrepareTicketBranch(params),
 }));
 jest.mock('#src/worktree/readBranchWorktree.ts', () => ({

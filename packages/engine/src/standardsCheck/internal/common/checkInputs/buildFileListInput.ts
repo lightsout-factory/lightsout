@@ -1,5 +1,5 @@
 import { type FileListInput, StandardsInputKind } from '@lightsout/standards-contracts';
-import { readPackageDependencies } from '#src/common/workspace/readPackageDependencies.ts';
+import { readPackageDependencies } from '#src/standardsCheck/internal/common/checkInputs/common/readPackageDependencies.ts';
 
 interface Params {
 	cwd: string;

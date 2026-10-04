@@ -1,6 +1,6 @@
 import { mkdir, mkdtemp, rename, rm, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
-import { messageOf } from '#src/common/utils/messageOf.ts';
+import { messageOf } from '#src/common/messageOf.ts';
 import type { ReadGenerationFile } from '#src/plan/restore/internal/common/types/ReadGenerationFile.ts';
 
 interface Params {

@@ -2,7 +2,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { parseEnv } from 'node:util';
 import { readGitPrimaryCheckout } from '#src/common/git/readGitPrimaryCheckout.ts';
-import { messageOf } from '#src/common/utils/messageOf.ts';
+import { messageOf } from '#src/common/messageOf.ts';
 
 interface Params {
 	/** The directory the command runs in — the repository root, or a linked worktree of it. */

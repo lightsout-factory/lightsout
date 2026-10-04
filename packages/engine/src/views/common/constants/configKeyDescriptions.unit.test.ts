@@ -1,7 +1,7 @@
 import { describe, expect, test } from '@jest/globals';
-import { defaultRefactorMaxRounds } from '#src/common/constants/defaultRefactorMaxRounds.ts';
 import { touchedFileCeiling } from '#src/common/constants/touchedFileCeiling.ts';
 import { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
+import { defaultRefactorMaxRounds } from '#src/pipeline/steps/refactorStep/defaultRefactorMaxRounds.ts';
 import { configKeyDescriptions } from '#src/views/common/constants/configKeyDescriptions.ts';
 
 /** The rows the page splits the `timeouts` block into; each has its own default, so each needs its own sentence. */

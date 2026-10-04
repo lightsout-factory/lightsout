@@ -1,6 +1,6 @@
 import { rm } from 'node:fs/promises';
 import { readProcessStartTime } from '#src/common/processes/readProcessStartTime.ts';
-import { writeJsonFile } from '#src/common/utils/writeJsonFile.ts';
+import { writeJsonFile } from '#src/common/writeJsonFile.ts';
 import type { RunOwner } from '#src/contracts/run/RunOwner.ts';
 import { getRunFinalReportPath } from '#src/runState/finalReport/getRunFinalReportPath.ts';
 import { getRunOwnerPath } from '#src/runState/owner/common/getRunOwnerPath.ts';

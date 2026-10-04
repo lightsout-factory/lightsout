@@ -1,6 +1,6 @@
+import { messageOf } from '#src/common/messageOf.ts';
 import type { TrackerFailure } from '#src/common/types/TrackerFailure.ts';
 import type { LinearTrackerSettings } from '#src/common/types/TrackerSettings.ts';
-import { messageOf } from '#src/common/utils/messageOf.ts';
 import { trackerTimeoutMs } from '#src/ticketTracker/common/constants/trackerTimeoutMs.ts';
 
 interface Params {

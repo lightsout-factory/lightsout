@@ -1,6 +1,6 @@
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { holdsTestTitle } from '#src/common/sourceFiles/holdsTestTitle.ts';
+import { holdsTestTitle } from '#src/common/sourceFiles/holdsTestTitle/holdsTestTitle.ts';
 
 interface Params {
 	cwd: string;

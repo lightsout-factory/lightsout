@@ -1,6 +1,6 @@
 import { describe, expect, test } from '@jest/globals';
 import { PlanningStatus } from '#src/common/constants/PlanningStatus.ts';
-import { toBranchSlug } from '#src/common/utils/toBranchSlug.ts';
+import { toBranchSlug } from '#src/common/toBranchSlug.ts';
 import { QueueWorker } from '#src/queue/common/constants/QueueWorker.ts';
 import type { TicketSummary } from '#src/queue/common/types/TicketSummary.ts';
 import { renderWorkOrderBranch } from '#src/queue/internal/renderWorkOrderBranch.ts';

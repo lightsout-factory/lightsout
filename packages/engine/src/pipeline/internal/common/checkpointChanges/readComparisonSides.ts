@@ -1,6 +1,6 @@
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { readGitCommittedFile } from '#src/common/git/readGitCommittedFile.ts';
+import { readGitCommittedFile } from '#src/pipeline/common/readGitCommittedFile.ts';
 import type { CheckpointComparison } from '#src/pipeline/internal/common/types/CheckpointComparison.ts';
 import type { PipelineRun } from '#src/pipeline/internal/PipelineRun.ts';
 

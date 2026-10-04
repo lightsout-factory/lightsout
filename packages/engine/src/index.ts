@@ -61,7 +61,7 @@ export { listRunIds } from '#src/runState/listRunIds.ts';
 export { RunNotFoundError } from '#src/runState/RunNotFoundError.ts';
 export { readFriction } from '#src/runState/readFriction.ts';
 export { readRunManifest } from '#src/runState/readRunManifest.ts';
-export { summarizeRun } from '#src/runState/summarizeRun.ts';
+export { summarizeRun } from '#src/runState/summarizeRun/summarizeRun.ts';
 export { listStandardsSnapshots } from '#src/standardsCheck/listStandardsSnapshots.ts';
 export { ConfigNotFoundError } from '#src/views/ConfigNotFoundError.ts';
 export { getConfigView } from '#src/views/getConfigView/getConfigView.ts';

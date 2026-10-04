@@ -1,4 +1,4 @@
-import { messageOf } from '#src/common/utils/messageOf.ts';
+import { messageOf } from '#src/common/messageOf.ts';
 import type { PlanningProgress } from '#src/contracts/plan/progress/PlanningProgress.ts';
 import { PlanningStep } from '#src/contracts/plan/progress/PlanningStep.ts';
 import type { PlanningStepRecord } from '#src/contracts/plan/progress/PlanningStepRecord.ts';

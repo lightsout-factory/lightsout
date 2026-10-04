@@ -1,6 +1,6 @@
 import type ts from 'typescript';
 import { groupConnectedFiles } from '#src/common/fileGroups/groupConnectedFiles.ts';
-import { collectImportEdges } from '#src/common/moduleGraph/collectImportEdges.ts';
+import { collectImportEdges } from '#src/common/moduleGraph/collectImportEdges/collectImportEdges.ts';
 import { isTestFile } from '#src/common/sourceFiles/isTestFile.ts';
 import type { CoverageFile } from '#src/contracts/coverage/CoverageFile.ts';
 import type { CoverageTotal } from '#src/contracts/coverage/CoverageTotal.ts';

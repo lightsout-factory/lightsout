@@ -1,6 +1,6 @@
-import { readGitCommitsAhead } from '#src/common/git/readGitCommitsAhead.ts';
 import { BranchPhase } from '#src/contracts/queue/BranchPhase.ts';
 import { writeBranchState } from '#src/queue/branchState/writeBranchState.ts';
+import { readGitCommitsAhead } from '#src/queue/common/readGitCommitsAhead.ts';
 import { ParkedTreeBucket } from '#src/queue/worktrees/internal/common/constants/ParkedTreeBucket.ts';
 import type { ParkedTree } from '#src/queue/worktrees/internal/common/types/ParkedTree.ts';
 

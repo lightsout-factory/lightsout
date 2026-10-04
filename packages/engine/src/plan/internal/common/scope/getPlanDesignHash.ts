@@ -1,5 +1,5 @@
-import { canonicalJson } from '#src/common/utils/canonicalJson.ts';
-import { sha256 } from '#src/common/utils/sha256.ts';
+import { canonicalJson } from '#src/common/canonicalJson.ts';
+import { sha256 } from '#src/common/sha256.ts';
 import type { ParsedPlan } from '#src/plan/internal/common/types/ParsedPlan.ts';
 
 interface Params {

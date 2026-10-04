@@ -1,5 +1,5 @@
 import { restoreBrainstormFiles } from '#src/brainstorm/restore/restoreBrainstormFiles.ts';
-import { parsePlanAddress } from '#src/common/planAddress/parsePlanAddress.ts';
+import { parsePlanAddress } from '#src/common/planAddress/parsePlanAddress/parsePlanAddress.ts';
 import { workOrderFolderDir } from '#src/common/workspace/workOrderFolderDir.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { restorePlanWorkspace } from '#src/plan/restore/restorePlanWorkspace.ts';

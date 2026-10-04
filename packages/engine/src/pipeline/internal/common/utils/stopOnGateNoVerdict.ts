@@ -1,4 +1,4 @@
-import { describeGateNoVerdictStop } from '#src/common/utils/describeGateNoVerdictStop.ts';
+import { describeGateNoVerdictStop } from '#src/common/describeGateNoVerdictStop.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import type { StepRecord } from '#src/contracts/run/StepRecord.ts';
 import type { PipelineRun } from '#src/pipeline/internal/PipelineRun.ts';

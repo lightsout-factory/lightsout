@@ -1,4 +1,4 @@
-import { writeJsonFile } from '#src/common/utils/writeJsonFile.ts';
+import { writeJsonFile } from '#src/common/writeJsonFile.ts';
 import { GradeMemory } from '#src/contracts/plan/memory/GradeMemory.ts';
 import { gradeMemoryPath } from '#src/plan/common/utils/gradeMemoryPath.ts';
 

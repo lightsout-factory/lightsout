@@ -1,5 +1,6 @@
 import { getStringFlag } from '#src/cli/common/args/getStringFlag.ts';
 import { usage } from '#src/cli/common/constants/usage.ts';
+import { readRunConfig } from '#src/cli/common/readRunConfig.ts';
 import type { CommandContext } from '#src/cli/common/types/CommandContext.ts';
 import { exitCli } from '#src/cli/common/utils/exitCli.ts';
 import { launchDetached } from '#src/cli/internal/common/detach/launchDetached.ts';
@@ -12,9 +13,8 @@ import { resolveRunCwd } from '#src/cli/internal/common/implementRun/resolveRunC
 import { runResumedPipeline } from '#src/cli/internal/common/implementRun/runResumedPipeline.ts';
 import { printRunHeader } from '#src/cli/internal/common/render/printRunHeader.ts';
 import { resolveCommandHarness } from '#src/cli/internal/common/utils/resolveCommandHarness.ts';
-import { readRunConfig } from '#src/common/config/readRunConfig.ts';
+import { formatResumeCommand } from '#src/common/formatResumeCommand.ts';
 import type { LoadedConfig } from '#src/common/types/LoadedConfig.ts';
-import { formatResumeCommand } from '#src/common/utils/formatResumeCommand.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { PipelineKind } from '#src/contracts/run/PipelineKind.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';

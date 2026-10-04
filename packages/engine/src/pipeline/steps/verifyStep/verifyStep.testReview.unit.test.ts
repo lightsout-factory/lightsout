@@ -50,7 +50,7 @@ interface MoveCheckParams {
 
 const mockCheckMoveOnlyChanges = jest.fn<(params: MoveCheckParams) => Promise<{ error?: string }>>();
 
-jest.mock('#src/pipeline/moveCheck/checkMoveOnlyChanges.ts', () => ({
+jest.mock('#src/pipeline/moveCheck/checkMoveOnlyChanges/checkMoveOnlyChanges.ts', () => ({
 	checkMoveOnlyChanges: (params: MoveCheckParams) => mockCheckMoveOnlyChanges(params),
 }));
 // -------------------------
@@ -87,7 +87,7 @@ jest.mock('#src/common/processes/runFormatter.ts', () => ({
 // is the supervisor's own test.
 const mockConsultSupervisor = jest.fn<() => Promise<{ ok: false; rateLimited: boolean; error: string }>>();
 
-jest.mock('#src/common/utils/consultSupervisor.ts', () => ({
+jest.mock('#src/common/consultSupervisor.ts', () => ({
 	consultSupervisor: () => mockConsultSupervisor(),
 }));
 // -------------------------

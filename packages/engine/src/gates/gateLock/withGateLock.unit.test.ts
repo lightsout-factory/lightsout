@@ -22,7 +22,7 @@ jest.mock('#src/common/workspace/resolveSharedStateDir.ts', () => ({
 // exit this file cannot time.
 const mockIsProcessGroupAlive = jest.fn<(params: { pgid: number }) => boolean>();
 
-jest.mock('#src/common/processes/isProcessGroupAlive.ts', () => ({
+jest.mock('#src/gates/gateLock/internal/common/utils/isGateLockReclaimable/isProcessGroupAlive.ts', () => ({
 	isProcessGroupAlive: (params: { pgid: number }) => mockIsProcessGroupAlive(params),
 }));
 // -------------------------

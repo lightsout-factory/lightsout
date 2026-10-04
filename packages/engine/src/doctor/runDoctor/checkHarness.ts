@@ -1,5 +1,5 @@
+import { messageOf } from '#src/common/messageOf.ts';
 import { runCommand } from '#src/common/processes/runCommand.ts';
-import { messageOf } from '#src/common/utils/messageOf.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { probeTimeoutMs } from '#src/doctor/runDoctor/common/constants/probeTimeoutMs.ts';
 import type { DoctorCheck } from '#src/doctor/runDoctor/common/types/DoctorCheck.ts';

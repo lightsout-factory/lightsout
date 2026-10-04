@@ -1,10 +1,10 @@
 import { discardGeneratedChanges } from '#src/commit/discardGeneratedChanges.ts';
+import { formatResumeCommand } from '#src/common/formatResumeCommand.ts';
 import { readGitChangedFiles } from '#src/common/git/readGitChangedFiles.ts';
 import { isGeneratedPath } from '#src/common/sourceFiles/isGeneratedPath.ts';
 import type { ActivityLevel } from '#src/common/types/ActivityLevel.ts';
 import type { Driver } from '#src/common/types/Driver.ts';
 import type { LoadedConfig } from '#src/common/types/LoadedConfig.ts';
-import { formatResumeCommand } from '#src/common/utils/formatResumeCommand.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { PipelineKind } from '#src/contracts/run/PipelineKind.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';

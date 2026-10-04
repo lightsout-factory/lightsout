@@ -1,8 +1,8 @@
 import { randomUUID } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import { readGitHeadCommit } from '#src/common/git/readGitHeadCommit.ts';
-import { parsePlanAddress } from '#src/common/planAddress/parsePlanAddress.ts';
-import { sha256 } from '#src/common/utils/sha256.ts';
+import { parsePlanAddress } from '#src/common/planAddress/parsePlanAddress/parsePlanAddress.ts';
+import { sha256 } from '#src/common/sha256.ts';
 import { workOrderFolderDir } from '#src/common/workspace/workOrderFolderDir.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import { PlanProgress } from '#src/contracts/workOrder/PlanProgress.ts';

@@ -11,7 +11,7 @@ import { workOrderRequestShipCommand } from '#src/cli/workOrder/internal/workOrd
 import { workOrderRetitlePlanCommand } from '#src/cli/workOrder/internal/workOrderRetitlePlanCommand.ts';
 import { workOrderShowCommand } from '#src/cli/workOrder/internal/workOrderShowCommand.ts';
 import { workOrderSyncCommand } from '#src/cli/workOrder/internal/workOrderSyncCommand.ts';
-import { parsePlanAddress } from '#src/common/planAddress/parsePlanAddress.ts';
+import { parsePlanAddress } from '#src/common/planAddress/parsePlanAddress/parsePlanAddress.ts';
 import { workOrderNameOf } from '#src/common/planAddress/workOrderNameOf.ts';
 
 const workOrderSubcommands: Record<string, (context: CommandContext) => Promise<void>> = {

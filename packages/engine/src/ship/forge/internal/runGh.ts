@@ -1,7 +1,7 @@
+import { messageOf } from '#src/common/messageOf.ts';
 import { quoteShellArgument } from '#src/common/processes/quoteShellArgument.ts';
 import { runCommand } from '#src/common/processes/runCommand.ts';
 import type { CommandResult } from '#src/common/types/CommandResult.ts';
-import { messageOf } from '#src/common/utils/messageOf.ts';
 
 interface Params {
 	/** Arguments after the `gh` word, each passed through untouched. */

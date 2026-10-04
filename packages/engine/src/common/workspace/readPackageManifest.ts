@@ -1,8 +1,8 @@
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { z } from 'zod';
-import { formatSchemaIssues } from '#src/common/utils/formatSchemaIssues.ts';
-import { messageOf } from '#src/common/utils/messageOf.ts';
+import { formatSchemaIssues } from '#src/common/formatSchemaIssues.ts';
+import { messageOf } from '#src/common/messageOf.ts';
 
 const PackageManifest = z.object({
 	name: z.string().min(1),

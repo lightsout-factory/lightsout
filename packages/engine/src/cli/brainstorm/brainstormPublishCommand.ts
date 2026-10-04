@@ -6,7 +6,7 @@ import { bold } from '#src/cli/internal/common/terminal/bold.ts';
 import { createProgressPrinter } from '#src/cli/internal/common/utils/createProgressPrinter.ts';
 import { describeMissingPlanAddress } from '#src/cli/internal/common/utils/describeMissingPlanAddress.ts';
 import { readConfig } from '#src/common/config/readConfig.ts';
-import { parsePlanAddress } from '#src/common/planAddress/parsePlanAddress.ts';
+import { parsePlanAddress } from '#src/common/planAddress/parsePlanAddress/parsePlanAddress.ts';
 
 /**
  * The config is read with `readConfig` rather than the optional reader:

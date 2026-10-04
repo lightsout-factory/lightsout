@@ -5,9 +5,9 @@ import { serializeAttachmentManifest } from '#src/common/attachmentManifest/seri
 import { brainstormAttachmentFileNames } from '#src/common/constants/brainstormAttachmentFileNames.ts';
 import { brainstormAttachmentManifestName } from '#src/common/constants/brainstormAttachmentManifestName.ts';
 import { brainstormNotesFileName } from '#src/common/constants/brainstormNotesFileName.ts';
+import { messageOf } from '#src/common/messageOf.ts';
 import { workOrderNameOf } from '#src/common/planAddress/workOrderNameOf.ts';
 import type { TrackerSettings } from '#src/common/types/TrackerSettings.ts';
-import { messageOf } from '#src/common/utils/messageOf.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { planWorkspaceDir } from '#src/plan/planWorkspaceDir.ts';
 import { readPlanWorkOrderRef } from '#src/plan/readPlanWorkOrderRef.ts';

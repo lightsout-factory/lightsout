@@ -1,4 +1,4 @@
-import { readGitCommittedFile } from '#src/common/git/readGitCommittedFile.ts';
+import { readGitCommittedFile } from '#src/pipeline/common/readGitCommittedFile.ts';
 
 interface Params {
 	cwd: string;

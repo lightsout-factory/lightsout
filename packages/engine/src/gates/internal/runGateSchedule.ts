@@ -1,8 +1,8 @@
-import { resolveGates } from '#src/common/config/resolveGates.ts';
 import { defaultPackagesDir } from '#src/common/constants/defaultPackagesDir.ts';
 import type { GateResult } from '#src/contracts/gates/GateResult.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { GateScheduleKind } from '#src/gates/common/constants/GateScheduleKind.ts';
+import { resolveGates } from '#src/gates/common/resolveGates.ts';
 import type { GateRunResult } from '#src/gates/common/types/GateRunResult.ts';
 import type { GateSchedule } from '#src/gates/common/types/GateSchedule.ts';
 import { GateEnding } from '#src/gates/internal/common/constants/GateEnding.ts';

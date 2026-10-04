@@ -1,7 +1,7 @@
+import { messageOf } from '#src/common/messageOf.ts';
 import type { AnsweredQuestion } from '#src/common/types/AnsweredQuestion.ts';
 import type { Driver } from '#src/common/types/Driver.ts';
 import type { LoadedConfig } from '#src/common/types/LoadedConfig.ts';
-import { messageOf } from '#src/common/utils/messageOf.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import { runDirectWork } from '#src/direct/runDirectWork/runDirectWork.ts';

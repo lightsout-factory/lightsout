@@ -1,4 +1,4 @@
-import { readJsonFile } from '#src/common/utils/readJsonFile.ts';
+import { readJsonFile } from '#src/common/readJsonFile.ts';
 import { GradeReport } from '#src/contracts/plan/grade/GradeReport.ts';
 import { GradeScope } from '#src/contracts/plan/memory/GradeScope.ts';
 

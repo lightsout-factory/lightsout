@@ -1,7 +1,7 @@
 import { basename, extname } from 'node:path';
 import type { CommitAddress } from '#src/commit/common/types/CommitAddress.ts';
-import { parsePlanAddress } from '#src/common/planAddress/parsePlanAddress.ts';
-import { readRunLabel } from '#src/common/utils/readRunLabel.ts';
+import { parsePlanAddress } from '#src/common/planAddress/parsePlanAddress/parsePlanAddress.ts';
+import { readRunLabel } from '#src/common/readRunLabel.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import { planNameFromPath } from '#src/plan/planNameFromPath.ts';
 import { readWorkOrderState } from '#src/workOrder/readWorkOrderState.ts';

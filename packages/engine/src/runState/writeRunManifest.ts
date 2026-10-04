@@ -1,5 +1,5 @@
 import { rename } from 'node:fs/promises';
-import { writeJsonFile } from '#src/common/utils/writeJsonFile.ts';
+import { writeJsonFile } from '#src/common/writeJsonFile.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import { getRunManifestPath } from '#src/runState/common/getRunManifestPath.ts';
 

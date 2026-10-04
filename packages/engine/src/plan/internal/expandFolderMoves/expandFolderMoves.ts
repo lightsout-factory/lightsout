@@ -1,14 +1,14 @@
 import { readdir, stat } from 'node:fs/promises';
 import { join, relative } from 'node:path';
 import { MoveDirection } from '#src/common/constants/MoveDirection.ts';
-import { readGitTrackedFiles } from '#src/common/git/readGitTrackedFiles.ts';
-import { mapPathThroughMoves } from '#src/common/utils/mapPathThroughMoves.ts';
+import { mapPathThroughMoves } from '#src/common/mapPathThroughMoves.ts';
 import { FindingSeverity } from '#src/contracts/plan/grade/FindingSeverity.ts';
 import { StructuralCheck } from '#src/contracts/plan/grade/StructuralCheck.ts';
 import type { StructuralFinding } from '#src/contracts/plan/grade/StructuralFinding.ts';
 import type { PhaseFile } from '#src/plan/common/types/PhaseFile.ts';
 import { getPhaseProvenance } from '#src/plan/internal/common/utils/getPhaseProvenance.ts';
 import { checkMoveOverlaps } from '#src/plan/internal/expandFolderMoves/checkMoveOverlaps.ts';
+import { readGitTrackedFiles } from '#src/plan/internal/expandFolderMoves/readGitTrackedFiles.ts';
 
 interface Params {
 	cwd: string;

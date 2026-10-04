@@ -1,4 +1,4 @@
-import type { RunState } from '#src/common/services/RunState.ts';
+import type { RunState } from '#src/common/RunState.ts';
 import type { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import type { StepRecord } from '#src/contracts/run/StepRecord.ts';
 import type { PipelineResult } from '#src/pipeline/PipelineResult.ts';

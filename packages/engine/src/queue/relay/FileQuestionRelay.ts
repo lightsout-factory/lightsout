@@ -1,7 +1,7 @@
 import { readFile, rename, rm } from 'node:fs/promises';
 import { join } from 'node:path';
 import type { TrackerSettings } from '#src/common/types/TrackerSettings.ts';
-import { writeJsonFile } from '#src/common/utils/writeJsonFile.ts';
+import { writeJsonFile } from '#src/common/writeJsonFile.ts';
 import { RelayAnswer } from '#src/contracts/queue/RelayAnswer.ts';
 import { RelayQuestion } from '#src/contracts/queue/RelayQuestion.ts';
 import type { QuestionRelay } from '#src/queue/common/types/QuestionRelay.ts';

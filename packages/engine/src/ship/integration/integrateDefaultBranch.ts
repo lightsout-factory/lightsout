@@ -1,4 +1,4 @@
-import { messageOf } from '#src/common/utils/messageOf.ts';
+import { messageOf } from '#src/common/messageOf.ts';
 import { ShipBlockReason } from '#src/contracts/ship/ShipBlockReason.ts';
 import type { ShipIntegration } from '#src/ship/common/types/ShipIntegration.ts';
 import type { IntegrationFailure } from '#src/ship/integration/common/types/IntegrationFailure.ts';

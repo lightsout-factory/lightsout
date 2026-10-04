@@ -1,7 +1,7 @@
 import { basename } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { StandardsCheckModule } from '@lightsout/standards-contracts';
-import { formatSchemaIssues } from '#src/common/utils/formatSchemaIssues.ts';
+import { formatSchemaIssues } from '#src/common/formatSchemaIssues.ts';
 
 interface Params {
 	/** Absolute path of a rule folder's check.ts or check.js. */

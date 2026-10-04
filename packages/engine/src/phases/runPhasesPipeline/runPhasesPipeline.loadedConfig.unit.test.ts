@@ -1,8 +1,8 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
+import { readRunConfig } from '#src/cli/common/readRunConfig.ts';
 import { readConfig } from '#src/common/config/readConfig.ts';
-import { readRunConfig } from '#src/common/config/readRunConfig.ts';
 import type { LoadedConfig } from '#src/common/types/LoadedConfig.ts';
 import { Effort } from '#src/contracts/Effort.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';

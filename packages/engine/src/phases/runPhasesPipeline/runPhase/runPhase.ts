@@ -1,9 +1,9 @@
 import { randomUUID } from 'node:crypto';
 import { dirname, join } from 'node:path';
+import { messageOf } from '#src/common/messageOf.ts';
 import type { ActivityLevel } from '#src/common/types/ActivityLevel.ts';
 import type { Driver } from '#src/common/types/Driver.ts';
 import type { LoadedConfig } from '#src/common/types/LoadedConfig.ts';
-import { messageOf } from '#src/common/utils/messageOf.ts';
 import { ActivityLevelKind } from '#src/contracts/activity/ActivityLevelKind.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { PhaseReport } from '#src/contracts/run/PhaseReport.ts';

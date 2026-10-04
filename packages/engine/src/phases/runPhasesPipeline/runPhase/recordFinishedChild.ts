@@ -1,4 +1,4 @@
-import { formatResumeCommand } from '#src/common/utils/formatResumeCommand.ts';
+import { formatResumeCommand } from '#src/common/formatResumeCommand.ts';
 import { PipelineKind } from '#src/contracts/run/PipelineKind.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';

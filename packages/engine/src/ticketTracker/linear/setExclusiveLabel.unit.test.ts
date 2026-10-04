@@ -1,5 +1,5 @@
 import { describe, expect, jest, test } from '@jest/globals';
-import { messageOf } from '#src/common/utils/messageOf.ts';
+import { messageOf } from '#src/common/messageOf.ts';
 import { setExclusiveLabel } from '#src/ticketTracker/linear/setExclusiveLabel.ts';
 import { trackerSettingsFixture } from '#tests/helpers/trackerSettingsFixture.ts';
 

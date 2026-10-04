@@ -1,4 +1,4 @@
-import { canonicalJson } from '#src/common/utils/canonicalJson.ts';
+import { canonicalJson } from '#src/common/canonicalJson.ts';
 import type { WorkOrderState } from '#src/contracts/workOrder/WorkOrderState.ts';
 
 interface Params {

@@ -1,6 +1,6 @@
 import type { z } from 'zod';
-import { formatSchemaIssues } from '#src/common/utils/formatSchemaIssues.ts';
-import { messageOf } from '#src/common/utils/messageOf.ts';
+import { formatSchemaIssues } from '#src/common/formatSchemaIssues.ts';
+import { messageOf } from '#src/common/messageOf.ts';
 import { parseFrontMatter } from '#src/standardsLibraries/readStandardsLibrary/parseTopicFolder/common/parseDeclaration/parseFrontMatter.ts';
 
 interface Params<Shape> {

@@ -5,7 +5,7 @@ import { reviewTestChanges } from '#src/pipeline/approvedTests/reviewTestChanges
 import type { VerificationResult } from '#src/pipeline/internal/common/types/VerificationResult.ts';
 import { runVerificationGates } from '#src/pipeline/internal/common/utils/runVerificationGates.ts';
 import type { PipelineRun } from '#src/pipeline/internal/PipelineRun.ts';
-import { checkMoveOnlyChanges } from '#src/pipeline/moveCheck/checkMoveOnlyChanges.ts';
+import { checkMoveOnlyChanges } from '#src/pipeline/moveCheck/checkMoveOnlyChanges/checkMoveOnlyChanges.ts';
 import { checkRenameOnlyChanges } from '#src/pipeline/renameCheck/checkRenameOnlyChanges.ts';
 import { approveRunnerSnapshots } from '#src/pipeline/steps/verify/internal/approveRunnerSnapshots.ts';
 

@@ -1,4 +1,4 @@
-import { toBranchSlug } from '#src/common/utils/toBranchSlug.ts';
+import { toBranchSlug } from '#src/common/toBranchSlug.ts';
 
 interface Params {
 	/** Absent for a work order named from words alone. */

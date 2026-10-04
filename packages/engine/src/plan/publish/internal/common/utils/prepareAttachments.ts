@@ -1,7 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import { serializeAttachmentManifest } from '#src/common/attachmentManifest/serializeAttachmentManifest.ts';
 import { brainstormNotesFileName } from '#src/common/constants/brainstormNotesFileName.ts';
-import { messageOf } from '#src/common/utils/messageOf.ts';
+import { messageOf } from '#src/common/messageOf.ts';
 import { planAttachmentManifestName } from '#src/plan/common/constants/planAttachmentManifestName.ts';
 import type { DurablePlanFile } from '#src/plan/internal/common/types/DurablePlanFile.ts';
 import { validatePlanAttachmentGeneration } from '#src/plan/internal/common/validatePlanAttachmentGeneration.ts';

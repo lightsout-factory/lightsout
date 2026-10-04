@@ -1,4 +1,4 @@
-import { collectBatchChanges } from '#src/common/utils/collectBatchChanges.ts';
+import { collectBatchChanges } from '#src/common/collectBatchChanges.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { BatchOutcome } from '#src/contracts/refactor/BatchOutcome.ts';
 import type { AdvisoryOutcome } from '#src/contracts/standardsCheck/AdvisoryOutcome.ts';

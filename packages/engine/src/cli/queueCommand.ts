@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { resolve } from 'node:path';
 import { usage } from '#src/cli/common/constants/usage.ts';
+import { readLoadedConfig } from '#src/cli/common/readLoadedConfig.ts';
 import type { CommandContext } from '#src/cli/common/types/CommandContext.ts';
 import { exitCli } from '#src/cli/common/utils/exitCli.ts';
 import { pausedExitCode } from '#src/cli/internal/common/constants/pausedExitCode.ts';
@@ -11,9 +12,8 @@ import { readLaunchRunId } from '#src/cli/internal/common/detach/readLaunchRunId
 import { renderQueueBoard } from '#src/cli/internal/common/queueBoard/renderQueueBoard.ts';
 import { createProgressPrinter } from '#src/cli/internal/common/utils/createProgressPrinter.ts';
 import { resolveEffectiveConfigAndDriver } from '#src/cli/internal/common/utils/resolveEffectiveConfigAndDriver.ts';
-import { readLoadedConfig } from '#src/common/config/readLoadedConfig.ts';
+import { messageOf } from '#src/common/messageOf.ts';
 import type { TrackerSettings } from '#src/common/types/TrackerSettings.ts';
-import { messageOf } from '#src/common/utils/messageOf.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { QueueSummary } from '#src/contracts/queue/QueueSummary.ts';
 import { toQueueBoardTickets } from '#src/queue/board/toQueueBoardTickets.ts';

@@ -1,4 +1,4 @@
-import { readJsonlRecords } from '#src/common/utils/readJsonlRecords.ts';
+import { readJsonlRecords } from '#src/common/readJsonlRecords.ts';
 import { ProgressRecord } from '#src/contracts/run/ProgressRecord.ts';
 import { getProgressLogPath } from '#src/runState/progress/common/getProgressLogPath.ts';
 

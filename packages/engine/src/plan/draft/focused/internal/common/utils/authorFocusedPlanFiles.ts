@@ -1,8 +1,8 @@
 import { buildFocusedPlanWriterInvocation } from '#src/agents/buildFocusedPlanWriterInvocation/buildFocusedPlanWriterInvocation.ts';
-import { createdFileCeiling } from '#src/common/constants/createdFileCeiling.ts';
 import { touchedFileCeiling } from '#src/common/constants/touchedFileCeiling.ts';
 import { PlanDraftReport } from '#src/contracts/plan/draft/PlanDraftReport.ts';
 import { PlanDraftStatus } from '#src/contracts/plan/draft/PlanDraftStatus.ts';
+import { createdFileCeiling } from '#src/plan/common/constants/createdFileCeiling.ts';
 import { PlanRunStatus } from '#src/plan/common/constants/PlanRunStatus.ts';
 import { planWriterEnvironment } from '#src/plan/draft/internal/common/constants/planWriterEnvironment.ts';
 import { createDraftStop } from '#src/plan/draft/internal/common/utils/createDraftStop.ts';

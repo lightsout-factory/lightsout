@@ -1,4 +1,4 @@
-import { messageOf } from '#src/common/utils/messageOf.ts';
+import { messageOf } from '#src/common/messageOf.ts';
 import type { LaneContext } from '#src/queue/drainLanes/internal/common/types/LaneContext.ts';
 import type { LaneFlight } from '#src/queue/drainLanes/internal/common/types/LaneFlight.ts';
 import type { LaneState } from '#src/queue/drainLanes/internal/common/types/LaneState.ts';

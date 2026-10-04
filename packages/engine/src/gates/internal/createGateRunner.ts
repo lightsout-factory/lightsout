@@ -1,9 +1,9 @@
 import { mkdir, rm } from 'node:fs/promises';
 import { jestCrashCause } from '#src/common/constants/jestCrashCause.ts';
 import { testReporterEnv } from '#src/common/constants/testReporterEnv.ts';
+import { messageOf } from '#src/common/messageOf.ts';
 import { runCommand } from '#src/common/processes/runCommand.ts';
 import type { CommandResult } from '#src/common/types/CommandResult.ts';
-import { messageOf } from '#src/common/utils/messageOf.ts';
 import { FrictionArea } from '#src/contracts/friction/FrictionArea.ts';
 import type { GateResult } from '#src/contracts/gates/GateResult.ts';
 import { GateEnding } from '#src/gates/internal/common/constants/GateEnding.ts';

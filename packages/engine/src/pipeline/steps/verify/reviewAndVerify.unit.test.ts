@@ -49,7 +49,7 @@ interface MoveCheckParams {
 
 const mockCheckMoveOnlyChanges = jest.fn<(params: MoveCheckParams) => Promise<{ error?: string }>>();
 
-jest.mock('#src/pipeline/moveCheck/checkMoveOnlyChanges.ts', () => ({
+jest.mock('#src/pipeline/moveCheck/checkMoveOnlyChanges/checkMoveOnlyChanges.ts', () => ({
 	checkMoveOnlyChanges: (params: MoveCheckParams) => mockCheckMoveOnlyChanges(params),
 }));
 // -------------------------

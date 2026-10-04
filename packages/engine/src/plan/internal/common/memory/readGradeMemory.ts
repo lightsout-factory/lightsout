@@ -1,5 +1,5 @@
 import { readFile } from 'node:fs/promises';
-import { messageOf } from '#src/common/utils/messageOf.ts';
+import { messageOf } from '#src/common/messageOf.ts';
 import { GradeMemory } from '#src/contracts/plan/memory/GradeMemory.ts';
 import { pathExists } from '#src/plan/common/paths/pathExists.ts';
 import { gradeMemoryPath } from '#src/plan/common/utils/gradeMemoryPath.ts';

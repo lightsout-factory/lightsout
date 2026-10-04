@@ -1,5 +1,5 @@
+import { messageOf } from '#src/common/messageOf.ts';
 import type { AttachmentManifest } from '#src/common/types/AttachmentManifest.ts';
-import { messageOf } from '#src/common/utils/messageOf.ts';
 
 interface Params {
 	text: string;

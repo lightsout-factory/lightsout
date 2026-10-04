@@ -1,10 +1,10 @@
 import { attachmentTitle } from '#src/common/attachmentManifest/attachmentTitle.ts';
 import { parseAttachmentManifest } from '#src/common/attachmentManifest/parseAttachmentManifest.ts';
 import { scopeAttachments } from '#src/common/attachmentManifest/scopeAttachments.ts';
+import { sha256 } from '#src/common/sha256.ts';
 import type { AttachmentManifest } from '#src/common/types/AttachmentManifest.ts';
 import type { TrackerAttachment } from '#src/common/types/TrackerAttachment.ts';
 import type { TrackerSettings } from '#src/common/types/TrackerSettings.ts';
-import { sha256 } from '#src/common/utils/sha256.ts';
 import { planAttachmentManifestName } from '#src/plan/common/constants/planAttachmentManifestName.ts';
 import { isPlanOnlyAttachmentName } from '#src/plan/internal/common/utils/isPlanOnlyAttachmentName.ts';
 import { validatePlanAttachmentGeneration } from '#src/plan/internal/common/validatePlanAttachmentGeneration.ts';

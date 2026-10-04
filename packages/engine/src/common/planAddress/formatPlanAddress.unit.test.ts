@@ -1,6 +1,6 @@
 import { describe, expect, test } from '@jest/globals';
 import { formatPlanAddress } from '#src/common/planAddress/formatPlanAddress.ts';
-import { parsePlanAddress } from '#src/common/planAddress/parsePlanAddress.ts';
+import { parsePlanAddress } from '#src/common/planAddress/parsePlanAddress/parsePlanAddress.ts';
 
 describe('formatPlanAddress', () => {
 	test('joins the ticket branch and plan id with one slash and parses back to the same pair', () => {

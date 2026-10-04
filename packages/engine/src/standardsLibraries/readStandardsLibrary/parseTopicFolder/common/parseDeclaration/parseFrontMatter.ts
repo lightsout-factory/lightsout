@@ -1,5 +1,5 @@
 import { parse } from 'yaml';
-import { messageOf } from '#src/common/utils/messageOf.ts';
+import { messageOf } from '#src/common/messageOf.ts';
 
 interface Params {
 	text: string;

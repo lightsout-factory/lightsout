@@ -14,7 +14,7 @@ import { setupConsumerRepo } from '#tests/helpers/setupConsumerRepo.ts';
 // would read this stubbed gates module from every other command it re-exports.
 const mockRunSelfCheck = jest.fn<(params: unknown) => Promise<unknown>>();
 
-jest.mock('#src/gates/runSelfCheck.ts', () => ({ runSelfCheck: (params: unknown) => mockRunSelfCheck(params) }));
+jest.mock('#src/gates/runSelfCheck/runSelfCheck.ts', () => ({ runSelfCheck: (params: unknown) => mockRunSelfCheck(params) }));
 // -------------------------
 
 /** A repo holding no runs at all, and a context naming a run id nothing on disk answers to. */

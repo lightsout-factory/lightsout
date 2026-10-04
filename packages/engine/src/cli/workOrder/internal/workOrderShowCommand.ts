@@ -5,7 +5,7 @@ import { createProgressPrinter } from '#src/cli/internal/common/utils/createProg
 import { describePlanProgress } from '#src/cli/workOrder/internal/common/utils/describePlanProgress.ts';
 import { describeWorkOrderShipState } from '#src/cli/workOrder/internal/common/utils/describeWorkOrderShipState.ts';
 import { readConfig } from '#src/common/config/readConfig.ts';
-import { describeMissingWorkOrder } from '#src/common/utils/describeMissingWorkOrder.ts';
+import { describeMissingWorkOrder } from '#src/common/describeMissingWorkOrder.ts';
 import type { WorkOrderState } from '#src/contracts/workOrder/WorkOrderState.ts';
 import { pullWorkOrderState } from '#src/workOrder/pullWorkOrderState.ts';
 import { readWorkOrderShipState } from '#src/workOrder/shipping/readWorkOrderShipState.ts';

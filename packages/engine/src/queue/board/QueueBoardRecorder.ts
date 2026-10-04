@@ -1,7 +1,7 @@
 import { mkdir, rename } from 'node:fs/promises';
 import { dirname } from 'node:path';
-import { messageOf } from '#src/common/utils/messageOf.ts';
-import { writeJsonFile } from '#src/common/utils/writeJsonFile.ts';
+import { messageOf } from '#src/common/messageOf.ts';
+import { writeJsonFile } from '#src/common/writeJsonFile.ts';
 import type { QueueBoard } from '#src/contracts/queue/QueueBoard.ts';
 import type { QueueLane } from '#src/contracts/queue/QueueLane.ts';
 import { getQueueBoardPath } from '#src/queue/board/getQueueBoardPath.ts';

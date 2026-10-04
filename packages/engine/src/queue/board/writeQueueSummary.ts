@@ -1,4 +1,4 @@
-import { writeJsonFile } from '#src/common/utils/writeJsonFile.ts';
+import { writeJsonFile } from '#src/common/writeJsonFile.ts';
 import type { QueueSummary } from '#src/contracts/queue/QueueSummary.ts';
 import { getQueueSummaryPath } from '#src/queue/board/getQueueSummaryPath.ts';
 

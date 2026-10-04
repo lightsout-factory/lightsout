@@ -1,4 +1,4 @@
-import { readJsonFile } from '#src/common/utils/readJsonFile.ts';
+import { readJsonFile } from '#src/common/readJsonFile.ts';
 import { RunFinalReport } from '#src/contracts/run/RunFinalReport.ts';
 import { getRunFinalReportPath } from '#src/runState/finalReport/getRunFinalReportPath.ts';
 

@@ -1,8 +1,8 @@
 import { dirname } from 'node:path';
+import { collectBatchChanges } from '#src/common/collectBatchChanges.ts';
 import { defaultCoverageSummaryPath } from '#src/common/constants/defaultCoverageSummaryPath.ts';
 import { defaultPackagesDir } from '#src/common/constants/defaultPackagesDir.ts';
 import { isTestFile } from '#src/common/sourceFiles/isTestFile.ts';
-import { collectBatchChanges } from '#src/common/utils/collectBatchChanges.ts';
 import { packageOf } from '#src/common/workspace/packageOf.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 

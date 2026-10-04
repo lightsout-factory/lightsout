@@ -2,9 +2,9 @@ import { lstat } from 'node:fs/promises';
 import { isAbsolute, relative, resolve, sep } from 'node:path';
 import { defaultPackagesDir } from '#src/common/constants/defaultPackagesDir.ts';
 import { readGitChangedFiles } from '#src/common/git/readGitChangedFiles.ts';
-import { readGitWorkingChanges } from '#src/common/git/readGitWorkingChanges.ts';
 import { packageOf } from '#src/common/workspace/packageOf.ts';
 import type { WorkReport } from '#src/contracts/work/WorkReport.ts';
+import { readGitWorkingChanges } from '#src/pipeline/internal/common/readGitWorkingChanges/readGitWorkingChanges.ts';
 import { consumerRelative } from '#src/pipeline/internal/common/utils/consumerRelative.ts';
 import type { PipelineRun } from '#src/pipeline/internal/PipelineRun.ts';
 

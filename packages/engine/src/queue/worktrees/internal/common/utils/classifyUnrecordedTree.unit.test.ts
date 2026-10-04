@@ -11,7 +11,7 @@ import { classifyUnrecordedTree } from '#src/queue/worktrees/internal/common/uti
 const mockReadGitCommitsAhead = jest.fn<(params: { cwd: string; defaultBranch: string }) => Promise<number | undefined>>();
 const mockWriteBranchState = jest.fn<(params: { cwd: string; branch: string; phase: BranchPhase }) => Promise<void>>();
 
-jest.mock('#src/common/git/readGitCommitsAhead.ts', () => ({
+jest.mock('#src/queue/common/readGitCommitsAhead.ts', () => ({
 	readGitCommitsAhead: (params: { cwd: string; defaultBranch: string }) => mockReadGitCommitsAhead(params),
 }));
 jest.mock('#src/queue/branchState/writeBranchState.ts', () => ({

@@ -1,5 +1,5 @@
 import { join } from 'node:path';
-import { parsePlanAddress } from '#src/common/planAddress/parsePlanAddress.ts';
+import { parsePlanAddress } from '#src/common/planAddress/parsePlanAddress/parsePlanAddress.ts';
 import { workOrderFolderDir } from '#src/common/workspace/workOrderFolderDir.ts';
 
 interface Params {

@@ -1,9 +1,9 @@
 import { BuildMode } from '#src/common/constants/BuildMode.ts';
-import { createdFileCeiling } from '#src/common/constants/createdFileCeiling.ts';
 import { touchedFileCeiling } from '#src/common/constants/touchedFileCeiling.ts';
 import { FindingSeverity } from '#src/contracts/plan/grade/FindingSeverity.ts';
 import { StructuralCheck } from '#src/contracts/plan/grade/StructuralCheck.ts';
 import type { StructuralFinding } from '#src/contracts/plan/grade/StructuralFinding.ts';
+import { createdFileCeiling } from '#src/plan/common/constants/createdFileCeiling.ts';
 import type { PhaseFile } from '#src/plan/common/types/PhaseFile.ts';
 import type { PhaseSizeCounts } from '#src/plan/internal/common/types/PhaseSizeCounts.ts';
 

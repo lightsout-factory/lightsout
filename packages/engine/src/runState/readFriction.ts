@@ -1,4 +1,4 @@
-import { readJsonlRecords } from '#src/common/utils/readJsonlRecords.ts';
+import { readJsonlRecords } from '#src/common/readJsonlRecords.ts';
 import { FrictionRecord } from '#src/contracts/friction/FrictionRecord.ts';
 import { getFrictionPath } from '#src/runState/common/getFrictionPath.ts';
 

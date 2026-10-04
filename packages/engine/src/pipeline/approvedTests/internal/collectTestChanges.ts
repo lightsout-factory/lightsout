@@ -5,11 +5,11 @@ import { readGitChangedFiles } from '#src/common/git/readGitChangedFiles.ts';
 import { quoteShellArgument } from '#src/common/processes/quoteShellArgument.ts';
 import { runCommand } from '#src/common/processes/runCommand.ts';
 import { excludedSourcePaths } from '#src/common/sourceFiles/excludedSourcePaths.ts';
-import { isTestSideFile } from '#src/common/sourceFiles/isTestSideFile.ts';
 import { TestChangeKind } from '#src/pipeline/approvedTests/internal/common/constants/TestChangeKind.ts';
 import type { TestChange } from '#src/pipeline/approvedTests/internal/common/types/TestChange.ts';
 import { approvedTestsDir } from '#src/pipeline/approvedTests/internal/common/utils/approvedTestsDir.ts';
 import { readApprovedTest } from '#src/pipeline/approvedTests/readApprovedTest.ts';
+import { isTestSideFile } from '#src/pipeline/common/isTestSideFile.ts';
 import type { PipelineRun } from '#src/pipeline/internal/PipelineRun.ts';
 
 /** The device path git reads as "this side of the diff is empty" — an addition's before, a removal's after. */

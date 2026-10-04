@@ -1,8 +1,8 @@
+import { messageOf } from '#src/common/messageOf.ts';
 import type { ActivityLevel } from '#src/common/types/ActivityLevel.ts';
 import type { Driver } from '#src/common/types/Driver.ts';
 import type { DriverInvocation } from '#src/common/types/DriverInvocation.ts';
 import type { DriverResult } from '#src/common/types/DriverResult.ts';
-import { messageOf } from '#src/common/utils/messageOf.ts';
 import type { HarnessProcessUsage } from '#src/contracts/activity/HarnessProcessUsage.ts';
 import { ProcessEndReason } from '#src/contracts/activity/ProcessEndReason.ts';
 

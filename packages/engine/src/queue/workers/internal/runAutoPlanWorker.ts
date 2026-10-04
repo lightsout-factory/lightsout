@@ -1,8 +1,8 @@
 import { buildQueueAutoPlanInvocation } from '#src/agents/buildQueueAutoPlanInvocation.ts';
+import { getDirsOutsideCwd } from '#src/common/getDirsOutsideCwd.ts';
 import type { AnsweredQuestion } from '#src/common/types/AnsweredQuestion.ts';
 import type { Driver } from '#src/common/types/Driver.ts';
 import type { LoadedConfig } from '#src/common/types/LoadedConfig.ts';
-import { getDirsOutsideCwd } from '#src/common/utils/getDirsOutsideCwd.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import { WorkReport } from '#src/contracts/work/WorkReport.ts';

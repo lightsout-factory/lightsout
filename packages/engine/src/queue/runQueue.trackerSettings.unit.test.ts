@@ -65,7 +65,7 @@ jest.mock('#src/commit/commitWorkOrderWork/commitWorkOrderWork.ts', () => ({
 // The branch's commit count, which decides readiness. Its own tests own what git
 // answers; here the branch is simply finished, so the drain reaches the ship
 // step and the parked label settles the way this file asserts.
-jest.mock('#src/common/git/readGitCommitsAhead.ts', () => ({ readGitCommitsAhead: () => Promise.resolve(1) }));
+jest.mock('#src/queue/common/readGitCommitsAhead.ts', () => ({ readGitCommitsAhead: () => Promise.resolve(1) }));
 // -------------------------
 const mockShipOneBranch = jest.fn<(params: { outcome: WorkOrderRunOutcome }) => Promise<WorkOrderRunOutcome>>();
 

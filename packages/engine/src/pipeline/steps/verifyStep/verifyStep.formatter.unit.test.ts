@@ -62,7 +62,7 @@ jest.mock('#src/pipeline/internal/common/utils/runVerificationGates.ts', () => (
 // is the supervisor's own test.
 const mockConsultSupervisor = jest.fn<() => Promise<{ ok: false; rateLimited: boolean; error: string }>>();
 
-jest.mock('#src/common/utils/consultSupervisor.ts', () => ({
+jest.mock('#src/common/consultSupervisor.ts', () => ({
 	consultSupervisor: () => mockConsultSupervisor(),
 }));
 // -------------------------

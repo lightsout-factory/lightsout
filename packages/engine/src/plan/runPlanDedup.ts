@@ -3,7 +3,7 @@ import { buildPlanDedupInvocation } from '#src/agents/buildPlanDedupInvocation.t
 import type { ActivityLevel } from '#src/common/types/ActivityLevel.ts';
 import type { AgentOutcome } from '#src/common/types/AgentOutcome.ts';
 import type { Driver } from '#src/common/types/Driver.ts';
-import { writeJsonFile } from '#src/common/utils/writeJsonFile.ts';
+import { writeJsonFile } from '#src/common/writeJsonFile.ts';
 import { ActivityLevelKind } from '#src/contracts/activity/ActivityLevelKind.ts';
 import type { DedupFinding } from '#src/contracts/dedup/DedupFinding.ts';
 import { DedupJudgment } from '#src/contracts/dedup/DedupJudgment.ts';

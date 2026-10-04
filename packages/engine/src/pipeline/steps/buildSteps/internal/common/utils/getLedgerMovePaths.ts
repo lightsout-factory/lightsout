@@ -1,6 +1,6 @@
 import { MoveDirection } from '#src/common/constants/MoveDirection.ts';
-import { isTestSideFile } from '#src/common/sourceFiles/isTestSideFile.ts';
-import { mapPathThroughMoves } from '#src/common/utils/mapPathThroughMoves.ts';
+import { mapPathThroughMoves } from '#src/common/mapPathThroughMoves.ts';
+import { isTestSideFile } from '#src/pipeline/common/isTestSideFile.ts';
 
 interface Params {
 	/** The plan's file moves. */

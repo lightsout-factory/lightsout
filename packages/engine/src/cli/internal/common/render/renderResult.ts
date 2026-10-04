@@ -8,7 +8,7 @@ import type { CleanupSummary } from '#src/common/types/CleanupSummary.ts';
 import type { RunSummary } from '#src/common/types/RunSummary.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import type { PipelineResult } from '#src/pipeline/PipelineResult.ts';
-import { summarizeRun } from '#src/runState/summarizeRun.ts';
+import { summarizeRun } from '#src/runState/summarizeRun/summarizeRun.ts';
 
 const label = ({ name, value }: { name: string; value: string }) => `${name.padEnd(10)}${value}`;
 

@@ -2,7 +2,7 @@ import type { CommandContext } from '#src/cli/common/types/CommandContext.ts';
 import { createProgressPrinter } from '#src/cli/internal/common/utils/createProgressPrinter.ts';
 import type { PlanWorktree } from '#src/cli/plan/internal/common/types/PlanWorktree.ts';
 import { resolvePlanWorktree } from '#src/cli/plan/internal/common/utils/resolvePlanWorktree.ts';
-import { isSamePath } from '#src/common/utils/isSamePath.ts';
+import { isSamePath } from '#src/common/isSamePath.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 
 interface Params {
