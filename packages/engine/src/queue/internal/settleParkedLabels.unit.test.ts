@@ -1,10 +1,10 @@
 import { describe, expect, jest, test } from '@jest/globals';
 import { PlanningStatus } from '#src/common/constants/PlanningStatus.ts';
+import type { TrackerSettings } from '#src/common/types/TrackerSettings.ts';
 import { QueueWorker } from '#src/queue/common/constants/QueueWorker.ts';
 import type { QueueFailure } from '#src/queue/common/types/QueueFailure.ts';
 import type { WorkOrderRunOutcome } from '#src/queue/common/types/WorkOrderRunOutcome.ts';
 import { settleParkedLabels } from '#src/queue/internal/settleParkedLabels.ts';
-import type { TrackerSettings } from '#src/ticketTracker/common/types/TrackerSettings.ts';
 import { queueSettingsFixture } from '#tests/helpers/queueSettingsFixture.ts';
 import { trackerSettingsFixture } from '#tests/helpers/trackerSettingsFixture.ts';
 

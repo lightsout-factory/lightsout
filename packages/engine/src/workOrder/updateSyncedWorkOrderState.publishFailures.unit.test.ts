@@ -2,12 +2,12 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
+import type { TrackerSettings } from '#src/common/types/TrackerSettings.ts';
 import { sha256 } from '#src/common/utils/sha256.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { WorkOrderEventKind } from '#src/contracts/workOrder/WorkOrderEventKind.ts';
 import { WorkOrderMode } from '#src/contracts/workOrder/WorkOrderMode.ts';
 import type { WorkOrderState } from '#src/contracts/workOrder/WorkOrderState.ts';
-import type { TrackerSettings } from '#src/ticketTracker/common/types/TrackerSettings.ts';
 import { updateLocalWorkOrderState } from '#src/workOrder/updateLocalWorkOrderState.ts';
 import { updateSyncedWorkOrderState } from '#src/workOrder/updateSyncedWorkOrderState.ts';
 import { canonicalTicketRecordText } from '#tests/helpers/canonicalTicketRecordText.ts';

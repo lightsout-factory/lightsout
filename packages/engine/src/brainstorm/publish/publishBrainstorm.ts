@@ -6,11 +6,11 @@ import { brainstormAttachmentFileNames } from '#src/common/constants/brainstormA
 import { brainstormAttachmentManifestName } from '#src/common/constants/brainstormAttachmentManifestName.ts';
 import { brainstormNotesFileName } from '#src/common/constants/brainstormNotesFileName.ts';
 import { workOrderNameOf } from '#src/common/planAddress/workOrderNameOf.ts';
+import type { TrackerSettings } from '#src/common/types/TrackerSettings.ts';
 import { messageOf } from '#src/common/utils/messageOf.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { planWorkspaceDir } from '#src/plan/planWorkspaceDir.ts';
 import { readPlanWorkOrderRef } from '#src/plan/readPlanWorkOrderRef.ts';
-import type { TrackerSettings } from '#src/ticketTracker/common/types/TrackerSettings.ts';
 import { getTicketsByIdentifiers } from '#src/ticketTracker/getTicketsByIdentifiers.ts';
 import { resolveTrackerSettings } from '#src/ticketTracker/resolveTrackerSettings.ts';
 import { setTicketAttachment } from '#src/ticketTracker/setTicketAttachment.ts';

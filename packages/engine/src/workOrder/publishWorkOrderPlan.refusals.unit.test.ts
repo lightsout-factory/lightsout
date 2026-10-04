@@ -2,9 +2,9 @@ import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
+import type { TrackerSettings } from '#src/common/types/TrackerSettings.ts';
 import { sha256 } from '#src/common/utils/sha256.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
-import type { TrackerSettings } from '#src/ticketTracker/common/types/TrackerSettings.ts';
 import { publishWorkOrderPlan } from '#src/workOrder/publishWorkOrderPlan.ts';
 import { ticketTrackerConfigBlock } from '#tests/helpers/queueConfigBlock.ts';
 

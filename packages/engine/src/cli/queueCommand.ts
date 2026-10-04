@@ -12,6 +12,7 @@ import { renderQueueBoard } from '#src/cli/internal/common/queueBoard/renderQueu
 import { createProgressPrinter } from '#src/cli/internal/common/utils/createProgressPrinter.ts';
 import { resolveEffectiveConfigAndDriver } from '#src/cli/internal/common/utils/resolveEffectiveConfigAndDriver.ts';
 import { readLoadedConfig } from '#src/common/config/readLoadedConfig.ts';
+import type { TrackerSettings } from '#src/common/types/TrackerSettings.ts';
 import { messageOf } from '#src/common/utils/messageOf.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { QueueSummary } from '#src/contracts/queue/QueueSummary.ts';
@@ -30,7 +31,6 @@ import { isPidAlive } from '#src/runState/isPidAlive.ts';
 import { readRunLock } from '#src/runState/lock/readRunLock.ts';
 import { RunNotFoundError } from '#src/runState/RunNotFoundError.ts';
 import { resolveShipSettings } from '#src/ship/resolveShipSettings.ts';
-import type { TrackerSettings } from '#src/ticketTracker/common/types/TrackerSettings.ts';
 import { resolveTrackerSettings } from '#src/ticketTracker/resolveTrackerSettings.ts';
 
 /**

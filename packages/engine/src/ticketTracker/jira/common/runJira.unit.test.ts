@@ -1,5 +1,5 @@
 import { describe, expect, jest, test } from '@jest/globals';
-import { runJira } from '#src/ticketTracker/jira/internal/runJira.ts';
+import { runJira } from '#src/ticketTracker/jira/common/runJira.ts';
 import { jiraTrackerSettingsFixture } from '#tests/helpers/jiraQueueSettingsFixture.ts';
 
 const setup = () => ({ mockFetch: jest.spyOn(global, 'fetch') });

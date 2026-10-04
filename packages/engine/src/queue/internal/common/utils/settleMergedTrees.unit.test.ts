@@ -1,11 +1,11 @@
 import { describe, expect, jest, test } from '@jest/globals';
 import { PlanningStatus } from '#src/common/constants/PlanningStatus.ts';
+import type { TrackerFailure } from '#src/common/types/TrackerFailure.ts';
+import type { TrackerSettings } from '#src/common/types/TrackerSettings.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { QueueWorker } from '#src/queue/common/constants/QueueWorker.ts';
 import type { MergedParkedTree } from '#src/queue/internal/common/types/MergedParkedTree.ts';
 import { settleMergedTrees } from '#src/queue/internal/common/utils/settleMergedTrees.ts';
-import type { TrackerFailure } from '#src/ticketTracker/common/types/TrackerFailure.ts';
-import type { TrackerSettings } from '#src/ticketTracker/common/types/TrackerSettings.ts';
 import { queueSettingsFixture } from '#tests/helpers/queueSettingsFixture.ts';
 import { trackerSettingsFixture } from '#tests/helpers/trackerSettingsFixture.ts';
 

@@ -1,5 +1,5 @@
 import type { Issue } from '@linear/sdk';
-import { collectNodes } from '#src/ticketTracker/linear/internal/common/utils/collectNodes.ts';
+import { collectNodes } from '#src/ticketTracker/linear/common/collectNodes.ts';
 
 interface Params {
 	issue: Issue;

@@ -6,6 +6,7 @@ import { describe, expect, jest, test } from '@jest/globals';
 import { PlanningStatus } from '#src/common/constants/PlanningStatus.ts';
 import type { Driver } from '#src/common/types/Driver.ts';
 import type { LoadedConfig } from '#src/common/types/LoadedConfig.ts';
+import type { TrackerSettings } from '#src/common/types/TrackerSettings.ts';
 import type { WorktreeFailure } from '#src/common/types/WorktreeFailure.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { BranchPhase } from '#src/contracts/queue/BranchPhase.ts';
@@ -20,7 +21,6 @@ import type { RunnableTicket } from '#src/queue/internal/common/types/RunnableTi
 import type { WorkerOutcome } from '#src/queue/internal/common/types/WorkerOutcome.ts';
 import { runQueueWorkOrder } from '#src/queue/internal/runQueueWorkOrder.ts';
 import { TerminalQuestionRelay } from '#src/queue/relay/TerminalQuestionRelay.ts';
-import type { TrackerSettings } from '#src/ticketTracker/common/types/TrackerSettings.ts';
 import { queueSettingsFixture } from '#tests/helpers/queueSettingsFixture.ts';
 import { seedWorkOrderRecord } from '#tests/helpers/seedWorkOrderRecord.ts';
 import { trackerSettingsFixture } from '#tests/helpers/trackerSettingsFixture.ts';

@@ -2,6 +2,7 @@ import { realpath } from 'node:fs/promises';
 import { join } from 'node:path';
 import { gitTimeoutMs } from '#src/common/constants/gitTimeoutMs.ts';
 import { runCommand } from '#src/common/processes/runCommand.ts';
+import type { TrackerSettings } from '#src/common/types/TrackerSettings.ts';
 import { findWorkOrderForBranch } from '#src/common/workspace/findWorkOrderForBranch.ts';
 import { WorktreeOwner } from '#src/contracts/worktree/WorktreeOwner.ts';
 import type { GateHolds } from '#src/gates/gateHolds/common/types/GateHolds.ts';
@@ -15,7 +16,6 @@ import { establishBranchMerge } from '#src/queue/internal/common/utils/establish
 import { toPlanningSummaries } from '#src/queue/internal/common/utils/toPlanningSummaries.ts';
 import type { ParkedTree } from '#src/queue/worktrees/internal/common/types/ParkedTree.ts';
 import { settleUnmergedTree } from '#src/queue/worktrees/internal/common/utils/settleUnmergedTree.ts';
-import type { TrackerSettings } from '#src/ticketTracker/common/types/TrackerSettings.ts';
 import { getTicketsByIdentifiers } from '#src/ticketTracker/getTicketsByIdentifiers.ts';
 import { readWorktreeRecord } from '#src/worktree/records/readWorktreeRecord.ts';
 import { resolveWorktreesRoot } from '#src/worktree/resolveWorktreesRoot.ts';

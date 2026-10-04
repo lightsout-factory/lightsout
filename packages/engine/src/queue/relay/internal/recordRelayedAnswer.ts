@@ -1,10 +1,10 @@
 import { join } from 'node:path';
 import { z } from 'zod';
+import type { TrackerSettings } from '#src/common/types/TrackerSettings.ts';
 import { appendJsonlRecords } from '#src/common/utils/appendJsonlRecords.ts';
 import type { QueueSettings } from '#src/queue/common/types/QueueSettings.ts';
 import type { TicketSummary } from '#src/queue/common/types/TicketSummary.ts';
 import { appendTicketNote } from '#src/ticketTracker/appendTicketNote.ts';
-import type { TrackerSettings } from '#src/ticketTracker/common/types/TrackerSettings.ts';
 
 /**
  * One relayed question and its answer, as persisted to the coordinator run's

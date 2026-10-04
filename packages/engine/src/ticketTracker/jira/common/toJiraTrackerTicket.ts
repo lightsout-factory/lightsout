@@ -1,8 +1,8 @@
-import type { TrackerFailure } from '#src/ticketTracker/common/types/TrackerFailure.ts';
-import type { TrackerTicket } from '#src/ticketTracker/common/types/TrackerTicket.ts';
-import type { JiraIssue } from '#src/ticketTracker/jira/internal/common/types/JiraIssue.ts';
-import { isFinishedJiraStatus } from '#src/ticketTracker/jira/internal/common/utils/isFinishedJiraStatus.ts';
-import { fromAdf } from '#src/ticketTracker/jira/internal/fromAdf.ts';
+import type { TrackerFailure } from '#src/common/types/TrackerFailure.ts';
+import type { TrackerTicket } from '#src/common/types/TrackerTicket.ts';
+import { fromAdf } from '#src/ticketTracker/jira/common/fromAdf.ts';
+import { isFinishedJiraStatus } from '#src/ticketTracker/jira/common/isFinishedJiraStatus.ts';
+import type { JiraIssue } from '#src/ticketTracker/jira/common/types/JiraIssue.ts';
 
 interface Params {
 	issue: JiraIssue;

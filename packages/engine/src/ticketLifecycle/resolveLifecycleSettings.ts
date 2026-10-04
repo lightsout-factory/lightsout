@@ -1,8 +1,8 @@
 import { defaultPlanningStatusLabels, PlanningStatus } from '#src/common/constants/PlanningStatus.ts';
 import { TrackerStatusRole } from '#src/common/constants/TrackerStatusRole.ts';
 import type { LifecycleSettings } from '#src/common/types/LifecycleSettings.ts';
+import type { TrackerFailure } from '#src/common/types/TrackerFailure.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
-import type { TrackerFailure } from '#src/ticketTracker/common/types/TrackerFailure.ts';
 
 interface Params {
 	config: LightsoutConfig;

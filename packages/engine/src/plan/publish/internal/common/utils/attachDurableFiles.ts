@@ -1,6 +1,6 @@
 import { attachmentTitle } from '#src/common/attachmentManifest/attachmentTitle.ts';
+import type { TrackerSettings } from '#src/common/types/TrackerSettings.ts';
 import type { PreparedAttachment } from '#src/plan/publish/internal/common/types/PreparedAttachment.ts';
-import type { TrackerSettings } from '#src/ticketTracker/common/types/TrackerSettings.ts';
 import { setTicketAttachment } from '#src/ticketTracker/setTicketAttachment.ts';
 
 interface Params {

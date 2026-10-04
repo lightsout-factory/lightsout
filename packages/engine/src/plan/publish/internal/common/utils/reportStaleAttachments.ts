@@ -1,7 +1,7 @@
 import { attachmentTitle } from '#src/common/attachmentManifest/attachmentTitle.ts';
 import { scopeAttachments } from '#src/common/attachmentManifest/scopeAttachments.ts';
+import type { TrackerSettings } from '#src/common/types/TrackerSettings.ts';
 import { isPlanOnlyAttachmentName } from '#src/plan/internal/common/utils/isPlanOnlyAttachmentName.ts';
-import type { TrackerSettings } from '#src/ticketTracker/common/types/TrackerSettings.ts';
 import { getTicketAttachments } from '#src/ticketTracker/getTicketAttachments.ts';
 
 interface Params {

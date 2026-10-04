@@ -2,6 +2,7 @@ import { existsSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
 import { PlanningStatus } from '#src/common/constants/PlanningStatus.ts';
+import type { TrackerSettings } from '#src/common/types/TrackerSettings.ts';
 import type { GateHold } from '#src/contracts/gates/GateHold.ts';
 import type { GateHolds } from '#src/gates/gateHolds/common/types/GateHolds.ts';
 import { QueueWorker } from '#src/queue/common/constants/QueueWorker.ts';
@@ -13,7 +14,6 @@ import type { WorkOrderRunOutcome } from '#src/queue/common/types/WorkOrderRunOu
 import type { ParkedWork } from '#src/queue/internal/common/types/ParkedWork.ts';
 import type { nameWaveWorkOrders } from '#src/queue/nameWaveWorkOrders.ts';
 import type { ShipSettings } from '#src/ship/common/types/ShipSettings.ts';
-import type { TrackerSettings } from '#src/ticketTracker/common/types/TrackerSettings.ts';
 import { nameWaveLikeTemplate } from '#tests/helpers/nameWaveLikeTemplate.ts';
 import { queueOutcomeFixture as outcomeOf } from '#tests/helpers/queueOutcomeFixture.ts';
 import { queueTicketFixture as ticketOf } from '#tests/helpers/queueTicketFixture.ts';

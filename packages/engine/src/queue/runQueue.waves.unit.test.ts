@@ -1,13 +1,13 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
+import type { TrackerSettings } from '#src/common/types/TrackerSettings.ts';
 import type { NamedWorkOrder } from '#src/queue/common/types/NamedWorkOrder.ts';
 import type { QueueFailure } from '#src/queue/common/types/QueueFailure.ts';
 import type { TicketSummary } from '#src/queue/common/types/TicketSummary.ts';
 import type { WorkOrderRunOutcome } from '#src/queue/common/types/WorkOrderRunOutcome.ts';
 import type { ParkedWork } from '#src/queue/internal/common/types/ParkedWork.ts';
 import type { nameWaveWorkOrders } from '#src/queue/nameWaveWorkOrders.ts';
-import type { TrackerSettings } from '#src/ticketTracker/common/types/TrackerSettings.ts';
 import { nameWaveLikeTemplate } from '#tests/helpers/nameWaveLikeTemplate.ts';
 import { queueOutcomeFixture as outcomeOf } from '#tests/helpers/queueOutcomeFixture.ts';
 import { queueSettingsFixture } from '#tests/helpers/queueSettingsFixture.ts';

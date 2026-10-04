@@ -1,6 +1,6 @@
-import type { TrackerFailure } from '#src/ticketTracker/common/types/TrackerFailure.ts';
-import type { TrackerSettings } from '#src/ticketTracker/common/types/TrackerSettings.ts';
-import { appendTicketNote as appendJiraTicketNote } from '#src/ticketTracker/jira/appendTicketNote.ts';
+import type { TrackerFailure } from '#src/common/types/TrackerFailure.ts';
+import type { TrackerSettings } from '#src/common/types/TrackerSettings.ts';
+import { appendTicketNote as appendJiraTicketNote } from '#src/ticketTracker/jira/appendTicketNote/appendTicketNote.ts';
 import { appendTicketNote as appendLinearTicketNote } from '#src/ticketTracker/linear/appendTicketNote.ts';
 
 interface Params {

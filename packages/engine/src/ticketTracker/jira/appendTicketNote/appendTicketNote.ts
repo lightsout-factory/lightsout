@@ -1,9 +1,9 @@
-import type { TrackerFailure } from '#src/ticketTracker/common/types/TrackerFailure.ts';
-import type { JiraTrackerSettings } from '#src/ticketTracker/common/types/TrackerSettings.ts';
-import { addLineUnderHeading } from '#src/ticketTracker/internal/common/utils/addLineUnderHeading.ts';
-import { fromAdf } from '#src/ticketTracker/jira/internal/fromAdf.ts';
-import { runJira } from '#src/ticketTracker/jira/internal/runJira.ts';
-import { toAdf } from '#src/ticketTracker/jira/internal/toAdf.ts';
+import type { TrackerFailure } from '#src/common/types/TrackerFailure.ts';
+import type { JiraTrackerSettings } from '#src/common/types/TrackerSettings.ts';
+import { addLineUnderHeading } from '#src/ticketTracker/common/addLineUnderHeading.ts';
+import { toAdf } from '#src/ticketTracker/jira/appendTicketNote/toAdf.ts';
+import { fromAdf } from '#src/ticketTracker/jira/common/fromAdf.ts';
+import { runJira } from '#src/ticketTracker/jira/common/runJira.ts';
 
 interface Params {
 	settings: JiraTrackerSettings;

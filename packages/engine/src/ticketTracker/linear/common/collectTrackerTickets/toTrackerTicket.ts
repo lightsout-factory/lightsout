@@ -1,5 +1,5 @@
 import type { Issue } from '@linear/sdk';
-import type { TrackerTicket } from '#src/ticketTracker/common/types/TrackerTicket.ts';
+import type { TrackerTicket } from '#src/common/types/TrackerTicket.ts';
 
 interface Params {
 	issue: Issue;

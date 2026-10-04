@@ -3,6 +3,7 @@ import { dirname, join } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
 import type { Driver } from '#src/common/types/Driver.ts';
 import type { LoadedConfig } from '#src/common/types/LoadedConfig.ts';
+import type { TrackerSettings } from '#src/common/types/TrackerSettings.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import type { NamedWorkOrder } from '#src/queue/common/types/NamedWorkOrder.ts';
@@ -12,7 +13,6 @@ import type { WorkOrderRunOutcome } from '#src/queue/common/types/WorkOrderRunOu
 import type { ParkedWork } from '#src/queue/internal/common/types/ParkedWork.ts';
 import type { nameWaveWorkOrders } from '#src/queue/nameWaveWorkOrders.ts';
 import { runQueue } from '#src/queue/runQueue.ts';
-import type { TrackerSettings } from '#src/ticketTracker/common/types/TrackerSettings.ts';
 import { nameWaveLikeTemplate } from '#tests/helpers/nameWaveLikeTemplate.ts';
 import { queueOutcomeFixture as outcomeOf } from '#tests/helpers/queueOutcomeFixture.ts';
 import { queueSettingsFixture } from '#tests/helpers/queueSettingsFixture.ts';

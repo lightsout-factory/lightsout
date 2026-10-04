@@ -1,4 +1,4 @@
-import type { TrackerSettings } from '#src/ticketTracker/common/types/TrackerSettings.ts';
+import type { TrackerSettings } from '#src/common/types/TrackerSettings.ts';
 
 export interface TicketTrackerTarget {
 	settings: TrackerSettings;

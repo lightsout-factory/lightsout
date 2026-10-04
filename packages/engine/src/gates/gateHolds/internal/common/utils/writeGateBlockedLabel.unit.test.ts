@@ -1,8 +1,8 @@
 import { describe, expect, jest, test } from '@jest/globals';
+import type { TrackerFailure } from '#src/common/types/TrackerFailure.ts';
+import type { TrackerSettings } from '#src/common/types/TrackerSettings.ts';
+import type { TrackerTicket } from '#src/common/types/TrackerTicket.ts';
 import { writeGateBlockedLabel } from '#src/gates/gateHolds/internal/common/utils/writeGateBlockedLabel.ts';
-import type { TrackerFailure } from '#src/ticketTracker/common/types/TrackerFailure.ts';
-import type { TrackerSettings } from '#src/ticketTracker/common/types/TrackerSettings.ts';
-import type { TrackerTicket } from '#src/ticketTracker/common/types/TrackerTicket.ts';
 import { trackerSettingsFixture } from '#tests/helpers/trackerSettingsFixture.ts';
 
 // Mocked Imports

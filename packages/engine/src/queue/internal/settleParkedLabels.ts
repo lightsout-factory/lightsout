@@ -1,7 +1,7 @@
+import type { TrackerSettings } from '#src/common/types/TrackerSettings.ts';
 import type { QueueSettings } from '#src/queue/common/types/QueueSettings.ts';
 import type { WorkOrderRunOutcome } from '#src/queue/common/types/WorkOrderRunOutcome.ts';
 import { isParkedOutcome } from '#src/queue/common/utils/isParkedOutcome.ts';
-import type { TrackerSettings } from '#src/ticketTracker/common/types/TrackerSettings.ts';
 import { setTicketLabel } from '#src/ticketTracker/setTicketLabel.ts';
 
 interface Params {

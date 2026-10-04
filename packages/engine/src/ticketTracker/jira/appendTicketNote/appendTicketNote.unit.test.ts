@@ -1,11 +1,11 @@
 import { describe, expect, jest, test } from '@jest/globals';
-import { appendTicketNote } from '#src/ticketTracker/jira/appendTicketNote.ts';
+import { appendTicketNote } from '#src/ticketTracker/jira/appendTicketNote/appendTicketNote.ts';
 import { jiraTrackerSettingsFixture } from '#tests/helpers/jiraQueueSettingsFixture.ts';
 
 type JiraCallback = (client: { request: (params: unknown) => Promise<unknown> }) => Promise<unknown>;
 const mockRunJira = jest.fn<(params: { settings: unknown; request: JiraCallback }) => Promise<unknown>>();
 
-jest.mock('#src/ticketTracker/jira/internal/runJira.ts', () => ({ runJira: (params: { settings: unknown; request: JiraCallback }) => mockRunJira(params) }));
+jest.mock('#src/ticketTracker/jira/common/runJira.ts', () => ({ runJira: (params: { settings: unknown; request: JiraCallback }) => mockRunJira(params) }));
 
 const existingDescription = {
 	type: 'doc',

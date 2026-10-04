@@ -2,16 +2,16 @@ import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, writeFil
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
+import type { TrackerAttachment } from '#src/common/types/TrackerAttachment.ts';
+import type { TrackerFailure } from '#src/common/types/TrackerFailure.ts';
+import type { TrackerSettings } from '#src/common/types/TrackerSettings.ts';
+import type { TrackerTicket } from '#src/common/types/TrackerTicket.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { PlanProgress } from '#src/contracts/workOrder/PlanProgress.ts';
 import { WorkOrderEventKind } from '#src/contracts/workOrder/WorkOrderEventKind.ts';
 import { WorkOrderMode } from '#src/contracts/workOrder/WorkOrderMode.ts';
 import type { WorkOrderPlan } from '#src/contracts/workOrder/WorkOrderPlan.ts';
 import type { WorkOrderState } from '#src/contracts/workOrder/WorkOrderState.ts';
-import type { TrackerAttachment } from '#src/ticketTracker/common/types/TrackerAttachment.ts';
-import type { TrackerFailure } from '#src/ticketTracker/common/types/TrackerFailure.ts';
-import type { TrackerSettings } from '#src/ticketTracker/common/types/TrackerSettings.ts';
-import type { TrackerTicket } from '#src/ticketTracker/common/types/TrackerTicket.ts';
 import { addWorkOrderPlan } from '#src/workOrder/addWorkOrderPlan.ts';
 import { updateLocalWorkOrderState } from '#src/workOrder/updateLocalWorkOrderState.ts';
 

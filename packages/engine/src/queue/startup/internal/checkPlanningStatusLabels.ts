@@ -1,7 +1,7 @@
 import { PlanningStatus } from '#src/common/constants/PlanningStatus.ts';
+import type { TrackerSettings } from '#src/common/types/TrackerSettings.ts';
 import type { QueueFailure } from '#src/queue/common/types/QueueFailure.ts';
 import type { QueueSettings } from '#src/queue/common/types/QueueSettings.ts';
-import type { TrackerSettings } from '#src/ticketTracker/common/types/TrackerSettings.ts';
 import { listLabelNames } from '#src/ticketTracker/listLabelNames.ts';
 
 interface Params {

@@ -1,5 +1,6 @@
 import type { Driver } from '#src/common/types/Driver.ts';
 import type { LoadedConfig } from '#src/common/types/LoadedConfig.ts';
+import type { TrackerSettings } from '#src/common/types/TrackerSettings.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { GateHolds } from '#src/gates/gateHolds/common/types/GateHolds.ts';
 import { syncGateHolds } from '#src/gates/gateHolds/syncGateHolds.ts';
@@ -27,7 +28,6 @@ import { withRunLock } from '#src/runState/lock/withRunLock.ts';
 import { seedUsageTotals } from '#src/runState/seedUsageTotals.ts';
 import { writeManifestWithUsage } from '#src/runState/writeManifestWithUsage.ts';
 import type { ShipSettings } from '#src/ship/common/types/ShipSettings.ts';
-import type { TrackerSettings } from '#src/ticketTracker/common/types/TrackerSettings.ts';
 
 interface Params {
 	cwd: string;

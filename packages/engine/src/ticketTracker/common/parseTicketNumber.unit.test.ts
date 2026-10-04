@@ -1,5 +1,5 @@
 import { describe, expect, test } from '@jest/globals';
-import { parseTicketNumber } from '#src/ticketTracker/internal/common/utils/parseTicketNumber.ts';
+import { parseTicketNumber } from '#src/ticketTracker/common/parseTicketNumber.ts';
 
 describe('parseTicketNumber', () => {
 	test('reads the number under the configured prefix, whatever its case', () => {

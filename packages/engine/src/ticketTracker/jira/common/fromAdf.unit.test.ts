@@ -1,5 +1,5 @@
 import { describe, expect, test } from '@jest/globals';
-import { fromAdf } from '#src/ticketTracker/jira/internal/fromAdf.ts';
+import { fromAdf } from '#src/ticketTracker/jira/common/fromAdf.ts';
 
 const doc = (content: unknown[]) => ({ type: 'doc', version: 1, content });
 const paragraph = (content: unknown[]) => ({ type: 'paragraph', content });

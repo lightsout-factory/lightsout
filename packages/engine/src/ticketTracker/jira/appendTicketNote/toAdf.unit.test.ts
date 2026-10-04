@@ -1,5 +1,5 @@
 import { describe, expect, test } from '@jest/globals';
-import { toAdf } from '#src/ticketTracker/jira/internal/toAdf.ts';
+import { toAdf } from '#src/ticketTracker/jira/appendTicketNote/toAdf.ts';
 
 describe('toAdf', () => {
 	test('parses paragraphs, hard breaks, headings, nested lists, and ordered starts', () => {

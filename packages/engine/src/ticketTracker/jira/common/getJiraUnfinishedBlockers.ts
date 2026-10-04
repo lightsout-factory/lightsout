@@ -1,5 +1,5 @@
-import type { JiraIssue } from '#src/ticketTracker/jira/internal/common/types/JiraIssue.ts';
-import { isFinishedJiraStatus } from '#src/ticketTracker/jira/internal/common/utils/isFinishedJiraStatus.ts';
+import { isFinishedJiraStatus } from '#src/ticketTracker/jira/common/isFinishedJiraStatus.ts';
+import type { JiraIssue } from '#src/ticketTracker/jira/common/types/JiraIssue.ts';
 
 interface Params {
 	issue: JiraIssue;

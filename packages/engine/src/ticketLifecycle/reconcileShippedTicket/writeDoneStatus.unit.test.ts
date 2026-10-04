@@ -2,10 +2,10 @@ import { expect, jest, test } from '@jest/globals';
 import { PlanningStatus } from '#src/common/constants/PlanningStatus.ts';
 import { TrackerStatusRole } from '#src/common/constants/TrackerStatusRole.ts';
 import type { LifecycleSettings } from '#src/common/types/LifecycleSettings.ts';
+import type { TrackerFailure } from '#src/common/types/TrackerFailure.ts';
+import type { TrackerSettings } from '#src/common/types/TrackerSettings.ts';
+import type { TrackerTicket } from '#src/common/types/TrackerTicket.ts';
 import { writeDoneStatus } from '#src/ticketLifecycle/reconcileShippedTicket/writeDoneStatus.ts';
-import type { TrackerFailure } from '#src/ticketTracker/common/types/TrackerFailure.ts';
-import type { TrackerSettings } from '#src/ticketTracker/common/types/TrackerSettings.ts';
-import type { TrackerTicket } from '#src/ticketTracker/common/types/TrackerTicket.ts';
 
 // Mocked Imports
 // -------------------------

@@ -1,9 +1,9 @@
 import { createInterface, type Interface } from 'node:readline/promises';
+import type { TrackerSettings } from '#src/common/types/TrackerSettings.ts';
 import type { QuestionRelay } from '#src/queue/common/types/QuestionRelay.ts';
 import type { QueueSettings } from '#src/queue/common/types/QueueSettings.ts';
 import type { TicketSummary } from '#src/queue/common/types/TicketSummary.ts';
 import { recordRelayedAnswer } from '#src/queue/relay/internal/recordRelayedAnswer.ts';
-import type { TrackerSettings } from '#src/ticketTracker/common/types/TrackerSettings.ts';
 
 /** Said both by a drain whose input was closed before it asked, and by one whose terminal went away mid-question — one fact, one wording. */
 const noTerminalMessage = 'there is no terminal to answer on — run `lightsout queue` attached to one';

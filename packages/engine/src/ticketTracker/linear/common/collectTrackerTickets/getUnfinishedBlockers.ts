@@ -1,6 +1,6 @@
 import type { Issue } from '@linear/sdk';
-import { collectNodes } from '#src/ticketTracker/linear/internal/common/utils/collectNodes.ts';
-import { isFinishedState } from '#src/ticketTracker/linear/internal/common/utils/isFinishedState.ts';
+import { collectNodes } from '#src/ticketTracker/linear/common/collectNodes.ts';
+import { isFinishedState } from '#src/ticketTracker/linear/common/isFinishedState.ts';
 
 interface Params {
 	issue: Issue;

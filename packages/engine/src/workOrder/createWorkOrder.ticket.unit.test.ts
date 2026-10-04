@@ -4,10 +4,10 @@ import { join } from 'node:path';
 import { expect, jest, test } from '@jest/globals';
 import type { Driver } from '#src/common/types/Driver.ts';
 import type { DriverInvocation } from '#src/common/types/DriverInvocation.ts';
+import type { TrackerFailure } from '#src/common/types/TrackerFailure.ts';
+import type { TrackerSettings } from '#src/common/types/TrackerSettings.ts';
+import type { TrackerTicket } from '#src/common/types/TrackerTicket.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
-import type { TrackerFailure } from '#src/ticketTracker/common/types/TrackerFailure.ts';
-import type { TrackerSettings } from '#src/ticketTracker/common/types/TrackerSettings.ts';
-import type { TrackerTicket } from '#src/ticketTracker/common/types/TrackerTicket.ts';
 import { createWorkOrder } from '#src/workOrder/createWorkOrder.ts';
 import { recordingDriver } from '#tests/helpers/recordingDriver.ts';
 

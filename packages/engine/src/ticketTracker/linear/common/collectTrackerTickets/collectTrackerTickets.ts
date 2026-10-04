@@ -1,11 +1,11 @@
 import type { Connection, Issue } from '@linear/sdk';
-import type { TrackerFailure } from '#src/ticketTracker/common/types/TrackerFailure.ts';
-import type { TrackerTicket } from '#src/ticketTracker/common/types/TrackerTicket.ts';
-import { collectNodes } from '#src/ticketTracker/linear/internal/common/utils/collectNodes.ts';
-import { getUnfinishedBlockers } from '#src/ticketTracker/linear/internal/common/utils/getUnfinishedBlockers.ts';
-import { isFinishedState } from '#src/ticketTracker/linear/internal/common/utils/isFinishedState.ts';
-import { readLabelNames } from '#src/ticketTracker/linear/internal/common/utils/readLabelNames.ts';
-import { toTrackerTicket } from '#src/ticketTracker/linear/internal/common/utils/toTrackerTicket.ts';
+import type { TrackerFailure } from '#src/common/types/TrackerFailure.ts';
+import type { TrackerTicket } from '#src/common/types/TrackerTicket.ts';
+import { collectNodes } from '#src/ticketTracker/linear/common/collectNodes.ts';
+import { getUnfinishedBlockers } from '#src/ticketTracker/linear/common/collectTrackerTickets/getUnfinishedBlockers.ts';
+import { readLabelNames } from '#src/ticketTracker/linear/common/collectTrackerTickets/readLabelNames.ts';
+import { toTrackerTicket } from '#src/ticketTracker/linear/common/collectTrackerTickets/toTrackerTicket.ts';
+import { isFinishedState } from '#src/ticketTracker/linear/common/isFinishedState.ts';
 
 interface Params {
 	/** The first page of issues, as the client answered it. */

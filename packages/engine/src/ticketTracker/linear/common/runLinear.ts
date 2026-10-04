@@ -1,7 +1,7 @@
 import { LinearClient } from '@linear/sdk';
+import type { TrackerFailure } from '#src/common/types/TrackerFailure.ts';
 import { messageOf } from '#src/common/utils/messageOf.ts';
-import type { TrackerFailure } from '#src/ticketTracker/common/types/TrackerFailure.ts';
-import { trackerTimeoutMs } from '#src/ticketTracker/internal/common/constants/trackerTimeoutMs.ts';
+import { trackerTimeoutMs } from '#src/ticketTracker/common/constants/trackerTimeoutMs.ts';
 
 interface Params<Result> {
 	apiKey: string;

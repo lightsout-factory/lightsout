@@ -1,4 +1,5 @@
 import type { Driver } from '#src/common/types/Driver.ts';
+import type { TrackerSettings } from '#src/common/types/TrackerSettings.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { GateHolds } from '#src/gates/gateHolds/common/types/GateHolds.ts';
 import type { QueueBoardRecorder } from '#src/queue/board/QueueBoardRecorder.ts';
@@ -13,7 +14,6 @@ import type { WaveSelection } from '#src/queue/internal/common/types/WaveSelecti
 import { settleMergedTrees } from '#src/queue/internal/common/utils/settleMergedTrees.ts';
 import type { ShipIntegration } from '#src/ship/common/types/ShipIntegration.ts';
 import type { ShipSettings } from '#src/ship/common/types/ShipSettings.ts';
-import type { TrackerSettings } from '#src/ticketTracker/common/types/TrackerSettings.ts';
 
 interface Params {
 	cwd: string;

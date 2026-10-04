@@ -2,6 +2,7 @@ import { join } from 'node:path';
 import { TrackerStatusRole } from '#src/common/constants/TrackerStatusRole.ts';
 import type { Driver } from '#src/common/types/Driver.ts';
 import type { LoadedConfig } from '#src/common/types/LoadedConfig.ts';
+import type { TrackerSettings } from '#src/common/types/TrackerSettings.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { BranchPhase } from '#src/contracts/queue/BranchPhase.ts';
 import { WorktreeOwner } from '#src/contracts/worktree/WorktreeOwner.ts';
@@ -15,7 +16,6 @@ import type { RunnableTicket } from '#src/queue/internal/common/types/RunnableTi
 import { settleWorkerOutcome } from '#src/queue/internal/common/utils/settleWorkerOutcome.ts';
 import { runWorkerWithRelay } from '#src/queue/workers/runWorkerWithRelay.ts';
 import { updateTicketLifecycle } from '#src/ticketLifecycle/updateTicketLifecycle.ts';
-import type { TrackerSettings } from '#src/ticketTracker/common/types/TrackerSettings.ts';
 import { createWorktree } from '#src/worktree/createWorktree.ts';
 import { resolveWorktreePath } from '#src/worktree/resolveWorktreePath.ts';
 

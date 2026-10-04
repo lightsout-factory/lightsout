@@ -1,10 +1,10 @@
+import type { TrackerSettings } from '#src/common/types/TrackerSettings.ts';
 import type { QueueSettings } from '#src/queue/common/types/QueueSettings.ts';
 import type { TicketSummary } from '#src/queue/common/types/TicketSummary.ts';
 import type { WorkOrderRunOutcome } from '#src/queue/common/types/WorkOrderRunOutcome.ts';
 import { ParkedTreeBucket } from '#src/queue/worktrees/internal/common/constants/ParkedTreeBucket.ts';
 import type { ParkedTree } from '#src/queue/worktrees/internal/common/types/ParkedTree.ts';
 import { classifyTree } from '#src/queue/worktrees/internal/common/utils/classifyTree.ts';
-import type { TrackerSettings } from '#src/ticketTracker/common/types/TrackerSettings.ts';
 import { setTicketLabel } from '#src/ticketTracker/setTicketLabel.ts';
 
 interface Params {

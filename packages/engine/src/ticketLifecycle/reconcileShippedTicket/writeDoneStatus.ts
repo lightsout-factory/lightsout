@@ -1,7 +1,7 @@
 import { TrackerStatusRole } from '#src/common/constants/TrackerStatusRole.ts';
 import type { LifecycleSettings } from '#src/common/types/LifecycleSettings.ts';
+import type { TrackerSettings } from '#src/common/types/TrackerSettings.ts';
 import { updateTicketLifecycle } from '#src/ticketLifecycle/updateTicketLifecycle.ts';
-import type { TrackerSettings } from '#src/ticketTracker/common/types/TrackerSettings.ts';
 import { getTicketsByIdentifiers } from '#src/ticketTracker/getTicketsByIdentifiers.ts';
 
 interface Params {
