@@ -2,7 +2,7 @@ import type { RunListing } from '#src/contracts/views/RunListing.ts';
 import { listRunIds } from '#src/runState/listRunIds.ts';
 import { readRunLiveness } from '#src/runState/readRunLiveness.ts';
 import { readRunManifest } from '#src/runState/readRunManifest.ts';
-import { readRunListing } from '#src/views/internal/common/utils/readRunListing.ts';
+import { readRunListing } from '#src/views/common/readRunListing/readRunListing.ts';
 
 interface Params {
 	cwd: string;

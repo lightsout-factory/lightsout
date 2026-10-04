@@ -1,10 +1,10 @@
 import { describe, expect, test } from '@jest/globals';
 import { renderProgressBlock } from '#src/cli/internal/common/progressBlock/renderProgressBlock.ts';
 import { renderRunProgress } from '#src/cli/internal/common/render/renderRunProgress.ts';
+import type { RunProgress } from '#src/common/types/RunProgress.ts';
+import type { RunProgressRow } from '#src/common/types/RunProgressRow.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import type { CleanupSummary } from '#src/runState/common/types/CleanupSummary.ts';
-import type { RunProgress } from '#src/views/common/types/RunProgress.ts';
-import type { RunProgressRow } from '#src/views/common/types/RunProgressRow.ts';
 
 /** The escape byte every ANSI sequence opens with, built rather than written, so no control character sits in this source. */
 const escapeByte = String.fromCharCode(27);

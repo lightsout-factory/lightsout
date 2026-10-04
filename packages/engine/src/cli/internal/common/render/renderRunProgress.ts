@@ -2,9 +2,9 @@ import { formatCost } from '@lightsout/shared';
 import { renderProgressBlock } from '#src/cli/internal/common/progressBlock/renderProgressBlock.ts';
 import { formatClockDuration } from '#src/cli/internal/common/utils/formatClockDuration.ts';
 import { plural } from '#src/cli/internal/common/utils/plural.ts';
+import type { RunProgress } from '#src/common/types/RunProgress.ts';
+import type { RunProgressRow } from '#src/common/types/RunProgressRow.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
-import type { RunProgress } from '#src/views/common/types/RunProgress.ts';
-import type { RunProgressRow } from '#src/views/common/types/RunProgressRow.ts';
 
 const collapseWhitespace = ({ text }: { text: string }) => text.replace(/\s+/g, ' ').trim();
 

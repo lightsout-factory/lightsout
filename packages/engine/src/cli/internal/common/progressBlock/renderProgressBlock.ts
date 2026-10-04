@@ -2,8 +2,8 @@ import { statusIcons } from '#src/cli/internal/common/constants/statusIcons.ts';
 import { dim } from '#src/cli/internal/common/terminal/dim.ts';
 import { paintStatus } from '#src/cli/internal/common/terminal/paintStatus.ts';
 import { formatClockDuration } from '#src/cli/internal/common/utils/formatClockDuration.ts';
+import type { RunProgressRow } from '#src/common/types/RunProgressRow.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
-import type { RunProgressRow } from '#src/views/common/types/RunProgressRow.ts';
 
 /** `stopped` marks a running row with no live process behind it — drawn as stopped rather than as work in progress. */
 type BlockRow = Pick<RunProgressRow, 'id' | 'status' | 'attempts' | 'durationMs'> & { stopped?: boolean };

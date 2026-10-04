@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
-import { configKeyDescriptions } from '#src/views/internal/common/constants/configKeyDescriptions.ts';
+import { configKeyDescriptions } from '#src/views/common/constants/configKeyDescriptions.ts';
 
 /**
  * Widened at the assignment rather than cast at each use: `LightsoutConfig.shape`

@@ -9,11 +9,11 @@ import { GradeReport } from '#src/contracts/plan/grade/GradeReport.ts';
 import type { PlanWorkspaceListing } from '#src/contracts/views/planWorkspace/PlanWorkspaceListing.ts';
 import type { PlanWorkspaceView } from '#src/contracts/views/planWorkspace/PlanWorkspaceView.ts';
 import { planWorkspaceDir } from '#src/plan/planWorkspaceDir.ts';
-import type { PlanWorkspaceFiles } from '#src/views/internal/common/types/PlanWorkspaceFiles.ts';
-import { buildPlanWorkspaceListing } from '#src/views/internal/common/utils/buildPlanWorkspaceListing.ts';
-import { matchPlanRuns } from '#src/views/internal/common/utils/matchPlanRuns.ts';
-import { readPlanRecord } from '#src/views/internal/common/utils/readPlanRecord.ts';
-import { readPlanWorkspaceFiles } from '#src/views/internal/common/utils/readPlanWorkspaceFiles.ts';
+import { buildPlanWorkspaceListing } from '#src/views/common/buildPlanWorkspaceListing.ts';
+import { matchPlanRuns } from '#src/views/common/matchPlanRuns.ts';
+import { readPlanRecord } from '#src/views/common/readPlanRecord.ts';
+import { readPlanWorkspaceFiles } from '#src/views/common/readPlanWorkspaceFiles.ts';
+import type { PlanWorkspaceFiles } from '#src/views/common/types/PlanWorkspaceFiles.ts';
 import { listRuns } from '#src/views/listRuns.ts';
 import { PlanWorkspaceNotFoundError } from '#src/views/PlanWorkspaceNotFoundError.ts';
 

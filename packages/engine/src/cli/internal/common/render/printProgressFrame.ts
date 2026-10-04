@@ -1,4 +1,4 @@
-import type { RunProgress } from '#src/views/common/types/RunProgress.ts';
+import type { RunProgress } from '#src/common/types/RunProgress.ts';
 
 interface Params {
 	progress: RunProgress;

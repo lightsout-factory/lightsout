@@ -1,7 +1,7 @@
 import { buildActivityTree } from '#src/activity/buildActivityTree/buildActivityTree.ts';
 import { readActivityMarks } from '#src/activity/readActivityMarks.ts';
+import type { PlanActivityReport } from '#src/common/types/PlanActivityReport.ts';
 import { planWorkspaceDir } from '#src/plan/planWorkspaceDir.ts';
-import type { PlanActivityReport } from '#src/views/common/types/PlanActivityReport.ts';
 
 interface Params {
 	cwd: string;

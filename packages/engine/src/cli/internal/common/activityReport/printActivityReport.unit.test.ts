@@ -1,6 +1,7 @@
 import { expect, jest, test } from '@jest/globals';
 import { buildActivityTree } from '#src/activity/buildActivityTree/buildActivityTree.ts';
 import { printActivityReport } from '#src/cli/internal/common/activityReport/printActivityReport.ts';
+import type { PlanActivityReport } from '#src/common/types/PlanActivityReport.ts';
 import type { ActivityLevelEnd } from '#src/contracts/activity/ActivityLevelEnd.ts';
 import { ActivityLevelKind } from '#src/contracts/activity/ActivityLevelKind.ts';
 import type { ActivityLevelStart } from '#src/contracts/activity/ActivityLevelStart.ts';
@@ -11,7 +12,6 @@ import type { HarnessProcessUsage } from '#src/contracts/activity/HarnessProcess
 import { ProcessEndReason } from '#src/contracts/activity/ProcessEndReason.ts';
 import { Effort } from '#src/contracts/Effort.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
-import type { PlanActivityReport } from '#src/views/common/types/PlanActivityReport.ts';
 
 /** One level opening, carrying only what a case varies. */
 const levelStart = ({

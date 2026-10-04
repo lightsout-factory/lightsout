@@ -6,8 +6,8 @@ import { exitCli } from '#src/cli/common/utils/exitCli.ts';
 import { printActivityReport } from '#src/cli/internal/common/activityReport/printActivityReport.ts';
 import { resolveReportTargets } from '#src/cli/internal/common/activityReport/resolveReportTargets.ts';
 import { readOptionalConfig } from '#src/common/config/readOptionalConfig.ts';
+import type { PlanActivityReport } from '#src/common/types/PlanActivityReport.ts';
 import type { ConfigPricing } from '#src/contracts/ConfigPricing.ts';
-import type { PlanActivityReport } from '#src/views/common/types/PlanActivityReport.ts';
 import { readPlanActivityReports } from '#src/views/readPlanActivityReports.ts';
 
 // Absent rather than zero when no root could be priced, so a repository with no

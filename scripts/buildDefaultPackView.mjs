@@ -1,7 +1,7 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { getStandardsPackBundle } from '../packages/engine/src/views/getStandardsPackBundle.ts';
+import { getStandardsPackBundle } from '../packages/engine/src/views/getStandardsPackBundle/getStandardsPackBundle.ts';
 import { invokedDirectly } from './invokedDirectly.mjs';
 import { messageOf } from './messageOf.mjs';
 

@@ -1,7 +1,7 @@
 import { renderRunProgress } from '#src/cli/internal/common/render/renderRunProgress.ts';
+import type { RunProgress } from '#src/common/types/RunProgress.ts';
 import { readRunLiveness } from '#src/runState/readRunLiveness.ts';
 import { readRunManifest } from '#src/runState/readRunManifest.ts';
-import type { RunProgress } from '#src/views/common/types/RunProgress.ts';
 import { getRunProgress } from '#src/views/getRunProgress.ts';
 
 interface Params {

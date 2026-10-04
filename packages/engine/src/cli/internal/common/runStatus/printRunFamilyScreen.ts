@@ -1,7 +1,7 @@
 import { loadRunFamilyProgressBlock } from '#src/cli/internal/common/progressBlock/loadRunFamilyProgressBlock.ts';
 import { printConfigSource } from '#src/cli/internal/common/render/printConfigSource.ts';
 import { printProgressFrame } from '#src/cli/internal/common/render/printProgressFrame.ts';
-import type { RunProgress } from '#src/views/common/types/RunProgress.ts';
+import type { RunProgress } from '#src/common/types/RunProgress.ts';
 
 interface Params {
 	cwd: string;
