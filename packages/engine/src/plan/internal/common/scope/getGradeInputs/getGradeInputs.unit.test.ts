@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
 import { Effort } from '#src/contracts/Effort.ts';
-import { getGradeInputs } from '#src/plan/internal/common/scope/getGradeInputs.ts';
+import { getGradeInputs } from '#src/plan/internal/common/scope/getGradeInputs/getGradeInputs.ts';
 import { gradeInputsConfig, seedGradeInputsPlan } from '#tests/helpers/gradeInputsPlan.ts';
 
 // Mocked Imports
@@ -99,7 +99,7 @@ const fingerprintWithReaderBrief = async ({ brief, params }: { brief: string; pa
 
 	jest.isolateModules(() => {
 		jest.doMock('#src/agents/prompts/planGapCheck.md', () => ({ __esModule: true, default: brief }));
-		readInputs = (require('#src/plan/internal/common/scope/getGradeInputs.ts') as { getGradeInputs: typeof getGradeInputs }).getGradeInputs;
+		readInputs = (require('#src/plan/internal/common/scope/getGradeInputs/getGradeInputs.ts') as { getGradeInputs: typeof getGradeInputs }).getGradeInputs;
 	});
 
 	const inputs = await readInputs(params);

@@ -1,4 +1,4 @@
-import { buildFeatureExecutorInvocation } from '#src/agents/buildFeatureExecutorInvocation.ts';
+import { buildFeatureExecutorInvocation } from '#src/agents/buildFeatureExecutorInvocation/buildFeatureExecutorInvocation.ts';
 import type { PlanBuildMode } from '#src/common/types/PlanBuildMode.ts';
 import type { AcceptanceTestRecord } from '#src/contracts/run/AcceptanceTestRecord.ts';
 import type { PipelineRun } from '#src/pipeline/internal/PipelineRun.ts';

@@ -1,10 +1,10 @@
-import { sharedPromptSections } from '#src/agents/internal/common/constants/sharedPromptSections.ts';
-import { acceptanceTestsSection } from '#src/agents/internal/common/utils/acceptanceTestsSection.ts';
-import { applyPromptTokens } from '#src/agents/internal/common/utils/applyPromptTokens.ts';
-import { changedFilesSection } from '#src/agents/internal/common/utils/changedFilesSection.ts';
-import { moveOnlySection } from '#src/agents/internal/common/utils/moveOnlySection.ts';
-import { renameOnlySection } from '#src/agents/internal/common/utils/renameOnlySection.ts';
-import { selfCheckSection } from '#src/agents/internal/common/utils/selfCheckSection.ts';
+import { moveOnlySection } from '#src/agents/buildFeatureExecutorInvocation/moveOnlySection.ts';
+import { renameOnlySection } from '#src/agents/buildFeatureExecutorInvocation/renameOnlySection.ts';
+import { acceptanceTestsSection } from '#src/agents/common/acceptanceTestsSection.ts';
+import { applyPromptTokens } from '#src/agents/common/applyPromptTokens.ts';
+import { changedFilesSection } from '#src/agents/common/changedFilesSection.ts';
+import { sharedPromptSections } from '#src/agents/common/constants/sharedPromptSections.ts';
+import { selfCheckSection } from '#src/agents/common/selfCheckSection.ts';
 import featureExecutorPrompt from '#src/agents/prompts/featureExecutor.md';
 import { BuildMode } from '#src/common/constants/BuildMode.ts';
 import { defaultExecutorFileLimit } from '#src/common/constants/defaultExecutorFileLimit.ts';

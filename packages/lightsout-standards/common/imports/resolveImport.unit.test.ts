@@ -43,13 +43,13 @@ describe('resolveImport', () => {
 
 	test('resolves through the alias the package declares — the case that made every engine index file look empty', () => {
 		const { from, files, aliases } = setupScope({
-			paths: ['packages/engine/src/agents/buildFeatureExecutorInvocation.ts'],
+			paths: ['packages/engine/src/agents/buildFeatureExecutorInvocation/buildFeatureExecutorInvocation.ts'],
 			patterns: [['@/*', ['./src/*']]],
 		});
 
 		const target = resolveImport({ from, specifier: '@/agents/buildFeatureExecutorInvocation', files, aliases });
 
-		expect(target).toStrictEqual({ kind: 'file', path: 'packages/engine/src/agents/buildFeatureExecutorInvocation.ts' });
+		expect(target).toStrictEqual({ kind: 'file', path: 'packages/engine/src/agents/buildFeatureExecutorInvocation/buildFeatureExecutorInvocation.ts' });
 	});
 
 	test('resolves an alias onto a folder index file', () => {
@@ -108,7 +108,7 @@ describe('resolveImport', () => {
 		{ kind: 'an alias', specifier: '@/agents/buildFeatureExecutorInvocation' },
 		{ kind: 'a package', specifier: 'zod' },
 	])('for $kind with no alias map, answers unknown rather than guessing — the two are written the same way', ({ specifier }) => {
-		const { from, files } = setupScope({ paths: ['packages/engine/src/agents/buildFeatureExecutorInvocation.ts'] });
+		const { from, files } = setupScope({ paths: ['packages/engine/src/agents/buildFeatureExecutorInvocation/buildFeatureExecutorInvocation.ts'] });
 
 		const target = resolveImport({ from, specifier, files, aliases: undefined });
 

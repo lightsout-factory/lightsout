@@ -1,6 +1,6 @@
-import { sharedPromptSections } from '#src/agents/internal/common/constants/sharedPromptSections.ts';
-import { acceptanceTestsSection } from '#src/agents/internal/common/utils/acceptanceTestsSection.ts';
-import { applyPromptTokens } from '#src/agents/internal/common/utils/applyPromptTokens.ts';
+import { acceptanceTestsSection } from '#src/agents/common/acceptanceTestsSection.ts';
+import { applyPromptTokens } from '#src/agents/common/applyPromptTokens.ts';
+import { sharedPromptSections } from '#src/agents/common/constants/sharedPromptSections.ts';
 import unitTestWriterPrompt from '#src/agents/prompts/unitTestWriter.md';
 import type { AcceptanceTestRecord } from '#src/contracts/run/AcceptanceTestRecord.ts';
 

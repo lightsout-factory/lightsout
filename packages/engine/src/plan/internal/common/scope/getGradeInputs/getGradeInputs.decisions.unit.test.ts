@@ -4,7 +4,7 @@ import { describe, expect, jest, test } from '@jest/globals';
 import type { DecisionRow } from '#src/contracts/plan/decisions/DecisionRow.ts';
 import { DecisionSource } from '#src/contracts/plan/decisions/DecisionSource.ts';
 import type { GradeInputs } from '#src/contracts/plan/memory/GradeInputs.ts';
-import { getGradeInputs } from '#src/plan/internal/common/scope/getGradeInputs.ts';
+import { getGradeInputs } from '#src/plan/internal/common/scope/getGradeInputs/getGradeInputs.ts';
 import { getPlanDesignHash } from '#src/plan/internal/common/scope/getPlanDesignHash.ts';
 import { parsePlan } from '#src/plan/parsePlan.ts';
 import { overviewWithLog, overviewWithTwoLogs, phasedOverview, seedGradeInputsPlan } from '#tests/helpers/gradeInputsPlan.ts';

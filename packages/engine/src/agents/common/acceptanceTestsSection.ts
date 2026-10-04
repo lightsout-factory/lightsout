@@ -1,4 +1,4 @@
-import { listSection } from '#src/agents/internal/common/utils/listSection.ts';
+import { listSection } from '#src/agents/common/listSection.ts';
 import type { AcceptanceTestRecord } from '#src/contracts/run/AcceptanceTestRecord.ts';
 
 interface Params {

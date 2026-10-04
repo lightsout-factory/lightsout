@@ -1,6 +1,5 @@
 import { readFile } from 'node:fs/promises';
 import { basename, join } from 'node:path';
-import { planGradePromptTexts } from '#src/agents/common/constants/planGradePromptTexts.ts';
 import { readGitChangedFiles } from '#src/common/git/readGitChangedFiles.ts';
 import { readGitHeadCommit } from '#src/common/git/readGitHeadCommit.ts';
 import { canonicalJson } from '#src/common/utils/canonicalJson.ts';
@@ -9,6 +8,7 @@ import type { Effort } from '#src/contracts/Effort.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { DecisionRow } from '#src/contracts/plan/decisions/DecisionRow.ts';
 import type { GradeInputs } from '#src/contracts/plan/memory/GradeInputs.ts';
+import { planGradePromptTexts } from '#src/plan/internal/common/scope/getGradeInputs/planGradePromptTexts.ts';
 import { getOverviewDesignHashes } from '#src/plan/internal/common/scope/getOverviewDesignHashes.ts';
 import { getPlanDesignHash } from '#src/plan/internal/common/scope/getPlanDesignHash.ts';
 import type { ParsedPlan } from '#src/plan/internal/common/types/ParsedPlan.ts';

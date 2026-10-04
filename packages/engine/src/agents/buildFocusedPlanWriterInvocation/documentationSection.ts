@@ -1,4 +1,4 @@
-import { renderDocsSurfaces } from '#src/agents/internal/common/utils/renderDocsSurfaces.ts';
+import { renderDocsSurfaces } from '#src/agents/common/renderDocsSurfaces.ts';
 import type { ConfigDocs } from '#src/contracts/ConfigDocs.ts';
 
 interface Params {

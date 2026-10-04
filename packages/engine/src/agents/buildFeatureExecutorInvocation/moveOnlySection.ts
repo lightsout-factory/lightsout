@@ -1,4 +1,4 @@
-import { listSection } from '#src/agents/internal/common/utils/listSection.ts';
+import { listSection } from '#src/agents/common/listSection.ts';
 
 interface Params {
 	/** The plan's declared file moves. */

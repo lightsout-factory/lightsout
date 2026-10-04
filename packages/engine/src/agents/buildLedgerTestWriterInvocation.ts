@@ -1,5 +1,5 @@
-import { sharedPromptSections } from '#src/agents/internal/common/constants/sharedPromptSections.ts';
-import { applyPromptTokens } from '#src/agents/internal/common/utils/applyPromptTokens.ts';
+import { applyPromptTokens } from '#src/agents/common/applyPromptTokens.ts';
+import { sharedPromptSections } from '#src/agents/common/constants/sharedPromptSections.ts';
 import unitTestWriterPrompt from '#src/agents/prompts/unitTestWriter.md';
 import type { LedgerRow } from '#src/contracts/plan/ledger/LedgerRow.ts';
 

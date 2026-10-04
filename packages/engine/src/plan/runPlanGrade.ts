@@ -19,7 +19,7 @@ import { readReusableGrade } from '#src/plan/internal/common/grading/readReusabl
 import { runGradePass } from '#src/plan/internal/common/grading/runGradePass.ts';
 import { readGradeMemory } from '#src/plan/internal/common/memory/readGradeMemory.ts';
 import { decideGradeScope } from '#src/plan/internal/common/scope/decideGradeScope.ts';
-import { getGradeInputs } from '#src/plan/internal/common/scope/getGradeInputs.ts';
+import { getGradeInputs } from '#src/plan/internal/common/scope/getGradeInputs/getGradeInputs.ts';
 import type { DeliverableFile } from '#src/plan/internal/common/types/DeliverableFile.ts';
 import type { DetectionPass } from '#src/plan/internal/common/types/DetectionPass.ts';
 import type { GradeScopeDecision } from '#src/plan/internal/common/types/GradeScopeDecision.ts';

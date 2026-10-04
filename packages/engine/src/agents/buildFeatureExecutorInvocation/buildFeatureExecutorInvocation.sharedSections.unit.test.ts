@@ -1,6 +1,6 @@
 import { expect, test } from '@jest/globals';
 import { buildDirectWorkerInvocation } from '#src/agents/buildDirectWorkerInvocation.ts';
-import { buildFeatureExecutorInvocation } from '#src/agents/buildFeatureExecutorInvocation.ts';
+import { buildFeatureExecutorInvocation } from '#src/agents/buildFeatureExecutorInvocation/buildFeatureExecutorInvocation.ts';
 import { buildLedgerTestWriterInvocation } from '#src/agents/buildLedgerTestWriterInvocation.ts';
 import { buildRefactorExecutorInvocation } from '#src/agents/buildRefactorExecutorInvocation.ts';
 import { buildUnitTestWriterInvocation } from '#src/agents/buildUnitTestWriterInvocation.ts';

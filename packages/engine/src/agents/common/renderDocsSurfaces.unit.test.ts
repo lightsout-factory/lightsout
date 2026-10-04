@@ -1,5 +1,5 @@
 import { expect, test } from '@jest/globals';
-import { renderDocsSurfaces } from '#src/agents/internal/common/utils/renderDocsSurfaces.ts';
+import { renderDocsSurfaces } from '#src/agents/common/renderDocsSurfaces.ts';
 
 test('renderDocsSurfaces: one surface renders as a backticked path and its covers line', () => {
 	expect(renderDocsSurfaces({ docs: [{ path: 'README.md', covers: 'The product tour.' }] })).toBe('- `README.md` — The product tour.');

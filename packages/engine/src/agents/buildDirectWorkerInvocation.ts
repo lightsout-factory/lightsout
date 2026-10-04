@@ -1,7 +1,7 @@
-import { sharedPromptSections } from '#src/agents/internal/common/constants/sharedPromptSections.ts';
-import { applyPromptTokens } from '#src/agents/internal/common/utils/applyPromptTokens.ts';
-import { changedFilesSection } from '#src/agents/internal/common/utils/changedFilesSection.ts';
-import { selfCheckSection } from '#src/agents/internal/common/utils/selfCheckSection.ts';
+import { applyPromptTokens } from '#src/agents/common/applyPromptTokens.ts';
+import { changedFilesSection } from '#src/agents/common/changedFilesSection.ts';
+import { sharedPromptSections } from '#src/agents/common/constants/sharedPromptSections.ts';
+import { selfCheckSection } from '#src/agents/common/selfCheckSection.ts';
 import directWorkerPrompt from '#src/agents/prompts/directWorker.md';
 import type { AnsweredQuestion } from '#src/common/types/AnsweredQuestion.ts';
 
