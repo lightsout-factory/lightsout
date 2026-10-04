@@ -1,4 +1,4 @@
-import type { TicketSummary } from '#src/queue/common/types/TicketSummary.ts';
+import type { TicketSummary } from '#src/common/types/TicketSummary.ts';
 
 interface Params {
 	tickets: TicketSummary[];

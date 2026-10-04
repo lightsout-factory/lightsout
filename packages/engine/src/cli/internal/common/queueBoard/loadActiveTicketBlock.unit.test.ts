@@ -5,6 +5,7 @@ import { loadPlanningProgressBlock } from '#src/cli/internal/common/progressBloc
 import { loadRunProgressBlock } from '#src/cli/internal/common/progressBlock/loadRunProgressBlock.ts';
 import { loadShippingProgressBlock } from '#src/cli/internal/common/progressBlock/loadShippingProgressBlock.ts';
 import { loadActiveTicketBlock } from '#src/cli/internal/common/queueBoard/loadActiveTicketBlock.ts';
+import { QueueWorker } from '#src/common/constants/QueueWorker.ts';
 import type { PlanningProgress } from '#src/contracts/plan/progress/PlanningProgress.ts';
 import { PlanningStep } from '#src/contracts/plan/progress/PlanningStep.ts';
 import type { QueueBoardTicket } from '#src/contracts/queue/QueueBoardTicket.ts';
@@ -13,7 +14,6 @@ import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import type { ShippingProgress } from '#src/contracts/ship/ShippingProgress.ts';
 import { ShippingStepId } from '#src/contracts/ship/ShippingStepId.ts';
-import { QueueWorker } from '#src/queue/common/constants/QueueWorker.ts';
 import { writeRunOwner } from '#src/runState/owner/writeRunOwner.ts';
 import { freshCwd } from '#tests/helpers/freshCwd.ts';
 import { planWorkspaceFolder } from '#tests/helpers/planWorkspaceFolder.ts';

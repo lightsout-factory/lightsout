@@ -1,12 +1,12 @@
 import { describe, expect, jest, test } from '@jest/globals';
 import { PlanningStatus } from '#src/common/constants/PlanningStatus.ts';
+import { QueueWorker } from '#src/common/constants/QueueWorker.ts';
 import type { PullRequestSummary } from '#src/common/types/PullRequestSummary.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { BranchPhase } from '#src/contracts/queue/BranchPhase.ts';
 import type { BranchState } from '#src/contracts/queue/BranchState.ts';
-import { QueueWorker } from '#src/queue/common/constants/QueueWorker.ts';
 import type { NamedWorkOrder } from '#src/queue/common/types/NamedWorkOrder.ts';
-import type { RunnableTicket } from '#src/queue/internal/common/types/RunnableTicket.ts';
+import type { RunnableTicket } from '#src/queue/common/types/RunnableTicket.ts';
 import { reconcileMergedTickets } from '#src/queue/ticketSelection/reconcileMergedTickets.ts';
 
 // Mocked Imports

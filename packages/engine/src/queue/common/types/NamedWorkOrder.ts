@@ -1,4 +1,4 @@
-import type { RunnableTicket } from '#src/queue/internal/common/types/RunnableTicket.ts';
+import type { RunnableTicket } from '#src/queue/common/types/RunnableTicket.ts';
 
 export interface NamedWorkOrder {
 	ticket: RunnableTicket;

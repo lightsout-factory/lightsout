@@ -1,11 +1,11 @@
 import { resolve } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
 import { queueCommand } from '#src/cli/queueCommand.ts';
+import type { QueueDrainReport } from '#src/common/types/QueueDrainReport.ts';
+import type { QueueSettings } from '#src/common/types/QueueSettings.ts';
 import type { TrackerFailure } from '#src/common/types/TrackerFailure.ts';
 import type { TrackerSettings } from '#src/common/types/TrackerSettings.ts';
-import type { QueueDrainReport } from '#src/queue/common/types/QueueDrainReport.ts';
 import type { QueueFailure } from '#src/queue/common/types/QueueFailure.ts';
-import type { QueueSettings } from '#src/queue/common/types/QueueSettings.ts';
 import { captureCommandOutput } from '#tests/helpers/captureCommandOutput.ts';
 import { queueSettingsFixture } from '#tests/helpers/queueSettingsFixture.ts';
 import { setupConsumerRepo } from '#tests/helpers/setupConsumerRepo.ts';
@@ -35,10 +35,10 @@ jest.mock('#src/cli/internal/common/detach/launchDetached.ts', () => ({
 // -------------------------
 // The drain spawns harnesses and talks to a tracker — the queue module's entry
 // point, covered by its own tests.
-type RunQueueParams = Parameters<typeof import('#src/queue/runQueue.ts').runQueue>[0];
+type RunQueueParams = Parameters<typeof import('#src/queue/runQueue/runQueue.ts').runQueue>[0];
 const mockRunQueue = jest.fn<(params: RunQueueParams) => Promise<QueueDrainReport | QueueFailure>>();
 
-jest.mock('#src/queue/runQueue.ts', () => ({ runQueue: (params: RunQueueParams) => mockRunQueue(params) }));
+jest.mock('#src/queue/runQueue/runQueue.ts', () => ({ runQueue: (params: RunQueueParams) => mockRunQueue(params) }));
 // -------------------------
 const mockEmptyRelayMailbox = jest.fn<(params: { directory: string }) => Promise<void>>();
 
@@ -47,7 +47,7 @@ jest.mock('#src/queue/relay/emptyRelayMailbox.ts', () => ({ emptyRelayMailbox: (
 const mockResolveQueueSettings = jest.fn<() => QueueSettings | QueueFailure>();
 const mockResolveTrackerSettings = jest.fn<() => TrackerSettings | TrackerFailure>();
 
-jest.mock('#src/queue/startup/resolveQueueSettings.ts', () => ({ resolveQueueSettings: () => mockResolveQueueSettings() }));
+jest.mock('#src/queue/startup/resolveQueueSettings/resolveQueueSettings.ts', () => ({ resolveQueueSettings: () => mockResolveQueueSettings() }));
 jest.mock('#src/ticketTracker/resolveTrackerSettings.ts', () => ({ resolveTrackerSettings: () => mockResolveTrackerSettings() }));
 // -------------------------
 

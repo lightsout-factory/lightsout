@@ -4,7 +4,7 @@ import { messageOf } from '#src/common/messageOf.ts';
 import { writeJsonFile } from '#src/common/writeJsonFile.ts';
 import type { BranchPhase } from '#src/contracts/queue/BranchPhase.ts';
 import type { BranchState } from '#src/contracts/queue/BranchState.ts';
-import { getBranchStatePath } from '#src/queue/branchState/internal/common/utils/getBranchStatePath.ts';
+import { getBranchStatePath } from '#src/queue/branchState/common/getBranchStatePath.ts';
 
 interface Params {
 	/** Any checkout of the repository; the record lands in the primary one, so it outlives the worktree. */
