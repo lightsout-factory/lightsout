@@ -2,7 +2,7 @@ import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { jest } from '@jest/globals';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { GateHolds } from '#src/gates/gateHolds/common/types/GateHolds.ts';
 import type { NamedWorkOrder } from '#src/queue/common/types/NamedWorkOrder.ts';
 import type { QueueDrainReport } from '#src/queue/common/types/QueueDrainReport.ts';

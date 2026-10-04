@@ -1,5 +1,5 @@
 import { messageOf } from '#src/common/utils/messageOf.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { Permissions } from '#src/contracts/Permissions.ts';
 import type { DoctorCheck } from '#src/doctor/internal/common/types/DoctorCheck.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';

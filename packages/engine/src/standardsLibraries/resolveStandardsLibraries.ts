@@ -1,5 +1,5 @@
 import { messageOf } from '#src/common/utils/messageOf.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { builtInStandardsLibraryName } from '#src/contracts/standards/builtInStandardsLibraryName.ts';
 import type { LoadedStandardsLibrary } from '#src/standardsLibraries/common/types/LoadedStandardsLibrary.ts';
 import { findUnresolvedRequirements } from '#src/standardsLibraries/findUnresolvedRequirements.ts';

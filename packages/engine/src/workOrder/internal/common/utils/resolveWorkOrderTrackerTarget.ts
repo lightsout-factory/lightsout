@@ -1,4 +1,4 @@
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { resolveTrackerSettings } from '#src/ticketTracker/resolveTrackerSettings.ts';
 import type { TicketTrackerTarget } from '#src/workOrder/internal/common/types/TicketTrackerTarget.ts';
 

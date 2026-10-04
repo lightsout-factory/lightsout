@@ -1,4 +1,4 @@
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { DoctorCheck } from '#src/doctor/internal/common/types/DoctorCheck.ts';
 
 interface Params {

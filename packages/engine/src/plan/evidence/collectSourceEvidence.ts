@@ -5,7 +5,7 @@ import { readJsonFile } from '#src/common/utils/readJsonFile.ts';
 import { sha256 } from '#src/common/utils/sha256.ts';
 import { writeJsonFile } from '#src/common/utils/writeJsonFile.ts';
 import { resolveConsumerTypescript } from '#src/common/workspace/resolveConsumerTypescript.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { SourceEvidenceEntry } from '#src/contracts/plan/evidence/SourceEvidenceEntry.ts';
 import { SourceEvidenceIndex } from '#src/contracts/plan/evidence/SourceEvidenceIndex.ts';
 import { SourceEvidenceKind } from '#src/contracts/plan/evidence/SourceEvidenceKind.ts';

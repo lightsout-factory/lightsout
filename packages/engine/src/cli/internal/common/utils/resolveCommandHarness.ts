@@ -1,5 +1,5 @@
 import type { Effort } from '#src/contracts/Effort.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 
 interface Params {
 	config: LightsoutConfig | undefined;

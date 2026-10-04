@@ -6,7 +6,7 @@ import { parseFlags } from '#src/cli/common/args/parseFlags.ts';
 import { planVerifyFactsCommand } from '#src/cli/plan/planVerifyFactsCommand.ts';
 import { serializeAttachmentManifest } from '#src/common/attachmentManifest/serializeAttachmentManifest.ts';
 import { workOrderNameOf } from '#src/common/planAddress/workOrderNameOf.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { TrackerSettings } from '#src/ticketTracker/common/types/TrackerSettings.ts';
 import { captureCommandOutput } from '#tests/helpers/captureCommandOutput.ts';
 import { planWorkspaceFolder } from '#tests/helpers/planWorkspaceFolder.ts';

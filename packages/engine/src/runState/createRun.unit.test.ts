@@ -2,7 +2,7 @@ import { execSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { isAbsolute, join, resolve } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { resolveRunDir } from '#src/runState/common/paths/resolveRunDir.ts';
 import { createRun } from '#src/runState/createRun.ts';
 import { readRunOwner } from '#src/runState/owner/readRunOwner.ts';

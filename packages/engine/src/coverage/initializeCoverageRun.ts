@@ -4,7 +4,7 @@ import { readGitChangedFiles } from '#src/common/git/readGitChangedFiles.ts';
 import type { LoadedConfig } from '#src/common/types/LoadedConfig.ts';
 import { formatResumeCommand } from '#src/common/utils/formatResumeCommand.ts';
 import { CoverageWorklist } from '#src/contracts/coverage/CoverageWorklist.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { PipelineKind } from '#src/contracts/run/PipelineKind.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import { runCoverageCheck } from '#src/coverage/runCoverageCheck.ts';

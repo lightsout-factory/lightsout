@@ -5,7 +5,7 @@ import { defaultPackagesDir } from '#src/common/constants/defaultPackagesDir.ts'
 import { readGitChangedFiles } from '#src/common/git/readGitChangedFiles.ts';
 import { buildSelfCheckStep } from '#src/common/selfCheck/buildSelfCheckStep.ts';
 import { packageOf } from '#src/common/workspace/packageOf.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { GateScheduleKind } from '#src/gates/common/constants/GateScheduleKind.ts';
 import { SelfCheckReason } from '#src/gates/common/constants/SelfCheckReason.ts';
 import type { GateSchedule } from '#src/gates/common/types/GateSchedule.ts';

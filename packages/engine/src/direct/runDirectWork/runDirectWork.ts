@@ -5,7 +5,7 @@ import type { LoadedConfig } from '#src/common/types/LoadedConfig.ts';
 import { describeGateCoordinationStop } from '#src/common/utils/describeGateCoordinationStop.ts';
 import { describeGateNoVerdictStop } from '#src/common/utils/describeGateNoVerdictStop.ts';
 import { runPreflightGate } from '#src/common/utils/runPreflightGate.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import type { StepRecord } from '#src/contracts/run/StepRecord.ts';

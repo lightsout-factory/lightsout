@@ -1,7 +1,7 @@
 import { mkdirSync, renameSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import type { PipelineRun } from '#src/pipeline/internal/PipelineRun.ts';
 import { checkMoveOnlyChanges } from '#src/pipeline/moveCheck/checkMoveOnlyChanges.ts';

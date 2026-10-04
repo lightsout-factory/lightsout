@@ -3,7 +3,7 @@ import { createProgressPrinter } from '#src/cli/internal/common/utils/createProg
 import type { PlanWorktree } from '#src/cli/plan/internal/common/types/PlanWorktree.ts';
 import { resolvePlanWorktree } from '#src/cli/plan/internal/common/utils/resolvePlanWorktree.ts';
 import { isSamePath } from '#src/common/utils/isSamePath.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 
 interface Params {
 	/** The checkout the command was launched from. */

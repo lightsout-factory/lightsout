@@ -1,7 +1,7 @@
 import { describe, expect, jest, test } from '@jest/globals';
 import { PlanningStatus } from '#src/common/constants/PlanningStatus.ts';
 import type { LoadedConfig } from '#src/common/types/LoadedConfig.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { WorkOrderState } from '#src/contracts/workOrder/WorkOrderState.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import type { TicketSummary } from '#src/queue/common/types/TicketSummary.ts';

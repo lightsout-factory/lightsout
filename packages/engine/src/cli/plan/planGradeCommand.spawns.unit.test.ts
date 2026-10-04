@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { expect, test } from '@jest/globals';
 import { planGradeCommand } from '#src/cli/plan/planGradeCommand.ts';
 import { Effort } from '#src/contracts/Effort.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { Permissions } from '#src/contracts/Permissions.ts';
 import type { DriverInvocation } from '#src/drivers/common/types/DriverInvocation.ts';
 import { captureCommandOutput } from '#tests/helpers/captureCommandOutput.ts';

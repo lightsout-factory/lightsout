@@ -7,7 +7,7 @@ import { RunState } from '#src/common/services/RunState.ts';
 import { createEventFileSink } from '#src/common/utils/createEventFileSink.ts';
 import { formatResumeCommand } from '#src/common/utils/formatResumeCommand.ts';
 import { ActivityLevelKind } from '#src/contracts/activity/ActivityLevelKind.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { Permissions } from '#src/contracts/Permissions.ts';
 import type { AgentUsage } from '#src/contracts/run/AgentUsage.ts';
 import { PipelineKind } from '#src/contracts/run/PipelineKind.ts';

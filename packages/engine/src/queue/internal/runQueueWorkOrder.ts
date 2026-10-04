@@ -1,6 +1,6 @@
 import { join } from 'node:path';
 import type { LoadedConfig } from '#src/common/types/LoadedConfig.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { BranchPhase } from '#src/contracts/queue/BranchPhase.ts';
 import { WorktreeOwner } from '#src/contracts/worktree/WorktreeOwner.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';

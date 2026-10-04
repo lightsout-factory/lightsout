@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
 import type { StandardsGroup } from '#src/common/types/StandardsGroup.ts';
-import { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 import { resolveStandardsGroups } from '#src/standards/resolveStandardsGroups/resolveStandardsGroups.ts';
 import type { ResolvedRuleState } from '#src/standardsCheck/common/types/ResolvedRuleState.ts';

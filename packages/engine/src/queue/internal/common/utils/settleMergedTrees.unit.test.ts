@@ -1,6 +1,6 @@
 import { describe, expect, jest, test } from '@jest/globals';
 import { PlanningStatus } from '#src/common/constants/PlanningStatus.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { QueueWorker } from '#src/queue/common/constants/QueueWorker.ts';
 import type { MergedParkedTree } from '#src/queue/internal/common/types/MergedParkedTree.ts';
 import { settleMergedTrees } from '#src/queue/internal/common/utils/settleMergedTrees.ts';

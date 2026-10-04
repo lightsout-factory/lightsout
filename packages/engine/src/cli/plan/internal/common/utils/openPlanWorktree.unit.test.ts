@@ -4,7 +4,7 @@ import { describe, expect, jest, test } from '@jest/globals';
 import type { CommandContext } from '#src/cli/common/types/CommandContext.ts';
 import type { PlanWorktree } from '#src/cli/plan/internal/common/types/PlanWorktree.ts';
 import { openPlanWorktree } from '#src/cli/plan/internal/common/utils/openPlanWorktree.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { freshCwd } from '#tests/helpers/freshCwd.ts';
 
 // Mocked Imports

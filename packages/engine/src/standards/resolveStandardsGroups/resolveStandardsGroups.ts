@@ -4,7 +4,7 @@ import { defaultPackagesDir } from '#src/common/constants/defaultPackagesDir.ts'
 import type { StandardsGroup } from '#src/common/types/StandardsGroup.ts';
 import { listWorkspacePackages } from '#src/common/workspace/listWorkspacePackages.ts';
 import { readDependencyNames } from '#src/common/workspace/readDependencyNames.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { resolveRuleStates } from '#src/standards/resolveStandardsGroups/resolveRuleStates.ts';
 import type { LoadedStandardsLibrary } from '#src/standardsLibraries/common/types/LoadedStandardsLibrary.ts';
 import type { ResolvedStandardsPack } from '#src/standardsLibraries/common/types/ResolvedStandardsPack.ts';

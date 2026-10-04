@@ -4,7 +4,7 @@ import { dim } from '#src/cli/internal/common/terminal/dim.ts';
 import { green } from '#src/cli/internal/common/terminal/green.ts';
 import { yellow } from '#src/cli/internal/common/terminal/yellow.ts';
 import { planRunOptions } from '#src/cli/plan/internal/common/utils/planRunOptions.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { PlanningStep } from '#src/contracts/plan/progress/PlanningStep.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';

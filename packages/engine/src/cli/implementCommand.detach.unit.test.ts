@@ -3,7 +3,7 @@ import { dirname, join } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
 import { parseFlags } from '#src/cli/common/args/parseFlags.ts';
 import { implementCommand } from '#src/cli/implementCommand.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import type { ShipResult } from '#src/contracts/ship/ShipResult.ts';
 import { PlanProgress } from '#src/contracts/workOrder/PlanProgress.ts';

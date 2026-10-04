@@ -1,6 +1,6 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { describe, expect, jest, test } from '@jest/globals';
-import { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { DecisionsRecord } from '#src/contracts/plan/decisions/DecisionsRecord.ts';
 import { FindingSeverity } from '#src/contracts/plan/grade/FindingSeverity.ts';
 import { StructuralCheck } from '#src/contracts/plan/grade/StructuralCheck.ts';

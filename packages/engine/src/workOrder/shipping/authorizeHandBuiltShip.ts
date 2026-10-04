@@ -1,5 +1,5 @@
 import type { GitIdentity } from '#src/common/types/GitIdentity.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { WorkOrderEventKind } from '#src/contracts/workOrder/WorkOrderEventKind.ts';
 import type { WorkOrderState } from '#src/contracts/workOrder/WorkOrderState.ts';
 import { WorkOrderShipStateKind } from '#src/workOrder/common/constants/WorkOrderShipStateKind.ts';

@@ -1,4 +1,4 @@
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { BranchPhase } from '#src/contracts/queue/BranchPhase.ts';
 import { ShipBlockReason } from '#src/contracts/ship/ShipBlockReason.ts';
 import { ShipStatus } from '#src/contracts/ship/ShipStatus.ts';

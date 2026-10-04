@@ -1,7 +1,7 @@
 import type { ActivityLevel } from '#src/activity/common/types/ActivityLevel.ts';
 import { buildTestChangeReviewInvocation } from '#src/agents/buildTestChangeReviewInvocation.ts';
 import { defaultSupervisorTimeoutMinutes } from '#src/common/constants/defaultSupervisorTimeoutMinutes.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { Permissions } from '#src/contracts/Permissions.ts';
 import type { AcceptanceTestRecord } from '#src/contracts/run/AcceptanceTestRecord.ts';
 import { TestChangeReview } from '#src/contracts/work/TestChangeReview.ts';

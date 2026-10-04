@@ -6,7 +6,7 @@ import { readGitHeadCommit } from '#src/common/git/readGitHeadCommit.ts';
 import { canonicalJson } from '#src/common/utils/canonicalJson.ts';
 import { sha256 } from '#src/common/utils/sha256.ts';
 import type { Effort } from '#src/contracts/Effort.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { DecisionRow } from '#src/contracts/plan/decisions/DecisionRow.ts';
 import type { GradeInputs } from '#src/contracts/plan/memory/GradeInputs.ts';
 import { getOverviewDesignHashes } from '#src/plan/internal/common/scope/getOverviewDesignHashes.ts';

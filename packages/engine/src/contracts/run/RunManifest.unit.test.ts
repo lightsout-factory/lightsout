@@ -1,5 +1,5 @@
 import { expect, test } from '@jest/globals';
-import { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { RunManifest } from '#src/contracts/run/RunManifest.ts';
 
 const base = {

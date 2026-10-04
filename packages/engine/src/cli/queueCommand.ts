@@ -13,7 +13,7 @@ import { createProgressPrinter } from '#src/cli/internal/common/utils/createProg
 import { resolveEffectiveConfigAndDriver } from '#src/cli/internal/common/utils/resolveEffectiveConfigAndDriver.ts';
 import { readLoadedConfig } from '#src/common/config/readLoadedConfig.ts';
 import { messageOf } from '#src/common/utils/messageOf.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { QueueSummary } from '#src/contracts/queue/QueueSummary.ts';
 import { toQueueBoardTickets } from '#src/queue/board/toQueueBoardTickets.ts';
 import { writeQueueSummary } from '#src/queue/board/writeQueueSummary.ts';

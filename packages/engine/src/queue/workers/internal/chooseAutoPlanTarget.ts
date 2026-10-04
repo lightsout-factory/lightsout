@@ -1,6 +1,6 @@
 import { formatPlanAddress } from '#src/common/planAddress/formatPlanAddress.ts';
 import { toBranchSlug } from '#src/common/utils/toBranchSlug.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { WorkOrderState } from '#src/contracts/workOrder/WorkOrderState.ts';
 import type { TicketSummary } from '#src/queue/common/types/TicketSummary.ts';
 import { addWorkOrderPlan } from '#src/workOrder/addWorkOrderPlan.ts';

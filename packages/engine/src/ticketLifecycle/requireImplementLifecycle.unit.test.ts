@@ -1,6 +1,6 @@
 import { describe, expect, jest, test } from '@jest/globals';
 import type { GateHold } from '#src/contracts/gates/GateHold.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { GateHolds } from '#src/gates/gateHolds/common/types/GateHolds.ts';
 import { requireImplementLifecycle } from '#src/ticketLifecycle/requireImplementLifecycle.ts';
 import type { TrackerFailure } from '#src/ticketTracker/common/types/TrackerFailure.ts';

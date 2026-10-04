@@ -1,7 +1,7 @@
 import { readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import { PlanProgress } from '#src/contracts/workOrder/PlanProgress.ts';
 import { WorkOrderMode } from '#src/contracts/workOrder/WorkOrderMode.ts';

@@ -1,5 +1,5 @@
 import { resolveCommandHarness } from '#src/cli/internal/common/utils/resolveCommandHarness.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import { getDriver } from '#src/drivers/getDriver.ts';
 

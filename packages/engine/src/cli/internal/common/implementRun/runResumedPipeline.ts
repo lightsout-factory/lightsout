@@ -4,7 +4,7 @@ import { createProgressPrinter } from '#src/cli/internal/common/utils/createProg
 import { runPhasesOrFailFast } from '#src/cli/internal/common/utils/runPhasesOrFailFast.ts';
 import { runPipelineOrFailFast } from '#src/cli/internal/common/utils/runPipelineOrFailFast.ts';
 import type { LoadedConfig } from '#src/common/types/LoadedConfig.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { PipelineKind } from '#src/contracts/run/PipelineKind.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';

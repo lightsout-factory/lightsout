@@ -1,6 +1,6 @@
 import { describe, expect, test } from '@jest/globals';
 import type { CoverageBatchReport } from '#src/contracts/coverage/CoverageBatchReport.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { BatchOutcome } from '#src/contracts/refactor/BatchOutcome.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';

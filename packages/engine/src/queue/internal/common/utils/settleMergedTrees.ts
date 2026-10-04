@@ -1,4 +1,4 @@
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { QueueSettings } from '#src/queue/common/types/QueueSettings.ts';
 import type { LeftBehindTicket } from '#src/queue/internal/common/types/LeftBehindTicket.ts';
 import type { MergedParkedTree } from '#src/queue/internal/common/types/MergedParkedTree.ts';

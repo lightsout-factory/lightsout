@@ -7,7 +7,7 @@ import { readConfig } from '#src/common/config/readConfig.ts';
 import { readGitCurrentBranch } from '#src/common/git/readGitCurrentBranch.ts';
 import { readGitIdentity } from '#src/common/git/readGitIdentity.ts';
 import { resolveWorkOrderNameForBranch } from '#src/common/workspace/resolveWorkOrderNameForBranch.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { ShipStatus } from '#src/contracts/ship/ShipStatus.ts';
 import { resolveShipSettings } from '#src/ship/resolveShipSettings.ts';
 import { runShip } from '#src/ship/runShip.ts';

@@ -1,7 +1,7 @@
 import { join } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
 import type { LoadedConfig } from '#src/common/types/LoadedConfig.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { WorkReport } from '#src/contracts/work/WorkReport.ts';
 import { WorkReportStatus } from '#src/contracts/work/WorkReportStatus.ts';
 import { runDirectWork } from '#src/direct/runDirectWork/runDirectWork.ts';

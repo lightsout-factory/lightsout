@@ -6,7 +6,7 @@ import { workOrderNameOf } from '#src/common/planAddress/workOrderNameOf.ts';
 import { isSamePath } from '#src/common/utils/isSamePath.ts';
 import { readWorkOrderRecordFile } from '#src/common/workspace/readWorkOrderRecordFile.ts';
 import { workOrderFolderDir } from '#src/common/workspace/workOrderFolderDir.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { WorktreeOwner } from '#src/contracts/worktree/WorktreeOwner.ts';
 import { readLiveRunLock } from '#src/runState/lock/readLiveRunLock.ts';
 import { createWorktree } from '#src/worktree/createWorktree.ts';

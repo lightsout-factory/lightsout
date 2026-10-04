@@ -1,6 +1,6 @@
 import type { ZodError } from 'zod';
 import { describeConfigIssues } from '#src/common/config/describeConfigIssues.ts';
-import { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 
 interface Params {

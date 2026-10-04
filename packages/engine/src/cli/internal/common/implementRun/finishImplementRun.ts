@@ -3,7 +3,7 @@ import { exitCli } from '#src/cli/common/utils/exitCli.ts';
 import { renderResult } from '#src/cli/internal/common/render/renderResult.ts';
 import { shipAfterImplement } from '#src/cli/internal/common/utils/shipAfterImplement.ts';
 import { messageOf } from '#src/common/utils/messageOf.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { PipelineResult } from '#src/pipeline/PipelineResult.ts';
 import { writeRunFinalReport } from '#src/runState/finalReport/writeRunFinalReport.ts';
 import { isRunPaused } from '#src/runState/isRunPaused.ts';

@@ -3,7 +3,7 @@ import type { ActivityLevel } from '#src/activity/common/types/ActivityLevel.ts'
 import { buildPlanRepairInvocation } from '#src/agents/buildPlanRepairInvocation.ts';
 import { ActivityLevelKind } from '#src/contracts/activity/ActivityLevelKind.ts';
 import type { Effort } from '#src/contracts/Effort.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { Permissions } from '#src/contracts/Permissions.ts';
 import type { DecisionsRecord } from '#src/contracts/plan/decisions/DecisionsRecord.ts';
 import { PlanFixReport } from '#src/contracts/plan/draft/PlanFixReport.ts';

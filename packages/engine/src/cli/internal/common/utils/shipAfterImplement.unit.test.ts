@@ -5,7 +5,7 @@ import { join } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
 import { contradictoryShipFlagsMessage } from '#src/cli/internal/common/constants/contradictoryShipFlagsMessage.ts';
 import { shipAfterImplement } from '#src/cli/internal/common/utils/shipAfterImplement.ts';
-import { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import { WorktreeOwner } from '#src/contracts/worktree/WorktreeOwner.ts';
 import { readWorktreeRecord } from '#src/worktree/records/readWorktreeRecord.ts';

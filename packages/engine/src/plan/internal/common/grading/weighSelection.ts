@@ -1,6 +1,6 @@
 import { basename } from 'node:path';
 import { defaultPackagesDir } from '#src/common/constants/defaultPackagesDir.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { PhaseWeight } from '#src/contracts/plan/grade/PhaseWeight.ts';
 import { PlanWeight } from '#src/contracts/plan/grade/PlanWeight.ts';
 import { defaultWeightThresholds } from '#src/plan/internal/common/constants/defaultWeightThresholds.ts';

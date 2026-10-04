@@ -1,4 +1,4 @@
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import type { GateHolds } from '#src/gates/gateHolds/common/types/GateHolds.ts';
 import type { QueueBoardRecorder } from '#src/queue/board/QueueBoardRecorder.ts';

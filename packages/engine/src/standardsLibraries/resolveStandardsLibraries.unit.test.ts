@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
 import { messageOf } from '#src/common/utils/messageOf.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { readStandardsLibrary } from '#src/standardsLibraries/readStandardsLibrary.ts';
 import { resolveStandardsLibraries } from '#src/standardsLibraries/resolveStandardsLibraries.ts';
 import { resolveStandardsLibraryPath } from '#src/standardsLibraries/resolveStandardsLibraryPath.ts';

@@ -8,7 +8,7 @@ import { brainstormAttachmentFileNames } from '#src/common/constants/brainstormA
 import { brainstormAttachmentManifestName } from '#src/common/constants/brainstormAttachmentManifestName.ts';
 import { brainstormNotesFileName } from '#src/common/constants/brainstormNotesFileName.ts';
 import { sha256 } from '#src/common/utils/sha256.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { pathExists } from '#src/plan/common/paths/pathExists.ts';
 import { planWorkspaceDir } from '#src/plan/planWorkspaceDir.ts';
 import { getTicketAttachments } from '#src/ticketTracker/getTicketAttachments.ts';

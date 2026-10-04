@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { PackagesSource } from '#src/contracts/run/PackagesSource.ts';
 import { resolvePackageScope } from '#src/pipeline/internal/common/utils/resolvePackageScope.ts';
 

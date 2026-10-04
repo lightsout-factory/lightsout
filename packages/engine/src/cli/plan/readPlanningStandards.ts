@@ -1,6 +1,6 @@
 import { dim } from '#src/cli/internal/common/terminal/dim.ts';
 import { messageOf } from '#src/common/utils/messageOf.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { resolveStandards } from '#src/standards/resolveStandards.ts';
 
 interface Params {

@@ -1,5 +1,5 @@
 import { describe, expect, jest, test } from '@jest/globals';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { RefactorWorklist } from '#src/contracts/refactor/RefactorWorklist.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFinding.ts';

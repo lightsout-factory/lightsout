@@ -1,5 +1,5 @@
 import { describe, expect, test } from '@jest/globals';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { checkGenerateCommand } from '#src/doctor/checkGenerateCommand.ts';
 
 /** A config listing whichever `generated` paths and `gates.generate` command the case names. */

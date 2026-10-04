@@ -4,7 +4,7 @@ import { resolveRunBranch } from '#src/cli/internal/common/implementRun/resolveR
 import type { RunWorkspace } from '#src/cli/internal/common/types/RunWorkspace.ts';
 import { parsePlanAddress } from '#src/common/planAddress/parsePlanAddress.ts';
 import { isSamePath } from '#src/common/utils/isSamePath.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { WorktreeOwner } from '#src/contracts/worktree/WorktreeOwner.ts';
 import { planNameFromPath } from '#src/plan/planNameFromPath.ts';
 import { readLiveRunLock } from '#src/runState/lock/readLiveRunLock.ts';

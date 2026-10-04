@@ -3,7 +3,7 @@ import { describe, expect, jest, test } from '@jest/globals';
 import type { CommandContext } from '#src/cli/common/types/CommandContext.ts';
 import { openDirectWorkspace } from '#src/cli/internal/common/implementRun/openDirectWorkspace.ts';
 import type { RunWorkspace } from '#src/cli/internal/common/types/RunWorkspace.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 
 // Mocked Imports
 // -------------------------

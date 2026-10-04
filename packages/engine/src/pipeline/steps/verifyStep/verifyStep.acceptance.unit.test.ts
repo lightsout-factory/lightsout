@@ -1,7 +1,7 @@
 import { describe, expect, jest, test } from '@jest/globals';
 import { BuildMode } from '#src/common/constants/BuildMode.ts';
 import type { GateResult } from '#src/contracts/gates/GateResult.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { AcceptanceTestRecord } from '#src/contracts/run/AcceptanceTestRecord.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';

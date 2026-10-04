@@ -1,5 +1,5 @@
 import { readGitChangedFiles } from '#src/common/git/readGitChangedFiles.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 
 interface Params {
 	cwd: string;

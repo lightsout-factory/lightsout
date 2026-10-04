@@ -1,5 +1,5 @@
 import { describe, expect, test } from '@jest/globals';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { resolveQueueSettings } from '#src/queue/startup/resolveQueueSettings.ts';
 
 const queueBlock = { 'max-parallel': 3 } as const;

@@ -1,6 +1,6 @@
 import type { ActivityLevel } from '#src/activity/common/types/ActivityLevel.ts';
 import type { Effort } from '#src/contracts/Effort.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { Permissions } from '#src/contracts/Permissions.ts';
 import type { DecisionsRecord } from '#src/contracts/plan/decisions/DecisionsRecord.ts';
 import type { SourceEvidenceIndex } from '#src/contracts/plan/evidence/SourceEvidenceIndex.ts';

@@ -1,5 +1,5 @@
 import { describe, expect, test } from '@jest/globals';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { checkStandardsPack } from '#src/doctor/checkStandardsPack.ts';
 
 /** A config naming whichever repo pack and package packs the case gives. */

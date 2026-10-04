@@ -5,7 +5,7 @@ import { resolveRunCwd } from '#src/cli/internal/common/implementRun/resolveRunC
 import { createProgressPrinter } from '#src/cli/internal/common/utils/createProgressPrinter.ts';
 import { getRunResultExitCode } from '#src/cli/internal/common/utils/getRunResultExitCode.ts';
 import { resolveEffectiveConfigAndDriver } from '#src/cli/internal/common/utils/resolveEffectiveConfigAndDriver.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { PipelineKind } from '#src/contracts/run/PipelineKind.ts';
 import { ShipStatus } from '#src/contracts/ship/ShipStatus.ts';
 import type { PipelineResult } from '#src/pipeline/PipelineResult.ts';

@@ -8,7 +8,7 @@ import { readLoadedConfig } from '#src/common/config/readLoadedConfig.ts';
 import { readRunConfig } from '#src/common/config/readRunConfig.ts';
 import type { LoadedConfig } from '#src/common/types/LoadedConfig.ts';
 import { messageOf } from '#src/common/utils/messageOf.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import { getDriver } from '#src/drivers/getDriver.ts';

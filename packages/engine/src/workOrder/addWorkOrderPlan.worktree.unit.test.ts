@@ -2,7 +2,7 @@ import { execSync } from 'node:child_process';
 import { existsSync, realpathSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { planWorkspaceDir } from '#src/plan/planWorkspaceDir.ts';
 import type { TrackerAttachment } from '#src/ticketTracker/common/types/TrackerAttachment.ts';
 import type { TrackerFailure } from '#src/ticketTracker/common/types/TrackerFailure.ts';

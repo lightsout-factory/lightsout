@@ -1,5 +1,5 @@
 import { describe, expect, test } from '@jest/globals';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { resolveWorkOrderTrackerTarget } from '#src/workOrder/internal/common/utils/resolveWorkOrderTrackerTarget.ts';
 
 /**

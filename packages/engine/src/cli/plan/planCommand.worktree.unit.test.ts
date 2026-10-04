@@ -5,7 +5,7 @@ import { join } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
 import { parseFlags } from '#src/cli/common/args/parseFlags.ts';
 import { planCommand } from '#src/cli/plan/planCommand.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { WorktreeOwner } from '#src/contracts/worktree/WorktreeOwner.ts';
 import type { WorktreeRecord } from '#src/contracts/worktree/WorktreeRecord.ts';
 import { planWorkspaceDir } from '#src/plan/planWorkspaceDir.ts';

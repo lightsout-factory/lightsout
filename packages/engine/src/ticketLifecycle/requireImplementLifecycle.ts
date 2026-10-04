@@ -1,5 +1,5 @@
 import { PlanningStatus } from '#src/common/constants/PlanningStatus.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { describeGateHold } from '#src/gates/gateHolds/common/utils/describeGateHold.ts';
 import { isTicketGateHeld } from '#src/gates/gateHolds/common/utils/isTicketGateHeld.ts';
 import { syncGateHolds } from '#src/gates/gateHolds/syncGateHolds.ts';

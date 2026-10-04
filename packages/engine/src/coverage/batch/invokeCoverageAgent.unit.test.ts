@@ -2,7 +2,7 @@ import { existsSync, mkdtempSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { AgentUsage } from '#src/contracts/run/AgentUsage.ts';
 import { invokeCoverageAgent } from '#src/coverage/batch/invokeCoverageAgent.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';

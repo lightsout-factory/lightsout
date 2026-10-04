@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
 import { ensurePlanWorkspace } from '#src/cli/internal/common/utils/ensurePlanWorkspace.ts';
 import { serializeAttachmentManifest } from '#src/common/attachmentManifest/serializeAttachmentManifest.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { planAttachmentManifestName } from '#src/plan/common/constants/planAttachmentManifestName.ts';
 import type { TrackerSettings } from '#src/ticketTracker/common/types/TrackerSettings.ts';
 import { freshCwd } from '#tests/helpers/freshCwd.ts';

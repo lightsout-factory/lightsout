@@ -1,6 +1,6 @@
 import { describeUncommittableTree } from '#src/commit/describeUncommittableTree.ts';
 import { formatResumeCommand } from '#src/common/utils/formatResumeCommand.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { PipelineKind } from '#src/contracts/run/PipelineKind.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';

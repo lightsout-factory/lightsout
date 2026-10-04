@@ -1,4 +1,4 @@
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFinding.ts';
 import type { BatchSiteChecker } from '#src/refactor/batch/internal/common/types/BatchSiteChecker.ts';
 import { matchRemainingFindings } from '#src/refactor/batch/matchRemainingFindings.ts';

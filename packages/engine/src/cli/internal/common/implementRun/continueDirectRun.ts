@@ -3,7 +3,7 @@ import { resolve } from 'node:path';
 import { exitCli } from '#src/cli/common/utils/exitCli.ts';
 import { createProgressPrinter } from '#src/cli/internal/common/utils/createProgressPrinter.ts';
 import type { LoadedConfig } from '#src/common/types/LoadedConfig.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import { runDirectWork } from '#src/direct/runDirectWork/runDirectWork.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';

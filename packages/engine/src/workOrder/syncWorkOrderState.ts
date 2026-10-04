@@ -1,6 +1,6 @@
 import { sha256 } from '#src/common/utils/sha256.ts';
 import { workOrderFolderDir } from '#src/common/workspace/workOrderFolderDir.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { WorkOrderState } from '#src/contracts/workOrder/WorkOrderState.ts';
 import { WorkOrderSyncKeep } from '#src/workOrder/common/constants/WorkOrderSyncKeep.ts';
 import { keepLocalWorkOrderState } from '#src/workOrder/divergence/keepLocalWorkOrderState.ts';

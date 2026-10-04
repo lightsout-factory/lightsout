@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { expect, test } from '@jest/globals';
 import { readOptionalConfig } from '#src/common/config/readOptionalConfig.ts';
-import { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { runStandardsCheck } from '#src/standardsCheck/runStandardsCheck.ts';
 
 const bigBody = `

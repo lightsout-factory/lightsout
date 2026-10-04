@@ -1,4 +1,4 @@
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { TrackerStatusRole } from '#src/ticketLifecycle/common/constants/TrackerStatusRole.ts';
 import { writeDoneStatus } from '#src/ticketLifecycle/internal/writeDoneStatus.ts';
 import { resolveLifecycleSettings } from '#src/ticketLifecycle/resolveLifecycleSettings.ts';

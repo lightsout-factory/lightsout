@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
 import { contradictoryWorktreeFlagsMessage } from '#src/cli/internal/common/constants/contradictoryWorktreeFlagsMessage.ts';
 import { resolvePlanWorktree } from '#src/cli/plan/internal/common/utils/resolvePlanWorktree.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { RunLock } from '#src/contracts/run/RunLock.ts';
 import type { WorktreeOwner } from '#src/contracts/worktree/WorktreeOwner.ts';
 import type { WorktreeRecord } from '#src/contracts/worktree/WorktreeRecord.ts';

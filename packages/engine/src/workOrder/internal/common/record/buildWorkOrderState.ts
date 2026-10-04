@@ -1,4 +1,4 @@
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { WorkOrderMode } from '#src/contracts/workOrder/WorkOrderMode.ts';
 import type { WorkOrderState } from '#src/contracts/workOrder/WorkOrderState.ts';
 

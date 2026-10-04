@@ -1,7 +1,7 @@
 import { commitWorkOrderWork } from '#src/commit/commitWorkOrderWork.ts';
 import { composeCommitMessage } from '#src/commit/composeCommitMessage.ts';
 import { readGitCommitsAhead } from '#src/common/git/readGitCommitsAhead.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { BranchPhase } from '#src/contracts/queue/BranchPhase.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import { writeBranchState } from '#src/queue/branchState/writeBranchState.ts';

@@ -1,5 +1,5 @@
 import { expect, test } from '@jest/globals';
-import { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 
 // `standards-pack` and `package-standards-packs` share one selection schema: a
 // single pack address or a list of them. What this file owns is the list form;

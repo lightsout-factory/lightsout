@@ -2,7 +2,7 @@ import { mkdirSync, mkdtempSync, symlinkSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import type { WorkReport } from '#src/contracts/work/WorkReport.ts';
 import { WorkReportStatus } from '#src/contracts/work/WorkReportStatus.ts';

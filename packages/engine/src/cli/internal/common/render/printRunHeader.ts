@@ -4,7 +4,7 @@ import { defaultGateTimeoutMinutes } from '#src/common/constants/defaultGateTime
 import { defaultSupervisorTimeoutMinutes } from '#src/common/constants/defaultSupervisorTimeoutMinutes.ts';
 import type { StandardsGroup } from '#src/common/types/StandardsGroup.ts';
 import { messageOf } from '#src/common/utils/messageOf.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { Permissions } from '#src/contracts/Permissions.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import { resolveStandardsGroups } from '#src/standards/resolveStandardsGroups/resolveStandardsGroups.ts';

@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
 import { serializeAttachmentManifest } from '#src/common/attachmentManifest/serializeAttachmentManifest.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { PlanProgress } from '#src/contracts/workOrder/PlanProgress.ts';
 import { WorkOrderMode } from '#src/contracts/workOrder/WorkOrderMode.ts';
 import type { WorkOrderPlan } from '#src/contracts/workOrder/WorkOrderPlan.ts';

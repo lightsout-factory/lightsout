@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
 import { PlanningStatus } from '#src/common/constants/PlanningStatus.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { PlanningProgress } from '#src/contracts/plan/progress/PlanningProgress.ts';
 import { PlanningStep } from '#src/contracts/plan/progress/PlanningStep.ts';
 import type { PlanningStepRecord } from '#src/contracts/plan/progress/PlanningStepRecord.ts';

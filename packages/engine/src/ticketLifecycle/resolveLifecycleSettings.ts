@@ -1,5 +1,5 @@
 import { defaultPlanningStatusLabels, PlanningStatus } from '#src/common/constants/PlanningStatus.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { TrackerStatusRole } from '#src/ticketLifecycle/common/constants/TrackerStatusRole.ts';
 import type { LifecycleSettings } from '#src/ticketLifecycle/common/types/LifecycleSettings.ts';
 import type { TrackerFailure } from '#src/ticketTracker/common/types/TrackerFailure.ts';

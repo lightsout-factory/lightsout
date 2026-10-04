@@ -7,7 +7,7 @@ import { red } from '#src/cli/internal/common/terminal/red.ts';
 import { yellow } from '#src/cli/internal/common/terminal/yellow.ts';
 import { exitOnPlanFailure } from '#src/cli/plan/internal/common/utils/exitOnPlanFailure.ts';
 import { planRunOptions } from '#src/cli/plan/internal/common/utils/planRunOptions.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { PlanVariant } from '#src/contracts/plan/draft/PlanVariant.ts';
 import type { StructuralFinding } from '#src/contracts/plan/grade/StructuralFinding.ts';
 import { PlanningStep } from '#src/contracts/plan/progress/PlanningStep.ts';

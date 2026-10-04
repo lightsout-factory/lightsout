@@ -1,5 +1,5 @@
 import { appendJsonlRecords } from '#src/common/utils/appendJsonlRecords.ts';
-import type { FrictionEntry } from '#src/contracts/friction/FrictionEntry.ts';
+import type { FrictionEntry } from '#src/contracts/friction/FrictionEntry/FrictionEntry.ts';
 import { FrictionRecord } from '#src/contracts/friction/FrictionRecord.ts';
 import { getFrictionPath } from '#src/runState/internal/common/paths/getFrictionPath.ts';
 

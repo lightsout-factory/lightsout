@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os';
 import { join, sep } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
 import type { GitIdentity } from '#src/common/types/GitIdentity.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { PlanProgress } from '#src/contracts/workOrder/PlanProgress.ts';
 import { WorkOrderMode } from '#src/contracts/workOrder/WorkOrderMode.ts';
 import type { WorkOrderPlan } from '#src/contracts/workOrder/WorkOrderPlan.ts';

@@ -1,5 +1,5 @@
 import { describe, expect, test } from '@jest/globals';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { checkHarnessUsage } from '#src/doctor/checkHarnessUsage.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import type { DriverInvocation } from '#src/drivers/common/types/DriverInvocation.ts';

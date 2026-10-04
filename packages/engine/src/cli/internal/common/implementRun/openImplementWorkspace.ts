@@ -6,7 +6,7 @@ import type { RunWorkspace } from '#src/cli/internal/common/types/RunWorkspace.t
 import { createProgressPrinter } from '#src/cli/internal/common/utils/createProgressPrinter.ts';
 import { resolvePlanTarget } from '#src/cli/internal/common/utils/resolvePlanTarget.ts';
 import { describeUncommittableTree } from '#src/commit/describeUncommittableTree.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 
 interface Params {
 	/** The checkout the command was launched from. */

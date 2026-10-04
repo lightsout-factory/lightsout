@@ -1,7 +1,7 @@
 import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { RunOwner } from '#src/contracts/run/RunOwner.ts';
 import { PlanProgress } from '#src/contracts/workOrder/PlanProgress.ts';
 import type { PipelineResult } from '#src/pipeline/PipelineResult.ts';

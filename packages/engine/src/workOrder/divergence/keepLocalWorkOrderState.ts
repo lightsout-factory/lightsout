@@ -1,7 +1,7 @@
 import { formatPlanAddress } from '#src/common/planAddress/formatPlanAddress.ts';
 import { sha256 } from '#src/common/utils/sha256.ts';
 import { workOrderFolderDir } from '#src/common/workspace/workOrderFolderDir.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { WorkOrderState } from '#src/contracts/workOrder/WorkOrderState.ts';
 import { pathExists } from '#src/plan/common/paths/pathExists.ts';
 import { planWorkspaceDir } from '#src/plan/planWorkspaceDir.ts';

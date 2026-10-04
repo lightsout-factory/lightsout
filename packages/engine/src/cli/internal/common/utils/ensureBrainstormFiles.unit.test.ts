@@ -4,7 +4,7 @@ import { describe, expect, jest, test } from '@jest/globals';
 import { ensureBrainstormFiles } from '#src/cli/internal/common/utils/ensureBrainstormFiles.ts';
 import { serializeAttachmentManifest } from '#src/common/attachmentManifest/serializeAttachmentManifest.ts';
 import { workOrderNameOf } from '#src/common/planAddress/workOrderNameOf.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { TrackerSettings } from '#src/ticketTracker/common/types/TrackerSettings.ts';
 import { freshCwd } from '#tests/helpers/freshCwd.ts';
 import { planWorkspaceFolder } from '#tests/helpers/planWorkspaceFolder.ts';

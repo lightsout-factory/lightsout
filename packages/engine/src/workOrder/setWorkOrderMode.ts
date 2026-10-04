@@ -1,5 +1,5 @@
 import { planNumberOf } from '#src/common/planAddress/planNumberOf.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { PlanProgress } from '#src/contracts/workOrder/PlanProgress.ts';
 import { WorkOrderEventKind } from '#src/contracts/workOrder/WorkOrderEventKind.ts';
 import { WorkOrderMode } from '#src/contracts/workOrder/WorkOrderMode.ts';

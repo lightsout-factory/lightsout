@@ -2,7 +2,7 @@ import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { PackagesSource } from '#src/contracts/run/PackagesSource.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import { prepareRun } from '#src/pipeline/internal/common/utils/prepareRun.ts';

@@ -2,7 +2,7 @@ import { execSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { describe, expect, jest, test } from '@jest/globals';
 import { PlanningStatus } from '#src/common/constants/PlanningStatus.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { BranchPhase } from '#src/contracts/queue/BranchPhase.ts';
 import { ShipBlockReason } from '#src/contracts/ship/ShipBlockReason.ts';
 import type { ShipResult } from '#src/contracts/ship/ShipResult.ts';

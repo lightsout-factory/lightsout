@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
 import { workOrderNameOf } from '#src/common/planAddress/workOrderNameOf.ts';
 import { sha256 } from '#src/common/utils/sha256.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { planAttachmentManifestName } from '#src/plan/common/constants/planAttachmentManifestName.ts';
 import { publishPlan } from '#src/plan/publish/publishPlan.ts';
 import type { TrackerSettings } from '#src/ticketTracker/common/types/TrackerSettings.ts';

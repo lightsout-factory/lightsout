@@ -4,7 +4,7 @@ import { readGitChangedFiles } from '#src/common/git/readGitChangedFiles.ts';
 import type { LoadedConfig } from '#src/common/types/LoadedConfig.ts';
 import { formatResumeCommand } from '#src/common/utils/formatResumeCommand.ts';
 import { writeJsonFile } from '#src/common/utils/writeJsonFile.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { RefactorWorklist } from '#src/contracts/refactor/RefactorWorklist.ts';
 import { PipelineKind } from '#src/contracts/run/PipelineKind.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';

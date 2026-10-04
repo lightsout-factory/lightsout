@@ -2,7 +2,7 @@ import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { SupervisorDecision } from '#src/contracts/work/SupervisorDecision.ts';
 import type { SupervisorVerdict } from '#src/contracts/work/SupervisorVerdict.ts';
 import type { GateRunResult } from '#src/gates/common/types/GateRunResult.ts';

@@ -1,6 +1,6 @@
 import { defaultExecutorFileLimit } from '#src/common/constants/defaultExecutorFileLimit.ts';
 import { defaultPackagesDir } from '#src/common/constants/defaultPackagesDir.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { DecisionsRecord } from '#src/contracts/plan/decisions/DecisionsRecord.ts';
 import { FindingSeverity } from '#src/contracts/plan/grade/FindingSeverity.ts';
 import { StructuralCheck } from '#src/contracts/plan/grade/StructuralCheck.ts';

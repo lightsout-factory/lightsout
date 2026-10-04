@@ -1,5 +1,5 @@
 import { expect, test } from '@jest/globals';
-import { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 
 const base = { gates: { check: 'c', test: 't', 'test-coverage': false } };
 

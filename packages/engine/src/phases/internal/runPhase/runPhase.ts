@@ -4,7 +4,7 @@ import type { ActivityLevel } from '#src/activity/common/types/ActivityLevel.ts'
 import type { LoadedConfig } from '#src/common/types/LoadedConfig.ts';
 import { messageOf } from '#src/common/utils/messageOf.ts';
 import { ActivityLevelKind } from '#src/contracts/activity/ActivityLevelKind.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { PhaseReport } from '#src/contracts/run/PhaseReport.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';

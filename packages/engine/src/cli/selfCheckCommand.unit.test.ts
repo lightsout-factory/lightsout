@@ -5,7 +5,7 @@ import { parseFlags } from '#src/cli/common/args/parseFlags.ts';
 import type { CommandContext } from '#src/cli/common/types/CommandContext.ts';
 import { selfCheckCommand } from '#src/cli/selfCheckCommand.ts';
 import type { GateResult } from '#src/contracts/gates/GateResult.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { PipelineKind } from '#src/contracts/run/PipelineKind.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import { SelfCheckReason } from '#src/gates/common/constants/SelfCheckReason.ts';

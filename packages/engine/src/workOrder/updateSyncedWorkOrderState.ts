@@ -1,5 +1,5 @@
 import { workOrderFolderDir } from '#src/common/workspace/workOrderFolderDir.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { WorkOrderState } from '#src/contracts/workOrder/WorkOrderState.ts';
 import { publishedButUnrecorded } from '#src/workOrder/internal/common/constants/publishedButUnrecorded.ts';
 import { attachWorkOrderStateIfUnmoved } from '#src/workOrder/internal/common/utils/attachWorkOrderStateIfUnmoved.ts';

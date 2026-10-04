@@ -1,5 +1,5 @@
 import type { CoverageBatchReport } from '#src/contracts/coverage/CoverageBatchReport.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { BatchOutcome } from '#src/contracts/refactor/BatchOutcome.ts';
 import type { AgentUsage } from '#src/contracts/run/AgentUsage.ts';
 import { checkTestsOnly } from '#src/coverage/batch/internal/checkTestsOnly.ts';

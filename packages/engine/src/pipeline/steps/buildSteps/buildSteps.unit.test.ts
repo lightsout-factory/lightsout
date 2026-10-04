@@ -1,6 +1,6 @@
 import { describe, expect, jest, test } from '@jest/globals';
 import type { AcceptanceRow } from '#src/common/types/AcceptanceRow.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { LedgerRow } from '#src/contracts/plan/ledger/LedgerRow.ts';
 import type { ApprovedTestRecord } from '#src/contracts/run/ApprovedTestRecord.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';

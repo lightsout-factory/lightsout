@@ -1,7 +1,7 @@
 import { describe, expect, jest, test } from '@jest/globals';
 import type { LoadedConfig } from '#src/common/types/LoadedConfig.ts';
 import type { CoverageWorklist } from '#src/contracts/coverage/CoverageWorklist.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import { runCoveragePipeline } from '#src/coverage/runCoveragePipeline.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';

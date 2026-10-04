@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { configKeyDescriptions } from '#src/views/internal/common/constants/configKeyDescriptions.ts';
 
 /**

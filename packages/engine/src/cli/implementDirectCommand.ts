@@ -17,7 +17,7 @@ import { readLoadedConfig } from '#src/common/config/readLoadedConfig.ts';
 import { readGitCurrentBranch } from '#src/common/git/readGitCurrentBranch.ts';
 import type { LoadedConfig } from '#src/common/types/LoadedConfig.ts';
 import { readRunLabel } from '#src/common/utils/readRunLabel.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { runDirectWork } from '#src/direct/runDirectWork/runDirectWork.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import { requireImplementLifecycle } from '#src/ticketLifecycle/requireImplementLifecycle.ts';

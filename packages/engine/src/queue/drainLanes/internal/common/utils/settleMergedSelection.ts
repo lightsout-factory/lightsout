@@ -1,4 +1,4 @@
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { NamedWorkOrder } from '#src/queue/common/types/NamedWorkOrder.ts';
 import type { LeftBehindTicket } from '#src/queue/internal/common/types/LeftBehindTicket.ts';
 import { reconcileMergedTickets } from '#src/queue/ticketSelection/reconcileMergedTickets.ts';

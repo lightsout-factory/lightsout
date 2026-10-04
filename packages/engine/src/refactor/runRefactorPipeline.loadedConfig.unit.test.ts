@@ -1,7 +1,7 @@
 import { join } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
 import type { LoadedConfig } from '#src/common/types/LoadedConfig.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { RefactorWorklist } from '#src/contracts/refactor/RefactorWorklist.ts';
 import { PipelineKind } from '#src/contracts/run/PipelineKind.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';

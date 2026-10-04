@@ -2,7 +2,7 @@ import { join } from 'node:path';
 import { messageOf } from '#src/common/utils/messageOf.ts';
 import { sha256 } from '#src/common/utils/sha256.ts';
 import { workOrderFolderDir } from '#src/common/workspace/workOrderFolderDir.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { WorkOrderState } from '#src/contracts/workOrder/WorkOrderState.ts';
 import { workOrderFileNames } from '#src/workOrder/internal/common/constants/workOrderFileNames.ts';
 import type { PublishedWorkOrderState } from '#src/workOrder/internal/common/types/PublishedWorkOrderState.ts';

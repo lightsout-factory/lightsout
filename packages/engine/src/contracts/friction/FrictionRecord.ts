@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { FrictionEntry } from '#src/contracts/friction/FrictionEntry.ts';
+import { FrictionEntry } from '#src/contracts/friction/FrictionEntry/FrictionEntry.ts';
 
 export const FrictionRecord = FrictionEntry.extend({
 	at: z.string(),

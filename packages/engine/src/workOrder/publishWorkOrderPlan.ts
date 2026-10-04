@@ -1,6 +1,6 @@
 import { parsePlanAddress } from '#src/common/planAddress/parsePlanAddress.ts';
 import { workOrderFolderDir } from '#src/common/workspace/workOrderFolderDir.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { PlanProgress } from '#src/contracts/workOrder/PlanProgress.ts';
 import type { WorkOrderState } from '#src/contracts/workOrder/WorkOrderState.ts';
 import { publishPlan } from '#src/plan/publish/publishPlan.ts';

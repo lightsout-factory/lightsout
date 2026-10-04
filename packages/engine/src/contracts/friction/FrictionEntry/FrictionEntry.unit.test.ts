@@ -1,5 +1,5 @@
 import { expect, test } from '@jest/globals';
-import { FrictionEntry } from '#src/contracts/friction/FrictionEntry.ts';
+import { FrictionEntry } from '#src/contracts/friction/FrictionEntry/FrictionEntry.ts';
 
 test('FrictionEntry: every documented area parses to its own label', () => {
 	const areas = ['plan', 'prompt', 'standards', 'environment', 'other'];

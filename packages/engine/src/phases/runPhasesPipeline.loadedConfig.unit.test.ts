@@ -5,7 +5,7 @@ import { readConfig } from '#src/common/config/readConfig.ts';
 import { readRunConfig } from '#src/common/config/readRunConfig.ts';
 import type { LoadedConfig } from '#src/common/types/LoadedConfig.ts';
 import { Effort } from '#src/contracts/Effort.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { PhaseReport } from '#src/contracts/run/PhaseReport.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import { runPhasesPipeline } from '#src/phases/runPhasesPipeline.ts';

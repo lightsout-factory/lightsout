@@ -1,5 +1,5 @@
 import { defaultPackagesDir } from '#src/common/constants/defaultPackagesDir.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { RefactorWorklist } from '#src/contracts/refactor/RefactorWorklist.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 import { batchFindings } from '#src/refactor/batch/batchFindings.ts';

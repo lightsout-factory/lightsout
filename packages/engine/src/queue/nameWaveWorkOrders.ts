@@ -1,5 +1,5 @@
 import { messageOf } from '#src/common/utils/messageOf.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { WorkOrderMode } from '#src/contracts/workOrder/WorkOrderMode.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import { QueueWorker } from '#src/queue/common/constants/QueueWorker.ts';

@@ -1,7 +1,7 @@
 import { readOptionalConfig } from '#src/common/config/readOptionalConfig.ts';
 import { parsePlanAddress } from '#src/common/planAddress/parsePlanAddress.ts';
 import { workOrderNameOf } from '#src/common/planAddress/workOrderNameOf.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { pathExists } from '#src/plan/common/paths/pathExists.ts';
 import { planNameFromPath } from '#src/plan/planNameFromPath.ts';
 import { planWorkspaceDir } from '#src/plan/planWorkspaceDir.ts';

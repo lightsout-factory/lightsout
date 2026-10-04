@@ -6,7 +6,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, test } from '@jest/globals';
-import { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { readPlanPackages } from '#src/pipeline/readPlanPackages.ts';
 import { scanPlanPackagePaths } from '#src/pipeline/scanPlanPackagePaths.ts';
 

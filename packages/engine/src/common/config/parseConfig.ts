@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { describeConfigIssues } from '#src/common/config/describeConfigIssues.ts';
 import { messageOf } from '#src/common/utils/messageOf.ts';
-import { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 
 interface Params {
 	raw: string;

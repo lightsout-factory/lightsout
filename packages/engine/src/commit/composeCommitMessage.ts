@@ -3,7 +3,7 @@ import { buildRunCommitMessage } from '#src/commit/internal/buildRunCommitMessag
 import type { CommitAddress } from '#src/commit/internal/common/types/CommitAddress.ts';
 import { readGitStagedChange } from '#src/common/git/readGitStagedChange.ts';
 import { messageOf } from '#src/common/utils/messageOf.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { Permissions } from '#src/contracts/Permissions.ts';
 import type { AgentUsage } from '#src/contracts/run/AgentUsage.ts';
 import { CommitMessage } from '#src/contracts/work/CommitMessage.ts';

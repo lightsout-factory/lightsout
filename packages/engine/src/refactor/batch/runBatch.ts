@@ -1,6 +1,6 @@
 import { defaultPackagesDir } from '#src/common/constants/defaultPackagesDir.ts';
 import type { StandardsGroup } from '#src/common/types/StandardsGroup.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { BatchOutcome } from '#src/contracts/refactor/BatchOutcome.ts';
 import type { RefactorBatch } from '#src/contracts/refactor/RefactorBatch.ts';
 import type { AgentUsage } from '#src/contracts/run/AgentUsage.ts';

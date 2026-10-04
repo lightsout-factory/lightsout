@@ -7,7 +7,7 @@ import { excludedSourcePaths } from '#src/common/sourceFiles/excludedSourcePaths
 import { listSourceFiles } from '#src/common/sourceFiles/listSourceFiles.ts';
 import type { LoadedConfig } from '#src/common/types/LoadedConfig.ts';
 import { resolveConsumerTypescript } from '#src/common/workspace/resolveConsumerTypescript.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { PipelineKind } from '#src/contracts/run/PipelineKind.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';

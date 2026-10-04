@@ -2,7 +2,7 @@ import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { expect, test } from '@jest/globals';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { checkChangedFilesExecuted } from '#src/coverage/checkChangedFilesExecuted.ts';
 import type { PipelineRun } from '#src/pipeline/internal/PipelineRun.ts';
 import { selectTestTargets } from '#src/pipeline/internal/steps/selectTestTargets.ts';

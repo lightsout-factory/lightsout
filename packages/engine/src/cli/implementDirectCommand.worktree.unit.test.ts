@@ -6,7 +6,7 @@ import { parseFlags } from '#src/cli/common/args/parseFlags.ts';
 import type { CommandContext } from '#src/cli/common/types/CommandContext.ts';
 import { implementDirectCommand } from '#src/cli/implementDirectCommand.ts';
 import type { RunWorkspace } from '#src/cli/internal/common/types/RunWorkspace.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import type { PipelineResult } from '#src/pipeline/PipelineResult.ts';

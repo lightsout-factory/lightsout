@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { consultSupervisor } from '#src/common/utils/consultSupervisor.ts';
 import { createEventFileSink } from '#src/common/utils/createEventFileSink.ts';
 import { describeGateNoVerdict } from '#src/common/utils/describeGateNoVerdict.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { AgentUsage } from '#src/contracts/run/AgentUsage.ts';
 import { SupervisorDecision } from '#src/contracts/work/SupervisorDecision.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';

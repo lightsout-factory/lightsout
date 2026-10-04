@@ -2,7 +2,7 @@ import { defaultAgentTimeoutMinutes } from '#src/common/constants/defaultAgentTi
 import { defaultPackagesDir } from '#src/common/constants/defaultPackagesDir.ts';
 import { excludedSourcePaths } from '#src/common/sourceFiles/excludedSourcePaths.ts';
 import { listSourceFiles } from '#src/common/sourceFiles/listSourceFiles.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFinding.ts';
 import { getDriver } from '#src/drivers/getDriver.ts';
 import { resolveStandardsGroups } from '#src/standards/resolveStandardsGroups/resolveStandardsGroups.ts';

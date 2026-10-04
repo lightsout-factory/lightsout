@@ -1,5 +1,5 @@
 import { execSync } from 'node:child_process';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { AgentUsage } from '#src/contracts/run/AgentUsage.ts';
 import { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';

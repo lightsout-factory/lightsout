@@ -1,6 +1,6 @@
 import { describe, expect, test } from '@jest/globals';
 import { describeConfigIssues } from '#src/common/config/describeConfigIssues.ts';
-import { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 
 const setupRejectedConfig = () => {
 	const result = LightsoutConfig.safeParse({

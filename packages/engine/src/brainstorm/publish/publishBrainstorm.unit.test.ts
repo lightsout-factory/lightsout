@@ -5,7 +5,7 @@ import { describe, expect, jest, test } from '@jest/globals';
 import { publishBrainstorm } from '#src/brainstorm/publish/publishBrainstorm.ts';
 import { workOrderNameOf } from '#src/common/planAddress/workOrderNameOf.ts';
 import { sha256 } from '#src/common/utils/sha256.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { TrackerSettings } from '#src/ticketTracker/common/types/TrackerSettings.ts';
 import { planWorkspaceFolder } from '#tests/helpers/planWorkspaceFolder.ts';
 import { ticketTrackerConfigBlock } from '#tests/helpers/queueConfigBlock.ts';

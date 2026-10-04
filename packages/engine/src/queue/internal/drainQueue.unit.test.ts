@@ -1,5 +1,5 @@
 import { describe, expect, jest, test } from '@jest/globals';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { QueueBoardRecorder } from '#src/queue/board/QueueBoardRecorder.ts';
 import type { NamedWorkOrder } from '#src/queue/common/types/NamedWorkOrder.ts';
 import type { QueueDrainReport } from '#src/queue/common/types/QueueDrainReport.ts';

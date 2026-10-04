@@ -6,7 +6,7 @@ import { green } from '#src/cli/internal/common/terminal/green.ts';
 import { red } from '#src/cli/internal/common/terminal/red.ts';
 import { yellow } from '#src/cli/internal/common/terminal/yellow.ts';
 import { planRunOptions } from '#src/cli/plan/internal/common/utils/planRunOptions.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { GapOutcome } from '#src/contracts/plan/grade/GapOutcome.ts';
 import type { GradeReport } from '#src/contracts/plan/grade/GradeReport.ts';
 import { PlanningStep } from '#src/contracts/plan/progress/PlanningStep.ts';

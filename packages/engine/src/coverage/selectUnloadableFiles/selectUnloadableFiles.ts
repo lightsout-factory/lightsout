@@ -2,7 +2,7 @@ import { readFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import type ts from 'typescript';
 import { isUnloadableSourceFile } from '#src/common/sourceFiles/isUnloadableSourceFile.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { coverageScopeOf } from '#src/coverage/internal/common/utils/coverageScopeOf.ts';
 import { resolveScopeContext } from '#src/coverage/internal/common/utils/resolveScopeContext.ts';
 import { scopeRootOf } from '#src/coverage/internal/common/utils/scopeRootOf.ts';

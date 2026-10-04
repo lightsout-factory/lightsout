@@ -2,7 +2,7 @@ import { buildQueueAutoPlanInvocation } from '#src/agents/buildQueueAutoPlanInvo
 import type { AnsweredQuestion } from '#src/common/types/AnsweredQuestion.ts';
 import type { LoadedConfig } from '#src/common/types/LoadedConfig.ts';
 import { getDirsOutsideCwd } from '#src/common/utils/getDirsOutsideCwd.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import { WorkReport } from '#src/contracts/work/WorkReport.ts';
 import { WorkReportStatus } from '#src/contracts/work/WorkReportStatus.ts';

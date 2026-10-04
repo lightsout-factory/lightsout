@@ -2,7 +2,7 @@ import { stat } from 'node:fs/promises';
 import { resolveCommandHarness } from '#src/cli/internal/common/utils/resolveCommandHarness.ts';
 import { readConfig } from '#src/common/config/readConfig.ts';
 import { resolveConfigPath } from '#src/common/config/resolveConfigPath.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import { getDriver } from '#src/drivers/getDriver.ts';
 

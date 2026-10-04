@@ -1,7 +1,7 @@
 import { readConfig } from '#src/common/config/readConfig.ts';
 import { defaultPackagesDir } from '#src/common/constants/defaultPackagesDir.ts';
 import { messageOf } from '#src/common/utils/messageOf.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { checkConfiguredPaths } from '#src/doctor/checkConfiguredPaths.ts';
 import { checkCoverageSummary } from '#src/doctor/checkCoverageSummary.ts';
 import { checkGenerateCommand } from '#src/doctor/checkGenerateCommand.ts';

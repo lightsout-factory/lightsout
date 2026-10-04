@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { FrictionArea } from '#src/contracts/friction/FrictionArea.ts';
-import { FrictionKind } from '#src/contracts/friction/internal/FrictionKind.ts';
+import { FrictionKind } from '#src/contracts/friction/FrictionEntry/FrictionKind.ts';
 
 export const FrictionEntry = z.object({
 	/** `friction` (something fought the agent) or `decision` (a silent-input guess). Omitted means friction. */

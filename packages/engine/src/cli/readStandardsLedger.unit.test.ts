@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { beforeEach, describe, expect, jest, test } from '@jest/globals';
 import { readStandardsLedger } from '#src/cli/readStandardsLedger.ts';
 import type { StandardsGroup } from '#src/common/types/StandardsGroup.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { StandardsRuleListing } from '#src/standardsCheck/common/types/StandardsRuleListing.ts';
 import { setupConsumerRepo } from '#tests/helpers/setupConsumerRepo.ts';
 

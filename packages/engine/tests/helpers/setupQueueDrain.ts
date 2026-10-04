@@ -1,4 +1,4 @@
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';
 import type { QueueSettings } from '#src/queue/common/types/QueueSettings.ts';
 import { runQueue } from '#src/queue/runQueue.ts';

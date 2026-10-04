@@ -1,7 +1,7 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { createEventFileSink } from '#src/common/utils/createEventFileSink.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { Permissions } from '#src/contracts/Permissions.ts';
 import type { AgentUsage } from '#src/contracts/run/AgentUsage.ts';
 import { WorkReport } from '#src/contracts/work/WorkReport.ts';

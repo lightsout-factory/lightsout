@@ -5,7 +5,7 @@ import { describeUnownedEdits } from '#src/commit/internal/common/utils/describe
 import { readRunCommitAddress } from '#src/commit/internal/common/utils/readRunCommitAddress.ts';
 import { readGitHeadCommit } from '#src/common/git/readGitHeadCommit.ts';
 import { isGeneratedPath } from '#src/common/sourceFiles/isGeneratedPath.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { AgentUsage } from '#src/contracts/run/AgentUsage.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';

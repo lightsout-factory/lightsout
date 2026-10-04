@@ -1,4 +1,4 @@
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { ShipMergeMethod } from '#src/contracts/ship/ShipMergeMethod.ts';
 import type { ShipSettings } from '#src/ship/common/types/ShipSettings.ts';
 

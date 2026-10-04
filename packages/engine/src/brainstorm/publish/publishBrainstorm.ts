@@ -7,7 +7,7 @@ import { brainstormAttachmentManifestName } from '#src/common/constants/brainsto
 import { brainstormNotesFileName } from '#src/common/constants/brainstormNotesFileName.ts';
 import { workOrderNameOf } from '#src/common/planAddress/workOrderNameOf.ts';
 import { messageOf } from '#src/common/utils/messageOf.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { planWorkspaceDir } from '#src/plan/planWorkspaceDir.ts';
 import { readPlanWorkOrderRef } from '#src/plan/readPlanWorkOrderRef.ts';
 import type { TrackerSettings } from '#src/ticketTracker/common/types/TrackerSettings.ts';

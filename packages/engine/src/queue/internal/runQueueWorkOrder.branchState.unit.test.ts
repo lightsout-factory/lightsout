@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { PassThrough } from 'node:stream';
 import { describe, expect, jest, test } from '@jest/globals';
 import { PlanningStatus } from '#src/common/constants/PlanningStatus.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { BranchPhase } from '#src/contracts/queue/BranchPhase.ts';
 import type { WorktreeOwner } from '#src/contracts/worktree/WorktreeOwner.ts';
 import type { Driver } from '#src/drivers/common/types/Driver.ts';

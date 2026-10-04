@@ -1,5 +1,5 @@
 import { join } from 'node:path';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { coverageScopeOf } from '#src/coverage/internal/common/utils/coverageScopeOf.ts';
 import { resolveScopeContext } from '#src/coverage/internal/common/utils/resolveScopeContext.ts';
 import { scopeRootOf } from '#src/coverage/internal/common/utils/scopeRootOf.ts';
