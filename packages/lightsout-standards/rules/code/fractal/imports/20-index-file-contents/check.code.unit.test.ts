@@ -25,7 +25,7 @@ describe('index-file-contents check: code in an index file', () => {
 		]);
 	});
 
-	test('leaves a pure barrel alone, the multi-line type re-export and comments included', async () => {
+	test('leaves a pure index file alone, the multi-line type re-export and comments included', async () => {
 		const input = setupSyntaxTreeInput({
 			sources: [
 				[
@@ -71,7 +71,7 @@ describe('index-file-contents check: code in an index file', () => {
 		]);
 	});
 
-	test('reports a component barrel named index.tsx, which is an index file like any other', async () => {
+	test('reports a component’s index.tsx, which is an index file like any other', async () => {
 		const input = setupSyntaxTreeInput({
 			sources: [['src/features/Dashboard/index.tsx', 'export const Dashboard = () => <section />;']],
 		});

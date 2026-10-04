@@ -65,8 +65,8 @@ interface Params {
 }
 
 /**
- * `unknown` matters: a barrel that imports through an alias resolves to nothing
- * until the alias map is in hand, and a rule reading that as "this barrel
+ * `unknown` matters: an index file that imports through an alias resolves to nothing
+ * until the alias map is in hand, and a rule reading that as "this index file
  * exports no files" would report every file in the package as private. Without
  * aliases, every non-relative specifier is `unknown`, because an alias and a
  * published package are written the same way.
@@ -86,7 +86,7 @@ export const resolveImport = ({ from, specifier, files, aliases }: Params): Impo
 	// No alias in the tsconfig claims it. That is only proof it is a package when
 	// the specifier could BE one — an alias configured somewhere the tsconfig does
 	// not reach (a bundler's own resolve.alias, a jsconfig) is still a local file,
-	// and calling it external would leave the barrel looking fully read while a
+	// and calling it external would leave the index file looking fully read while a
 	// file it exports looked private.
 	if (matched === undefined) {
 		return isPackageSpecifier({ specifier }) ? { kind: ImportTargetKind.External } : { kind: ImportTargetKind.Unknown };

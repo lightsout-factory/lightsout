@@ -46,7 +46,7 @@ describe('file-size check', () => {
 		expect(findings).toStrictEqual([]);
 	});
 
-	test('a barrel is exempt at any length, since a public API cannot take the split the finding would ask for', async () => {
+	test('an index file is exempt at any length, since a public API cannot take the split the finding would ask for', async () => {
 		const input = setupSyntaxTreeInput({ sources: [['src/reporting/index.ts', buildSource({ lines: 40 })]] });
 
 		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: caps });
@@ -54,7 +54,7 @@ describe('file-size check', () => {
 		expect(findings).toStrictEqual([]);
 	});
 
-	test('the exemption reads the file name, not the path, so a barrel deep in the tree is exempt too', async () => {
+	test('the exemption reads the file name, not the path, so an index file deep in the tree is exempt too', async () => {
 		const input = setupSyntaxTreeInput({ sources: [['src/reporting/common/utils/index.ts', buildSource({ lines: 40 })]] });
 
 		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: caps });
@@ -100,7 +100,7 @@ describe('file-size check', () => {
 		expect(findings).toStrictEqual([]);
 	});
 
-	test('a .tsx barrel is exempt too, since a public API cannot take the split whatever dialect it is written in', async () => {
+	test('a .tsx index file is exempt too, since a public API cannot take the split whatever dialect it is written in', async () => {
 		const input = setupSyntaxTreeInput({ sources: [['src/reporting/index.tsx', buildSource({ lines: 40 })]] });
 
 		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: caps });
@@ -108,7 +108,7 @@ describe('file-size check', () => {
 		expect(findings).toStrictEqual([]);
 	});
 
-	test('the JavaScript spellings of a barrel are exempt too, so a repo with no TypeScript in it is judged the same way', async () => {
+	test('the JavaScript spellings of an index file are exempt too, so a repo with no TypeScript in it is judged the same way', async () => {
 		const input = setupSyntaxTreeInput({
 			sources: [
 				['src/reporting/index.js', buildSource({ lines: 40 })],

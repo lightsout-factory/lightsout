@@ -25,7 +25,7 @@ describe('dead-export check', () => {
 		expect(check.inputKinds).toStrictEqual(['file-text']);
 	});
 
-	test('reports an export no module or test mentions, a folder barrel listing it aside', async () => {
+	test('reports an export no module or test mentions, a folder index file listing it aside', async () => {
 		const input = setupFileTextInput({
 			contents: [
 				['src/feature/index.ts', "export { renderGreeting, buildGreeting } from './renderGreeting';"],

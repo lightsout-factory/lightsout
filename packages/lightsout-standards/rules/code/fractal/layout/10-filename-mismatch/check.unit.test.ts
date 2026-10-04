@@ -146,7 +146,7 @@ describe('filename-mismatch check', () => {
 		expect(findings).toStrictEqual([]);
 	});
 
-	test('ignores a barrel, which declares nothing of its own', async () => {
+	test('ignores an index file, which declares nothing of its own', async () => {
 		const input = setupRepo({ contents: [['src/billing/index.ts', 'export const getChargeLabel = (): number => 1;']] });
 
 		const findings = await check.run({ inputs: { 'file-text': input }, options: {} });

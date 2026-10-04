@@ -31,7 +31,7 @@ describe('folder-size check', () => {
 		expect(findings).toStrictEqual([]);
 	});
 
-	test('counts the barrel too, since it is a line in the directory listing like any other', async () => {
+	test('counts the index file too, since it is a line in the directory listing like any other', async () => {
 		const input = setupFileListInput({ files: ['src/wide/a.ts', 'src/wide/b.ts', 'src/wide/c.ts', 'src/wide/index.ts'] });
 
 		const findings = await check.run({ inputs: { 'file-list': input }, options: { cap: 3 } });

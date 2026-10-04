@@ -448,8 +448,8 @@ describe('multi-export check', () => {
 		const input = setupFileTextInput({
 			contents: [
 				[
-					'tools/generateBarrels.ts',
-					['export const generateBarrels = (exportName: string): string => `', "export const ${exportName}: string = '';", '`;'].join('\n'),
+					'tools/generateIndexFiles.ts',
+					['export const generateIndexFiles = (exportName: string): string => `', "export const ${exportName}: string = '';", '`;'].join('\n'),
 				],
 			],
 		});
@@ -472,7 +472,7 @@ describe('multi-export check', () => {
 		expect(findings).toStrictEqual([]);
 	});
 
-	test('spares a barrel, whose job is to list what the module exports', async () => {
+	test('spares an index file, whose job is to list what the module exports', async () => {
 		const input = setupFileTextInput({
 			contents: [['src/billing/index.ts', ['export const baseRate = 1;', 'export const taxRate = 2;'].join('\n')]],
 		});

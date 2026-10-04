@@ -31,7 +31,7 @@ describe('class-inheritance check', () => {
 				files: [{ path: 'src/runs/RefactorRun.ts' }],
 				detail: "class 'RefactorRun' extends 'RunState'",
 				guidance:
-					'Share by composition: hold the common part as a value and delegate to it, or state the contract as an interface. `extends Error` is the one licensed base; a framework-mandated base is the judgment carve-out.',
+					'Share by composition: hold the common part as a value and delegate to it, or state the contract as an interface. Only `Error`, or a base class a framework requires, may be extended.',
 			},
 		]);
 	});
@@ -77,7 +77,7 @@ describe('class-inheritance check', () => {
 	});
 
 	test.each([
-		{ base: 'Error', licence: 'the platform’s one licensed base' },
+		{ base: 'Error', licence: 'the one base a class may extend' },
 		{ base: 'RunLockError', licence: 'an error-family chain' },
 	])('leaves a class extending $base alone, which is $licence', async ({ base }) => {
 		const input = setupSyntaxTreeInput({ sources: [['src/runs/StaleRunLockError.ts', `export class StaleRunLockError extends ${base} {}\n`]] });
@@ -166,7 +166,7 @@ describe('class-inheritance check', () => {
 				files: [{ path: 'src/runs/RefactorRun.ts' }],
 				detail: "class 'RefactorRun' extends 'RunState'",
 				guidance:
-					'Share by composition: hold the common part as a value and delegate to it, or state the contract as an interface. `extends Error` is the one licensed base; a framework-mandated base is the judgment carve-out.',
+					'Share by composition: hold the common part as a value and delegate to it, or state the contract as an interface. Only `Error`, or a base class a framework requires, may be extended.',
 			},
 		]);
 	});

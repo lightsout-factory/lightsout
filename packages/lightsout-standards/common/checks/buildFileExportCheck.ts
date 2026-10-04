@@ -2,7 +2,7 @@ import type { RawStandardsFinding, StandardsCheckModule } from '@lightsout/stand
 import { readFileTexts } from '../checkInput/readFileTexts.ts';
 import { buildRawFinding } from '../findings/buildRawFinding.ts';
 import { readFileExports } from '../parsing/readFileExports.ts';
-import { isBarrelFile } from '../paths/isBarrelFile.ts';
+import { isIndexFile } from '../paths/isIndexFile.ts';
 import { isTestFile } from '../paths/isTestFile.ts';
 import type { FileExport } from '../types/FileExport.ts';
 
@@ -14,7 +14,7 @@ interface Params {
 }
 
 /**
- * Barrels are exempt because they declare nothing of their own, and test files
+ * Index files are exempt because they declare nothing of their own, and test files
  * because the test standards own them.
  *
  * One finding per file, since the work is "open this file and fix what it
@@ -25,7 +25,7 @@ export const buildFileExportCheck = ({ rule, detail, guidance }: Params): Standa
 	run: ({ inputs }): RawStandardsFinding[] => {
 		const { files, contents, standardsLibraries } = readFileTexts({ input: inputs['file-text'] });
 		return files
-			.filter((file) => !isTestFile({ path: file, standardsLibraries }) && !isBarrelFile({ path: file }))
+			.filter((file) => !isTestFile({ path: file, standardsLibraries }) && !isIndexFile({ path: file }))
 			.map((file) => {
 				const text = contents.get(file) ?? '';
 				const violation = detail({ file, text, exports: readFileExports({ text }) });

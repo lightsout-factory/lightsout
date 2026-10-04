@@ -1,9 +1,9 @@
 import type { RawStandardsFinding, StandardsCheckModule, SyntaxTreeInput } from '@lightsout/standards-contracts';
 import { buildRawFinding } from '#common/findings/buildRawFinding.ts';
-import { isBarrelFile } from '#common/paths/isBarrelFile.ts';
+import { isIndexFile } from '#common/paths/isIndexFile.ts';
 
 /**
- * A barrel is exempt at any length: the remedy the finding asks for, split it
+ * An index file is exempt at any length: the remedy the finding asks for, split it
  * or turn its module into a folder, is what a package's public API cannot do.
  */
 const buildFileFindings = ({ input, options }: { input: SyntaxTreeInput; options: Record<string, number> }) => {
@@ -13,7 +13,7 @@ const buildFileFindings = ({ input, options }: { input: SyntaxTreeInput; options
 		const lineCount = tree.getFullText().split('\n').length;
 		const cap = options.file;
 
-		if (lineCount > cap && !isBarrelFile({ path })) {
+		if (lineCount > cap && !isIndexFile({ path })) {
 			findings.push(
 				buildRawFinding({
 					rule: 'file-size',

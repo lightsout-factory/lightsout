@@ -6,7 +6,7 @@ import { isPackageEntry } from '#common/modules/isPackageEntry.ts';
 import { getDirectory } from '#common/paths/getDirectory.ts';
 import { getOwningPackage } from '#common/paths/getOwningPackage.ts';
 import { getTestSubject } from '#common/paths/getTestSubject.ts';
-import { isBarrelFile } from '#common/paths/isBarrelFile.ts';
+import { isIndexFile } from '#common/paths/isIndexFile.ts';
 import { isOutsideEveryPackage } from '#common/paths/isOutsideEveryPackage.ts';
 import type { PackageEntries } from '#common/types/PackageEntries.ts';
 
@@ -49,19 +49,19 @@ const findWrongImports = ({ input, entryFiles }: { input: ImportGraphInput | und
 		getOwningPackage({ path: from, packageDirectories }) === getOwningPackage({ path: to, packageDirectories });
 	const throughIndex = judged.filter(
 		({ from, to }) =>
-			isBarrelFile({ path: to }) && !isBarrelFile({ path: from }) && getTestSubject({ test: from, files: referenceSet }) !== to && isSamePackage({ from, to }),
+			isIndexFile({ path: to }) && !isIndexFile({ path: from }) && getTestSubject({ test: from, files: referenceSet }) !== to && isSamePackage({ from, to }),
 	);
 	const intoAnotherPackage = judged.filter(
 		({ from, to }) =>
-			!isSamePackage({ from, to }) && !isOutsideEveryPackage({ path: to, packageDirectories }) && !isBarrelFile({ path: to }) && !entryFiles.has(to),
+			!isSamePackage({ from, to }) && !isOutsideEveryPackage({ path: to, packageDirectories }) && !isIndexFile({ path: to }) && !entryFiles.has(to),
 	);
 
 	return [
-		...[...groupByImporter({ edges: throughIndex })].map(([from, barrels]) =>
+		...[...groupByImporter({ edges: throughIndex })].map(([from, indexFiles]) =>
 			buildRawFinding({
 				rule: 'index-files',
-				files: [{ path: from }, ...barrels.map((path) => ({ path }))],
-				detail: `imports through ${quote({ paths: barrels })} — import each name from the file that declares it instead`,
+				files: [{ path: from }, ...indexFiles.map((path) => ({ path }))],
+				detail: `imports through ${quote({ paths: indexFiles })} — import each name from the file that declares it instead`,
 				guidance: 'An index file lists what a package makes public; nothing inside the package imports through it.',
 			}),
 		),
@@ -84,7 +84,7 @@ const findWrongImports = ({ input, entryFiles }: { input: ImportGraphInput | und
  */
 const findFolderIndexFiles = ({ files, entries }: { files: string[]; entries: PackageEntries }): RawStandardsFinding[] => {
 	return files
-		.filter((path) => isBarrelFile({ path }) && !isPackageEntry({ path, entries }))
+		.filter((path) => isIndexFile({ path }) && !isPackageEntry({ path, entries }))
 		.map((path) =>
 			buildRawFinding({
 				rule: 'index-files',

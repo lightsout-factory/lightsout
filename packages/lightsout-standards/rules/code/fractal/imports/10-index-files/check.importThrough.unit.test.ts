@@ -25,15 +25,15 @@ const setupRepo = ({
 
 /** The ingestion folder most cases below build on: its index file lists `ingestRecords.ts`. */
 const ingestionPaths = ['src/reporting/buildReport.ts', 'src/ingestion/index.ts', 'src/ingestion/ingestRecords.ts', 'src/ingestion/parseRow.ts'];
-const ingestionBarrelEdge = { from: 'src/ingestion/index.ts', to: 'src/ingestion/ingestRecords.ts' };
+const ingestionIndexEdge = { from: 'src/ingestion/index.ts', to: 'src/ingestion/ingestRecords.ts' };
 
 const throughIndexGuidance = 'An index file lists what a package makes public; nothing inside the package imports through it.';
 
 describe('index-files check: imports through an index file', () => {
-	test('reports a file importing through another module’s barrel', async () => {
+	test('reports a file importing through another module’s index file', async () => {
 		const input = setupRepo({
 			paths: ingestionPaths,
-			edges: [ingestionBarrelEdge, { from: 'src/reporting/buildReport.ts', to: 'src/ingestion/index.ts' }],
+			edges: [ingestionIndexEdge, { from: 'src/reporting/buildReport.ts', to: 'src/ingestion/index.ts' }],
 		});
 
 		const findings = await check.run({ inputs: { 'import-graph': input }, options: {} });
@@ -48,10 +48,10 @@ describe('index-files check: imports through an index file', () => {
 		]);
 	});
 
-	test('reports a module’s own file importing through its own barrel', async () => {
+	test('reports a module’s own file importing through its own index file', async () => {
 		const input = setupRepo({
 			paths: ingestionPaths,
-			edges: [ingestionBarrelEdge, { from: 'src/ingestion/parseRow.ts', to: 'src/ingestion/index.ts' }],
+			edges: [ingestionIndexEdge, { from: 'src/ingestion/parseRow.ts', to: 'src/ingestion/index.ts' }],
 		});
 
 		const findings = await check.run({ inputs: { 'import-graph': input }, options: {} });
@@ -91,7 +91,7 @@ describe('index-files check: imports through an index file', () => {
 		const input = setupRepo({
 			paths: [...ingestionPaths, 'src/helpers/index.ts', 'src/helpers/formatDate.ts'],
 			edges: [
-				ingestionBarrelEdge,
+				ingestionIndexEdge,
 				{ from: 'src/helpers/index.ts', to: 'src/helpers/formatDate.ts' },
 				{ from: 'src/reporting/buildReport.ts', to: 'src/ingestion/index.ts' },
 				{ from: 'src/reporting/buildReport.ts', to: 'src/helpers/index.ts' },
@@ -111,7 +111,7 @@ describe('index-files check: imports through an index file', () => {
 		]);
 	});
 
-	test('accepts a barrel re-exporting from a lower barrel', async () => {
+	test('accepts an index file re-exporting from a lower index file', async () => {
 		const input = setupRepo({
 			paths: [
 				'src/ingestion/index.ts',
@@ -132,10 +132,10 @@ describe('index-files check: imports through an index file', () => {
 		expect(findings).toStrictEqual([]);
 	});
 
-	test('accepts a barrel’s own test importing the barrel it tests', async () => {
+	test('accepts an index file’s own test importing the index file it tests', async () => {
 		const input = setupRepo({
 			paths: [...ingestionPaths, 'src/ingestion/index.unit.test.ts'],
-			edges: [ingestionBarrelEdge, { from: 'src/ingestion/index.unit.test.ts', to: 'src/ingestion/index.ts' }],
+			edges: [ingestionIndexEdge, { from: 'src/ingestion/index.unit.test.ts', to: 'src/ingestion/index.ts' }],
 		});
 
 		const findings = await check.run({ inputs: { 'import-graph': input }, options: {} });
@@ -143,10 +143,10 @@ describe('index-files check: imports through an index file', () => {
 		expect(findings).toStrictEqual([]);
 	});
 
-	test('reports a test beside another file importing its module’s barrel', async () => {
+	test('reports a test beside another file importing its module’s index file', async () => {
 		const input = setupRepo({
 			paths: [...ingestionPaths, 'src/ingestion/ingestRecords.unit.test.ts'],
-			edges: [ingestionBarrelEdge, { from: 'src/ingestion/ingestRecords.unit.test.ts', to: 'src/ingestion/index.ts' }],
+			edges: [ingestionIndexEdge, { from: 'src/ingestion/ingestRecords.unit.test.ts', to: 'src/ingestion/index.ts' }],
 		});
 
 		const findings = await check.run({ inputs: { 'import-graph': input }, options: {} });
@@ -285,7 +285,7 @@ describe('index-files check: imports through an index file', () => {
 	test('judges only the files in scope', async () => {
 		const input = setupRepo({
 			paths: ingestionPaths,
-			edges: [ingestionBarrelEdge, { from: 'src/reporting/buildReport.ts', to: 'src/ingestion/index.ts' }],
+			edges: [ingestionIndexEdge, { from: 'src/reporting/buildReport.ts', to: 'src/ingestion/index.ts' }],
 			scope: ['src/ingestion/parseRow.ts'],
 		});
 

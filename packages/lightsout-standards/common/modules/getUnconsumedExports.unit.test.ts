@@ -15,7 +15,7 @@ describe('getUnconsumedExports', () => {
 		expect(found).toStrictEqual([{ file: 'src/ingestion/ingestRecords.ts', name: 'ingestRecords' }]);
 	});
 
-	test('does not count a folder barrel listing an export as a use, since nothing imports through one', () => {
+	test('does not count a folder index file listing an export as a use, since nothing imports through one', () => {
 		const found = getUnconsumedExports(
 			setupRepo({
 				contents: [
@@ -70,7 +70,7 @@ describe('getUnconsumedExports', () => {
 		expect(found).toStrictEqual([]);
 	});
 
-	test('an index file that only imports and runs is an ordinary consumer, not a barrel', () => {
+	test('an index file that only imports and runs is an ordinary consumer, not an index file', () => {
 		const found = getUnconsumedExports(
 			setupRepo({
 				contents: [
@@ -80,16 +80,16 @@ describe('getUnconsumedExports', () => {
 			}),
 		);
 
-		// counting that dispatcher as a barrel would read every command it invokes
+		// counting that dispatcher as an index file would read every command it invokes
 		// as "published but unconsumed"
 		expect(found).toStrictEqual([]);
 	});
 
-	test('declares nothing from a barrel or a test — those names belong elsewhere', () => {
+	test('declares nothing from an index file or a test — those names belong elsewhere', () => {
 		const found = getUnconsumedExports(
 			setupRepo({
 				contents: [
-					['src/ingestion/index.ts', 'export const barrelOwnName = 1;'],
+					['src/ingestion/index.ts', 'export const indexOwnName = 1;'],
 					['src/ingestion/thing.unit.test.ts', 'export const testOwnHelper = 1;'],
 				],
 			}),

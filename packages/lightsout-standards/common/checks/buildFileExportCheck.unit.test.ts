@@ -49,7 +49,7 @@ describe('buildFileExportCheck', () => {
 		expect(await check.run({ inputs: { 'file-text': input }, options: {} })).toStrictEqual([]);
 	});
 
-	test('a barrel and a test file are exempt — one declares nothing of its own, the other belongs to the test standards', async () => {
+	test('an index file and a test file are exempt — one declares nothing of its own, the other belongs to the test standards', async () => {
 		const input = setupFileTextInput({
 			contents: [
 				['src/feature/index.ts', "export { one } from './one';\nexport { two } from './two';\n"],

@@ -21,8 +21,10 @@ const getBaseName = ({ expression, compiler }: { expression: ts.Expression; comp
 
 /**
  * `implements` is a contract, not inheritance, so only the `extends` clause is
- * read. The Error family is the platform's one licensed base, and a decorated
- * class is framework-owned.
+ * read. The Error family is the one base a class may extend, and a decorated
+ * class is framework-owned. Whether an undecorated class extends a framework's
+ * own base class is the agent's to judge, which is why the rule has both kinds
+ * of check.
  */
 const getBannedExtension = ({ node, compiler }: { node: ts.ClassDeclaration; compiler: typeof ts }) => {
 	const isFrameworkOwned = (node.modifiers ?? []).some((modifier) => compiler.isDecorator(modifier));
@@ -54,7 +56,7 @@ export const check: StandardsCheckModule = {
 					input,
 					rule: 'class-inheritance',
 					guidance:
-						'Share by composition: hold the common part as a value and delegate to it, or state the contract as an interface. `extends Error` is the one licensed base; a framework-mandated base is the judgment carve-out.',
+						'Share by composition: hold the common part as a value and delegate to it, or state the contract as an interface. Only `Error`, or a base class a framework requires, may be extended.',
 					getViolation: getBannedExtension,
 				});
 	},

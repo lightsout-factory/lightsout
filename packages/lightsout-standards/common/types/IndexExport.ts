@@ -1,6 +1,6 @@
 import type { ImportTarget } from './ImportTarget.ts';
 
-export interface BarrelExport {
+export interface IndexExport {
 	/** Empty for an `export *` line, which names none. */
 	names: string[];
 	star: boolean;

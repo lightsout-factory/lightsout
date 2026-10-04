@@ -1,7 +1,7 @@
 import { describe, expect, test } from '@jest/globals';
-import { isBarrelFile } from './isBarrelFile.ts';
+import { isIndexFile } from './isIndexFile.ts';
 
-describe('isBarrelFile', () => {
+describe('isIndexFile', () => {
 	test.each([
 		{ path: 'src/ingestion/index.ts', expected: true },
 		{ path: 'src/feature/components/Badge/index.tsx', expected: true },
@@ -16,14 +16,14 @@ describe('isBarrelFile', () => {
 		{ path: 'src/ingestion/reindex.ts', expected: false },
 		{ path: 'src/index', expected: false },
 	])('$path is $expected', ({ path, expected }) => {
-		const isBarrel = isBarrelFile({ path });
+		const isIndex = isIndexFile({ path });
 
-		expect(isBarrel).toBe(expected);
+		expect(isIndex).toBe(expected);
 	});
 
-	test('a folder named index is not a barrel', () => {
-		const isBarrel = isBarrelFile({ path: 'src/index/parseRow.ts' });
+	test('a folder named index is not an index file', () => {
+		const isIndex = isIndexFile({ path: 'src/index/parseRow.ts' });
 
-		expect(isBarrel).toBe(false);
+		expect(isIndex).toBe(false);
 	});
 });

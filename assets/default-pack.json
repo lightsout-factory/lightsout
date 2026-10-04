@@ -7,7 +7,7 @@
   "totals": {
     "rules": 48,
     "deterministic": 34,
-    "agent": 17,
+    "agent": 18,
     "topics": 13,
     "packs": 5,
     "withFixtures": 48
@@ -145,9 +145,9 @@
       "totals": {
         "rules": 21,
         "deterministic": 12,
-        "agent": 10,
+        "agent": 11,
         "topics": 5,
-        "tokens": 4281
+        "tokens": 4253
       }
     },
     {
@@ -353,7 +353,7 @@
         "deterministic": 1,
         "agent": 1,
         "topics": 2,
-        "tokens": 540
+        "tokens": 533
       }
     },
     {
@@ -624,9 +624,9 @@
       "totals": {
         "rules": 45,
         "deterministic": 33,
-        "agent": 15,
+        "agent": 16,
         "topics": 10,
-        "tokens": 7888
+        "tokens": 7859
       }
     },
     {
@@ -999,7 +999,7 @@
       "documentPath": "code/code-style/classes",
       "summary": "Sharing behaviour between classes.",
       "deterministic": true,
-      "agent": false,
+      "agent": true,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
       "fixtureCounts": {
@@ -1113,7 +1113,7 @@
         "pass": 1,
         "fail": 1
       },
-      "prose": "## Component Test Rendering\n\nRender inside the `setup()` factory; query and assert in the `test`. For a component, `render()` *is* the act, but by convention it lives in the arrange factory — the one accepted exception to \"the act lives in the `test`\". Query from `screen` — never destructure queries from `render()`.\n\nIn a test of an interaction, the query that finds the element to act on groups with the act, the `userEvent` or `fireEvent` call, not with arrange.\n\n```typescript\nimport { expect, describe, test, jest } from '@jest/globals';\nimport { render, screen } from '@testing-library/preact';\nimport { NotificationBanner } from './NotificationBanner';\n\nconst mockUseAppStore = jest.fn<(selector: (state: unknown) => unknown) => unknown>();\n\njest.mock('@store/appStore', () => ({\n\tuseAppStore: (selector: (state: unknown) => unknown) => mockUseAppStore(selector),\n}));\n\nconst setupNotificationBanner = ({ isVisible = true }: { isVisible?: boolean } = {}) => {\n\tconst onDismiss = jest.fn<() => void>();\n\tmockUseAppStore.mockReturnValue(isVisible);\n\trender(<NotificationBanner onDismiss={onDismiss} />);\n\n\treturn { onDismiss };\n};\n\ndescribe('NotificationBanner', () => {\n\ttest('does not render the banner when not visible', () => {\n\t\tsetupNotificationBanner({ isVisible: false });\n\n\t\tconst banner = screen.queryByRole('alert');\n\n\t\texpect(banner).not.toBeInTheDocument();\n\t});\n\n\ttest('renders the notification message when visible', () => {\n\t\tsetupNotificationBanner({ isVisible: true });\n\n\t\tconst message = screen.getByText('Action required');\n\n\t\texpect(message).toBeInTheDocument();\n\t});\n});\n```",
+      "prose": "## Component Test Rendering\n\nRender the component inside the setup factory, and query and assert in the `test`. Rendering is the act, yet it sits in the setup factory: this is the one exception to the act living in the `test`. Query from `screen`; never destructure queries from `render()`.\n\nIn a test of an interaction, the query that finds the element to act on groups with the act, the `userEvent` or `fireEvent` call, not with arrange.\n\n```typescript\nimport { expect, describe, test, jest } from '@jest/globals';\nimport { render, screen } from '@testing-library/preact';\nimport { NotificationBanner } from './NotificationBanner';\n\nconst mockUseAppStore = jest.fn<(selector: (state: unknown) => unknown) => unknown>();\n\njest.mock('@store/appStore', () => ({\n\tuseAppStore: (selector: (state: unknown) => unknown) => mockUseAppStore(selector),\n}));\n\nconst setupNotificationBanner = ({ isVisible = true }: { isVisible?: boolean } = {}) => {\n\tconst onDismiss = jest.fn<() => void>();\n\tmockUseAppStore.mockReturnValue(isVisible);\n\trender(<NotificationBanner onDismiss={onDismiss} />);\n\n\treturn { onDismiss };\n};\n\ndescribe('NotificationBanner', () => {\n\ttest('does not render the banner when not visible', () => {\n\t\tsetupNotificationBanner({ isVisible: false });\n\n\t\tconst banner = screen.queryByRole('alert');\n\n\t\texpect(banner).not.toBeInTheDocument();\n\t});\n\n\ttest('renders the notification message when visible', () => {\n\t\tsetupNotificationBanner({ isVisible: true });\n\n\t\tconst message = screen.getByText('Action required');\n\n\t\texpect(message).toBeInTheDocument();\n\t});\n});\n```",
       "fixtures": [
         {
           "side": "pass",
@@ -2393,7 +2393,7 @@
         "pass": 1,
         "fail": 1
       },
-      "prose": "## Prefer Arrow Functions\n\nWrite functions as arrow functions, unless the codebase already uses another form.\n\nThen every function in a codebase is declared the same way.",
+      "prose": "## Prefer Arrow Functions\n\nWrite functions as arrow functions.\n\nThen every function in a codebase is declared the same way.",
       "fixtures": [
         {
           "side": "pass",
@@ -2424,7 +2424,7 @@
         "pass": 3,
         "fail": 3
       },
-      "prose": "## Prefer Functions\n\nDefault to functions. Write a class if, and only if, at least one of these holds:\n\n- **(a)** Mutable state persists across method calls: a `RateLimiter` counting its remaining tokens, a cache, a connection pool.\n- **(b)** Three or more operations share injected config or dependencies: an `HttpClient` whose base URL, retries and credentials are injected once and used by every method.\n- **(c)** Several implementations share one interface: `FileSource` and `S3Source` behind a `RecordSource` contract.\n- **(d)** The framework requires it: NestJS services, resolvers and guards, because its dependency injection needs classes.\n\nWhen none holds, write functions in a module. To check, ask whether \"how many of these exist right now?\" is a meaningful question: two `HttpClient`s pointed at different APIs, yes, so a class; two `formatDate`s, no, so a function.\n\nTwo shapes never pass that test:\n\n- A class with only static members. It is a module in disguise: it adds a `ClassName.` prefix to every call and binds no state. Write module functions instead.\n- A stateless class with one method, such as `class ReportGenerator { execute() }`. Write the function.\n\nA class that is decorated, is abstract, or implements or extends another type is not one of these shapes; the four criteria above judge it.\n\nKeep a class's methods to behaviour that needs its state. Put other logic in functions rather than instance methods: logic that needs no state is easier to read and reuse as a function.",
+      "prose": "## Prefer Functions\n\nDefault to functions. Write a class if, and only if, at least one of these holds:\n\n- **(a)** Mutable state persists across method calls: a `RateLimiter` counting its remaining tokens, a cache, a connection pool.\n- **(b)** Three or more operations share injected config or dependencies: an `HttpClient` whose base URL, retries and credentials are injected once and used by every method.\n- **(c)** Several implementations share one interface: `FileSource` and `S3Source` behind a `RecordSource` contract.\n- **(d)** A framework requires it, because its dependency injection needs classes.\n\nWhen none holds, write functions in a module. To check, ask whether \"how many of these exist right now?\" is a meaningful question: two `HttpClient`s pointed at different APIs, yes, so a class; two `formatDate`s, no, so a function.\n\nTwo shapes never pass that test:\n\n- A class with only static members. It is a module in disguise: it adds a `ClassName.` prefix to every call and binds no state. Write module functions instead.\n- A stateless class with one method, such as `class ReportGenerator { execute() }`. Write the function.\n\nA class that is decorated, is abstract, or implements or extends another type is not one of these shapes; the four criteria above judge it.\n\nKeep a class's methods to behaviour that needs its state. Put other logic in functions rather than instance methods: logic that needs no state is easier to read and reuse as a function.",
       "fixtures": [
         {
           "side": "pass",
@@ -2828,7 +2828,7 @@
         "pass": 2,
         "fail": 2
       },
-      "prose": "## Test Jest Imports\n\nImport the test functions first: `import { expect, describe, test, jest } from '@jest/globals';`. Import `jest` only when the file uses `jest.fn`, `jest.mock` or `jest.spyOn`, and `beforeEach`, `afterEach` or `afterAll` only when you need one; with setup factories and config-level mock cleanup, most files need none.",
+      "prose": "## Test Jest Imports\n\nImport the test functions by name from `@jest/globals`, as the file's first import: `import { describe, expect, test } from '@jest/globals';`. Add `jest` only when the file uses `jest.fn`, `jest.mock` or `jest.spyOn`, and `beforeEach`, `afterEach` or `afterAll` only when the file needs one.",
       "fixtures": [
         {
           "side": "pass",

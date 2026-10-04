@@ -15,7 +15,7 @@ const isKindFolder = ({ directory }: { directory: string }) => {
 export const check: StandardsCheckModule = {
 	inputKinds: ['file-list'],
 	// Tests are not counted: a test beside its subject is the convention working.
-	// Barrels count, because the question is how long the listing has grown. A
+	// Index files count, because the question is how long the listing has grown. A
 	// module folder counts once in the folder that holds it, as the one module
 	// it is: its main file carries the folder's name.
 	run: ({ inputs, options }): RawStandardsFinding[] => {
