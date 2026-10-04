@@ -1,6 +1,6 @@
 import { readGitDefaultBranch } from '#src/common/git/readGitDefaultBranch.ts';
 import { runOrDescribeFailure } from '#src/common/processes/runOrDescribeFailure.ts';
-import type { WorktreeFailure } from '#src/worktree/common/types/WorktreeFailure.ts';
+import type { WorktreeFailure } from '#src/common/types/WorktreeFailure.ts';
 
 interface Params {
 	cwd: string;

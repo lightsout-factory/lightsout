@@ -3,12 +3,12 @@ import { resolveWorktreeIsolation } from '#src/cli/internal/common/args/resolveW
 import { resolveRunBranch } from '#src/cli/internal/common/implementRun/resolveRunBranch.ts';
 import type { RunWorkspace } from '#src/cli/internal/common/types/RunWorkspace.ts';
 import { parsePlanAddress } from '#src/common/planAddress/parsePlanAddress.ts';
+import type { WorktreeFailure } from '#src/common/types/WorktreeFailure.ts';
 import { isSamePath } from '#src/common/utils/isSamePath.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { WorktreeOwner } from '#src/contracts/worktree/WorktreeOwner.ts';
 import { planNameFromPath } from '#src/plan/planNameFromPath.ts';
 import { readLiveRunLock } from '#src/runState/lock/readLiveRunLock.ts';
-import type { WorktreeFailure } from '#src/worktree/common/types/WorktreeFailure.ts';
 import { createWorktree } from '#src/worktree/createWorktree.ts';
 import { fetchDefaultBranch } from '#src/worktree/fetchDefaultBranch.ts';
 import { prepareWorkOrderBranch } from '#src/worktree/prepareWorkOrderBranch.ts';

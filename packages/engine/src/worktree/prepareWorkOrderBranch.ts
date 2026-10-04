@@ -3,7 +3,7 @@ import { readGitRefCommit } from '#src/common/git/readGitRefCommit.ts';
 import { quoteShellArgument } from '#src/common/processes/quoteShellArgument.ts';
 import { runCommand } from '#src/common/processes/runCommand.ts';
 import { runOrDescribeFailure } from '#src/common/processes/runOrDescribeFailure.ts';
-import type { WorktreeFailure } from '#src/worktree/common/types/WorktreeFailure.ts';
+import type { WorktreeFailure } from '#src/common/types/WorktreeFailure.ts';
 import { readBranchWorktree } from '#src/worktree/readBranchWorktree.ts';
 
 interface Params {

@@ -5,6 +5,7 @@ import { PassThrough } from 'node:stream';
 import { describe, expect, jest, test } from '@jest/globals';
 import { PlanningStatus } from '#src/common/constants/PlanningStatus.ts';
 import type { LoadedConfig } from '#src/common/types/LoadedConfig.ts';
+import type { WorktreeFailure } from '#src/common/types/WorktreeFailure.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { BranchPhase } from '#src/contracts/queue/BranchPhase.ts';
 import type { WorktreeOwner } from '#src/contracts/worktree/WorktreeOwner.ts';
@@ -20,7 +21,6 @@ import type { WorkerOutcome } from '#src/queue/internal/common/types/WorkerOutco
 import { runQueueWorkOrder } from '#src/queue/internal/runQueueWorkOrder.ts';
 import { TerminalQuestionRelay } from '#src/queue/relay/TerminalQuestionRelay.ts';
 import type { TrackerSettings } from '#src/ticketTracker/common/types/TrackerSettings.ts';
-import type { WorktreeFailure } from '#src/worktree/common/types/WorktreeFailure.ts';
 import { queueSettingsFixture } from '#tests/helpers/queueSettingsFixture.ts';
 import { seedWorkOrderRecord } from '#tests/helpers/seedWorkOrderRecord.ts';
 import { trackerSettingsFixture } from '#tests/helpers/trackerSettingsFixture.ts';
