@@ -3,8 +3,8 @@ import { usage } from '#src/cli/common/constants/usage.ts';
 import type { CommandContext } from '#src/cli/common/types/CommandContext.ts';
 import { ensurePlanWorkspace } from '#src/cli/internal/common/utils/ensurePlanWorkspace.ts';
 import { resolvePlanTarget } from '#src/cli/internal/common/utils/resolvePlanTarget.ts';
+import type { WorkOrderRunTerms } from '#src/common/types/WorkOrderRunTerms.ts';
 import { planNameFromPath } from '#src/plan/planNameFromPath.ts';
-import type { WorkOrderRunTerms } from '#src/workOrder/common/types/WorkOrderRunTerms.ts';
 import { readWorkOrderRunTerms } from '#src/workOrder/implementRun/readWorkOrderRunTerms.ts';
 
 interface Params {

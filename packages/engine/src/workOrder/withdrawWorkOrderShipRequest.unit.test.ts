@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { WorkOrderState } from '#src/contracts/workOrder/WorkOrderState.ts';
-import { updateLocalWorkOrderState } from '#src/workOrder/updateLocalWorkOrderState.ts';
+import { updateLocalWorkOrderState } from '#src/workOrder/common/updateLocalWorkOrderState.ts';
 import { withdrawWorkOrderShipRequest } from '#src/workOrder/withdrawWorkOrderShipRequest.ts';
 
 /** The work order's label, which is also the branch every record below names. */

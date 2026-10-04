@@ -90,7 +90,7 @@ type AddPlanResult = { address: string; record: WorkOrderState; notice?: string;
 const mockPullTicketRecord = jest.fn<(params: PullParams) => Promise<PullResult>>();
 const mockAddTicketPlan = jest.fn<(params: AddPlanParams) => Promise<AddPlanResult>>();
 
-jest.mock('#src/workOrder/addWorkOrderPlan.ts', () => ({ addWorkOrderPlan: (params: AddPlanParams) => mockAddTicketPlan(params) }));
+jest.mock('#src/workOrder/addWorkOrderPlan/addWorkOrderPlan.ts', () => ({ addWorkOrderPlan: (params: AddPlanParams) => mockAddTicketPlan(params) }));
 jest.mock('#src/workOrder/pullWorkOrderState.ts', () => ({ pullWorkOrderState: (params: PullParams) => mockPullTicketRecord(params) }));
 // -------------------------
 

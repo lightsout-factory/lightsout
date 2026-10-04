@@ -20,7 +20,7 @@ import { QueueWorker } from '#src/queue/common/constants/QueueWorker.ts';
 import type { TicketSummary } from '#src/queue/common/types/TicketSummary.ts';
 import type { WorkOrderRunOutcome } from '#src/queue/common/types/WorkOrderRunOutcome.ts';
 import { shipOneBranch } from '#src/queue/internal/shipOneBranch.ts';
-import { updateLocalWorkOrderState } from '#src/workOrder/updateLocalWorkOrderState.ts';
+import { updateLocalWorkOrderState } from '#src/workOrder/common/updateLocalWorkOrderState.ts';
 import { createWorktree } from '#src/worktree/createWorktree.ts';
 import { seedWorkOrderRecord } from '#tests/helpers/seedWorkOrderRecord.ts';
 import { setupBranchRepo } from '#tests/helpers/setupBranchRepo.ts';

@@ -1,11 +1,11 @@
 import { formatPlanAddress } from '#src/common/planAddress/formatPlanAddress.ts';
+import type { WorkOrderPlanOutcome } from '#src/common/types/WorkOrderPlanOutcome.ts';
 import type { WorkOrderPlan } from '#src/contracts/workOrder/WorkOrderPlan.ts';
 import { runDirectWork } from '#src/direct/runDirectWork/runDirectWork.ts';
 import type { WorkerOutcome } from '#src/queue/internal/common/types/WorkerOutcome.ts';
 import type { WorkOrderPlanStep } from '#src/queue/workers/internal/common/types/WorkOrderPlanStep.ts';
 import { toWorkerOutcome } from '#src/queue/workers/internal/common/utils/toWorkerOutcome.ts';
 import { removeRunOwner } from '#src/runState/owner/removeRunOwner.ts';
-import type { WorkOrderPlanOutcome } from '#src/workOrder/common/types/WorkOrderPlanOutcome.ts';
 import { runWorkOrderBodyBuildLifecycle } from '#src/workOrder/implementRun/runWorkOrderBodyBuildLifecycle.ts';
 import { runWorkOrderPlanLifecycle } from '#src/workOrder/implementRun/runWorkOrderPlanLifecycle.ts';
 

@@ -1,7 +1,7 @@
-import { WorkOrderShipStateKind } from '#src/workOrder/common/constants/WorkOrderShipStateKind.ts';
-import type { WorkOrderShipRequestedState } from '#src/workOrder/common/types/WorkOrderShipRequestedState.ts';
-import type { WorkOrderShipState } from '#src/workOrder/common/types/WorkOrderShipState.ts';
-import { formatRequestShipCommand } from '#src/workOrder/common/utils/formatRequestShipCommand.ts';
+import { WorkOrderShipStateKind } from '#src/common/constants/WorkOrderShipStateKind.ts';
+import { formatRequestShipCommand } from '#src/common/formatRequestShipCommand.ts';
+import type { WorkOrderShipRequestedState } from '#src/common/types/WorkOrderShipRequestedState.ts';
+import type { WorkOrderShipState } from '#src/common/types/WorkOrderShipState.ts';
 
 interface Params {
 	/** The work order's label, named in the command a drifted ship request is answered with. */

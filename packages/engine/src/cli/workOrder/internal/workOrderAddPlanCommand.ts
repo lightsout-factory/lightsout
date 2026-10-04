@@ -4,7 +4,7 @@ import { getRequiredFlag } from '#src/cli/internal/common/args/getRequiredFlag.t
 import { createProgressPrinter } from '#src/cli/internal/common/utils/createProgressPrinter.ts';
 import { finishWorkOrderChange } from '#src/cli/workOrder/internal/common/utils/finishWorkOrderChange.ts';
 import { readConfig } from '#src/common/config/readConfig.ts';
-import { addWorkOrderPlan } from '#src/workOrder/addWorkOrderPlan.ts';
+import { addWorkOrderPlan } from '#src/workOrder/addWorkOrderPlan/addWorkOrderPlan.ts';
 
 /** The plan's address is the last line on stdout, because a calling skill reads that line back. */
 export const workOrderAddPlanCommand = async ({ flags, cwd }: CommandContext): Promise<void> => {

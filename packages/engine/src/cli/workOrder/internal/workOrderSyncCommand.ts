@@ -4,7 +4,7 @@ import { exitCli } from '#src/cli/common/utils/exitCli.ts';
 import { getRequiredFlag } from '#src/cli/internal/common/args/getRequiredFlag.ts';
 import { createProgressPrinter } from '#src/cli/internal/common/utils/createProgressPrinter.ts';
 import { readConfig } from '#src/common/config/readConfig.ts';
-import { WorkOrderSyncKeep } from '#src/workOrder/common/constants/WorkOrderSyncKeep.ts';
+import { WorkOrderSyncKeep } from '#src/common/constants/WorkOrderSyncKeep.ts';
 import { syncWorkOrderState } from '#src/workOrder/syncWorkOrderState.ts';
 
 /** With no `--keep` this is the ordinary pull, which is also how a failed publish is retried. */

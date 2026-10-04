@@ -3,7 +3,7 @@ import { toBranchSlug } from '#src/common/toBranchSlug.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { WorkOrderState } from '#src/contracts/workOrder/WorkOrderState.ts';
 import type { TicketSummary } from '#src/queue/common/types/TicketSummary.ts';
-import { addWorkOrderPlan } from '#src/workOrder/addWorkOrderPlan.ts';
+import { addWorkOrderPlan } from '#src/workOrder/addWorkOrderPlan/addWorkOrderPlan.ts';
 import { findNextPlanToPlan } from '#src/workOrder/findNextPlanToPlan.ts';
 import { pullWorkOrderState } from '#src/workOrder/pullWorkOrderState.ts';
 

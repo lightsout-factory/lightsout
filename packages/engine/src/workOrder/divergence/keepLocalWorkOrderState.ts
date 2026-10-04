@@ -1,3 +1,4 @@
+import { WorkOrderSyncKeep } from '#src/common/constants/WorkOrderSyncKeep.ts';
 import { formatPlanAddress } from '#src/common/planAddress/formatPlanAddress.ts';
 import { sha256 } from '#src/common/sha256.ts';
 import { workOrderFolderDir } from '#src/common/workspace/workOrderFolderDir.ts';
@@ -6,20 +7,19 @@ import type { WorkOrderState } from '#src/contracts/workOrder/WorkOrderState.ts'
 import { pathExists } from '#src/plan/common/paths/pathExists.ts';
 import { planWorkspaceDir } from '#src/plan/planWorkspaceDir.ts';
 import { publishPlan } from '#src/plan/publish/publishPlan.ts';
-import { WorkOrderSyncKeep } from '#src/workOrder/common/constants/WorkOrderSyncKeep.ts';
-import { mergeOneSidedPlans } from '#src/workOrder/divergence/internal/mergeOneSidedPlans.ts';
-import { resolvePlanWorkingCheckout } from '#src/workOrder/divergence/internal/resolvePlanWorkingCheckout.ts';
-import { publishedButUnrecorded } from '#src/workOrder/internal/common/constants/publishedButUnrecorded.ts';
-import { workOrderFileNames } from '#src/workOrder/internal/common/constants/workOrderFileNames.ts';
-import type { PublishedWorkOrderState } from '#src/workOrder/internal/common/types/PublishedWorkOrderState.ts';
-import type { TicketTrackerTarget } from '#src/workOrder/internal/common/types/TicketTrackerTarget.ts';
-import { attachWorkOrderStateIfUnmoved } from '#src/workOrder/internal/common/utils/attachWorkOrderStateIfUnmoved.ts';
-import { findDivergentPlanIds } from '#src/workOrder/internal/common/utils/findDivergentPlanIds.ts';
-import { readPublishedWorkOrderState } from '#src/workOrder/internal/common/utils/readPublishedWorkOrderState.ts';
-import { readWorkOrderSyncState } from '#src/workOrder/internal/common/utils/readWorkOrderSyncState.ts';
-import { recordWorkOrderSyncState } from '#src/workOrder/internal/common/utils/recordWorkOrderSyncState.ts';
+import { attachWorkOrderStateIfUnmoved } from '#src/workOrder/common/attachWorkOrderStateIfUnmoved.ts';
+import { publishedButUnrecorded } from '#src/workOrder/common/constants/publishedButUnrecorded.ts';
+import { workOrderFileNames } from '#src/workOrder/common/constants/workOrderFileNames.ts';
+import { findDivergentPlanIds } from '#src/workOrder/common/findDivergentPlanIds.ts';
+import { readPublishedWorkOrderState } from '#src/workOrder/common/readPublishedWorkOrderState.ts';
+import { readWorkOrderSyncState } from '#src/workOrder/common/readWorkOrderSyncState.ts';
+import { recordWorkOrderSyncState } from '#src/workOrder/common/recordWorkOrderSyncState.ts';
+import type { PublishedWorkOrderState } from '#src/workOrder/common/types/PublishedWorkOrderState.ts';
+import type { TicketTrackerTarget } from '#src/workOrder/common/types/TicketTrackerTarget.ts';
+import { updateLocalWorkOrderState } from '#src/workOrder/common/updateLocalWorkOrderState.ts';
+import { mergeOneSidedPlans } from '#src/workOrder/divergence/common/mergeOneSidedPlans.ts';
+import { resolvePlanWorkingCheckout } from '#src/workOrder/divergence/common/resolvePlanWorkingCheckout.ts';
 import { readWorkOrderState } from '#src/workOrder/readWorkOrderState.ts';
-import { updateLocalWorkOrderState } from '#src/workOrder/updateLocalWorkOrderState.ts';
 
 interface Params {
 	/** Any checkout of the repository the command was launched from. */

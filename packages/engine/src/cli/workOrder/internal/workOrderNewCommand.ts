@@ -3,7 +3,7 @@ import type { CommandContext } from '#src/cli/common/types/CommandContext.ts';
 import { exitCli } from '#src/cli/common/utils/exitCli.ts';
 import { createProgressPrinter } from '#src/cli/internal/common/utils/createProgressPrinter.ts';
 import { readConfig } from '#src/common/config/readConfig.ts';
-import { createWorkOrder } from '#src/workOrder/createWorkOrder.ts';
+import { createWorkOrder } from '#src/workOrder/createWorkOrder/createWorkOrder.ts';
 
 /**
  * Neither `--ticket` nor `--title` is a required flag, because the pair is what

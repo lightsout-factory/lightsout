@@ -18,10 +18,10 @@ import { readGitCurrentBranch } from '#src/common/git/readGitCurrentBranch.ts';
 import { readRunLabel } from '#src/common/readRunLabel.ts';
 import type { Driver } from '#src/common/types/Driver.ts';
 import type { LoadedConfig } from '#src/common/types/LoadedConfig.ts';
+import type { WorkOrderPlanOutcome } from '#src/common/types/WorkOrderPlanOutcome.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { runDirectWork } from '#src/direct/runDirectWork/runDirectWork.ts';
 import { requireImplementLifecycle } from '#src/ticketLifecycle/requireImplementLifecycle.ts';
-import type { WorkOrderPlanOutcome } from '#src/workOrder/common/types/WorkOrderPlanOutcome.ts';
 import { runWorkOrderBodyBuildLifecycle } from '#src/workOrder/implementRun/runWorkOrderBodyBuildLifecycle.ts';
 import { runWorkOrderPlanLifecycle } from '#src/workOrder/implementRun/runWorkOrderPlanLifecycle.ts';
 

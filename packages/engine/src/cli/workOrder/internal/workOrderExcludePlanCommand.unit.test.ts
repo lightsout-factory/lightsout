@@ -30,7 +30,7 @@ type ExcludeTicketPlanResult = { record: WorkOrderState; notice?: string; publis
 
 const mockExcludeTicketPlan = jest.fn<(params: ExcludeTicketPlanParams) => Promise<ExcludeTicketPlanResult>>();
 
-jest.mock('#src/workOrder/excludeWorkOrderPlan.ts', () => ({
+jest.mock('#src/workOrder/excludeWorkOrderPlan/excludeWorkOrderPlan.ts', () => ({
 	excludeWorkOrderPlan: (params: ExcludeTicketPlanParams) => mockExcludeTicketPlan(params),
 }));
 // -------------------------

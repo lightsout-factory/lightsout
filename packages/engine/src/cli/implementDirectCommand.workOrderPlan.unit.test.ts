@@ -11,8 +11,8 @@ import { WorkOrderEventKind } from '#src/contracts/workOrder/WorkOrderEventKind.
 import { WorkOrderMode } from '#src/contracts/workOrder/WorkOrderMode.ts';
 import type { WorkOrderState } from '#src/contracts/workOrder/WorkOrderState.ts';
 import type { PipelineResult } from '#src/pipeline/PipelineResult.ts';
+import { updateLocalWorkOrderState } from '#src/workOrder/common/updateLocalWorkOrderState.ts';
 import { readWorkOrderState } from '#src/workOrder/readWorkOrderState.ts';
-import { updateLocalWorkOrderState } from '#src/workOrder/updateLocalWorkOrderState.ts';
 import { captureCommandOutput } from '#tests/helpers/captureCommandOutput.ts';
 import { seedRunFolder } from '#tests/helpers/seedRunFolder.ts';
 import { setupBranchRepo } from '#tests/helpers/setupBranchRepo.ts';

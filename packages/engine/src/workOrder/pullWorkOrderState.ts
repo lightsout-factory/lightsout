@@ -4,16 +4,16 @@ import { sha256 } from '#src/common/sha256.ts';
 import { workOrderFolderDir } from '#src/common/workspace/workOrderFolderDir.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { WorkOrderState } from '#src/contracts/workOrder/WorkOrderState.ts';
-import { workOrderFileNames } from '#src/workOrder/internal/common/constants/workOrderFileNames.ts';
-import type { PublishedWorkOrderState } from '#src/workOrder/internal/common/types/PublishedWorkOrderState.ts';
-import { readPublishedWorkOrderState } from '#src/workOrder/internal/common/utils/readPublishedWorkOrderState.ts';
-import { readWorkOrderSyncState } from '#src/workOrder/internal/common/utils/readWorkOrderSyncState.ts';
-import { readWorkOrderWithTrackerTarget } from '#src/workOrder/internal/common/utils/readWorkOrderWithTrackerTarget.ts';
-import { serializeWorkOrderState } from '#src/workOrder/internal/common/utils/serializeWorkOrderState.ts';
-import { surfaceWorkOrderDivergence } from '#src/workOrder/internal/common/utils/surfaceWorkOrderDivergence.ts';
-import { updateWorkOrderSyncState } from '#src/workOrder/internal/common/utils/updateWorkOrderSyncState.ts';
-import { withWorkOrderStateLock } from '#src/workOrder/internal/common/utils/withWorkOrderStateLock.ts';
-import { writeWorkOrderFolderFile } from '#src/workOrder/internal/common/utils/writeWorkOrderFolderFile.ts';
+import { workOrderFileNames } from '#src/workOrder/common/constants/workOrderFileNames.ts';
+import { readPublishedWorkOrderState } from '#src/workOrder/common/readPublishedWorkOrderState.ts';
+import { readWorkOrderSyncState } from '#src/workOrder/common/readWorkOrderSyncState.ts';
+import { readWorkOrderWithTrackerTarget } from '#src/workOrder/common/readWorkOrderWithTrackerTarget.ts';
+import { serializeWorkOrderState } from '#src/workOrder/common/serializeWorkOrderState.ts';
+import { surfaceWorkOrderDivergence } from '#src/workOrder/common/surfaceWorkOrderDivergence.ts';
+import type { PublishedWorkOrderState } from '#src/workOrder/common/types/PublishedWorkOrderState.ts';
+import { updateWorkOrderSyncState } from '#src/workOrder/common/updateWorkOrderSyncState.ts';
+import { withWorkOrderStateLock } from '#src/workOrder/common/withWorkOrderStateLock.ts';
+import { writeWorkOrderFolderFile } from '#src/workOrder/common/writeWorkOrderFolderFile.ts';
 import { readWorkOrderState } from '#src/workOrder/readWorkOrderState.ts';
 
 interface Params {

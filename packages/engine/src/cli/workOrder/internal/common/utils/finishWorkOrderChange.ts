@@ -1,5 +1,5 @@
 import { exitCli } from '#src/cli/common/utils/exitCli.ts';
-import type { WorkOrderStateChange } from '#src/workOrder/common/types/WorkOrderStateChange.ts';
+import type { WorkOrderStateChange } from '#src/common/types/WorkOrderStateChange.ts';
 
 interface Params<Change extends WorkOrderStateChange> {
 	name: string;

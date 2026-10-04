@@ -5,6 +5,7 @@ import { PassThrough, Writable } from 'node:stream';
 import { describe, expect, jest, test } from '@jest/globals';
 import { PlanningStatus } from '#src/common/constants/PlanningStatus.ts';
 import type { Driver } from '#src/common/types/Driver.ts';
+import type { WorkOrderPlanOutcome } from '#src/common/types/WorkOrderPlanOutcome.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import type { RunOwner } from '#src/contracts/run/RunOwner.ts';
@@ -19,7 +20,6 @@ import { TerminalQuestionRelay } from '#src/queue/relay/TerminalQuestionRelay.ts
 import { runWorkerWithRelay } from '#src/queue/workers/runWorkerWithRelay.ts';
 import { createRun } from '#src/runState/createRun.ts';
 import { readRunOwner } from '#src/runState/owner/readRunOwner.ts';
-import type { WorkOrderPlanOutcome } from '#src/workOrder/common/types/WorkOrderPlanOutcome.ts';
 import { queueSettingsFixture } from '#tests/helpers/queueSettingsFixture.ts';
 import { setupConsumerRepo } from '#tests/helpers/setupConsumerRepo.ts';
 import { trackerSettingsFixture } from '#tests/helpers/trackerSettingsFixture.ts';

@@ -32,7 +32,7 @@ type SyncTicketRecordResult = { record: WorkOrderState } | { error: string };
 
 const mockSyncTicketRecord = jest.fn<(params: SyncTicketRecordParams) => Promise<SyncTicketRecordResult>>();
 
-jest.mock('#src/workOrder/common/constants/WorkOrderSyncKeep.ts', () => ({ WorkOrderSyncKeep: { Local: 'local', Published: 'published' } }));
+jest.mock('#src/common/constants/WorkOrderSyncKeep.ts', () => ({ WorkOrderSyncKeep: { Local: 'local', Published: 'published' } }));
 jest.mock('#src/workOrder/syncWorkOrderState.ts', () => ({ syncWorkOrderState: (params: SyncTicketRecordParams) => mockSyncTicketRecord(params) }));
 // -------------------------
 

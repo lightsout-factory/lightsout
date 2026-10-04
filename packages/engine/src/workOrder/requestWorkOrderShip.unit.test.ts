@@ -7,11 +7,11 @@ import { PlanProgress } from '#src/contracts/workOrder/PlanProgress.ts';
 import { WorkOrderMode } from '#src/contracts/workOrder/WorkOrderMode.ts';
 import type { WorkOrderPlan } from '#src/contracts/workOrder/WorkOrderPlan.ts';
 import type { WorkOrderState } from '#src/contracts/workOrder/WorkOrderState.ts';
-import { excludeWorkOrderPlan } from '#src/workOrder/excludeWorkOrderPlan.ts';
+import { updateLocalWorkOrderState } from '#src/workOrder/common/updateLocalWorkOrderState.ts';
+import { excludeWorkOrderPlan } from '#src/workOrder/excludeWorkOrderPlan/excludeWorkOrderPlan.ts';
 import { requestWorkOrderShip } from '#src/workOrder/requestWorkOrderShip.ts';
 import { retitleWorkOrderPlan } from '#src/workOrder/retitleWorkOrderPlan.ts';
 import { setWorkOrderMode } from '#src/workOrder/setWorkOrderMode.ts';
-import { updateLocalWorkOrderState } from '#src/workOrder/updateLocalWorkOrderState.ts';
 import { withdrawWorkOrderShipRequest } from '#src/workOrder/withdrawWorkOrderShipRequest.ts';
 
 /** The work order's label: the folder it sits in, and the name every command addresses it by. */

@@ -3,7 +3,7 @@ import { getRequiredFlag } from '#src/cli/internal/common/args/getRequiredFlag.t
 import { createProgressPrinter } from '#src/cli/internal/common/utils/createProgressPrinter.ts';
 import { finishWorkOrderChange } from '#src/cli/workOrder/internal/common/utils/finishWorkOrderChange.ts';
 import { readConfig } from '#src/common/config/readConfig.ts';
-import { excludeWorkOrderPlan } from '#src/workOrder/excludeWorkOrderPlan.ts';
+import { excludeWorkOrderPlan } from '#src/workOrder/excludeWorkOrderPlan/excludeWorkOrderPlan.ts';
 
 /**
  * The progress printer matters here: excluding a plan whose implementation

@@ -1,13 +1,13 @@
+import { WorkOrderShipStateKind } from '#src/common/constants/WorkOrderShipStateKind.ts';
 import type { GitIdentity } from '#src/common/types/GitIdentity.ts';
+import type { WorkOrderStateChange } from '#src/common/types/WorkOrderStateChange.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { WorkOrderEventKind } from '#src/contracts/workOrder/WorkOrderEventKind.ts';
 import type { WorkOrderState } from '#src/contracts/workOrder/WorkOrderState.ts';
-import { WorkOrderShipStateKind } from '#src/workOrder/common/constants/WorkOrderShipStateKind.ts';
-import type { WorkOrderStateChange } from '#src/workOrder/common/types/WorkOrderStateChange.ts';
-import { appendWorkOrderEvent } from '#src/workOrder/internal/common/record/appendWorkOrderEvent.ts';
-import { requireWorkOrderState } from '#src/workOrder/internal/common/record/requireWorkOrderState.ts';
+import { appendWorkOrderEvent } from '#src/workOrder/common/appendWorkOrderEvent.ts';
+import { requireWorkOrderState } from '#src/workOrder/common/requireWorkOrderState.ts';
+import { updateSyncedWorkOrderState } from '#src/workOrder/common/updateSyncedWorkOrderState.ts';
 import { readWorkOrderShipState } from '#src/workOrder/shipping/readWorkOrderShipState.ts';
-import { updateSyncedWorkOrderState } from '#src/workOrder/updateSyncedWorkOrderState.ts';
 
 interface Params {
 	/** Any checkout of the repository: the one record this machine holds is found from it. */

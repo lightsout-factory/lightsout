@@ -1,5 +1,5 @@
+import type { WorkOrderPlanOutcome } from '#src/common/types/WorkOrderPlanOutcome.ts';
 import type { PipelineResult } from '#src/pipeline/PipelineResult.ts';
-import type { WorkOrderPlanOutcome } from '#src/workOrder/common/types/WorkOrderPlanOutcome.ts';
 
 interface Params {
 	outcome: WorkOrderPlanOutcome;

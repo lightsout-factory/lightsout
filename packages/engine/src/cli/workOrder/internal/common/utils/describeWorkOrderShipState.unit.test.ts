@@ -1,7 +1,7 @@
 import { describe, expect, test } from '@jest/globals';
 import { describeWorkOrderShipState } from '#src/cli/workOrder/internal/common/utils/describeWorkOrderShipState.ts';
-import { WorkOrderShipStateKind } from '#src/workOrder/common/constants/WorkOrderShipStateKind.ts';
-import type { WorkOrderShipState } from '#src/workOrder/common/types/WorkOrderShipState.ts';
+import { WorkOrderShipStateKind } from '#src/common/constants/WorkOrderShipStateKind.ts';
+import type { WorkOrderShipState } from '#src/common/types/WorkOrderShipState.ts';
 
 const name = 'lo-140-multi';
 
