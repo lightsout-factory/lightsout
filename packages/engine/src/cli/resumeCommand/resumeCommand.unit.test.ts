@@ -1,5 +1,4 @@
-import { mkdirSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
 import { resumeCommand } from '#src/cli/resumeCommand/resumeCommand.ts';
@@ -7,7 +6,6 @@ import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutCo
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import { runDirFor } from '#tests/helpers/runDirFor.ts';
-import { setupConsumerRepo } from '#tests/helpers/setupConsumerRepo.ts';
 import { manifestOf, runId, setupResume } from '#tests/helpers/setupResume.ts';
 
 // Mocked Imports
@@ -46,38 +44,6 @@ const setupResumeGuard = ({ manifest, refusal }: { manifest: RunManifest; refusa
 };
 
 /**
- * A seeded resume whose manifest records a workspace of its own — a second repo
- * standing in for the worktree the run was cut into, with the run folder its
- * records reach it through already there. `present: false` records a workspace
- * that has since been removed.
- *
- * The guard is answered `undefined` here, so the lifecycle write is never the
- * reason one of these cases stops.
- */
-const setupResumeWorkspace = ({ present }: { present: boolean }) => {
-	mockRequireImplementLifecycle.mockResolvedValue(undefined);
-
-	const workspace = present ? setupConsumerRepo() : mkdtempSync(join(tmpdir(), 'lightsout-gone-'));
-
-	if (present) {
-		mkdirSync(runDirFor({ cwd: workspace, runId }), { recursive: true });
-	} else {
-		rmSync(workspace, { recursive: true, force: true });
-	}
-
-	return {
-		workspace,
-		...setupResume({ args: ['--run', runId], manifest: manifestOf({ pipeline: 'implement', willShip: true, workspace }) }),
-	};
-};
-
-/** A config this engine accepts, standing for the one a run recorded when it started. */
-const recordedConfig = { gates: { check: 'true', test: 'true', 'test-coverage': false }, 'standards-pack': false };
-
-/** A seeded run's manifest exactly as its bytes stand on disk, so a refusal can be shown to have written nothing. */
-const readManifestText = ({ cwd, id }: { cwd: string; id: string }): string => readFileSync(join(runDirFor({ cwd, runId: id }), 'manifest.json'), 'utf8');
-
-/**
  * An implement run every remaining step of which is already recorded passed, so
  * the resume re-enters, spawns no harness and reaches a pass. --skip-refactor
  * drops the refactor trio; the changed file stands for work already in history.
@@ -106,24 +72,6 @@ const setupPassingResume = () => {
 		JSON.parse(readFileSync(join(runDirFor({ cwd: seeded.cwd, runId }), 'report.json'), 'utf8'));
 
 	return { ...seeded, readFinalReport };
-};
-
-/** A config path that lies outside every checkout a case seeds, so a header naming it can only have read it off the manifest. */
-const recordedConfigPath = join(tmpdir(), 'lightsout-recorded-elsewhere', 'lightsout.config.json');
-
-/**
- * A seeded implement run whose manifest carries what the case records about its
- * config, launched from a checkout whose own file holds `fileConfig`. The guard
- * is answered `undefined`, so the lifecycle write is never the reason a case
- * stops; the seeded plan does not exist, so a resume that gets going stops at
- * the plan read.
- */
-const setupRecordedConfigResume = ({ recorded, fileConfig }: { recorded: Partial<RunManifest>; fileConfig?: Record<string, unknown> }) => {
-	mockRequireImplementLifecycle.mockResolvedValue(undefined);
-
-	const seeded = setupResume({ args: ['--run', runId], manifest: manifestOf({ pipeline: 'implement', willShip: true, ...recorded }), config: fileConfig });
-
-	return { ...seeded, manifestBefore: readManifestText({ cwd: seeded.cwd, id: runId }) };
 };
 
 describe('resumeCommand', () => {
@@ -385,39 +333,6 @@ describe('resumeCommand', () => {
 		expect(readManifest({ cwd }).willShip).toBe(false);
 	});
 
-	test('a resumed run works in the workspace it recorded and keeps its records where they are', async () => {
-		const { context, cwd, workspace, logged, errors, exitCodes } = setupResumeWorkspace({ present: true });
-
-		await expect(resumeCommand(context)).rejects.toThrow(/process\.exit/);
-
-		expect(logged[0]).toBe(`lightsout: resuming run ${runId} (was: failed, plan: ghost.md)`);
-		// the plan is looked for under the recorded workspace, never under the
-		// checkout the command was launched from: the pipeline is building there
-		expect(errors.join('\n')).toContain(`plan file not found: ${join(workspace, 'ghost.md')}`);
-		expect(errors.join('\n')).not.toContain(join(cwd, 'ghost.md'));
-		// the resumed run names the config path it recorded — the launching checkout's file — rather than the workspace's copy
-		expect(logged).toContain(`  config: ${join(cwd, 'lightsout.config.json')}`);
-		// and the ship restamp still landed in the launching checkout, which is
-		// where this run's records live and stay
-		expect(readManifest({ cwd }).willShip).toBe(false);
-		expect(exitCodes).toStrictEqual([1]);
-	});
-
-	test('a resumed run whose workspace has gone stops before anything runs', async () => {
-		const { context, cwd, workspace, logged, errors, exitCodes } = setupResumeWorkspace({ present: false });
-
-		await expect(resumeCommand(context)).rejects.toThrow(/process\.exit/);
-
-		expect(errors.join('\n')).toContain(workspace);
-		expect(exitCodes).toStrictEqual([1]);
-		// no banner, no lifecycle write, and the seeded ship stamp untouched: the
-		// refusal landed before any of them, so nothing was rebuilt in the
-		// launching checkout by accident
-		expect(logged).toStrictEqual([]);
-		expect(mockRequireImplementLifecycle).not.toHaveBeenCalled();
-		expect(readManifest({ cwd }).willShip).toBe(true);
-	});
-
 	test('a passed implement run still has nothing to resume', async () => {
 		const { context, errors, exitCodes } = setupResume({
 			args: ['--run', runId],
@@ -445,76 +360,5 @@ describe('resumeCommand', () => {
 		expect(logged.slice(-report.lines.length)).toStrictEqual(report.lines);
 		expect(report.exitCode).toBe(0);
 		expect(exitCodes).toStrictEqual([0]);
-	});
-
-	test("resume continues on the config the run recorded even when the launching checkout's file no longer parses", async () => {
-		const { context, logged, errors } = setupRecordedConfigResume({
-			recorded: { config: recordedConfig, configPath: recordedConfigPath },
-			fileConfig: { 'not-a-config-key': true },
-		});
-
-		await expect(resumeCommand(context)).rejects.toThrow(/process\.exit/);
-
-		expect(logged[0]).toBe(`lightsout: resuming run ${runId} (was: failed, plan: ghost.md)`);
-		expect(logged).toContain('  repo root: none (standards-pack false)');
-		// the file was never read, so its validation failure appears nowhere
-		expect(errors.join('\n')).not.toMatch(/is not valid|not-a-config-key/u);
-	});
-
-	test("resume hands the lifecycle guard the config the run recorded, not the launching checkout's file", async () => {
-		const { context } = setupRecordedConfigResume({
-			recorded: { config: { ...recordedConfig, 'agent-commands': ['pnpm db:migrate'] }, configPath: recordedConfigPath },
-		});
-
-		await expect(resumeCommand(context)).rejects.toThrow(/process\.exit/);
-
-		expect(mockRequireImplementLifecycle).toHaveBeenCalledWith(
-			expect.objectContaining({ config: expect.objectContaining({ 'agent-commands': ['pnpm db:migrate'] }) }),
-		);
-	});
-
-	test('resume refuses a run that recorded no config before the guard runs or the manifest is restamped', async () => {
-		const { context, cwd, logged, errors, exitCodes, manifestBefore } = setupRecordedConfigResume({ recorded: { config: undefined } });
-
-		await expect(resumeCommand(context)).rejects.toThrow(/process\.exit/);
-
-		const manifestAfter = readManifestText({ cwd, id: runId });
-
-		expect({ lines: errors.length, namesRun: errors[0]?.includes(runId) }).toStrictEqual({ lines: 1, namesRun: true });
-		expect(exitCodes).toStrictEqual([1]);
-		expect(logged).toStrictEqual([]);
-		expect(mockRequireImplementLifecycle).not.toHaveBeenCalled();
-		expect(manifestAfter).toBe(manifestBefore);
-	});
-
-	test('resume refuses a run whose recorded config this engine rejects, naming the offending key', async () => {
-		const { context, logged, errors, exitCodes } = setupRecordedConfigResume({
-			recorded: { config: { ...recordedConfig, 'not-a-config-key': true }, configPath: recordedConfigPath },
-		});
-
-		await expect(resumeCommand(context)).rejects.toThrow(/process\.exit/);
-
-		expect(errors.some((entry) => entry.includes(runId) && entry.includes('not-a-config-key'))).toBe(true);
-		expect(exitCodes).toStrictEqual([1]);
-		expect(logged).toStrictEqual([]);
-		expect(mockRequireImplementLifecycle).not.toHaveBeenCalled();
-	});
-
-	test("the resume header names the config path the run recorded, not the launching checkout's file", async () => {
-		const { context, cwd, logged } = setupRecordedConfigResume({ recorded: { config: recordedConfig, configPath: recordedConfigPath } });
-
-		await expect(resumeCommand(context)).rejects.toThrow(/process\.exit/);
-
-		expect(logged).toContain(`  config: ${recordedConfigPath}`);
-		expect(logged.some((line) => line.includes(join(cwd, 'lightsout.config.json')))).toBe(false);
-	});
-
-	test('a resumed run that predates the recorded path resumes with no config line rather than claiming its checkout has no config', async () => {
-		const { context, logged } = setupRecordedConfigResume({ recorded: { config: recordedConfig, configPath: undefined } });
-
-		await expect(resumeCommand(context)).rejects.toThrow(/process\.exit/);
-
-		expect(logged[0]).toBe(`lightsout: resuming run ${runId} (was: failed, plan: ghost.md)`);
-		expect(logged.some((line) => line.startsWith('  config:'))).toBe(false);
 	});
 });

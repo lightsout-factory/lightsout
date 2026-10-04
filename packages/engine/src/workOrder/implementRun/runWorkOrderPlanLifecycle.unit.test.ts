@@ -30,7 +30,7 @@ import {
 // the sync sidecar and the plan's own files — is a real file in a temporary
 // directory, because what this helper promises is about which bytes reach disk
 // and when.
-const mockReadGitHeadCommit: MockedReadGitHeadCommit = jest.fn();
+const mockReadGitHeadCommit: MockedReadGitHeadCommit = jest.fn<(params: { cwd: string }) => Promise<string | undefined>>();
 
 jest.mock('#src/common/git/readGitHeadCommit.ts', () => ({
 	readGitHeadCommit: (params: { cwd: string }) => mockReadGitHeadCommit(params),

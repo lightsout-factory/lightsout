@@ -1,28 +1,7 @@
 import { describe, expect, test } from '@jest/globals';
 import { parsePhaseDeclarations } from '#src/plan/common/phases/parsePhaseDeclarations.ts';
 import { parsePlan } from '#src/plan/parsePlan/parsePlan.ts';
-
-/** An overview carrying the given `## Phases` table rows and `## Phase Declarations` blocks, parsed as the lint parses it. */
-const setupOverview = ({ rows = '', declarations = '' }: { rows?: string; declarations?: string } = {}) => {
-	const content = `# Demo — Overview
-
-## Phases
-
-| # | File | Scope | Creates | Touches |
-|---|------|-------|---------|---------|
-${rows}
-
-## Phase Declarations
-
-${declarations}
-
-## Cross-Phase Dependencies
-
-- None.
-`;
-
-	return { plan: parsePlan({ content, base: 'overview.md' }) };
-};
+import { setupPhaseDeclarationsOverview } from '#tests/helpers/setupPhaseDeclarationsOverview.ts';
 
 /** An overview with neither declaration surface — the shape a hand-edit that deleted both leaves behind. */
 const setupBareOverview = () => ({
@@ -31,7 +10,7 @@ const setupBareOverview = () => ({
 
 describe('parsePhaseDeclarations', () => {
 	test('a table row and the block naming the same file become one declaration', () => {
-		const { plan } = setupOverview({
+		const { plan } = setupPhaseDeclarationsOverview({
 			rows: '| 1 | `phase1-core.md` | the core | 3 | 7 |',
 			declarations: `### Phase 1 — \`phase1-core.md\`
 
@@ -61,7 +40,7 @@ describe('parsePhaseDeclarations', () => {
 	});
 
 	test('the sentinel the template defines for an empty bullet declares nothing rather than a name', () => {
-		const { plan } = setupOverview({
+		const { plan } = setupPhaseDeclarationsOverview({
 			rows: '| 1 | `phase1-core.md` | the core | 0 | 0 |',
 			declarations: `### Phase 1 — \`phase1-core.md\`
 
@@ -76,7 +55,7 @@ describe('parsePhaseDeclarations', () => {
 	});
 
 	test('a count cell that is empty or not an integer is preserved as undefined rather than repaired', () => {
-		const { plan } = setupOverview({ rows: '| 2 | `phase2-extra.md` | the extra |  | soon |' });
+		const { plan } = setupPhaseDeclarationsOverview({ rows: '| 2 | `phase2-extra.md` | the extra |  | soon |' });
 
 		const declarations = parsePhaseDeclarations({ plan });
 
@@ -86,7 +65,7 @@ describe('parsePhaseDeclarations', () => {
 	});
 
 	test('a row with no declaration block hands nothing forward, which is legitimate', () => {
-		const { plan } = setupOverview({ rows: '| 1 | `phase1-core.md` | the core | 2 | 4 |' });
+		const { plan } = setupPhaseDeclarationsOverview({ rows: '| 1 | `phase1-core.md` | the core | 2 | 4 |' });
 
 		const declarations = parsePhaseDeclarations({ plan });
 
@@ -107,7 +86,7 @@ describe('parsePhaseDeclarations', () => {
 	});
 
 	test('a block the table does not list is returned as an orphan the consistency check can report', () => {
-		const { plan } = setupOverview({
+		const { plan } = setupPhaseDeclarationsOverview({
 			rows: '| 1 | `phase1-core.md` | the core | 0 | 0 |',
 			declarations: `### Phase 1 — \`phase1-core.md\`
 
@@ -139,7 +118,7 @@ describe('parsePhaseDeclarations', () => {
 	});
 
 	test('a block joins to its row by filename, not by the number its header prints', () => {
-		const { plan } = setupOverview({
+		const { plan } = setupPhaseDeclarationsOverview({
 			rows: '| 1 | `phase1-core.md` | the core | 0 | 0 |',
 			declarations: `### Phase 4 — \`phase1-core.md\`
 
@@ -156,7 +135,7 @@ describe('parsePhaseDeclarations', () => {
 	});
 
 	test('the header and separator rows drop out, and the rest keep table order', () => {
-		const { plan } = setupOverview({
+		const { plan } = setupPhaseDeclarationsOverview({
 			rows: `| 2 | \`phase2-extra.md\` | the extra | 0 | 0 |
 | 1 | \`phase1-core.md\` | the core | 0 | 0 |`,
 		});
@@ -169,7 +148,7 @@ describe('parsePhaseDeclarations', () => {
 	});
 
 	test('prose above the first block header belongs to no block', () => {
-		const { plan } = setupOverview({
+		const { plan } = setupPhaseDeclarationsOverview({
 			rows: '| 1 | `phase1-core.md` | the core | 0 | 0 |',
 			declarations: `These list only what crosses a phase boundary — see \`src/stray.ts\`.
 
@@ -187,13 +166,13 @@ describe('parsePhaseDeclarations', () => {
 	});
 
 	test('a row whose file cell names no markdown file is not a phase row', () => {
-		const { plan } = setupOverview({ rows: '| 1 | to be decided | the core | 0 | 0 |' });
+		const { plan } = setupPhaseDeclarationsOverview({ rows: '| 1 | to be decided | the core | 0 | 0 |' });
 
 		expect(parsePhaseDeclarations({ plan })).toStrictEqual([]);
 	});
 
 	test('a filename written without backticks still names the phase file', () => {
-		const { plan } = setupOverview({ rows: '| 1 | phase1-core.md | the core | 0 | 0 |' });
+		const { plan } = setupPhaseDeclarationsOverview({ rows: '| 1 | phase1-core.md | the core | 0 | 0 |' });
 
 		const declarations = parsePhaseDeclarations({ plan });
 
@@ -201,7 +180,7 @@ describe('parsePhaseDeclarations', () => {
 	});
 
 	test('a row that stops after the filename parses with an empty scope', () => {
-		const { plan } = setupOverview({ rows: '| 1 | `phase1-core.md` |' });
+		const { plan } = setupPhaseDeclarationsOverview({ rows: '| 1 | `phase1-core.md` |' });
 
 		const declarations = parsePhaseDeclarations({ plan });
 
@@ -209,7 +188,7 @@ describe('parsePhaseDeclarations', () => {
 	});
 
 	test('the file-budget bullet is read past its label, whatever its casing, and holds none without an integer', () => {
-		const { plan } = setupOverview({
+		const { plan } = setupPhaseDeclarationsOverview({
 			rows: `| 1 | \`phase1-core.md\` | the core | 0 | 0 |
 | 2 | \`phase2-extra.md\` | the extra | 0 | 0 |`,
 			declarations: `### Phase 1 — \`phase1-core.md\`
@@ -239,7 +218,7 @@ describe('parsePhaseDeclarations', () => {
 	});
 
 	test('each declaration carries the line of its row and the range of its block', () => {
-		const { plan } = setupOverview({
+		const { plan } = setupPhaseDeclarationsOverview({
 			rows: `| 1 | \`phase1-core.md\` | the core | 0 | 0 |
 | 2 | \`phase2-extra.md\` | the extra | 0 | 0 |
 | 3 | \`phase3-lonely.md\` | the lonely | 0 | 0 |`,
@@ -271,186 +250,6 @@ describe('parsePhaseDeclarations', () => {
 			{ file: 'phase2-extra.md', rowLine: 8, blockRange: { start: 19, end: 24 } },
 			{ file: 'phase3-lonely.md', rowLine: 9, blockRange: undefined },
 			{ file: 'phase4-ghost.md', rowLine: undefined, blockRange: { start: 25, end: 30 } },
-		]);
-	});
-
-	test('a Renames only bullet saying yes declares the phase rename-only, and anything else declares nothing', () => {
-		const { plan } = setupOverview({
-			rows: `| 1 | \`phase1-rename.md\` | the rename | 0 | 4 |
-| 2 | \`phase2-shouted.md\` | the shouted rename | 0 | 4 |
-| 3 | \`phase3-plain.md\` | the plain phase | 0 | 4 |
-| 4 | \`phase4-no.md\` | the declined rename | 0 | 4 |
-| 5 | \`phase5-other.md\` | the unclear rename | 0 | 4 |`,
-			declarations: `### Phase 1 — \`phase1-rename.md\`
-
-- **Creates:** none
-- **Exports:** none
-- **Scripts:** none
-- **File budget:** 4
-- **Renames only:** yes
-
-### Phase 2 — \`phase2-shouted.md\`
-
-- **Creates:** none
-- **Exports:** none
-- **Scripts:** none
-- **RENAMES ONLY:**  YES
-
-### Phase 3 — \`phase3-plain.md\`
-
-- **Creates:** none
-- **Exports:** none
-- **Scripts:** none
-
-### Phase 4 — \`phase4-no.md\`
-
-- **Creates:** none
-- **Exports:** none
-- **Scripts:** none
-- **Renames only:** no
-
-### Phase 5 — \`phase5-other.md\`
-
-- **Creates:** none
-- **Exports:** none
-- **Scripts:** none
-- **Renames only:** true`,
-		});
-
-		const declarations = parsePhaseDeclarations({ plan });
-
-		// the key is omitted rather than set to false, so every existing
-		// strict-equality fixture of a declaration stays valid
-		expect(
-			declarations.map((declaration) => ({
-				file: declaration.file,
-				carriesBuildMode: Object.hasOwn(declaration, 'buildMode'),
-				buildMode: declaration.buildMode,
-			})),
-		).toStrictEqual([
-			{ file: 'phase1-rename.md', carriesBuildMode: true, buildMode: 'renames-only' },
-			{ file: 'phase2-shouted.md', carriesBuildMode: true, buildMode: 'renames-only' },
-			{ file: 'phase3-plain.md', carriesBuildMode: false, buildMode: undefined },
-			{ file: 'phase4-no.md', carriesBuildMode: false, buildMode: undefined },
-			{ file: 'phase5-other.md', carriesBuildMode: false, buildMode: undefined },
-		]);
-	});
-
-	test('an orphan block keeps its Renames only declaration, and a row with no block declares nothing', () => {
-		const { plan } = setupOverview({
-			rows: '| 1 | `phase1-lonely.md` | the lonely | 0 | 4 |',
-			declarations: `### Phase 2 — \`phase2-ghost.md\`
-
-- **Creates:** none
-- **Exports:** none
-- **Scripts:** none
-- **Renames only:** yes`,
-		});
-
-		const declarations = parsePhaseDeclarations({ plan });
-
-		// the orphan is reported rather than repaired, so what it declares survives
-		expect(
-			declarations.map((declaration) => ({
-				file: declaration.file,
-				number: declaration.number,
-				carriesBuildMode: Object.hasOwn(declaration, 'buildMode'),
-				buildMode: declaration.buildMode,
-			})),
-		).toStrictEqual([
-			{ file: 'phase1-lonely.md', number: 1, carriesBuildMode: false, buildMode: undefined },
-			{ file: 'phase2-ghost.md', number: 0, carriesBuildMode: true, buildMode: 'renames-only' },
-		]);
-	});
-
-	test('parsePhaseDeclarations: each mode bullet saying yes declares its build mode, and a block with neither carries no buildMode key', () => {
-		const { plan } = setupOverview({
-			rows: `| 1 | \`phase1-move.md\` | the move | 0 | 300 |
-| 2 | \`phase2-rename.md\` | the rename | 0 | 4 |
-| 3 | \`phase3-declined.md\` | the declined move | 0 | 4 |
-| 4 | \`phase4-plain.md\` | the plain phase | 0 | 4 |`,
-			declarations: `### Phase 1 — \`phase1-move.md\`
-
-- **Creates:** none
-- **Exports:** none
-- **Scripts:** none
-- **Moves folders and files only:** yes
-
-### Phase 2 — \`phase2-rename.md\`
-
-- **Creates:** none
-- **Exports:** none
-- **Scripts:** none
-- **Renames only:** yes
-
-### Phase 3 — \`phase3-declined.md\`
-
-- **Creates:** none
-- **Exports:** none
-- **Scripts:** none
-- **Moves folders and files only:** no
-- **Renames only:** no
-
-### Phase 4 — \`phase4-plain.md\`
-
-- **Creates:** none
-- **Exports:** none
-- **Scripts:** none`,
-		});
-
-		const declarations = parsePhaseDeclarations({ plan });
-
-		// the key is omitted rather than set to standard, so every existing
-		// strict-equality fixture of a declaration stays valid
-		expect(
-			declarations.map((declaration) => ({
-				file: declaration.file,
-				carriesBuildMode: Object.hasOwn(declaration, 'buildMode'),
-				buildMode: declaration.buildMode,
-				carriesBuildModeConflict: Object.hasOwn(declaration, 'buildModeConflict'),
-			})),
-		).toStrictEqual([
-			{ file: 'phase1-move.md', carriesBuildMode: true, buildMode: 'move-folders-and-files', carriesBuildModeConflict: false },
-			{ file: 'phase2-rename.md', carriesBuildMode: true, buildMode: 'renames-only', carriesBuildModeConflict: false },
-			{ file: 'phase3-declined.md', carriesBuildMode: false, buildMode: undefined, carriesBuildModeConflict: false },
-			{ file: 'phase4-plain.md', carriesBuildMode: false, buildMode: undefined, carriesBuildModeConflict: false },
-		]);
-	});
-
-	test('parsePhaseDeclarations: a block saying yes to both mode bullets declares a conflict rather than either mode', () => {
-		const { plan } = setupOverview({
-			rows: '| 1 | `phase1-both.md` | the confused phase | 0 | 4 |',
-			declarations: `### Phase 1 — \`phase1-both.md\`
-
-- **Creates:** none
-- **Exports:** none
-- **Scripts:** none
-- **Renames only:** yes
-- **Moves folders and files only:** yes
-
-### Phase 2 — \`phase2-ghost.md\`
-
-- **Creates:** none
-- **Exports:** none
-- **Scripts:** none
-- **Moves folders and files only:** yes
-- **Renames only:** yes`,
-		});
-
-		const declarations = parsePhaseDeclarations({ plan });
-
-		// guessing which bullet wins would hide the drafting mistake, so neither
-		// the row-matched block nor the orphan declares a mode
-		expect(
-			declarations.map((declaration) => ({
-				file: declaration.file,
-				number: declaration.number,
-				carriesBuildMode: Object.hasOwn(declaration, 'buildMode'),
-				buildModeConflict: declaration.buildModeConflict,
-			})),
-		).toStrictEqual([
-			{ file: 'phase1-both.md', number: 1, carriesBuildMode: false, buildModeConflict: true },
-			{ file: 'phase2-ghost.md', number: 0, carriesBuildMode: false, buildModeConflict: true },
 		]);
 	});
 });

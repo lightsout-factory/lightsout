@@ -1,6 +1,5 @@
 import { createHash } from 'node:crypto';
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
 import { WorkOrderSyncKeep } from '#src/common/constants/WorkOrderSyncKeep.ts';
@@ -10,7 +9,7 @@ import { WorkOrderEventKind } from '#src/contracts/workOrder/WorkOrderEventKind.
 import { WorkOrderMode } from '#src/contracts/workOrder/WorkOrderMode.ts';
 import type { WorkOrderState } from '#src/contracts/workOrder/WorkOrderState.ts';
 import { syncWorkOrderState } from '#src/workOrder/syncWorkOrderState.ts';
-import { ticketTrackerConfigBlock } from '#tests/helpers/queueConfigBlock.ts';
+import { setupWorkOrderSync } from '#tests/helpers/setupWorkOrderSync.ts';
 
 // Mocked Imports
 // -------------------------
@@ -71,19 +70,8 @@ jest.mock('#src/plan/publish/publishPlan/publishPlan.ts', () => ({ publishPlan: 
 /** The work order's label, which is also the branch every record below names. */
 const name = 'lo-140-multi';
 const ticketRef = 'LO-140';
-const gates: LightsoutConfig['gates'] = { check: 'true', test: 'true', 'test-coverage': false };
-/** The same block as `ticketTrackerConfigBlock`, typed: the fixture is the raw JSON shape, whose `provider` is a plain string. */
-const trackerBlock: LightsoutConfig['ticket-tracker'] = { ...ticketTrackerConfigBlock, provider: 'linear' };
-const config: LightsoutConfig = { gates, 'ticket-tracker': trackerBlock };
-const env = { LINEAR_API_KEY: 'lin_key' };
 /** The first event of every record here, so a carried plan's event is the last one. */
 const firstEvent = { at: '2026-09-01T09:00:00.000Z', kind: WorkOrderEventKind.PlanAdded, detail: 'added plan 001-ticket-record' };
-
-type SyncResult = { record: WorkOrderState } | { error: string };
-type SyncState = { schemaVersion: 1; recordSha256?: string; planMarkers: Record<string, string> };
-
-/** A hash of the right shape for a field the contract reads as a SHA-256, told apart by what it was made from. */
-const digestOf = ({ seed }: { seed: string }) => createHash('sha256').update(seed).digest('hex');
 
 const planOf = ({ id, title = `Plan ${id}`, publishedMarker }: { id: string; title?: string; publishedMarker?: string }): WorkOrderState['plans'][number] => ({
 	id,
@@ -103,80 +91,28 @@ const recordOf = ({ plans, history = [firstEvent] }: { plans: WorkOrderState['pl
 	history,
 });
 
-const asFileText = ({ value }: { value: unknown }) => `${JSON.stringify(value, undefined, '\t')}\n`;
-
-interface SetupParams {
-	/** The record in the primary checkout's work order folder. Absent writes no `state.json`. */
-	local?: WorkOrderState;
-	/** The record the ticket carries. Absent leaves the ticket with no `state.json` attachment. */
-	published?: WorkOrderState;
-	/** What every read of the ticket after the first answers, for a record another machine publishes mid-command. */
-	publishedAfterFirstRead?: WorkOrderState;
-	/** The sidecar naming the bytes this machine last published or restored. */
-	syncState?: SyncState;
-	/** Plan folders that exist in the primary checkout's work order folder. */
-	planFolders?: string[];
-	/** The marker hash a republish of a plan folder reports. */
-	republishedMarker?: string;
-	/** Whether an earlier divergence left its published copy beside the record. */
-	publishedCopyOnDisk?: boolean;
-}
-
-/**
- * A checkout outside any repository, so the shared state directory is its own
- * `.lightsout` and the work order folder is a path the test can name, with the
- * ticket's side of the story scripted on the tracker mocks.
- */
-const setupSync = ({
-	local,
-	published,
-	publishedAfterFirstRead,
-	syncState,
-	planFolders = [],
-	republishedMarker = digestOf({ seed: 'a republished marker' }),
-	publishedCopyOnDisk = false,
-}: SetupParams) => {
-	const cwd = mkdtempSync(join(tmpdir(), 'lightsout-ticket-sync-keep-local-'));
-	const workOrderFolder = join(cwd, '.lightsout', 'work-orders', name);
-	const progress: string[] = [];
-	const bodies = [published, publishedAfterFirstRead ?? published].map((record) => (record === undefined ? undefined : asFileText({ value: record })));
-	let reads = 0;
-
-	mkdirSync(workOrderFolder, { recursive: true });
-
-	if (local !== undefined) {
-		writeFileSync(join(workOrderFolder, 'state.json'), asFileText({ value: local }));
-	}
-
-	if (syncState !== undefined) {
-		writeFileSync(join(workOrderFolder, 'state-sync.json'), asFileText({ value: syncState }));
-	}
-
-	if (publishedCopyOnDisk && published !== undefined) {
-		writeFileSync(join(workOrderFolder, 'state.published.json'), asFileText({ value: published }));
-	}
-
-	for (const planId of planFolders) {
-		mkdirSync(join(workOrderFolder, 'plans', planId), { recursive: true });
-		writeFileSync(join(workOrderFolder, 'plans', planId, 'plan.md'), `# ${planId}\n`);
-	}
-
-	mockGetTicketAttachments.mockResolvedValue(
-		published === undefined ? [] : [{ id: 'att-record', title: 'state.json', url: 'https://assets.example/ticket-record' }],
-	);
-	mockReadTicketAsset.mockImplementation(async () => {
-		const body = bodies[Math.min(reads, bodies.length - 1)];
-
-		reads += 1;
-
-		return body ?? { error: 'the ticket carries no state.json' };
+/** The sync `setupWorkOrderSync` arranges for this work order, scripted on this file's tracker mocks. */
+const setupSync = (arrangement: Omit<Parameters<typeof setupWorkOrderSync>[0], 'mocks' | 'name' | 'ticketRef'>) =>
+	setupWorkOrderSync({
+		mocks: {
+			getTicketAttachments: mockGetTicketAttachments,
+			getTicketsByIdentifiers: mockGetTicketsByIdentifiers,
+			readTicketAsset: mockReadTicketAsset,
+			setTicketAttachment: mockSetTicketAttachment,
+			publishPlan: mockPublishPlan,
+		},
+		name,
+		ticketRef,
+		...arrangement,
 	});
-	mockGetTicketsByIdentifiers.mockResolvedValue([{ id: 'id-140', identifier: ticketRef }]);
-	mockSetTicketAttachment.mockResolvedValue(undefined);
-	mockPublishPlan.mockResolvedValue({ ticketRef, published: ['003-held-here--plan.md'], stale: [], markerSha256: republishedMarker });
 
-	return { cwd, workOrderFolder, progress, params: { cwd, name, config, env, onProgress: (message: string) => progress.push(message) } };
-};
+type SyncResult = { record: WorkOrderState } | { error: string };
+type SyncState = { schemaVersion: 1; recordSha256?: string; planMarkers: Record<string, string> };
+
+/** A hash of the right shape for a field the contract reads as a SHA-256, told apart by what it was made from. */
+const digestOf = ({ seed }: { seed: string }) => createHash('sha256').update(seed).digest('hex');
+
+const asFileText = ({ value }: { value: unknown }) => `${JSON.stringify(value, undefined, '\t')}\n`;
 
 const recordFrom = ({ result }: { result: SyncResult }) => ('record' in result ? result.record : undefined);
 const errorFrom = ({ result }: { result: SyncResult }) => ('error' in result ? result.error : undefined);
@@ -216,54 +152,6 @@ const setupTicketFolderSync = ({ republishedMarker }: { republishedMarker: strin
 };
 
 describe('syncWorkOrderState', () => {
-	test('syncWorkOrderState: both keep choices carry a plan only one copy holds so no number is lost or reused', async () => {
-		const keepingPublished = setupSync({
-			local: recordOf({ plans: [planOf({ id: '001-ticket-record' }), planOf({ id: '003-queue-order' })] }),
-			published: recordOf({ plans: [planOf({ id: '001-ticket-record' })] }),
-		});
-
-		const published = await syncWorkOrderState({ ...keepingPublished.params, keep: WorkOrderSyncKeep.Published });
-
-		const keepingLocal = setupSync({
-			local: recordOf({ plans: [planOf({ id: '001-ticket-record' })] }),
-			published: recordOf({ plans: [planOf({ id: '001-ticket-record' }), planOf({ id: '004-ship-guard' })] }),
-		});
-
-		const local = await syncWorkOrderState({ ...keepingLocal.params, keep: WorkOrderSyncKeep.Local });
-
-		const carriedFromLocal = recordFrom({ result: published })?.history.at(-1);
-		const carriedFromPublished = recordFrom({ result: local })?.history.at(-1);
-
-		expect(recordFrom({ result: published })?.plans.map((plan) => plan.id)).toStrictEqual(['001-ticket-record', '003-queue-order']);
-		expect(carriedFromLocal).toStrictEqual({ at: expect.any(String), kind: 'plan-added', detail: expect.stringContaining('003-queue-order') });
-		expect(carriedFromLocal?.detail).toContain('local');
-		expect(recordFrom({ result: local })?.plans.map((plan) => plan.id)).toStrictEqual(['001-ticket-record', '004-ship-guard']);
-		expect(carriedFromPublished).toStrictEqual({ at: expect.any(String), kind: 'plan-added', detail: expect.stringContaining('004-ship-guard') });
-		expect(carriedFromPublished?.detail).toContain('published');
-	});
-
-	test('syncWorkOrderState: refuses a keep choice when the two copies used one number for different plans', async () => {
-		const clash = {
-			local: recordOf({ plans: [planOf({ id: '001-ticket-record' }), planOf({ id: '003-queue-order' })] }),
-			published: recordOf({ plans: [planOf({ id: '001-ticket-record' }), planOf({ id: '003-ship-request' })] }),
-		};
-		const keepingPublished = setupSync(clash);
-
-		const published = await syncWorkOrderState({ ...keepingPublished.params, keep: WorkOrderSyncKeep.Published });
-
-		const keepingLocal = setupSync(clash);
-
-		const local = await syncWorkOrderState({ ...keepingLocal.params, keep: WorkOrderSyncKeep.Local });
-
-		expect(errorFrom({ result: published })).toContain('003-queue-order');
-		expect(errorFrom({ result: published })).toContain('003-ship-request');
-		expect(errorFrom({ result: local })).toContain('003-queue-order');
-		expect(errorFrom({ result: local })).toContain('003-ship-request');
-		expect(localRecordOf({ workOrderFolder: keepingPublished.workOrderFolder })).toStrictEqual(clash.local);
-		expect(localRecordOf({ workOrderFolder: keepingLocal.workOrderFolder })).toStrictEqual(clash.local);
-		expect(mockSetTicketAttachment).not.toHaveBeenCalled();
-	});
-
 	test('syncWorkOrderState: keeping the local copy publishes it over the published one, records its hash and removes state.published.json', async () => {
 		const local = recordOf({ plans: [planOf({ id: '001-ticket-record', title: 'The title this machine holds' })] });
 		const { params, workOrderFolder } = setupSync({

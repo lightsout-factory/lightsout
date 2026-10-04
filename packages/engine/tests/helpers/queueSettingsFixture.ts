@@ -1,5 +1,5 @@
-import { defaultPlanningStatusLabels } from '#src/common/constants/PlanningStatus.ts';
 import type { QueueSettings } from '#src/common/types/QueueSettings.ts';
+import { defaultPlanningStatusLabels } from '#src/ticketLifecycle/resolveLifecycleSettings/defaultPlanningStatusLabels.ts';
 
 /**
  * A resolved `queue` block for tests, with whatever the test is actually about

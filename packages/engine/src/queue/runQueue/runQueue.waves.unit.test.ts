@@ -153,95 +153,6 @@ describe('runQueue', () => {
 		expect(merged()).toStrictEqual(['LO-70', 'LO-71']);
 	});
 
-	test('merges a parked branch exactly once, so a later scan never ships settled work twice', async () => {
-		const alreadyReady = outcomeOf({ ticket: ticketOf({ number: 99 }) });
-		const { drain, relay } = setupDrain({ parked: { resumed: [], outcomes: [alreadyReady], leftBehind: [], merged: [] } });
-
-		mockListEligibleTickets.mockResolvedValueOnce([ticketOf({ number: 70 }), ticketOf({ number: 71, unfinishedBlockers: ['LO-70'] })]);
-		mockListEligibleTickets.mockResolvedValueOnce([ticketOf({ number: 71 })]);
-
-		const report = await drain();
-
-		relay.close();
-
-		// The parked branch is merged once and never offered again; the flat list is
-		// what says so, where the old per-wave grouping said it by shape.
-		expect(merged()).toStrictEqual(['LO-99', 'LO-70', 'LO-71']);
-		expect(report).toEqual({
-			outcomes: [
-				expect.objectContaining({ ticket: expect.objectContaining({ identifier: 'LO-99' }) }),
-				expect.objectContaining({ ticket: expect.objectContaining({ identifier: 'LO-70' }) }),
-				expect.objectContaining({ ticket: expect.objectContaining({ identifier: 'LO-71' }) }),
-			],
-			leftBehind: [],
-		});
-	});
-
-	test('never re-runs a ticket the resume scan already finished, though a later scan hands it back', async () => {
-		const alreadyReady = outcomeOf({ ticket: ticketOf({ number: 99 }) });
-		const { drain, relay } = setupDrain({ parked: { resumed: [], outcomes: [alreadyReady], leftBehind: [], merged: [] } });
-
-		mockListEligibleTickets.mockResolvedValueOnce([ticketOf({ number: 70 }), ticketOf({ number: 71, unfinishedBlockers: ['LO-70'] })]);
-		mockListEligibleTickets.mockResolvedValueOnce([ticketOf({ number: 99 }), ticketOf({ number: 71 })]);
-
-		await drain();
-		relay.close();
-
-		expect(pickedUp()).toStrictEqual(['LO-70', 'LO-71']);
-	});
-
-	test('never offers a worktree recorded merged to a later wave, though the tracker lists its ticket again', async () => {
-		const settledTree = { worktreePath: '/tmp/worktrees/LO-99', branch: 'lo-99-ticket-id-99', ticket: ticketOf({ number: 99 }) };
-		const { drain, relay } = setupDrain({ parked: { resumed: [], outcomes: [], leftBehind: [], merged: [settledTree] } });
-
-		mockListEligibleTickets.mockResolvedValueOnce([ticketOf({ number: 70 }), ticketOf({ number: 71, unfinishedBlockers: ['LO-70'] })]);
-		mockListEligibleTickets.mockResolvedValueOnce([ticketOf({ number: 99 }), ticketOf({ number: 71 })]);
-
-		const report = await drain();
-
-		relay.close();
-
-		// The drain settles it before the first wave, so it is attempted from the
-		// start — a tracker that hands it back cannot buy it a worker.
-		expect(pickedUp()).toStrictEqual(['LO-70', 'LO-71']);
-		expect(report).toEqual({
-			outcomes: [
-				expect.objectContaining({ ticket: expect.objectContaining({ identifier: 'LO-70' }) }),
-				expect.objectContaining({ ticket: expect.objectContaining({ identifier: 'LO-71' }) }),
-			],
-			leftBehind: [
-				{
-					identifier: 'LO-99',
-					title: 'Ticket 99',
-					url: 'https://linear.app/lightsout/issue/LO-99',
-					reason: expect.stringContaining('held a branch already recorded merged'),
-					settled: true,
-				},
-			],
-		});
-	});
-
-	test('carries a worktree the resume scan left behind through every wave, and names it exactly once', async () => {
-		const withdrawn = { identifier: 'LO-98', reason: 'its worktree is parked, but the ticket carries no planning status label any more' };
-		const { drain, relay } = setupDrain({ parked: { resumed: [], outcomes: [], leftBehind: [withdrawn], merged: [] } });
-
-		mockListEligibleTickets.mockResolvedValueOnce([ticketOf({ number: 70 }), ticketOf({ number: 71, unfinishedBlockers: ['LO-70'] })]);
-		mockListEligibleTickets.mockResolvedValueOnce([ticketOf({ number: 98 }), ticketOf({ number: 71 })]);
-
-		const report = await drain();
-
-		relay.close();
-
-		expect(pickedUp()).toStrictEqual(['LO-70', 'LO-71']);
-		expect(report).toEqual({
-			outcomes: [
-				expect.objectContaining({ ticket: expect.objectContaining({ identifier: 'LO-70' }) }),
-				expect.objectContaining({ ticket: expect.objectContaining({ identifier: 'LO-71' }) }),
-			],
-			leftBehind: [withdrawn],
-		});
-	});
-
 	test('stops re-reading the tracker once a scan turns up nothing newly runnable', async () => {
 		const { drain, relay } = setupDrain({ eligible: [ticketOf({ number: 70 }), ticketOf({ number: 71, unfinishedBlockers: ['LO-69'] })] });
 
@@ -313,18 +224,6 @@ describe('runQueue', () => {
 		relay.close();
 
 		expect(pickedUp()).toStrictEqual(['LO-70', 'LO-73', 'LO-72']);
-	});
-
-	test('scans the parked worktrees once for the whole invocation, so a parked ticket is never re-resumed to re-ask its question', async () => {
-		const { drain, relay } = setupDrain();
-
-		mockListEligibleTickets.mockResolvedValueOnce([ticketOf({ number: 70 }), ticketOf({ number: 71, unfinishedBlockers: ['LO-70'] })]);
-		mockListEligibleTickets.mockResolvedValueOnce([ticketOf({ number: 71 })]);
-
-		await drain();
-		relay.close();
-
-		expect(mockScanParkedWorktrees).toHaveBeenCalledTimes(1);
 	});
 
 	test('records every wave’s tickets in the coordinator run, not just the first wave’s', async () => {

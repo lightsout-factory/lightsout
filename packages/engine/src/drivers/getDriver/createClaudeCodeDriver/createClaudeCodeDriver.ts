@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import type { Driver } from '#src/common/types/Driver.ts';
+import type { DriverInvocation } from '#src/common/types/DriverInvocation.ts';
 import { isRateLimitMessage } from '#src/drivers/getDriver/common/isRateLimitMessage.ts';
 import { spawnCollect } from '#src/drivers/getDriver/common/spawnCollect.ts';
 import { writeSystemPromptFile } from '#src/drivers/getDriver/common/writeSystemPromptFile.ts';
@@ -86,6 +87,49 @@ const parseEnvelope = ({ stdout }: { stdout: string }) => {
 	}
 };
 
+/**
+ * Reads the harness's stream a line at a time: forwards every parseable event,
+ * reports usage as it settles, and keeps the terminal envelope for the result.
+ */
+const createStreamReader = ({ onEvent, onUsage }: Pick<DriverInvocation, 'onEvent' | 'onUsage'>) => {
+	let resultEvent: z.infer<typeof ResultEvent> | undefined;
+	const tallyAssistantUsage = createAssistantUsageTally();
+
+	const readLine = (line: string) => {
+		let event: unknown;
+
+		try {
+			event = JSON.parse(line);
+		} catch {
+			return;
+		}
+
+		const parsed = ResultEvent.safeParse(event);
+
+		if (parsed.success) {
+			resultEvent = parsed.data;
+
+			// The terminal envelope supersedes the streamed accumulation:
+			// it is the only place the harness states output tokens and cost.
+			const settled = resultUsage({ event: parsed.data });
+
+			if (settled) {
+				onUsage?.(settled);
+			}
+		}
+
+		const streamed = tallyAssistantUsage({ event });
+
+		if (streamed) {
+			onUsage?.(streamed);
+		}
+
+		onEvent?.(event);
+	};
+
+	return { readLine, getResultEvent: () => resultEvent };
+};
+
 export const createClaudeCodeDriver = (): Driver => {
 	const driver: Driver = {
 		name: 'claude-code',
@@ -106,9 +150,7 @@ export const createClaudeCodeDriver = (): Driver => {
 				onUsage,
 			} = invocation;
 
-			let resultEvent: z.infer<typeof ResultEvent> | undefined;
-			const tallyAssistantUsage = createAssistantUsageTally();
-
+			const stream = createStreamReader({ onEvent, onUsage });
 			const systemPromptFile = systemPrompt ? await writeSystemPromptFile({ systemPrompt }) : undefined;
 
 			// The temp file outlives only the spawn — cleanup runs on the error
@@ -129,39 +171,10 @@ export const createClaudeCodeDriver = (): Driver => {
 				cwd,
 				stdinText: prompt,
 				timeoutMs,
-				onStdoutLine: (line) => {
-					let event: unknown;
-
-					try {
-						event = JSON.parse(line);
-					} catch {
-						return;
-					}
-
-					const parsed = ResultEvent.safeParse(event);
-
-					if (parsed.success) {
-						resultEvent = parsed.data;
-
-						// The terminal envelope supersedes the streamed accumulation:
-						// it is the only place the harness states output tokens and cost.
-						const settled = resultUsage({ event: parsed.data });
-
-						if (settled) {
-							onUsage?.(settled);
-						}
-					}
-
-					const streamed = tallyAssistantUsage({ event });
-
-					if (streamed) {
-						onUsage?.(streamed);
-					}
-
-					onEvent?.(event);
-				},
+				onStdoutLine: stream.readLine,
 			}).finally(() => systemPromptFile?.cleanup());
 
+			const resultEvent = stream.getResultEvent();
 			const envelope = resultEvent ?? parseEnvelope({ stdout });
 			const text = envelope?.result ?? stdout;
 			const errored = envelope?.is_error === true || exitCode !== 0;

@@ -25,6 +25,18 @@ const groupByImporter = ({ edges }: { edges: Array<{ from: string; to: string }>
 	return targetsByImporter;
 };
 
+interface ImporterFindingsParams {
+	edges: Array<{ from: string; to: string }>;
+	describe: (params: { targets: string[] }) => string;
+	guidance: string;
+}
+
+/** One finding per importer, listing the importer first and then every file it wrongly imports. */
+const buildImporterFindings = ({ edges, describe, guidance }: ImporterFindingsParams): RawStandardsFinding[] =>
+	[...groupByImporter({ edges })].map(([from, targets]) =>
+		buildRawFinding({ rule: 'index-files', files: [{ path: from }, ...targets.map((path) => ({ path }))], detail: describe({ targets }), guidance }),
+	);
+
 /**
  * Every index file one importer names is one finding, since the fix is a
  * single edit to its imports, and so is every file it reaches inside another
@@ -57,22 +69,16 @@ const findWrongImports = ({ input, entryFiles }: { input: ImportGraphInput | und
 	);
 
 	return [
-		...[...groupByImporter({ edges: throughIndex })].map(([from, indexFiles]) =>
-			buildRawFinding({
-				rule: 'index-files',
-				files: [{ path: from }, ...indexFiles.map((path) => ({ path }))],
-				detail: `imports through ${quote({ paths: indexFiles })} — import each name from the file that declares it instead`,
-				guidance: 'An index file lists what a package makes public; nothing inside the package imports through it.',
-			}),
-		),
-		...[...groupByImporter({ edges: intoAnotherPackage })].map(([from, targets]) =>
-			buildRawFinding({
-				rule: 'index-files',
-				files: [{ path: from }, ...targets.map((path) => ({ path }))],
-				detail: `imports ${quote({ paths: targets })} from inside another package`,
-				guidance: "Import it from that package's entry, never by a path into its files.",
-			}),
-		),
+		...buildImporterFindings({
+			edges: throughIndex,
+			describe: ({ targets }) => `imports through ${quote({ paths: targets })} — import each name from the file that declares it instead`,
+			guidance: 'An index file lists what a package makes public; nothing inside the package imports through it.',
+		}),
+		...buildImporterFindings({
+			edges: intoAnotherPackage,
+			describe: ({ targets }) => `imports ${quote({ paths: targets })} from inside another package`,
+			guidance: "Import it from that package's entry, never by a path into its files.",
+		}),
 	];
 };
 

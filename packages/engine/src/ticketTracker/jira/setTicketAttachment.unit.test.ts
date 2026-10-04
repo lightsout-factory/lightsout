@@ -1,6 +1,4 @@
-import { beforeEach, describe, expect, jest, test } from '@jest/globals';
-import { getTicketAttachments } from '#src/ticketTracker/jira/getTicketAttachments.ts';
-import { readTicketAsset } from '#src/ticketTracker/jira/readTicketAsset.ts';
+import { describe, expect, jest, test } from '@jest/globals';
 import { setTicketAttachment } from '#src/ticketTracker/jira/setTicketAttachment.ts';
 import { jiraTrackerSettingsFixture } from '#tests/helpers/jiraQueueSettingsFixture.ts';
 
@@ -11,23 +9,7 @@ jest.mock('#src/ticketTracker/jira/common/runJira.ts', () => ({ runJira: (params
 
 const settings = jiraTrackerSettingsFixture();
 
-beforeEach(() => {
-	mockRunJira.mockClear();
-});
-
-describe('Jira durable attachments', () => {
-	test('lists issue attachments with content URLs constructed on the configured Jira origin', async () => {
-		const request = jest.fn<(params: unknown) => Promise<unknown>>().mockResolvedValue({
-			fields: { attachment: [{ id: '17', filename: 'plan.md', content: 'https://attacker.example/steal' }] },
-		});
-		mockRunJira.mockImplementation(({ request: call }) => call({ request }));
-
-		expect(await getTicketAttachments({ settings, identifier: 'lo-54' })).toStrictEqual([
-			{ id: '17', title: 'plan.md', url: 'https://example.atlassian.net/rest/api/3/attachment/content/17' },
-		]);
-		expect(request).toHaveBeenCalledWith({ method: 'GET', path: '/rest/api/3/issue/LO-54?fields=attachment', response: 'json' });
-	});
-
+describe('setTicketAttachment', () => {
 	test('uploads and links the replacement before deleting captured same-title attachments', async () => {
 		const request = jest
 			.fn<(params: unknown) => Promise<unknown>>()
@@ -86,24 +68,5 @@ describe('Jira durable attachments', () => {
 		).toStrictEqual({
 			error: "Jira linked the new 'plan.md' but could not delete old attachment 'old-1': delete denied; duplicate copies remain",
 		});
-	});
-
-	test.each([
-		'https://evil.example/rest/api/3/attachment/content/17',
-		'https://example.atlassian.net.evil.example/rest/api/3/attachment/content/17',
-		'https://example.atlassian.net/rest/api/3/issue/LO-54',
-	])('refuses to send Jira credentials to an untrusted asset URL: %s', async (url) => {
-		expect(await readTicketAsset({ settings, url })).toStrictEqual({
-			error: `refusing to send tracker credentials to untrusted attachment URL '${url}'`,
-		});
-		expect(mockRunJira).not.toHaveBeenCalled();
-	});
-
-	test('downloads a trusted attachment through the authenticated Jira client', async () => {
-		const request = jest.fn<(params: unknown) => Promise<unknown>>().mockResolvedValue('# plan');
-		mockRunJira.mockImplementation(({ request: call }) => call({ request }));
-
-		expect(await readTicketAsset({ settings, url: 'https://example.atlassian.net/rest/api/3/attachment/content/17' })).toBe('# plan');
-		expect(request).toHaveBeenCalledWith({ method: 'GET', path: '/rest/api/3/attachment/content/17', response: 'text' });
 	});
 });

@@ -1,9 +1,8 @@
+import { VoiceSpeakKind } from '#src/cli/voice/voiceCommand/common/constants/VoiceSpeakKind.ts';
 import { getSpokenPickerText } from '#src/voice/getSpokenPickerText.ts';
 import { getSpokenTurnQuestion } from '#src/voice/getSpokenTurnQuestion.ts';
 import { isVoiceOn } from '#src/voice/isVoiceOn.ts';
 import { speakText } from '#src/voice/speakText.ts';
-
-export type VoiceSpeakKind = 'turn' | 'picker';
 
 interface Params {
 	cwd: string;
@@ -31,7 +30,7 @@ export const voiceSpeakCommand = async ({ cwd, kind, input }: Params): Promise<v
 			return;
 		}
 
-		const text = kind === 'picker' ? getSpokenPickerText({ toolInput: payload }) : getSpokenTurnQuestion({ blocks: payload });
+		const text = kind === VoiceSpeakKind.Picker ? getSpokenPickerText({ toolInput: payload }) : getSpokenTurnQuestion({ blocks: payload });
 
 		if (text === undefined) {
 			return;

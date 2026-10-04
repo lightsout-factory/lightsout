@@ -1,6 +1,6 @@
 import type { Effort } from '#src/contracts/Effort.ts';
 import { Permissions } from '#src/contracts/Permissions.ts';
-import { PiVariant } from '#src/drivers/getDriver/createPiDriver/common/constants/PiVariant.ts';
+import { PiVariant } from '#src/drivers/getDriver/common/constants/PiVariant.ts';
 
 /**
  * Enabling exactly these tools disables `bash`, `edit` and `write` outright. The

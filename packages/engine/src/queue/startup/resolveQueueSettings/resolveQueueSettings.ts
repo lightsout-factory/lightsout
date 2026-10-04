@@ -2,7 +2,7 @@ import type { QueueSettings } from '#src/common/types/QueueSettings.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { QueueFailure } from '#src/queue/common/types/QueueFailure.ts';
 import { parseDurationMs } from '#src/queue/startup/resolveQueueSettings/parseDurationMs.ts';
-import { resolveLifecycleSettings } from '#src/ticketLifecycle/resolveLifecycleSettings.ts';
+import { resolveLifecycleSettings } from '#src/ticketLifecycle/resolveLifecycleSettings/resolveLifecycleSettings.ts';
 
 interface Params {
 	config: LightsoutConfig;

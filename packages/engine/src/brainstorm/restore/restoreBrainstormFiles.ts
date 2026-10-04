@@ -8,13 +8,13 @@ import { brainstormAttachmentManifestName } from '#src/common/constants/brainsto
 import { brainstormNotesFileName } from '#src/common/constants/brainstormNotesFileName.ts';
 import { messageOf } from '#src/common/messageOf.ts';
 import { pathExists } from '#src/common/paths/pathExists.ts';
+import { readAttachmentText } from '#src/common/readAttachmentText.ts';
 import { sha256 } from '#src/common/sha256.ts';
 import type { AttachmentManifest } from '#src/common/types/AttachmentManifest.ts';
 import type { TrackerAttachment } from '#src/common/types/TrackerAttachment.ts';
 import type { TrackerSettings } from '#src/common/types/TrackerSettings.ts';
 import { planWorkspaceDir } from '#src/plan/planWorkspaceDir.ts';
 import { getTicketAttachments } from '#src/ticketTracker/getTicketAttachments.ts';
-import { readTicketAsset } from '#src/ticketTracker/readTicketAsset.ts';
 
 interface Params {
 	cwd: string;
@@ -38,23 +38,6 @@ interface ReadGenerationFile {
 	title: string;
 	text: string;
 }
-
-/**
- * The result is annotated rather than inferred: without it the two branches
- * widen into one shape carrying an optional `error`, and `'error' in read`
- * stops narrowing at the call site.
- */
-const readAttachment = async ({
-	settings,
-	attachment,
-}: {
-	settings: TrackerSettings;
-	attachment: TrackerAttachment;
-}): Promise<{ text: string } | { error: string }> => {
-	const text = await readTicketAsset({ settings, url: attachment.url });
-
-	return typeof text === 'string' ? { text } : { error: `the ticket's ${attachment.title} could not be read: ${text.error}` };
-};
 
 const readGeneration = async ({
 	settings,
@@ -84,7 +67,7 @@ const readGeneration = async ({
 			};
 		}
 
-		const read = await readAttachment({ settings, attachment });
+		const read = await readAttachmentText({ settings, attachment });
 
 		if ('error' in read) {
 			return { error: read.error };
@@ -163,7 +146,7 @@ export const restoreBrainstormFiles = async ({ cwd, name, identifier, settings, 
 		};
 	}
 
-	const markerRead = await readAttachment({ settings, attachment: marker });
+	const markerRead = await readAttachmentText({ settings, attachment: marker });
 
 	if ('error' in markerRead) {
 		return { restored: [], skipped: [], error: markerRead.error };

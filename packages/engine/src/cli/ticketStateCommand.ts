@@ -5,7 +5,7 @@ import { TrackerStatusRole } from '#src/common/constants/TrackerStatusRole.ts';
 import { exitCli } from '#src/common/exitCli.ts';
 import { getStringFlag } from '#src/common/getStringFlag.ts';
 import type { CommandContext } from '#src/common/types/CommandContext.ts';
-import { resolveLifecycleSettings } from '#src/ticketLifecycle/resolveLifecycleSettings.ts';
+import { resolveLifecycleSettings } from '#src/ticketLifecycle/resolveLifecycleSettings/resolveLifecycleSettings.ts';
 import { updateTicketLifecycle } from '#src/ticketLifecycle/updateTicketLifecycle.ts';
 import { getTicketsByIdentifiers } from '#src/ticketTracker/getTicketsByIdentifiers.ts';
 import { resolveTrackerSettings } from '#src/ticketTracker/resolveTrackerSettings.ts';

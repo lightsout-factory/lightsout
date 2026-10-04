@@ -1,4 +1,5 @@
 import { formatClockDuration } from '#src/cli/statusCommand/common/formatClockDuration.ts';
+import { localClock } from '#src/cli/statusCommand/common/localClock.ts';
 import { renderProgressBlock } from '#src/cli/statusCommand/common/renderProgressBlock.ts';
 import { pathExists } from '#src/common/paths/pathExists.ts';
 import type { PlanningProgress } from '#src/contracts/plan/progress/PlanningProgress.ts';
@@ -8,13 +9,6 @@ import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import { getPlanningProgressPath } from '#src/plan/progress/getPlanningProgressPath.ts';
 import { readPlanningProgress } from '#src/plan/progress/readPlanningProgress.ts';
 import { isPidAlive } from '#src/runState/liveness/isPidAlive.ts';
-
-/** Local time, because a reader compares it against the clock on their own screen. */
-const localClock = ({ iso }: { iso: string }) => {
-	const at = new Date(iso);
-
-	return `${String(at.getHours()).padStart(2, '0')}:${String(at.getMinutes()).padStart(2, '0')}`;
-};
 
 /** Newest start first, so a tie between two running entries goes to the one that started last. */
 const splitRunning = ({ steps }: { steps: PlanningStepRecord[] }) => {

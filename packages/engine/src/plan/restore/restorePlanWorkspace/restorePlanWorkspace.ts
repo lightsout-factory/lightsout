@@ -2,6 +2,7 @@ import { attachmentTitle } from '#src/common/attachmentManifest/attachmentTitle.
 import { parseAttachmentManifest } from '#src/common/attachmentManifest/parseAttachmentManifest.ts';
 import { scopeAttachments } from '#src/common/attachmentManifest/scopeAttachments.ts';
 import { planAttachmentManifestName } from '#src/common/constants/planAttachmentManifestName.ts';
+import { readAttachmentText } from '#src/common/readAttachmentText.ts';
 import { sha256 } from '#src/common/sha256.ts';
 import type { AttachmentManifest } from '#src/common/types/AttachmentManifest.ts';
 import type { TrackerAttachment } from '#src/common/types/TrackerAttachment.ts';
@@ -12,7 +13,6 @@ import { planWorkspaceDir } from '#src/plan/planWorkspaceDir.ts';
 import type { ReadGenerationFile } from '#src/plan/restore/restorePlanWorkspace/common/types/ReadGenerationFile.ts';
 import { writeRestoredGeneration } from '#src/plan/restore/restorePlanWorkspace/writeRestoredGeneration.ts';
 import { getTicketAttachments } from '#src/ticketTracker/getTicketAttachments.ts';
-import { readTicketAsset } from '#src/ticketTracker/readTicketAsset.ts';
 
 interface Params {
 	cwd: string;
@@ -39,12 +39,6 @@ interface GenerationFile {
 	url: string;
 	sha256: string;
 }
-
-const readAttachment = async ({ settings, attachment }: { settings: TrackerSettings; attachment: TrackerAttachment }) => {
-	const text = await readTicketAsset({ settings, url: attachment.url });
-
-	return typeof text === 'string' ? { text } : { error: `the ticket's ${attachment.title} could not be read: ${text.error}` };
-};
 
 /** Unlisted durable attachments are stale by definition and harmless; a missing or duplicate listed title is not. */
 const selectGeneration = ({
@@ -110,7 +104,7 @@ const readAndVerifyGeneration = async ({ settings, files, markerName }: { settin
 	const reads = await Promise.all(
 		files.map(async (file) => ({
 			file,
-			read: await readAttachment({ settings, attachment: { id: '', title: file.title, url: file.url } }),
+			read: await readAttachmentText({ settings, attachment: { id: '', title: file.title, url: file.url } }),
 		})),
 	);
 	const verified: ReadGenerationFile[] = [];
@@ -159,7 +153,7 @@ export const restorePlanWorkspace = async ({ cwd, name, identifier, settings, ti
 		return { restored: [] };
 	}
 
-	const manifestRead = await readAttachment({ settings, attachment: selected.manifest });
+	const manifestRead = await readAttachmentText({ settings, attachment: selected.manifest });
 
 	if ('error' in manifestRead) {
 		return { restored: [], error: manifestRead.error };

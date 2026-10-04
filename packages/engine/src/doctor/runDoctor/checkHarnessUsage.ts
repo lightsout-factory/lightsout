@@ -8,8 +8,8 @@ import { getDriver } from '#src/drivers/getDriver/getDriver.ts';
 /** The adapter file whose parse has to be re-captured when a harness renames its token fields. */
 const usageAdapters: Record<string, string> = {
 	'claude-code': 'packages/engine/src/drivers/getDriver/createClaudeCodeDriver/createClaudeCodeDriver.ts',
-	omp: 'packages/engine/src/drivers/getDriver/createPiDriver/createPiDriver.ts',
-	pi: 'packages/engine/src/drivers/getDriver/createPiDriver/createPiDriver.ts',
+	omp: 'packages/engine/src/drivers/getDriver/createPiFamilyDriver/createPiDriver.ts',
+	pi: 'packages/engine/src/drivers/getDriver/createPiFamilyDriver/createPiDriver.ts',
 };
 
 const holdsFiniteNumber = ({ value }: { value: unknown }) =>

@@ -1,11 +1,11 @@
 import { z } from 'zod';
 import type { Driver } from '#src/common/types/Driver.ts';
 import type { DriverResult } from '#src/common/types/DriverResult.ts';
+import type { PiVariant } from '#src/drivers/getDriver/common/constants/PiVariant.ts';
+import { buildPiArgs } from '#src/drivers/getDriver/common/createPiFamilyDriver/buildPiArgs.ts';
 import { isRateLimitMessage } from '#src/drivers/getDriver/common/isRateLimitMessage.ts';
 import { spawnCollect } from '#src/drivers/getDriver/common/spawnCollect.ts';
 import { writeSystemPromptFile } from '#src/drivers/getDriver/common/writeSystemPromptFile.ts';
-import { buildPiArgs } from '#src/drivers/getDriver/createPiDriver/buildPiArgs.ts';
-import { PiVariant } from '#src/drivers/getDriver/createPiDriver/common/constants/PiVariant.ts';
 
 const Usage = z.object({
 	input: z.number().optional(),
@@ -97,7 +97,7 @@ interface PiFamilyParams {
 }
 
 /** omp is a fork of pi that shares its print-mode flags and json event stream, so one implementation serves both. */
-const createPiFamilyDriver = ({ name, variant, command }: PiFamilyParams): Driver => {
+export const createPiFamilyDriver = ({ name, variant, command }: PiFamilyParams): Driver => {
 	const driver: Driver = {
 		name,
 		invoke: async (invocation) => {
@@ -171,7 +171,3 @@ const createPiFamilyDriver = ({ name, variant, command }: PiFamilyParams): Drive
 
 	return driver;
 };
-
-export const createPiDriver = (): Driver => createPiFamilyDriver({ name: 'pi', variant: PiVariant.Pi, command: 'pi' });
-
-export const createOmpDriver = (): Driver => createPiFamilyDriver({ name: 'omp', variant: PiVariant.Omp, command: 'omp' });

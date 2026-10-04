@@ -1,62 +1,12 @@
-import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
 import { type FileListInput, type StandardsCheckFunction, type StandardsCheckInputs, StandardsInputKind } from '@lightsout/standards-contracts';
-import type { LoadedStandardsRule } from '#src/common/types/LoadedStandardsRule.ts';
-import type { LoadedStandardsTopic } from '#src/common/types/LoadedStandardsTopic.ts';
 import type { ResolvedRuleState } from '#src/common/types/ResolvedRuleState.ts';
-import type { StandardsGroup } from '#src/common/types/StandardsGroup.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 import { runPackageChecks } from '#src/standardsCheck/runStandardsCheck/runPackageChecks/runPackageChecks.ts';
 import { getRejectionError } from '#tests/helpers/getRejectionError.ts';
+import { packageChecksFixtures } from '#tests/helpers/packageChecksFixtures.ts';
 
-/** A repo the checks run against. */
-const setupRepo = () => {
-	const cwd = mkdtempSync(join(tmpdir(), 'lightsout-package-checks-'));
-
-	mkdirSync(join(cwd, 'src/feature'), { recursive: true });
-	writeFileSync(join(cwd, 'src/alpha.ts'), 'export const alpha = 1;\n');
-	writeFileSync(join(cwd, 'src/feature/internal.ts'), 'export const internal = 2;\n');
-	writeFileSync(join(cwd, 'src/alpha.unit.test.ts'), "test('alpha', () => {});\n");
-	// A real repo has one, and without it the run rightly notes that it could not
-	// know this repo's path aliases — a second note every unrelated case would
-	// then have to carry.
-	writeFileSync(join(cwd, 'tsconfig.json'), '{ "compilerOptions": { "strict": true } }\n');
-
-	return { cwd };
-};
-
-const rule = (overrides: Partial<LoadedStandardsRule> & { id: string }): LoadedStandardsRule => ({
-	name: `acme/${overrides.id}`,
-	library: 'acme',
-	set: 'code',
-	documentPath: 'code/style-guide/structure/module-api',
-	summary: 'a rule',
-	prose: 'the argument for the rule',
-	deterministic: overrides.run !== undefined,
-	agent: overrides.run === undefined,
-	defaultSeverity: StandardsSeverity.Advisory,
-	defaultOptions: {},
-	requires: [],
-	fixturesPath: `/packages/acme/${overrides.id}/fixtures`,
-	...overrides,
-});
-
-/** A check for the rule `id` that reports one finding and records what it was handed. */
-const recordingRun = ({
-	id,
-	calls,
-}: {
-	id: string;
-	calls: Array<{ inputs: StandardsCheckInputs; options: Record<string, number> }>;
-}): StandardsCheckFunction => {
-	return ({ inputs, options }) => {
-		calls.push({ inputs, options });
-
-		return [{ siteKey: `${id}:${Object.keys(inputs).join(',')}:one`, files: [{ path: 'src/alpha.ts' }], detail: 'one site' }];
-	};
-};
+const { setupRepo, rule, recordingRun, groupOf, runChecks } = packageChecksFixtures;
 
 /** The first input a check was handed, narrowed to the kind whose path lists the test reads. */
 const fileListInput = ({ calls }: { calls: Array<{ inputs: StandardsCheckInputs }> }): FileListInput => {
@@ -69,73 +19,6 @@ const fileListInput = ({ calls }: { calls: Array<{ inputs: StandardsCheckInputs 
 	return input;
 };
 
-/** One group whose pack holds `rules` at their rule.md defaults, each rule at the state `states` resolved for it. */
-const groupOf = ({ rules, states }: { rules: LoadedStandardsRule[]; states: Map<string, ResolvedRuleState> }): StandardsGroup => ({
-	packages: [''],
-	pack: {
-		name: 'acme/house',
-		topics: [],
-		rules: rules.map((entry) => ({ rule: entry, severity: entry.defaultSeverity, options: entry.defaultOptions })),
-		conditionalPacks: [],
-		inactiveRules: [],
-	},
-	states,
-});
-
-/** Runs the given rules as one group's pack, at the severities a repo's config would have resolved for them. */
-const runChecks = ({
-	rules,
-	cwd,
-	severities = {},
-	path,
-	exclude,
-	onProgress,
-}: {
-	rules: LoadedStandardsRule[];
-	cwd: string;
-	severities?: Record<string, StandardsSeverity>;
-	path?: string;
-	exclude?: string[];
-	onProgress?: (message: string) => void;
-}) => {
-	const states = new Map<string, ResolvedRuleState>(
-		rules.map((entry) => {
-			const severity = severities[entry.id] ?? entry.defaultSeverity;
-
-			return [entry.name, { severity, options: entry.defaultOptions, fromConfig: false, reachesAgents: severity !== StandardsSeverity.Off }];
-		}),
-	);
-
-	return runPackageChecks({ cwd, groups: [groupOf({ rules, states })], path, exclude, onProgress });
-};
-
-/**
- * Two checked rules, one retuned by the repo's config, with each check
- * recording the options it was run with. The retuned rule's state carries the
- * config's options merged over its defaults, as the repo's settings resolve it.
- */
-const setupConfiguredRun = () => {
-	const { cwd } = setupRepo();
-	const calls: Record<string, Record<string, number>> = {};
-	const recordOptions =
-		({ id }: { id: string }): StandardsCheckFunction =>
-		({ options }) => {
-			calls[id] = options;
-
-			return [];
-		};
-	const rules = [
-		rule({ id: 'folder-size', inputKinds: [StandardsInputKind.FileList], run: recordOptions({ id: 'folder-size' }), defaultOptions: { cap: 20 } }),
-		rule({ id: 'file-size', inputKinds: [StandardsInputKind.FileList], run: recordOptions({ id: 'file-size' }), defaultOptions: { file: 250, tsxFile: 300 } }),
-	];
-	const states = new Map<string, ResolvedRuleState>([
-		['acme/folder-size', { severity: StandardsSeverity.Advisory, options: { cap: 2 }, fromConfig: true, reachesAgents: true }],
-		['acme/file-size', { severity: StandardsSeverity.Advisory, options: { file: 250, tsxFile: 300 }, fromConfig: false, reachesAgents: true }],
-	]);
-
-	return { cwd, groups: [groupOf({ rules, states })], calls };
-};
-
 /** One live checked rule `acme/size` whose check writes its site keys with the short id, as every check does. */
 const setupFullNameRun = () => {
 	const { cwd } = setupRepo();
@@ -146,52 +29,6 @@ const setupFullNameRun = () => {
 	]);
 
 	return { cwd, groups: [groupOf({ rules, states })] };
-};
-
-/**
- * One group whose pack holds a live rule `acme/size` and a rule `acme/muted` the
- * repo turned off, while the library's checked rule `acme/outside` shares their
- * topic but was left out of the pack. Each check records its id when it runs.
- */
-const setupGroupRun = () => {
-	const { cwd } = setupRepo();
-	const ran: string[] = [];
-	const reportingRun =
-		({ id }: { id: string }): StandardsCheckFunction =>
-		() => {
-			ran.push(id);
-
-			return [{ siteKey: `${id}:src/alpha.ts`, files: [{ path: 'src/alpha.ts' }], detail: `${id} site` }];
-		};
-	const size = rule({ id: 'size', inputKinds: [StandardsInputKind.FileText], run: reportingRun({ id: 'size' }) });
-	const muted = rule({ id: 'muted', inputKinds: [StandardsInputKind.FileText], run: reportingRun({ id: 'muted' }) });
-	const outside = rule({ id: 'outside', inputKinds: [StandardsInputKind.FileText], run: reportingRun({ id: 'outside' }) });
-	const topic: LoadedStandardsTopic = {
-		set: 'code',
-		library: 'acme',
-		path: 'code/style-guide/structure/module-api',
-		intro: '# Module API',
-		ruleIds: [size.id, muted.id, outside.id],
-	};
-	const group: StandardsGroup = {
-		packages: [''],
-		pack: {
-			name: 'acme/house',
-			topics: [topic],
-			rules: [
-				{ rule: size, severity: StandardsSeverity.Advisory, options: {} },
-				{ rule: muted, severity: StandardsSeverity.Blocking, options: {} },
-			],
-			conditionalPacks: [],
-			inactiveRules: [],
-		},
-		states: new Map([
-			['acme/size', { severity: StandardsSeverity.Advisory, options: {}, fromConfig: false, reachesAgents: true }],
-			['acme/muted', { severity: StandardsSeverity.Off, options: {}, fromConfig: true, reachesAgents: true }],
-		]),
-	};
-
-	return { cwd, groups: [group], ran };
 };
 
 describe('runPackageChecks', () => {
@@ -283,30 +120,6 @@ describe('runPackageChecks', () => {
 		expect(calls[1]?.options).toStrictEqual({ minTokens: 200 });
 	});
 
-	test('runs nothing for a rule the repo switched off', async () => {
-		const { cwd } = setupRepo();
-		const calls: Array<{ inputs: StandardsCheckInputs; options: Record<string, number> }> = [];
-
-		const { findings } = await runChecks({
-			cwd,
-			rules: [rule({ id: 'multi-export', inputKinds: [StandardsInputKind.FileText], run: recordingRun({ id: 'multi-export', calls }) })],
-			severities: { 'multi-export': StandardsSeverity.Off },
-		});
-
-		// off is a configuration state: the check is never even called
-		expect(calls).toHaveLength(0);
-		expect(findings).toStrictEqual([]);
-	});
-
-	test('ignores a agent-only rule, which ships no check to run', async () => {
-		const { cwd } = setupRepo();
-
-		const { findings, notes } = await runChecks({ cwd, rules: [rule({ id: 'premature-abstraction' })] });
-
-		expect(findings).toStrictEqual([]);
-		expect(notes).toStrictEqual([]);
-	});
-
 	test('scopes the checked files to --path while keeping the whole repo as reference', async () => {
 		const { cwd } = setupRepo();
 		const calls: Array<{ inputs: StandardsCheckInputs; options: Record<string, number> }> = [];
@@ -389,25 +202,6 @@ describe('runPackageChecks', () => {
 		expect(error.message).toBe('standards rule "acme/multi-export" threw while checking: cannot parse that');
 	});
 
-	test('leaves a rule out when the run was handed no resolved state for it', async () => {
-		const { cwd } = setupRepo();
-		const calls: Array<{ inputs: StandardsCheckInputs; options: Record<string, number> }> = [];
-		const rules = [rule({ id: 'multi-export', inputKinds: [StandardsInputKind.FileText], run: recordingRun({ id: 'multi-export', calls }) })];
-
-		const { findings } = await runPackageChecks({ cwd, groups: [groupOf({ rules, states: new Map() })] });
-
-		// severity is policy; with none resolved there is nothing to report at
-		expect(findings).toStrictEqual([]);
-	});
-
-	test('runs each live rule with its resolved options, the config override merged over its defaults', async () => {
-		const { cwd, groups, calls } = setupConfiguredRun();
-
-		await runPackageChecks({ cwd, groups });
-
-		expect(calls).toStrictEqual({ 'folder-size': { cap: 2 }, 'file-size': { file: 250, tsxFile: 300 } });
-	});
-
 	test('findings carry the full rule name and a site key prefixed with it', async () => {
 		const { cwd, groups } = setupFullNameRun();
 
@@ -416,44 +210,5 @@ describe('runPackageChecks', () => {
 		expect(findings).toStrictEqual([
 			{ rule: 'acme/size', severity: StandardsSeverity.Advisory, siteKey: 'acme/size:src/alpha.ts', files: [{ path: 'src/alpha.ts' }], detail: 'too big' },
 		]);
-	});
-
-	test("runPackageChecks: only rules in a group's pack at a reporting severity run", async () => {
-		const { cwd, groups, ran } = setupGroupRun();
-
-		const { findings } = await runPackageChecks({ cwd, groups });
-
-		expect({ ran, findings }).toStrictEqual({
-			ran: ['size'],
-			findings: [
-				{ rule: 'acme/size', severity: StandardsSeverity.Advisory, siteKey: 'acme/size:src/alpha.ts', files: [{ path: 'src/alpha.ts' }], detail: 'size site' },
-			],
-		});
-	});
-
-	test('a checked rule two groups hold runs once, by full name', async () => {
-		const { cwd } = setupRepo();
-		const calls: Array<{ inputs: StandardsCheckInputs; options: Record<string, number> }> = [];
-		const rules = [rule({ id: 'size', inputKinds: [StandardsInputKind.FileText], run: recordingRun({ id: 'size', calls }) })];
-		const states = new Map<string, ResolvedRuleState>([
-			['acme/size', { severity: StandardsSeverity.Advisory, options: {}, fromConfig: false, reachesAgents: true }],
-		]);
-
-		const { findings } = await runPackageChecks({ cwd, groups: [groupOf({ rules, states }), groupOf({ rules, states })] });
-
-		expect({ runs: calls.length, keys: findings.map((finding) => finding.siteKey) }).toStrictEqual({ runs: 1, keys: ['acme/size:file-text:one'] });
-	});
-
-	test('runPackageChecks: no groups means nothing runs', async () => {
-		const { cwd } = setupRepo();
-		const messages: string[] = [];
-
-		const result = await runPackageChecks({ cwd, groups: [], onProgress: (message) => messages.push(message) });
-
-		// only the file count is reported: no input kind was built, so no check ran
-		expect({ result, messages }).toStrictEqual({
-			result: { findings: [], notes: [] },
-			messages: ['checking 2 source file(s) and 1 test file(s)'],
-		});
 	});
 });

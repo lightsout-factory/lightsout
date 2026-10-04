@@ -3,36 +3,14 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
 import { PipelineKind } from '#src/contracts/run/PipelineKind.ts';
-import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import type { StepRecord } from '#src/contracts/run/StepRecord.ts';
-import { ShipStatus } from '#src/contracts/ship/ShipStatus.ts';
 import { getRunProgress } from '#src/views/getRunProgress.ts';
 import { runDirFor } from '#tests/helpers/runDirFor.ts';
-import { seedWorkOrderRecord } from '#tests/helpers/seedWorkOrderRecord.ts';
+import { runProgressManifestOf as manifestOf } from '#tests/helpers/runProgressManifestOf.ts';
+import { setupRunProgress as setupProgress } from '#tests/helpers/setupRunProgress.ts';
 
 const runId = 'run-progress-01';
-
-const manifestOf = (overrides: Partial<RunManifest> = {}): RunManifest => ({
-	runId,
-	createdAt: '2026-01-01T00:00:00.000Z',
-	updatedAt: '2026-01-01T00:10:00.000Z',
-	plan: 'plans/demo/plan.md',
-	harness: 'claude-code',
-	status: RunStatus.Running,
-	currentStep: null,
-	steps: [],
-	changedFiles: [],
-	commits: [],
-	packages: [],
-	baselineDirtyFiles: [],
-	testSubjects: [],
-	acceptanceTests: [],
-	approvedTests: [],
-	unreachableChangedFiles: [],
-	coverageExcludedChangedFiles: [],
-	...overrides,
-});
 
 const stepOf = (overrides: Partial<StepRecord> = {}): StepRecord => ({
 	id: 'implement',
@@ -61,45 +39,6 @@ const cleanupReport = {
 	failures: ['refactor executor timed out after 20 minutes'],
 	initialReview: [],
 	finalReview: [finding],
-};
-
-/**
- * A real repo holding the run's own evidence — its progress log and, when the
- * case wants one, a filed ship result. The manifest is passed in rather than
- * read back, exactly as `statusCommand` passes the one it already read.
- */
-const setupProgress = ({
-	manifest = manifestOf(),
-	narrated = [],
-	shipResult,
-}: {
-	manifest?: RunManifest;
-	narrated?: string[];
-	shipResult?: { branch: string; status: ShipStatus };
-} = {}) => {
-	const cwd = mkdtempSync(join(tmpdir(), 'lightsout-run-progress-'));
-
-	mkdirSync(runDirFor({ cwd, runId: manifest.runId }), { recursive: true });
-
-	if (narrated.length > 0) {
-		writeFileSync(
-			join(runDirFor({ cwd, runId: manifest.runId }), 'progress.jsonl'),
-			narrated.map((message) => `${JSON.stringify({ at: '2026-01-01T00:00:00.000Z', message })}\n`).join(''),
-			'utf8',
-		);
-	}
-
-	if (shipResult) {
-		// The ship result is filed in the work order whose record stores the branch.
-		seedWorkOrderRecord({ cwd, name: shipResult.branch });
-		writeFileSync(
-			join(cwd, '.lightsout', 'work-orders', shipResult.branch, 'ship.json'),
-			JSON.stringify({ status: shipResult.status, branch: shipResult.branch, failingChecks: [] }),
-			'utf8',
-		);
-	}
-
-	return { cwd, manifest };
 };
 
 /** The run's rows as [id, status, attempts] triples — the whole table, minus the clock. */
@@ -275,93 +214,6 @@ describe('getRunProgress', () => {
 		const progress = await getRunProgress({ cwd, manifest, live: false });
 
 		expect(progress.elapsedMs).toBe(0);
-	});
-
-	test('a run nobody asked to ship gets no ship row and is never awaiting one', async () => {
-		const { cwd, manifest } = setupProgress({ manifest: manifestOf({ status: RunStatus.Passed, steps: [stepOf()] }) });
-
-		const progress = await getRunProgress({ cwd, manifest, live: false });
-
-		expect(progress.rows.map((row) => row.id)).toStrictEqual(['implement']);
-		expect(progress.awaitingShip).toBe(false);
-	});
-
-	test('a run that will ship shows ship as its last row, pending until a result is filed', async () => {
-		const { cwd, manifest } = setupProgress({
-			manifest: manifestOf({ status: RunStatus.Passed, willShip: true, branch: 'lo-52-status', steps: [stepOf()] }),
-		});
-
-		const progress = await getRunProgress({ cwd, manifest, live: false });
-
-		expect(shapeOf({ rows: progress.rows })).toStrictEqual([
-			['implement', RunStatus.Passed, 1],
-			['ship', undefined, 0],
-		]);
-		// the ship happens after the pipeline returns, so a terminal run can still
-		// have a story left to tell
-		expect(progress.awaitingShip).toBe(true);
-	});
-
-	test.each([
-		{ label: 'a shipped branch', status: ShipStatus.Shipped, expected: RunStatus.Passed },
-		{ label: 'a blocked one', status: ShipStatus.Blocked, expected: RunStatus.Failed },
-	])('the ship row reads $label from the branch’s own result', async ({ status, expected }) => {
-		const { cwd, manifest } = setupProgress({
-			manifest: manifestOf({ status: RunStatus.Passed, willShip: true, branch: 'lo-52-status', steps: [stepOf()] }),
-			shipResult: { branch: 'lo-52-status', status },
-		});
-
-		const progress = await getRunProgress({ cwd, manifest, live: false });
-
-		expect(progress.rows.at(-1)).toStrictEqual({
-			id: 'ship',
-			status: expected,
-			attempts: 1,
-			durationMs: undefined,
-			verification: undefined,
-			cleanup: undefined,
-		});
-		expect(progress.awaitingShip).toBe(false);
-	});
-
-	test('a run that recorded no branch cannot find its own result, so the ship row stays pending', async () => {
-		const { cwd, manifest } = setupProgress({
-			manifest: manifestOf({ status: RunStatus.Passed, willShip: true, steps: [stepOf()] }),
-			shipResult: { branch: 'lo-52-status', status: ShipStatus.Shipped },
-		});
-
-		const progress = await getRunProgress({ cwd, manifest, live: false });
-
-		expect(progress.rows.at(-1)).toStrictEqual({
-			id: 'ship',
-			status: undefined,
-			attempts: 0,
-			durationMs: undefined,
-			verification: undefined,
-			cleanup: undefined,
-		});
-	});
-
-	test.each([
-		{ label: 'failed', status: RunStatus.Failed },
-		{ label: 'escalated', status: RunStatus.Escalated },
-	])('a run that ended $label gets no ship row — that ship will never happen', async ({ status }) => {
-		const { cwd, manifest } = setupProgress({ manifest: manifestOf({ status, willShip: true, branch: 'lo-52-status', steps: [stepOf()] }) });
-
-		const progress = await getRunProgress({ cwd, manifest, live: false });
-
-		expect(progress.rows.map((row) => row.id)).toStrictEqual(['implement']);
-		expect(progress.awaitingShip).toBe(false);
-	});
-
-	test('a paused run keeps its ship row, because a resume can still finish and ship it', async () => {
-		const { cwd, manifest } = setupProgress({
-			manifest: manifestOf({ status: RunStatus.PausedRateLimit, willShip: true, branch: 'lo-52-status', steps: [stepOf()] }),
-		});
-
-		const progress = await getRunProgress({ cwd, manifest, live: false });
-
-		expect(progress.rows.map((row) => row.id)).toStrictEqual(['implement', 'ship']);
 	});
 
 	test('the now line is the last thing the run narrated, and the header comes from the manifest', async () => {

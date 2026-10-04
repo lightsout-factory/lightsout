@@ -1,6 +1,6 @@
 import { describe, expect, test } from '@jest/globals';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
-import { resolveLifecycleSettings } from '#src/ticketLifecycle/resolveLifecycleSettings.ts';
+import { resolveLifecycleSettings } from '#src/ticketLifecycle/resolveLifecycleSettings/resolveLifecycleSettings.ts';
 
 const configOf = (queue?: LightsoutConfig['queue']): LightsoutConfig => ({ gates: { check: 'true', test: 'true', 'test-coverage': false }, queue });
 

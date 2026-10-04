@@ -1,4 +1,5 @@
 import { getPositionals } from '#src/cli/common/args/getPositionals.ts';
+import { VoiceSpeakKind } from '#src/cli/voice/voiceCommand/common/constants/VoiceSpeakKind.ts';
 import { getStreamText } from '#src/cli/voice/voiceCommand/getStreamText.ts';
 import { voiceHookCommand } from '#src/cli/voice/voiceCommand/voiceHookCommand.ts';
 import { voiceOffCommand } from '#src/cli/voice/voiceCommand/voiceOffCommand.ts';
@@ -32,7 +33,7 @@ export const voiceCommand = async ({ rest, cwd }: CommandContext): Promise<void>
 	if (subcommand === 'speak') {
 		const kind = getPositionals({ args: rest })[1];
 
-		if (kind !== 'turn' && kind !== 'picker') {
+		if (kind !== VoiceSpeakKind.Turn && kind !== VoiceSpeakKind.Picker) {
 			console.error(usage);
 			return exitCli({ code: 1 });
 		}

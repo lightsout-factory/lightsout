@@ -1,22 +1,17 @@
-import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
 import { resolveRunDir } from '#src/common/runs/resolveRunDir.ts';
 import type { AgentOutcome } from '#src/common/types/AgentOutcome.ts';
 import type { Driver } from '#src/common/types/Driver.ts';
 import type { GateRunResult } from '#src/common/types/GateRunResult.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
-import { PipelineKind } from '#src/contracts/run/PipelineKind.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import type { WorkReport } from '#src/contracts/work/WorkReport.ts';
 import { WorkReportStatus } from '#src/contracts/work/WorkReportStatus.ts';
 import { runDirectWork } from '#src/direct/runDirectWork/runDirectWork.ts';
-import { createRun } from '#src/runState/createRun.ts';
-import { getRunOwnerPath } from '#src/runState/owner/common/getRunOwnerPath.ts';
-import { readRunOwner } from '#src/runState/owner/readRunOwner.ts';
 import { readRunManifest } from '#src/runState/readRunManifest.ts';
 import { getRunProgress } from '#src/views/getRunProgress.ts';
-import { runDirFor } from '#tests/helpers/runDirFor.ts';
 import { setupConsumerRepo } from '#tests/helpers/setupConsumerRepo.ts';
 
 // Mocked Imports
@@ -88,83 +83,6 @@ const setupDirectRun = ({ agentCommands }: { agentCommands?: string[] } = {}) =>
 		});
 
 	return { cwd, run };
-};
-
-/**
- * A consumer repo already holding a parked direct run, ready to be continued:
- * the run exists on disk with its own id and its own recorded baseline, and
- * the tree it left behind is the partial work a resume must keep.
- */
-const setupContinuedDirectRun = async () => {
-	const cwd = setupConsumerRepo();
-	const config: LightsoutConfig = { gates: { check: 'true', test: 'true', 'test-coverage': false } };
-
-	mockInvokeAgentWithContract.mockResolvedValue({ ok: true, report: reportOf() });
-	mockRunGates.mockResolvedValue({ error: undefined, failedFamilies: [], crashes: [], timeouts: [], coordination: undefined });
-
-	const existing = await createRun({
-		cwd,
-		plan: 'ticket.md',
-		pipeline: PipelineKind.Direct,
-		ticketRef: 'LO-70',
-		driver: 'claude-code',
-		loadedConfig: { config },
-		baselineDirtyFiles: ['src/half-done.ts'],
-	});
-
-	const run = () =>
-		runDirectWork({
-			cwd,
-			ticketBody: '# Drain the backlog\n\nBuild the thing.',
-			ticketRef: 'LO-70',
-			driver,
-			driverName: 'claude-code',
-			config,
-			loadedConfig: { config },
-			existing,
-		});
-
-	return { cwd, existing, run };
-};
-
-/**
- * A consumer repo with the harness and the gates stubbed green, building as a
- * queue worker: the queue run `q-1` is the one whose owner record answers for
- * the run this build creates.
- */
-const setupQueueWorkerDirectRun = () => {
-	const cwd = setupConsumerRepo();
-	const config: LightsoutConfig = { gates: { check: 'true', test: 'true', 'test-coverage': false } };
-
-	mockInvokeAgentWithContract.mockResolvedValue({ ok: true, report: reportOf() });
-	mockRunGates.mockResolvedValue({ error: undefined, failedFamilies: [], crashes: [], timeouts: [], coordination: undefined });
-
-	const run = () =>
-		runDirectWork({
-			cwd,
-			ticketBody: '# Drain the backlog\n\nBuild the thing.',
-			ticketRef: 'LO-70',
-			driver,
-			driverName: 'claude-code',
-			config,
-			loadedConfig: { config },
-			queueRunId: 'q-1',
-		});
-
-	return { cwd, run };
-};
-
-/**
- * A parked direct run whose owner record still names the process that worked
- * on it before — pid 999999, long gone — ready to be continued by this one.
- */
-const setupContinuedDirectRunOwnedElsewhere = async () => {
-	const continued = await setupContinuedDirectRun();
-	const ownerPath = await getRunOwnerPath({ cwd: continued.cwd, runId: continued.existing.runId });
-
-	writeFileSync(ownerPath, JSON.stringify({ pid: 999999, recordedAt: '2026-09-29T09:00:00.000Z' }));
-
-	return continued;
 };
 
 describe('runDirectWork', () => {
@@ -240,18 +158,6 @@ describe('runDirectWork', () => {
 		expect((await run()).manifest.changedFiles).toStrictEqual(['src/thing.ts']);
 	});
 
-	test('stops before spending an agent when the repo is not green to begin with — a red gate then is not the agent’s doing', async () => {
-		const { run } = setupDirectRun();
-
-		mockRunGates.mockResolvedValue({ error: 'tsc: 3 errors', failedFamilies: ['check'], crashes: [], timeouts: [], coordination: undefined });
-
-		const result = await run();
-
-		expect(result.ok).toBe(false);
-		expect(result.manifest.status).toBe(RunStatus.Failed);
-		expect(mockInvokeAgentWithContract).not.toHaveBeenCalled();
-	});
-
 	test('parks rather than fails when the harness hit its rate limit, so the work is resumable', async () => {
 		const { run } = setupDirectRun();
 
@@ -310,132 +216,6 @@ describe('runDirectWork', () => {
 		expect(result.error).toBe('the ticket asks for two features');
 	});
 
-	test('re-invokes the worker with the gate output when verify comes back red, and passes once it is green', async () => {
-		const { run } = setupDirectRun();
-
-		mockRunGates
-			.mockResolvedValueOnce({ error: undefined, failedFamilies: [], crashes: [], timeouts: [], coordination: undefined })
-			.mockResolvedValueOnce({ error: 'tsc: 3 errors', failedFamilies: ['check'], crashes: [], timeouts: [], coordination: undefined })
-			.mockResolvedValue({ error: undefined, failedFamilies: [], crashes: [], timeouts: [], coordination: undefined });
-
-		const result = await run();
-
-		expect(result.ok).toBe(true);
-		expect(mockInvokeAgentWithContract).toHaveBeenCalledTimes(2);
-		expect(mockInvokeAgentWithContract.mock.calls[1]?.[0].invocation.prompt).toContain('tsc: 3 errors');
-	});
-
-	test('gives up after the fix retries are spent, ending failed with the gate output as the reason', async () => {
-		const { run } = setupDirectRun();
-
-		mockRunGates
-			.mockResolvedValueOnce({ error: undefined, failedFamilies: [], crashes: [], timeouts: [], coordination: undefined })
-			.mockResolvedValue({ error: 'tsc: 3 errors', failedFamilies: ['check'], crashes: [], timeouts: [], coordination: undefined });
-
-		const result = await run();
-
-		expect(result.manifest.status).toBe(RunStatus.Failed);
-		expect(result.error).toBe('tsc: 3 errors');
-		expect(mockInvokeAgentWithContract).toHaveBeenCalledTimes(3);
-	});
-
-	test('runDirectWork: a gate run that never got the machine ends the run without spending a fix attempt', async () => {
-		const { run } = setupDirectRun();
-		const coordination = 'another run holds this machine: run 20260908-a in /tmp/trees/lo-71, held for 31m — waited 30m';
-
-		mockRunGates
-			.mockResolvedValueOnce({ error: undefined, failedFamilies: [], crashes: [], timeouts: [], coordination: undefined })
-			.mockResolvedValue({ error: coordination, failedFamilies: [], crashes: [], timeouts: [], coordination });
-
-		const result = await run();
-
-		expect(result.manifest.status).toBe(RunStatus.Escalated);
-		expect(result.error).toContain(coordination);
-		expect(result.error).toContain('No fix was attempted and no fix attempt was spent');
-		expect(mockInvokeAgentWithContract).toHaveBeenCalledTimes(1);
-		// one verify attempt on the record too: the run stopped at the first gate
-		// run rather than counting a fix round it never spent
-		expect(result.manifest.steps.filter((step) => step.id === 'verify')).toEqual([
-			expect.objectContaining({ id: 'verify', status: RunStatus.Escalated, attempts: 1 }),
-		]);
-	});
-
-	test('names the machine rather than a crash when a gate run that never started also reported one, because it produced no output to attribute a crash to', async () => {
-		const { run } = setupDirectRun();
-		const coordination = 'another run holds this machine: run 20260908-a in /tmp/trees/lo-71, held for 31m — waited 30m';
-
-		mockRunGates.mockResolvedValueOnce({ error: undefined, failedFamilies: [], crashes: [], timeouts: [], coordination: undefined }).mockResolvedValue({
-			error: 'signal=SIGSEGV',
-			failedFamilies: [],
-			crashes: ['gate [root] testCoverage never returned a verdict'],
-			timeouts: [],
-			coordination,
-		});
-
-		const result = await run();
-
-		expect(result.error).toContain(coordination);
-		expect(result.error).not.toContain('a gate crashed instead of failing');
-	});
-
-	test('stops without spending a fix attempt when a gate crashed rather than failed, so no worker is sent at a suite that is not broken', async () => {
-		const { run } = setupDirectRun();
-
-		mockRunGates.mockResolvedValueOnce({ error: undefined, failedFamilies: [], crashes: [], timeouts: [], coordination: undefined }).mockResolvedValue({
-			error: 'signal=SIGSEGV',
-			failedFamilies: [],
-			crashes: ['gate [root] testCoverage never returned a verdict'],
-			timeouts: [],
-			coordination: undefined,
-		});
-
-		const result = await run();
-
-		expect(result.manifest.status).toBe(RunStatus.Escalated);
-		expect(result.error).toContain('gate [root] testCoverage never returned a verdict');
-		expect(result.error).toContain('No fix was attempted and no fix attempt was spent');
-		expect(mockInvokeAgentWithContract).toHaveBeenCalledTimes(1);
-	});
-
-	test('runDirectWork: a gate that ran past its ceiling ends the run without spending a fix attempt', async () => {
-		const { run } = setupDirectRun();
-		const timeout = 'test timed out: every attempt ran past the 15-minute gate ceiling (timeouts.gate-minutes), so this gate never returned a verdict.';
-
-		mockRunGates.mockResolvedValueOnce({ error: undefined, failedFamilies: [], crashes: [], timeouts: [], coordination: undefined }).mockResolvedValue({
-			error: 'test: exit -1 (timeout at the 15-minute ceiling)',
-			failedFamilies: [],
-			crashes: [],
-			timeouts: [timeout],
-			coordination: undefined,
-		});
-
-		const result = await run();
-
-		expect(result.manifest.status).toBe(RunStatus.Escalated);
-		expect(result.error).toContain(timeout);
-		expect(mockInvokeAgentWithContract).toHaveBeenCalledTimes(1);
-		// one verify attempt on the record: the run stopped at the first gate run
-		// rather than counting a fix round it never spent
-		expect(result.manifest.steps.filter((step) => step.id === 'verify')).toEqual([
-			expect.objectContaining({ id: 'verify', status: RunStatus.Escalated, attempts: 1 }),
-		]);
-	});
-
-	test('relays what the verify gates report back to the caller, so the terminal shows the gate that is running', async () => {
-		const { run } = setupDirectRun();
-		const progress: string[] = [];
-
-		mockRunGates.mockImplementation(({ step, onProgress }) => {
-			onProgress?.(`${step} is running`);
-
-			return Promise.resolve({ error: undefined, failedFamilies: [], crashes: [], timeouts: [], coordination: undefined });
-		});
-
-		await run({ onProgress: (message) => progress.push(message) });
-
-		expect(progress).toContain('verify is running');
-	});
-
 	test('folds a relayed answer into the worker’s first invocation, telling it to continue its own earlier attempt', async () => {
 		const { run } = setupDirectRun();
 
@@ -470,66 +250,5 @@ describe('runDirectWork', () => {
 			'pnpm --filter api run prisma:migrate:dev:name',
 			`node ${process.argv[1]} self-check`,
 		]);
-	});
-
-	test('a continued direct run reuses its run and skips the pre-flight the partial tree would fail', async () => {
-		const { cwd, existing, run } = await setupContinuedDirectRun();
-
-		const result = await run();
-
-		expect(result.manifest).toEqual(expect.objectContaining({ runId: existing.runId, baselineDirtyFiles: ['src/half-done.ts'], status: RunStatus.Passed }));
-		// a direct run of a ticket is filed under the ticket's own runs folder
-		expect(readdirSync(dirname(runDirFor({ cwd, runId: existing.runId, workOrderName: existing.branch })))).toStrictEqual([existing.runId]);
-		expect(mockRunGates.mock.calls.map((call) => call[0].step)).toStrictEqual(['verify']);
-		expect(mockInvokeAgentWithContract).toHaveBeenCalledTimes(1);
-	});
-
-	test('a first direct run still mints its run and still refuses a red baseline', async () => {
-		const { cwd, run } = setupDirectRun();
-
-		mockRunGates.mockResolvedValue({ error: 'tsc: 3 errors', failedFamilies: ['check'], crashes: [], timeouts: [], coordination: undefined });
-
-		const result = await run();
-
-		expect(result.ok).toBe(false);
-		expect(result.manifest.status).toBe(RunStatus.Failed);
-		expect(readdirSync(dirname(runDirFor({ cwd, runId: result.manifest.runId, workOrderName: result.manifest.branch })))).toStrictEqual([
-			result.manifest.runId,
-		]);
-		expect(mockRunGates.mock.calls.map((call) => call[0].step)).toStrictEqual(['pre-flight']);
-		expect(mockInvokeAgentWithContract).not.toHaveBeenCalled();
-	});
-
-	test('creates a fresh direct run under the run id it is given', async () => {
-		const ticketBody = '# Drain the backlog\n\nBuild the thing.';
-		const { cwd, run } = setupDirectRun();
-
-		const result = await run({ runId: '20260912-pre-minted', ticketBody });
-
-		// the id the caller minted is the run that exists, so a ticket record
-		// naming it names a run on disk
-		expect(result.manifest.runId).toBe('20260912-pre-minted');
-		expect(readdirSync(dirname(runDirFor({ cwd, runId: '20260912-pre-minted', workOrderName: result.manifest.branch })))).toStrictEqual([
-			'20260912-pre-minted',
-		]);
-		expect(readFileSync(join(await resolveRunDir({ cwd, runId: '20260912-pre-minted' }), 'ticket.md'), 'utf8')).toBe(`${ticketBody}\n`);
-	});
-
-	test('points a fresh queue worker direct run at the queue run', async () => {
-		const { cwd, run } = setupQueueWorkerDirectRun();
-
-		const result = await run();
-		const owner = await readRunOwner({ cwd, runId: result.manifest.runId });
-
-		expect(owner).toStrictEqual({ queueRunId: 'q-1' });
-	});
-
-	test("replaces a continued direct run's owner record with the resuming process", async () => {
-		const { cwd, existing, run } = await setupContinuedDirectRunOwnedElsewhere();
-
-		await run();
-		const owner = await readRunOwner({ cwd, runId: existing.runId });
-
-		expect(owner).toEqual(expect.objectContaining({ pid: process.pid, recordedAt: expect.any(String) }));
 	});
 });

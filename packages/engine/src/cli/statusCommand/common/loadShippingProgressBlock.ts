@@ -1,4 +1,5 @@
 import { formatClockDuration } from '#src/cli/statusCommand/common/formatClockDuration.ts';
+import { localClock } from '#src/cli/statusCommand/common/localClock.ts';
 import { renderProgressBlock } from '#src/cli/statusCommand/common/renderProgressBlock.ts';
 import type { ShippingProgressReading } from '#src/common/types/ShippingProgressReading.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
@@ -7,13 +8,6 @@ import { isPidAlive } from '#src/runState/liveness/isPidAlive.ts';
 import { readShippingProgress } from '#src/ship/progress/readShippingProgress.ts';
 
 type RecordedProgress = ShippingProgressReading['progress'];
-
-/** Local time, because a reader compares it against the clock on their own screen. */
-const localClock = ({ iso }: { iso: string }) => {
-	const at = new Date(iso);
-
-	return `${String(at.getHours()).padStart(2, '0')}:${String(at.getMinutes()).padStart(2, '0')}`;
-};
 
 /**
  * A running step in a record whose process is gone is drawn failed with no

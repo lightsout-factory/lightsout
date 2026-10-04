@@ -5,7 +5,7 @@ import { isTicketGateHeld } from '#src/common/gates/isTicketGateHeld.ts';
 import type { LifecycleSettings } from '#src/common/types/LifecycleSettings.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { syncGateHolds } from '#src/gates/gateHolds/syncGateHolds/syncGateHolds.ts';
-import { resolveLifecycleSettings } from '#src/ticketLifecycle/resolveLifecycleSettings.ts';
+import { resolveLifecycleSettings } from '#src/ticketLifecycle/resolveLifecycleSettings/resolveLifecycleSettings.ts';
 import { updateTicketLifecycle } from '#src/ticketLifecycle/updateTicketLifecycle.ts';
 import { getTicketsByIdentifiers } from '#src/ticketTracker/getTicketsByIdentifiers.ts';
 import { resolveTrackerSettings } from '#src/ticketTracker/resolveTrackerSettings.ts';

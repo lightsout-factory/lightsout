@@ -9,7 +9,6 @@ import type { CommandContext } from '#src/common/types/CommandContext.ts';
 import type { Driver } from '#src/common/types/Driver.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { captureCommandOutput } from '#tests/helpers/captureCommandOutput.ts';
-import { queueConfigBlock, ticketTrackerConfigBlock } from '#tests/helpers/queueConfigBlock.ts';
 
 // Mocked Imports
 // -------------------------
@@ -68,19 +67,6 @@ const stubDriver: Driver = { name: 'stub', invoke: async () => ({ text: '', exit
 
 /** The gate block every config in this file carries — the smallest one the contract accepts. */
 const gates: LightsoutConfig['gates'] = { check: 'true', test: 'true', 'test-coverage': false };
-
-/**
- * The config a repo carries when it has chosen a ticket convention: the
- * presence of a `ticket-tracker` block is the whole signal that the plan-folder
- * advisory applies to it.
- */
-const trackerRepoConfig = { gates, queue: queueConfigBlock, 'ticket-tracker': ticketTrackerConfigBlock };
-
-/**
- * The same repo with the tracker block taken away: a `queue` block on its own
- * names no tracker, so this repo has chosen no ticket convention.
- */
-const queueOnlyRepoConfig = { gates, queue: queueConfigBlock };
 
 /** Every subcommand the dispatcher can hand a call to. */
 const subcommandMocks = [
@@ -291,60 +277,6 @@ describe('planCommand', () => {
 		await expect(planCommand(context)).rejects.toThrow(/process\.exit|--name/);
 
 		expect(mockPlanDraftCommand).not.toHaveBeenCalled();
-	});
-
-	test.each(['lint', 'publish', 'sync-decisions', 'verify-facts'])(
-		'%s addresses a plan by name and says nothing about the folder, whatever its label spells',
-		async (subcommand) => {
-			const { context, logged, exitCodes } = setupPlan({ args: [subcommand, '--name', 'rate-limit-banner/001-banner'], repoConfig: trackerRepoConfig });
-
-			await planCommand(context);
-
-			// A label is only a label now: which ticket the work belongs to is the
-			// work order record's answer, so there is nothing to advise about.
-			expect(logged).toStrictEqual([]);
-			expect(exitCodes).toStrictEqual([]);
-		},
-	);
-
-	test.each(['draft', 'dedup', 'grade'])(
-		'%s names the config file it read and says nothing about the folder, whatever its label spells',
-		async (subcommand) => {
-			const { context, cwd, logged, exitCodes } = setupPlan({ args: [subcommand, '--name', 'rate-limit-banner/001-banner'], repoConfig: trackerRepoConfig });
-
-			await planCommand(context);
-
-			// an agent run reports which checkout's config it read, since every
-			// worktree carries its own copy — and that line is all it prints here
-			expect(logged).toStrictEqual([`  config: ${join(cwd, 'lightsout.config.json')}`]);
-			expect(exitCodes).toStrictEqual([]);
-		},
-	);
-
-	test('a repo carrying a queue block and no ticket-tracker block is told nothing either, because a queue names no tracker', async () => {
-		const { context, logged } = setupPlan({ args: ['lint', '--name', 'rate-limit-banner/001-banner'], repoConfig: queueOnlyRepoConfig });
-
-		await planCommand(context);
-
-		expect(logged).toStrictEqual([]);
-		expect(mockPlanLintCommand).toHaveBeenCalledTimes(1);
-	});
-
-	test('a subcommand given no --name names no plan at all, and still prints nothing', async () => {
-		const { context, logged } = setupPlan({ args: ['verify-facts'], repoConfig: trackerRepoConfig });
-
-		await planCommand(context);
-
-		expect(logged).toStrictEqual([]);
-	});
-
-	test('an unknown subcommand addresses no plan — the usage error stands alone', async () => {
-		const { context, logged, exitCodes } = setupPlan({ args: ['sideways', '--name', 'rate-limit-banner'], repoConfig: trackerRepoConfig });
-
-		await expect(planCommand(context)).rejects.toThrow(/process\.exit/);
-
-		expect(logged).toStrictEqual([]);
-		expect(exitCodes).toStrictEqual([1]);
 	});
 
 	test("runs a graded pass in the plan's worktree rather than the checkout it was launched from", async () => {

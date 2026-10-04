@@ -105,18 +105,11 @@ export const invokeAgentWithContract = async <Contract extends z.ZodType>({
 	cwd,
 	invocation,
 	contract,
-	model,
-	effort,
-	permissions,
-	timeoutMs,
-	allowedCommands,
-	environment,
-	foregroundCommandsOnly,
-	writableDirs,
 	maxRoleAttempts = 1,
-	onEvent,
 	onRejectedOutput,
 	activity,
+	// what is left is passed to the harness as it stands: the model, effort, permissions, limits and the event listener
+	...harnessOptions
 }: Params<Contract>): Promise<AgentOutcome<z.infer<Contract>>> => {
 	// The starting value is what a ceiling below one returns — a ladder with no
 	// rungs says so rather than throwing at a value no caller passes — and every
@@ -142,7 +135,7 @@ export const invokeAgentWithContract = async <Contract extends z.ZodType>({
 
 		const rung = await recordHarnessProcess({
 			driver,
-			invocation: { ...active, cwd, model, effort, permissions, timeoutMs, allowedCommands, writableDirs, environment, foregroundCommandsOnly, onEvent },
+			invocation: { ...active, cwd, ...harnessOptions },
 			activity,
 			spawn: attempt,
 			reemit: isReemit,

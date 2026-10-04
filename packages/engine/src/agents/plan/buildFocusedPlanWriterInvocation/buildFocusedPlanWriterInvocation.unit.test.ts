@@ -1,20 +1,11 @@
 import { expect, test } from '@jest/globals';
 import { buildFocusedPlanWriterInvocation } from '#src/agents/plan/buildFocusedPlanWriterInvocation/buildFocusedPlanWriterInvocation.ts';
-import { BuildMode } from '#src/common/constants/BuildMode.ts';
 import type { ExportCollision } from '#src/common/types/ExportCollision.ts';
 import type { PhaseDeclaration } from '#src/common/types/PhaseDeclaration.ts';
 import type { DecisionsRecord } from '#src/contracts/plan/decisions/DecisionsRecord.ts';
-import type { PlanFacts } from '#src/contracts/plan/facts/PlanFacts.ts';
+import { planFacts } from '#tests/helpers/planWriterInputs.ts';
 
 type FocusedParams = Parameters<typeof buildFocusedPlanWriterInvocation>[0];
-
-/** A minimal verified PlanFacts with distinctive values to spot in the prompt. */
-const planFacts = (): PlanFacts => ({
-	request: 'add a foo endpoint',
-	areas: [],
-	verification: { pathsChecked: 0, missingPaths: [], scriptsChecked: 0, missingScripts: [] },
-	verifiedAt: '2026-07-09T00:00:00.000Z',
-});
 
 /** A one-row decisions record keyed by a distinctive plan name, so the assembled prompt is a realistic one. */
 const planDecisions = (): DecisionsRecord => ({
@@ -316,89 +307,4 @@ test('buildFocusedPlanWriterInvocation: declared documentation surfaces add the 
 	// and the matching template rule is substituted in rather than left standing
 	expect(invocation.systemPrompt.includes('- **Documentation stated.**')).toBeTruthy();
 	expect(invocation.systemPrompt.includes('{{documentationRule}}')).toBeFalsy();
-});
-
-/** The template's touched-files rule bullet, from its bold label up to the next rule bullet. */
-const touchedFilesRule = ({ systemPrompt }: { systemPrompt: string }): string => {
-	const start = systemPrompt.indexOf('- **Touched files counted and declared.**');
-
-	return systemPrompt.slice(start, systemPrompt.indexOf('\n- **', start + 1));
-};
-
-/** The phase brief's own bullet lines, stopping before the inlined overview so its text cannot match. */
-const phaseAuthoringBullets = ({ prompt }: { prompt: string }): string[] =>
-	prompt
-		.slice(prompt.indexOf('## Phase authoring'), prompt.indexOf('### The settled overview'))
-		.split('\n')
-		.filter((line) => line.startsWith('- '));
-
-test('buildFocusedPlanWriterInvocation: the touched-file ceiling is substituted from limits', () => {
-	const params = setupFocusedDraft({ limits: { executorFileLimit: 80, createdFileCeiling: 12, touchedFileCeiling: 45 } });
-
-	const invocation = buildFocusedPlanWriterInvocation(params);
-
-	// the configured number reaches the rule that refuses a plan touching more files
-	expect(touchedFilesRule({ systemPrompt: invocation.systemPrompt })).toMatch(/\b45\b/);
-	// and no token is left standing for a written plan to copy
-	expect(invocation.systemPrompt.includes('{{')).toBeFalsy();
-	expect(invocation.systemPrompt.includes('touchedFileCeiling')).toBeFalsy();
-});
-
-test('buildFocusedPlanWriterInvocation: a phase spawn is told the touched ceiling among its hard limits', () => {
-	const params = setupFocusedDraft({
-		outputs: [{ path: '/repo/.lightsout/work-orders/foo/plans/phase2-wiring.md', variant: 'phase' }],
-		overviewText: '# Foo — Overview\n\nOVERVIEW-SENTINEL',
-		declaration: declarationRow(),
-		limits: { executorFileLimit: 80, createdFileCeiling: 12, touchedFileCeiling: 45 },
-	});
-
-	const invocation = buildFocusedPlanWriterInvocation(params);
-
-	// the one brief bullet stating the number is the hard-limits one, and it names
-	// the touched ceiling and the rename-only exemption beside that number
-	const ceilingBullets = phaseAuthoringBullets({ prompt: invocation.prompt }).filter((line) => /\b45\b/.test(line));
-	expect(ceilingBullets.length).toBe(1);
-	expect(ceilingBullets[0]).toMatch(/hard limit/i);
-	expect(ceilingBullets[0]).toMatch(/touched-file ceiling/i);
-	expect(ceilingBullets[0]).toMatch(/rename-only/i);
-});
-
-/** One phase spawn per declared build mode — move-folders-and-files, renames-only and none — over a distinctive touched ceiling. */
-const setupBuildModeSpawns = (): FocusedParams[] =>
-	[{ buildMode: BuildMode.MoveFoldersAndFiles }, { buildMode: BuildMode.RenamesOnly }, {}].map((mode: Pick<PhaseDeclaration, 'buildMode'>) =>
-		setupFocusedDraft({
-			outputs: [{ path: '/repo/.lightsout/work-orders/foo/plans/phase2-wiring.md', variant: 'phase' }],
-			overviewText: '# Foo — Overview\n\nOVERVIEW-SENTINEL',
-			declaration: { ...declarationRow(), ...mode },
-			limits: { executorFileLimit: 80, createdFileCeiling: 12, touchedFileCeiling: 45 },
-		}),
-	);
-
-/** What one brief says of its build mode: the mode bullet's claims (a standard one names both sections to rule them out) and the ceiling bullet's exemptions. */
-const buildModeClaims = ({ prompt }: { prompt: string }) => {
-	const mode = phaseAuthoringBullets({ prompt })
-		.filter((line) => !/\b45\b/.test(line) && /`## (Renames|Build Mode)`/.test(line))
-		.join('\n');
-
-	return {
-		namesBuildModeSection: mode.includes('`## Build Mode`'),
-		readsMoveMode: mode.includes('move-folders-and-files'),
-		noRenamesSection: /\bno `## Renames`/.test(mode),
-		renameOnly: mode.includes('**rename-only**'),
-		ceilingExemptsBoth: phaseAuthoringBullets({ prompt }).some(
-			(line) => /\b45\b/.test(line) && /rename-only/i.test(line) && /move-folders-and-files/i.test(line),
-		),
-	};
-};
-
-test('buildFocusedPlanWriterInvocation: the phase-authoring brief states the declared build mode and both modes exempt from the touched ceiling', () => {
-	const spawns = setupBuildModeSpawns();
-
-	const prompts = spawns.map((params) => buildFocusedPlanWriterInvocation(params).prompt);
-
-	expect(prompts.map((prompt) => buildModeClaims({ prompt }))).toStrictEqual([
-		{ namesBuildModeSection: true, readsMoveMode: true, noRenamesSection: true, renameOnly: false, ceilingExemptsBoth: true },
-		{ namesBuildModeSection: false, readsMoveMode: false, noRenamesSection: false, renameOnly: true, ceilingExemptsBoth: true },
-		{ namesBuildModeSection: true, readsMoveMode: false, noRenamesSection: true, renameOnly: false, ceilingExemptsBoth: true },
-	]);
 });

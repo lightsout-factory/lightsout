@@ -1,7 +1,7 @@
 import { mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { beforeEach, describe, expect, jest, test } from '@jest/globals';
+import { describe, expect, jest, test } from '@jest/globals';
 import { readStandardsLedger } from '#src/cli/standards/standardsCheckCommand/readStandardsLedger.ts';
 import type { StandardsGroup } from '#src/common/types/StandardsGroup.ts';
 import type { StandardsRuleListing } from '#src/common/types/StandardsRuleListing.ts';
@@ -46,14 +46,14 @@ const nodeGroup = (): StandardsGroup => ({
 	states: new Map(),
 });
 
-// A case that states nothing about the groups resolves them for real, from the repo's own config.
-beforeEach(() => {
+/** For a case that states nothing about the groups: resolves them for real, from the repo's own config. */
+const setupRealGroups = () => {
 	mockResolveStandardsGroups.mockImplementation(
 		jest.requireActual<typeof import('#src/standards/resolveStandardsGroups/resolveStandardsGroups.ts')>(
 			'#src/standards/resolveStandardsGroups/resolveStandardsGroups.ts',
 		).resolveStandardsGroups,
 	);
-});
+};
 
 describe('readStandardsLedger', () => {
 	test("the repo's own config and path reach the listing, so the ledger is this repo's policy", async () => {
@@ -93,6 +93,7 @@ describe('readStandardsLedger', () => {
 
 		writeFileSync(join(cwd, 'lightsout.config.json'), '{ "gates":');
 		mockListStandardsRules.mockReturnValue([]);
+		setupRealGroups();
 
 		// The config selects which standards pack is read. Answering from the
 		// defaults when it cannot be parsed means listing one repo's rules and
@@ -109,6 +110,7 @@ describe('readStandardsLedger', () => {
 	test('readStandardsLedger: standards-pack false lists no rules', async () => {
 		const cwd = setupConsumerRepo({ git: false, config: { 'standards-pack': false } });
 
+		setupRealGroups();
 		// the real listing runs here: with standards switched off there is no
 		// group to list, so an empty ledger proves the built-in library was not read
 		mockListStandardsRules.mockImplementation(

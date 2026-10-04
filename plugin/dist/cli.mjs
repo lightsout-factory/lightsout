@@ -22941,7 +22941,8 @@ var createJiraClient = ({ settings }) => {
       throw new Error("Jira returned an empty JSON response");
     }
     try {
-      return JSON.parse(text);
+      const parsed = JSON.parse(text);
+      return parsed;
     } catch {
       throw new Error("Jira returned malformed JSON");
     }
@@ -123711,6 +123712,32 @@ var parseEnvelope = ({ stdout }) => {
     return void 0;
   }
 };
+var createStreamReader = ({ onEvent, onUsage }) => {
+  let resultEvent;
+  const tallyAssistantUsage = createAssistantUsageTally();
+  const readLine = (line) => {
+    let event;
+    try {
+      event = JSON.parse(line);
+    } catch {
+      return;
+    }
+    const parsed = ResultEvent.safeParse(event);
+    if (parsed.success) {
+      resultEvent = parsed.data;
+      const settled2 = resultUsage({ event: parsed.data });
+      if (settled2) {
+        onUsage?.(settled2);
+      }
+    }
+    const streamed = tallyAssistantUsage({ event });
+    if (streamed) {
+      onUsage?.(streamed);
+    }
+    onEvent?.(event);
+  };
+  return { readLine, getResultEvent: () => resultEvent };
+};
 var createClaudeCodeDriver = () => {
   const driver = {
     name: "claude-code",
@@ -123730,8 +123757,7 @@ var createClaudeCodeDriver = () => {
         onEvent,
         onUsage
       } = invocation;
-      let resultEvent;
-      const tallyAssistantUsage = createAssistantUsageTally();
+      const stream = createStreamReader({ onEvent, onUsage });
       const systemPromptFile = systemPrompt ? await writeSystemPromptFile({ systemPrompt }) : void 0;
       const { exitCode, stdout, stderr } = await spawnCollect({
         command: "claude",
@@ -123749,28 +123775,9 @@ var createClaudeCodeDriver = () => {
         cwd,
         stdinText: prompt,
         timeoutMs,
-        onStdoutLine: (line) => {
-          let event;
-          try {
-            event = JSON.parse(line);
-          } catch {
-            return;
-          }
-          const parsed = ResultEvent.safeParse(event);
-          if (parsed.success) {
-            resultEvent = parsed.data;
-            const settled2 = resultUsage({ event: parsed.data });
-            if (settled2) {
-              onUsage?.(settled2);
-            }
-          }
-          const streamed = tallyAssistantUsage({ event });
-          if (streamed) {
-            onUsage?.(streamed);
-          }
-          onEvent?.(event);
-        }
+        onStdoutLine: stream.readLine
       }).finally(() => systemPromptFile?.cleanup());
+      const resultEvent = stream.getResultEvent();
       const envelope = resultEvent ?? parseEnvelope({ stdout });
       const text = envelope?.result ?? stdout;
       const errored = envelope?.is_error === true || exitCode !== 0;
@@ -123856,13 +123863,13 @@ ${stderr}` })
   return driver;
 };
 
-// src/drivers/getDriver/createPiDriver/common/constants/PiVariant.ts
+// src/drivers/getDriver/common/constants/PiVariant.ts
 var PiVariant = {
   Pi: "pi",
   Omp: "omp"
 };
 
-// src/drivers/getDriver/createPiDriver/buildPiArgs.ts
+// src/drivers/getDriver/common/createPiFamilyDriver/buildPiArgs.ts
 var readOnlyTools = {
   [PiVariant.Pi]: "read,grep,find,ls",
   [PiVariant.Omp]: "read,grep,glob,lsp"
@@ -123890,7 +123897,7 @@ var buildPiArgs = ({ variant, systemPromptPath, model, effort, permissions, writ
   return args;
 };
 
-// src/drivers/getDriver/createPiDriver/createPiDriver.ts
+// src/drivers/getDriver/common/createPiFamilyDriver/createPiFamilyDriver.ts
 var Usage = external_exports.object({
   input: external_exports.number().optional(),
   output: external_exports.number().optional(),
@@ -123994,8 +124001,12 @@ ${stderr}` }),
   };
   return driver;
 };
-var createPiDriver = () => createPiFamilyDriver({ name: "pi", variant: PiVariant.Pi, command: "pi" });
+
+// src/drivers/getDriver/createOmpDriver.ts
 var createOmpDriver = () => createPiFamilyDriver({ name: "omp", variant: PiVariant.Omp, command: "omp" });
+
+// src/drivers/getDriver/createPiDriver.ts
+var createPiDriver = () => createPiFamilyDriver({ name: "pi", variant: PiVariant.Pi, command: "pi" });
 
 // src/drivers/getDriver/getDriver.ts
 var getDriver = ({ name }) => {
@@ -124017,8 +124028,8 @@ var getDriver = ({ name }) => {
 // src/doctor/runDoctor/checkHarnessUsage.ts
 var usageAdapters = {
   "claude-code": "packages/engine/src/drivers/getDriver/createClaudeCodeDriver/createClaudeCodeDriver.ts",
-  omp: "packages/engine/src/drivers/getDriver/createPiDriver/createPiDriver.ts",
-  pi: "packages/engine/src/drivers/getDriver/createPiDriver/createPiDriver.ts"
+  omp: "packages/engine/src/drivers/getDriver/createPiFamilyDriver/createPiDriver.ts",
+  pi: "packages/engine/src/drivers/getDriver/createPiFamilyDriver/createPiDriver.ts"
 };
 var holdsFiniteNumber = ({ value }) => typeof value === "object" && value !== null && Object.values(value).some((member) => typeof member === "number" && Number.isFinite(member));
 var carriesStreamedUsage = ({ event, depth }) => {
@@ -127005,11 +127016,14 @@ var ShippingProgressRecorder = class {
   }
 };
 
-// src/common/git/readGitPrefix.ts
-var readGitPrefix = async ({ cwd }) => {
-  const prefix = await runCommand({ command: "git rev-parse --show-prefix", cwd, timeoutMs: gitTimeoutMs }).catch(() => void 0);
-  return prefix && prefix.exitCode === 0 ? prefix.stdout.trim() : void 0;
+// src/common/git/readGitRevParse.ts
+var readGitRevParse = async ({ cwd, query }) => {
+  const answer = await runCommand({ command: `git rev-parse ${query}`, cwd, timeoutMs: gitTimeoutMs }).catch(() => void 0);
+  return answer && answer.exitCode === 0 ? answer.stdout.trim() : void 0;
 };
+
+// src/common/git/readGitPrefix.ts
+var readGitPrefix = async ({ cwd }) => readGitRevParse({ cwd, query: "--show-prefix" });
 
 // src/common/git/readGitChangedFiles.ts
 var readGitChangedFiles = async ({ cwd }) => {
@@ -127101,10 +127115,7 @@ var checkShipPreconditions = async ({ cwd, ticketPattern }) => {
 };
 
 // src/common/git/readGitHeadCommit.ts
-var readGitHeadCommit = async ({ cwd }) => {
-  const head = await runCommand({ command: "git rev-parse HEAD", cwd, timeoutMs: gitTimeoutMs }).catch(() => void 0);
-  return head && head.exitCode === 0 ? head.stdout.trim() : void 0;
-};
+var readGitHeadCommit = async ({ cwd }) => readGitRevParse({ cwd, query: "HEAD" });
 
 // src/ship/common/maskSecrets.ts
 var maskSecrets = ({ text }) => text.replaceAll(/(\/\/)[^\s/@]+(?::[^\s/@]*)?@/g, "$1***@").replaceAll(/\b(gh[pousr]|github_pat)_[A-Za-z0-9_]{16,}\b/g, "***");
@@ -127518,18 +127529,11 @@ var invokeAgentWithContract = async ({
   cwd,
   invocation,
   contract,
-  model,
-  effort,
-  permissions,
-  timeoutMs,
-  allowedCommands,
-  environment,
-  foregroundCommandsOnly,
-  writableDirs,
   maxRoleAttempts = 1,
-  onEvent,
   onRejectedOutput,
-  activity
+  activity,
+  // what is left is passed to the harness as it stands: the model, effort, permissions, limits and the event listener
+  ...harnessOptions
 }) => {
   let settled2 = { ok: false, failure: "no attempts made", rateLimited: false };
   let rejected;
@@ -127545,7 +127549,7 @@ var invokeAgentWithContract = async ({
     attempt += 1;
     const rung = await recordHarnessProcess({
       driver,
-      invocation: { ...active, cwd, model, effort, permissions, timeoutMs, allowedCommands, writableDirs, environment, foregroundCommandsOnly, onEvent },
+      invocation: { ...active, cwd, ...harnessOptions },
       activity,
       spawn: attempt,
       reemit: isReemit
@@ -129488,13 +129492,6 @@ var PlanningStatus = {
   /** The ticket never required brainstorming or planning; its body is the whole specification. */
   NotNeeded: "planning-not-needed"
 };
-var defaultPlanningStatusLabels = {
-  [PlanningStatus.NeedsBrainstorm]: "planning-needs-brainstorm",
-  [PlanningStatus.NeedsPlan]: "planning-needs-plan",
-  [PlanningStatus.ReadyAutoPlan]: "planning-ready-auto-plan",
-  [PlanningStatus.Complete]: "planning-complete",
-  [PlanningStatus.NotNeeded]: "planning-not-needed"
-};
 
 // src/ticketTracker/jira/setExclusiveLabel.ts
 var setExclusiveLabel = async ({ settings, ticketId, label: label2, groupLabels }) => {
@@ -129639,7 +129636,16 @@ var writeDoneStatus = async ({ lifecycle, trackerSettings, ticketId, ticketRef, 
   return second?.error;
 };
 
-// src/ticketLifecycle/resolveLifecycleSettings.ts
+// src/ticketLifecycle/resolveLifecycleSettings/defaultPlanningStatusLabels.ts
+var defaultPlanningStatusLabels = {
+  [PlanningStatus.NeedsBrainstorm]: "planning-needs-brainstorm",
+  [PlanningStatus.NeedsPlan]: "planning-needs-plan",
+  [PlanningStatus.ReadyAutoPlan]: "planning-ready-auto-plan",
+  [PlanningStatus.Complete]: "planning-complete",
+  [PlanningStatus.NotNeeded]: "planning-not-needed"
+};
+
+// src/ticketLifecycle/resolveLifecycleSettings/resolveLifecycleSettings.ts
 var readPlanningStatusLabels = ({
   queue
 }) => {
@@ -150054,29 +150060,32 @@ var parseAttachmentManifest = ({ text, markerName, isAllowedName }) => {
   if (typeof value !== "object" || value === null || Array.isArray(value)) {
     return { error: `${markerName} must contain an object` };
   }
-  const candidate = value;
-  if (candidate.schemaVersion !== 1) {
-    return { error: `${markerName} has unsupported schemaVersion ${JSON.stringify(candidate.schemaVersion)} \u2014 expected 1` };
+  const schemaVersion = "schemaVersion" in value ? value.schemaVersion : void 0;
+  const listed = "files" in value ? value.files : void 0;
+  if (schemaVersion !== 1) {
+    return { error: `${markerName} has unsupported schemaVersion ${JSON.stringify(schemaVersion)} \u2014 expected 1` };
   }
-  if (!Array.isArray(candidate.files) || candidate.files.length === 0) {
+  if (!Array.isArray(listed) || listed.length === 0) {
     return { error: `${markerName} must list at least one durable plan file` };
   }
+  const entries = listed;
   const files = [];
-  for (const entry of candidate.files) {
+  for (const entry of entries) {
     if (typeof entry !== "object" || entry === null || Array.isArray(entry)) {
       return { error: `${markerName} contains a file entry that is not an object` };
     }
-    const file2 = entry;
-    if (typeof file2.name !== "string" || !isAllowedName({ name: file2.name })) {
-      return { error: `${markerName} contains a non-durable or unsafe file name: ${JSON.stringify(file2.name)}` };
+    const fileName = "name" in entry ? entry.name : void 0;
+    const sha2562 = "sha256" in entry ? entry.sha256 : void 0;
+    if (typeof fileName !== "string" || !isAllowedName({ name: fileName })) {
+      return { error: `${markerName} contains a non-durable or unsafe file name: ${JSON.stringify(fileName)}` };
     }
-    if (typeof file2.sha256 !== "string" || !/^[a-f0-9]{64}$/.test(file2.sha256)) {
-      return { error: `${markerName} contains an invalid SHA-256 for ${file2.name}` };
+    if (typeof sha2562 !== "string" || !/^[a-f0-9]{64}$/.test(sha2562)) {
+      return { error: `${markerName} contains an invalid SHA-256 for ${fileName}` };
     }
-    if (files.some(({ name }) => name === file2.name)) {
-      return { error: `${markerName} lists ${file2.name} more than once` };
+    if (files.some(({ name }) => name === fileName)) {
+      return { error: `${markerName} lists ${fileName} more than once` };
     }
-    files.push({ name: file2.name, sha256: file2.sha256 });
+    files.push({ name: fileName, sha256: sha2562 });
   }
   return { manifest: { schemaVersion: 1, files } };
 };
@@ -150087,14 +150096,13 @@ var scopeAttachments = ({ attachments, prefix }) => {
   return attachments.filter(({ title }) => title.startsWith(namespace)).map((attachment) => ({ ...attachment, title: attachment.title.slice(namespace.length) }));
 };
 
-// src/brainstorm/restore/restoreBrainstormFiles.ts
-var readAttachment = async ({
-  settings,
-  attachment
-}) => {
+// src/common/readAttachmentText.ts
+var readAttachmentText = async ({ settings, attachment }) => {
   const text = await readTicketAsset3({ settings, url: attachment.url });
   return typeof text === "string" ? { text } : { error: `the ticket's ${attachment.title} could not be read: ${text.error}` };
 };
+
+// src/brainstorm/restore/restoreBrainstormFiles.ts
 var readGeneration = async ({
   settings,
   manifest,
@@ -150111,7 +150119,7 @@ var readGeneration = async ({
         error: matches.length === 0 ? `${markerName} lists ${listed.name}, but the ticket carries no attachment with that title` : `the ticket carries more than one attachment named ${listed.name}, so ${markerName} cannot select one generation`
       };
     }
-    const read = await readAttachment({ settings, attachment });
+    const read = await readAttachmentText({ settings, attachment });
     if ("error" in read) {
       return { error: read.error };
     }
@@ -150161,7 +150169,7 @@ var restoreBrainstormFiles = async ({ cwd, name, identifier, settings, titlePref
       error: marker === void 0 ? `the ticket carries brainstorm attachments but no ${markerName} commit marker \u2014 publish the brainstorm again` : `the ticket carries more than one ${markerName} attachment, so no single committed brainstorm generation can be selected`
     };
   }
-  const markerRead = await readAttachment({ settings, attachment: marker });
+  const markerRead = await readAttachmentText({ settings, attachment: marker });
   if ("error" in markerRead) {
     return { restored: [], skipped: [], error: markerRead.error };
   }
@@ -150268,10 +150276,6 @@ var writeRestoredGeneration = async ({ dir, files }) => {
 };
 
 // src/plan/restore/restorePlanWorkspace/restorePlanWorkspace.ts
-var readAttachment2 = async ({ settings, attachment }) => {
-  const text = await readTicketAsset3({ settings, url: attachment.url });
-  return typeof text === "string" ? { text } : { error: `the ticket's ${attachment.title} could not be read: ${text.error}` };
-};
 var selectGeneration = ({
   manifest,
   durableAttachments,
@@ -150309,7 +150313,7 @@ var readAndVerifyGeneration = async ({ settings, files, markerName }) => {
   const reads = await Promise.all(
     files.map(async (file2) => ({
       file: file2,
-      read: await readAttachment2({ settings, attachment: { id: "", title: file2.title, url: file2.url } })
+      read: await readAttachmentText({ settings, attachment: { id: "", title: file2.title, url: file2.url } })
     }))
   );
   const verified = [];
@@ -150340,7 +150344,7 @@ var restorePlanWorkspace = async ({ cwd, name, identifier, settings, titlePrefix
   if (selected.manifest === void 0) {
     return { restored: [] };
   }
-  const manifestRead = await readAttachment2({ settings, attachment: selected.manifest });
+  const manifestRead = await readAttachmentText({ settings, attachment: selected.manifest });
   if ("error" in manifestRead) {
     return { restored: [], error: manifestRead.error };
   }
@@ -165739,6 +165743,12 @@ var formatClockDuration = ({ ms }) => {
   return `${Math.floor(seconds / 60)}m ${String(seconds % 60).padStart(2, "0")}s`;
 };
 
+// src/cli/statusCommand/common/localClock.ts
+var localClock = ({ iso }) => {
+  const at = new Date(iso);
+  return `${String(at.getHours()).padStart(2, "0")}:${String(at.getMinutes()).padStart(2, "0")}`;
+};
+
 // src/cli/statusCommand/common/renderProgressBlock.ts
 var emDash = "\u2014";
 var notReachedGlyph = "\xB7";
@@ -165786,10 +165796,6 @@ var renderProgressBlock = ({ title, tag, rows, diagnostics, totals, now }) => {
 };
 
 // src/cli/statusCommand/common/loadPlanningProgressBlock.ts
-var localClock = ({ iso }) => {
-  const at = new Date(iso);
-  return `${String(at.getHours()).padStart(2, "0")}:${String(at.getMinutes()).padStart(2, "0")}`;
-};
 var splitRunning = ({ steps }) => {
   const running = steps.filter((entry) => entry.status === RunStatus.Running).sort((left, right) => Date.parse(right.startedAt) - Date.parse(left.startedAt));
   const live2 = [];
@@ -165904,10 +165910,6 @@ var readShippingProgress = async ({ cwd, branch }) => {
 };
 
 // src/cli/statusCommand/common/loadShippingProgressBlock.ts
-var localClock2 = ({ iso }) => {
-  const at = new Date(iso);
-  return `${String(at.getHours()).padStart(2, "0")}:${String(at.getMinutes()).padStart(2, "0")}`;
-};
 var shippingRows = ({ progress, live: live2, nowMs }) => Object.values(ShippingStepId).map((id) => {
   const step = progress?.steps.find((candidate) => candidate.id === id);
   if (step === void 0 || step.status === RunStatus.Pending) {
@@ -165931,7 +165933,7 @@ var shippingElapsedMs = ({ progress, live: live2, nowMs }) => {
 var noLiveProcessLine = ({ progress }) => {
   const running = progress.steps.find((step) => step.status === RunStatus.Running);
   const subject = running === void 0 ? "this ship" : running.id;
-  return ` no live process is recording ${subject} \xB7 last update ${localClock2({ iso: progress.updatedAt })}`;
+  return ` no live process is recording ${subject} \xB7 last update ${localClock({ iso: progress.updatedAt })}`;
 };
 var loadShippingProgressBlock = async ({ cwd, branch }) => {
   const nowMs = Date.now();
@@ -167785,6 +167787,12 @@ var ticketStateCommand = async ({ flags, cwd }) => {
   return exitCli({ code: 0 });
 };
 
+// src/cli/voice/voiceCommand/common/constants/VoiceSpeakKind.ts
+var VoiceSpeakKind = {
+  Turn: "turn",
+  Picker: "picker"
+};
+
 // src/cli/voice/voiceCommand/getStreamText.ts
 var getStreamText = async ({ stream }) => {
   const chunks = [];
@@ -168075,7 +168083,7 @@ var voiceSpeakCommand = async ({ cwd, kind, input }) => {
     } catch {
       return;
     }
-    const text = kind === "picker" ? getSpokenPickerText({ toolInput: payload }) : getSpokenTurnQuestion({ blocks: payload });
+    const text = kind === VoiceSpeakKind.Picker ? getSpokenPickerText({ toolInput: payload }) : getSpokenTurnQuestion({ blocks: payload });
     if (text === void 0) {
       return;
     }
@@ -168102,7 +168110,7 @@ var voiceCommand = async ({ rest, cwd }) => {
   }
   if (subcommand === "speak") {
     const kind = getPositionals({ args: rest })[1];
-    if (kind !== "turn" && kind !== "picker") {
+    if (kind !== VoiceSpeakKind.Turn && kind !== VoiceSpeakKind.Picker) {
       console.error(usage);
       return exitCli({ code: 1 });
     }

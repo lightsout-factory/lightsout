@@ -29,7 +29,7 @@ interface TextRequestParams extends RequestParams {
 	response: typeof ResponseKind.Text;
 }
 
-export interface JiraClient {
+interface JiraClient {
 	request<Result>(params: JsonRequestParams): Promise<Result>;
 	request(params: EmptyRequestParams): Promise<void>;
 	request(params: TextRequestParams): Promise<string>;
@@ -78,7 +78,9 @@ const createJiraClient = ({ settings }: { settings: JiraTrackerSettings }): Jira
 		}
 
 		try {
-			return JSON.parse(text) as unknown;
+			const parsed: unknown = JSON.parse(text);
+
+			return parsed;
 		} catch {
 			throw new Error('Jira returned malformed JSON');
 		}

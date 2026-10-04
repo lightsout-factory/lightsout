@@ -3,7 +3,6 @@ import { join } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
 import { loadPlanningProgressBlock } from '#src/cli/statusCommand/common/loadPlanningProgressBlock.ts';
 import { loadRunProgressBlock } from '#src/cli/statusCommand/common/loadRunProgressBlock/loadRunProgressBlock.ts';
-import { loadShippingProgressBlock } from '#src/cli/statusCommand/common/loadShippingProgressBlock.ts';
 import { loadActiveTicketBlock } from '#src/cli/statusCommand/printQueueStatus/loadActiveTicketBlock.ts';
 import { QueueWorker } from '#src/common/constants/QueueWorker.ts';
 import type { PlanningProgress } from '#src/contracts/plan/progress/PlanningProgress.ts';
@@ -12,13 +11,10 @@ import type { QueueBoardTicket } from '#src/contracts/queue/QueueBoardTicket.ts'
 import { QueueLane } from '#src/contracts/queue/QueueLane.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
-import type { ShippingProgress } from '#src/contracts/ship/ShippingProgress.ts';
-import { ShippingStepId } from '#src/contracts/ship/ShippingStepId.ts';
 import { writeRunOwner } from '#src/runState/owner/writeRunOwner.ts';
 import { freshCwd } from '#tests/helpers/freshCwd.ts';
 import { planWorkspaceFolder } from '#tests/helpers/planWorkspaceFolder.ts';
 import { seedRunDir } from '#tests/helpers/seedRunDir.ts';
-import { seedWorkOrderRecord } from '#tests/helpers/seedWorkOrderRecord.ts';
 
 /** Beyond any OS pid range — the live-process probe reports it dead. */
 const deadPid = 999_999_999;
@@ -40,9 +36,6 @@ const workOrderName = 'lo-9-board-links';
 
 /** A second ticket the queue builds at the same time, whose runs share the repository's state directory. */
 const otherWorkOrderName = 'lo-10-board-filters';
-
-/** When the Shipping Now ticket entered the ship lane. */
-const enteredShippingAt = '2026-09-10T10:20:00.000Z';
 
 /**
  * Runs whose short ids and plan titles all differ, so each one's block reads
@@ -119,21 +112,6 @@ const planningRecord = (): PlanningProgress => ({
 	],
 });
 
-/** A live ship under this test's process, integrate passed and push running, begun at `startedAt`. */
-const shippingRecord = ({ startedAt }: { startedAt: string }): ShippingProgress => ({
-	branch,
-	attempt: 1,
-	maxAttempts: 3,
-	pid: process.pid,
-	startedAt,
-	updatedAt: '2026-09-10T10:26:00.000Z',
-	lastProgress: `pushing ${branch}`,
-	steps: [
-		{ id: ShippingStepId.Integrate, status: RunStatus.Passed, startedAt, durationMs: 60_000 },
-		{ id: ShippingStepId.Push, status: RunStatus.Running, startedAt: '2026-09-10T10:26:00.000Z' },
-	],
-});
-
 /**
  * A worktree holding the given runs filed under the ticket's own work order,
  * `otherTicketRuns` filed under a second ticket's work order in the same shared
@@ -185,34 +163,6 @@ const setupWorktree = async ({
 	const planningBlock = await loadPlanningProgressBlock({ cwd: worktreePath, name: workOrderName });
 
 	return { worktreePath, blocks, planningBlock };
-};
-
-/**
- * A worktree for the ticket the ship lane holds: its shipping record begun at
- * `shipStartedAt`, filed as `ship-progress.json` in the branch's ticket folder,
- * and an engine run beside it that a run binder would pick.
- * `onDisk: false` answers a worktree path that is not there at all.
- */
-const setupShippingWorktree = async ({ shipStartedAt, onDisk = true }: { shipStartedAt: string; onDisk?: boolean }) => {
-	jest.spyOn(Date, 'now').mockReturnValue(pinnedNow);
-
-	const checkout = await freshCwd();
-	const worktreePath = onDisk ? checkout : join(checkout, 'removed-worktree');
-
-	if (onDisk) {
-		const workOrderFolder = join(worktreePath, '.lightsout', 'work-orders', branch);
-
-		// The shipping record is filed in the work order whose record stores the branch.
-		seedWorkOrderRecord({ cwd: worktreePath, name: branch });
-
-		await mkdir(workOrderFolder, { recursive: true });
-		await writeFile(join(workOrderFolder, 'ship-progress.json'), `${JSON.stringify(shippingRecord({ startedAt: shipStartedAt }), null, '\t')}\n`, 'utf8');
-		await seedRunDir({ cwd: worktreePath, manifest: manifestOf({ ...runs.b, createdAt: '2026-09-10T10:22:00.000Z' }) });
-	}
-
-	const shippingBlock = onDisk ? await loadShippingProgressBlock({ cwd: worktreePath, branch }) : [];
-
-	return { worktreePath, shippingBlock };
 };
 
 /**
@@ -322,45 +272,6 @@ describe('loadActiveTicketBlock', () => {
 		const lines = await loadActiveTicketBlock({ ticket });
 
 		expect(lines).toStrictEqual(planningBlock);
-	});
-
-	test('shows the shipping block for the ticket the ship lane holds', async () => {
-		const { worktreePath, shippingBlock } = await setupShippingWorktree({ shipStartedAt: '2026-09-10T10:21:00.000Z' });
-		const ticket = ticketOf({ lane: QueueLane.ShippingNow, enteredAt: enteredShippingAt, worktreePath });
-
-		const lines = await loadActiveTicketBlock({ ticket });
-
-		expect(lines).toStrictEqual(shippingBlock);
-	});
-
-	test("loadActiveTicketBlock: shows a ticket's shipping steps from the record filed in its ticket folder", async () => {
-		const { worktreePath } = await setupShippingWorktree({ shipStartedAt: '2026-09-10T10:21:00.000Z' });
-		const ticket = ticketOf({ lane: QueueLane.ShippingNow, enteredAt: enteredShippingAt, worktreePath });
-
-		const lines = await loadActiveTicketBlock({ ticket });
-
-		// The steps the record holds, rather than the every-row-unreached block a
-		// missing record draws: the worktree path is handed over as the checkout,
-		// and the record is read from the branch's ticket folder.
-		expect(lines).toEqual(expect.arrayContaining([expect.stringMatching(/integrate\s+passed/), expect.stringMatching(/push\s+running/)]));
-	});
-
-	test('gives a one-line notice for a shipping ticket whose worktree is no longer on disk', async () => {
-		const { worktreePath } = await setupShippingWorktree({ shipStartedAt: '2026-09-10T10:21:00.000Z', onDisk: false });
-		const ticket = ticketOf({ lane: QueueLane.ShippingNow, enteredAt: enteredShippingAt, worktreePath });
-
-		const lines = await loadActiveTicketBlock({ ticket });
-
-		expect(lines).toEqual([expect.stringContaining(worktreePath)]);
-	});
-
-	test('never shows a shipping record left by an earlier ship of the same branch', async () => {
-		const { worktreePath } = await setupShippingWorktree({ shipStartedAt: '2026-09-10T09:40:00.000Z' });
-		const ticket = ticketOf({ lane: QueueLane.ShippingNow, enteredAt: enteredShippingAt, worktreePath });
-
-		const lines = await loadActiveTicketBlock({ ticket });
-
-		expect(lines).toEqual([expect.stringMatching(/shipping now/i)]);
 	});
 
 	test('binds a question-waiting ticket from when its build started, not from when the wait began', async () => {

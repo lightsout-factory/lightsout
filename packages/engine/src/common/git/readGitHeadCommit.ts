@@ -1,12 +1,7 @@
-import { gitTimeoutMs } from '#src/common/constants/gitTimeoutMs.ts';
-import { runCommand } from '#src/common/processes/runCommand.ts';
+import { readGitRevParse } from '#src/common/git/readGitRevParse.ts';
 
 interface Params {
 	cwd: string;
 }
 
-export const readGitHeadCommit = async ({ cwd }: Params): Promise<string | undefined> => {
-	const head = await runCommand({ command: 'git rev-parse HEAD', cwd, timeoutMs: gitTimeoutMs }).catch(() => undefined);
-
-	return head && head.exitCode === 0 ? head.stdout.trim() : undefined;
-};
+export const readGitHeadCommit = async ({ cwd }: Params): Promise<string | undefined> => readGitRevParse({ cwd, query: 'HEAD' });

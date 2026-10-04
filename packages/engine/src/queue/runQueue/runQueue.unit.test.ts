@@ -1,13 +1,11 @@
-import { existsSync, readdirSync, readFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
+import { existsSync } from 'node:fs';
+import { dirname } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
 import { PlanningStatus } from '#src/common/constants/PlanningStatus.ts';
 import { QueueWorker } from '#src/common/constants/QueueWorker.ts';
 import type { TicketSummary } from '#src/common/types/TicketSummary.ts';
 import type { TrackerSettings } from '#src/common/types/TrackerSettings.ts';
 import type { WorkOrderRunOutcome } from '#src/common/types/WorkOrderRunOutcome.ts';
-import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
-import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import type { NamedWorkOrder } from '#src/queue/common/types/NamedWorkOrder.ts';
 import type { ParkedWork } from '#src/queue/common/types/ParkedWork.ts';
 import type { QueueFailure } from '#src/queue/common/types/QueueFailure.ts';
@@ -75,35 +73,6 @@ const setupDrain = ({ eligible = [], parked }: { eligible?: TicketSummary[]; par
 	mockSetTicketLabel.mockResolvedValue(undefined);
 
 	return setupQueueDrain();
-};
-
-/** Two tickets — one the ship lane merges and one its worker leaves open — with the tracker credentials handed to the drain. */
-const setupOpenDrain = ({ env }: { env: NodeJS.ProcessEnv }) => {
-	const shipped = ticketOf({ number: 70 });
-	const left = ticketOf({ number: 71 });
-
-	mockListEligibleTickets.mockResolvedValue([shipped, left]);
-	mockScanParkedWorktrees.mockResolvedValue({ resumed: [], outcomes: [], leftBehind: [], merged: [] });
-	mockRunQueueTicket.mockImplementation(({ workOrder: { ticket } }) =>
-		Promise.resolve(
-			ticket.identifier === left.identifier
-				? outcomeOf({ ticket, ready: false, open: 'no ship request names the plans this ticket includes' })
-				: outcomeOf({ ticket }),
-		),
-	);
-	mockShipOneBranch.mockImplementation(({ outcome }) => Promise.resolve(outcome));
-	mockSetTicketLabel.mockResolvedValue(undefined);
-
-	return setupQueueDrain({ env });
-};
-
-/** The one manifest the drain's coordinator run wrote. */
-const readCoordinatorRun = ({ cwd }: { cwd: string }) => {
-	const runsDir = dirname(runDirFor({ cwd, runId: 'any', pipeline: 'queue' }));
-	const runId = readdirSync(runsDir)[0];
-	const manifest = JSON.parse(readFileSync(join(runsDir, runId, 'manifest.json'), 'utf8')) as RunManifest;
-
-	return { runId, manifest, planPath: join(runsDir, runId, 'queue.md') };
 };
 
 describe('runQueue', () => {
@@ -255,28 +224,6 @@ describe('runQueue', () => {
 		});
 	});
 
-	test('records every ticket it will work in the coordinator run, naming the branch and the worktree a human can reach it in', async () => {
-		const { cwd, drain, relay } = setupDrain({ eligible: [ticketOf({ number: 70 })] });
-
-		await drain();
-		relay.close();
-
-		const { manifest, planPath } = readCoordinatorRun({ cwd });
-
-		expect(manifest.pipeline).toBe('queue');
-		expect(readFileSync(planPath, 'utf8')).toContain('LO-70 · direct · lo-70-ticket-70 ·');
-	});
-
-	test('records a branch cut to length for a ticket whose title offers no break point, rather than an over-long one', async () => {
-		const longWord = ticketOf({ number: 71, title: 'Deterministicverificationpipelinerebuilds' });
-		const { cwd, drain, relay } = setupDrain({ eligible: [longWord] });
-
-		await drain();
-		relay.close();
-
-		expect(readFileSync(readCoordinatorRun({ cwd }).planPath, 'utf8')).toContain('LO-71 · direct · lo-71-deterministicverificationpipelinerebuild ·');
-	});
-
 	test('sends both the parked-and-ready branches and the freshly built ones to the merge, in the order they became ready', async () => {
 		const alreadyReady = outcomeOf({ ticket: ticketOf({ number: 99 }) });
 		const { drain, relay } = setupDrain({
@@ -327,53 +274,6 @@ describe('runQueue', () => {
 
 		expect(mockRunQueueTicket).toHaveBeenCalledTimes(2);
 		expect(mostAtOnce).toBe(1);
-	});
-
-	test('ends the coordinator run passed when everything shipped and nothing was left behind', async () => {
-		const { cwd, drain, relay } = setupDrain({ eligible: [ticketOf({ number: 70 })] });
-
-		await drain();
-		relay.close();
-
-		expect(readCoordinatorRun({ cwd }).manifest.status).toBe(RunStatus.Passed);
-	});
-
-	test('ends the coordinator run escalated when a ticket parked, because the factory still holds work', async () => {
-		const { cwd, drain, relay } = setupDrain({ eligible: [ticketOf({ number: 70 })] });
-
-		mockRunQueueTicket.mockImplementation(({ workOrder: { ticket } }) => Promise.resolve(outcomeOf({ ticket, ready: false, error: 'tsc: 3 errors' })));
-
-		const report = await drain();
-
-		relay.close();
-
-		expect(report).toEqual({ outcomes: [expect.objectContaining({ ready: false })], leftBehind: [] });
-		expect(readCoordinatorRun({ cwd }).manifest.status).toBe(RunStatus.Escalated);
-	});
-
-	test('runQueue: ends the coordinator run passed when the only unshipped ticket was left open', async () => {
-		const { cwd, drain, relay } = setupOpenDrain({ env: { LINEAR_API_KEY: 'queue-token' } });
-
-		await drain();
-		relay.close();
-
-		expect(readCoordinatorRun({ cwd }).manifest.status).toBe(RunStatus.Passed);
-		expect(mockRunQueueTicket).toHaveBeenCalledWith(expect.objectContaining({ env: { LINEAR_API_KEY: 'queue-token' } }));
-	});
-
-	test('creates the coordinator run under the id its caller minted', async () => {
-		const { cwd, drain, relay } = setupDrain();
-
-		mockListEligibleTickets.mockResolvedValueOnce([]).mockResolvedValueOnce([ticketOf({ number: 70 })]);
-
-		await drain({ runId: '0b7c1d2e-3f40-4a51-8b62-7c83d94ea5f6' });
-		await drain({ runId: '9e8d7c6b-5a49-4382-9716-05f4e3d2c1b0' });
-		relay.close();
-
-		const { runId, manifest } = readCoordinatorRun({ cwd });
-		const runIds = readdirSync(dirname(runDirFor({ cwd, runId, pipeline: 'queue' })));
-
-		expect({ runIds, manifestRunId: manifest.runId }).toStrictEqual({ runIds: [runId], manifestRunId: '9e8d7c6b-5a49-4382-9716-05f4e3d2c1b0' });
 	});
 
 	test('carries a skipped ticket into the report beside the outcomes, so nothing vanishes from the summary', async () => {

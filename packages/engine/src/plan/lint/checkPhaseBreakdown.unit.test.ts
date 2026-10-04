@@ -1,31 +1,13 @@
 import { describe, expect, test } from '@jest/globals';
-import { BuildMode } from '#src/common/constants/BuildMode.ts';
 import { FindingSeverity } from '#src/contracts/plan/grade/FindingSeverity.ts';
 import { StructuralCheck } from '#src/contracts/plan/grade/StructuralCheck.ts';
 import { checkPhaseBreakdown } from '#src/plan/lint/checkPhaseBreakdown.ts';
-import { type DeclarationSpec, overviewBody } from '#tests/helpers/phasePlan.ts';
-
-/** One `## Phases` row whose every cell reads cleanly — the shape a defect case bends one field of. */
-const cleanRow: DeclarationSpec = { number: 1, file: 'phase1-core.md', created: 1, touched: 2 };
+import type { DeclarationSpec } from '#tests/helpers/phasePlan.ts';
+import { setupPhaseBreakdown } from '#tests/helpers/setupPhaseBreakdown.ts';
 
 /** `count` rows, each numbered and named so nothing but the phase count can be at fault. */
 const rowsFor = ({ count }: { count: number }): DeclarationSpec[] =>
 	Array.from({ length: count }, (_, index) => ({ number: index + 1, file: `phase${index + 1}-step.md`, created: 1, touched: 1 }));
-
-/** The door check as the phased draft calls it, over an overview built from `rows` or handed in verbatim. */
-const setupBreakdown = ({
-	rows = [cleanRow],
-	overview,
-	executorFileLimit = 50,
-}: {
-	rows?: DeclarationSpec[];
-	overview?: (params: { text: string }) => string;
-	executorFileLimit?: number;
-} = {}) => {
-	const text = overviewBody({ rows });
-
-	return { overviewText: overview ? overview({ text }) : text, overviewBase: 'overview.md', executorFileLimit };
-};
 
 /** The same overview with every `### Phase <n> — ` block stripped: table rows whose declaration blocks were never written. */
 const withoutBlocks = ({ text }: { text: string }) =>
@@ -40,7 +22,7 @@ const withOrphanBlock = ({ text }: { text: string }) =>
 
 describe('checkPhaseBreakdown', () => {
 	test('a breakdown whose rows, blocks and counts all read cleanly is silent', () => {
-		const params = setupBreakdown();
+		const params = setupPhaseBreakdown();
 
 		const findings = checkPhaseBreakdown(params);
 
@@ -48,7 +30,7 @@ describe('checkPhaseBreakdown', () => {
 	});
 
 	test('an empty phases table blocks before anything else is inspected', () => {
-		const params = setupBreakdown({ rows: [] });
+		const params = setupPhaseBreakdown({ rows: [] });
 
 		const findings = checkPhaseBreakdown(params);
 
@@ -67,7 +49,7 @@ describe('checkPhaseBreakdown', () => {
 	});
 
 	test('a table row with no declaration block is blocking, naming the phase file whose block is missing', () => {
-		const params = setupBreakdown({ overview: withoutBlocks });
+		const params = setupPhaseBreakdown({ overview: withoutBlocks });
 
 		const findings = checkPhaseBreakdown(params);
 
@@ -82,7 +64,7 @@ describe('checkPhaseBreakdown', () => {
 	});
 
 	test('a table with no declarations section at all is the same defect as a table with an empty one', () => {
-		const params = setupBreakdown({ overview: ({ text }) => text.replace(/## Phase Declarations\n\n[\s\S]*?(?=## Cross-Phase)/, '') });
+		const params = setupPhaseBreakdown({ overview: ({ text }) => text.replace(/## Phase Declarations\n\n[\s\S]*?(?=## Cross-Phase)/, '') });
 
 		const findings = checkPhaseBreakdown(params);
 
@@ -96,7 +78,7 @@ describe('checkPhaseBreakdown', () => {
 	});
 
 	test('a declaration block the table never lists is reported as an orphan, and its unreadable counts with it', () => {
-		const params = setupBreakdown({ overview: withOrphanBlock });
+		const params = setupPhaseBreakdown({ overview: withOrphanBlock });
 
 		const findings = checkPhaseBreakdown(params);
 
@@ -122,7 +104,7 @@ describe('checkPhaseBreakdown', () => {
 	});
 
 	test('phase numbers that skip a value are blocking, stating the run they should have made', () => {
-		const params = setupBreakdown({
+		const params = setupPhaseBreakdown({
 			rows: [
 				{ number: 1, file: 'phase1-core.md', created: 1, touched: 1 },
 				{ number: 3, file: 'phase3-tail.md', created: 1, touched: 1 },
@@ -137,7 +119,7 @@ describe('checkPhaseBreakdown', () => {
 	});
 
 	test('a duplicated phase number is blocking — the run is 1..n without repeats, not merely ascending', () => {
-		const params = setupBreakdown({
+		const params = setupPhaseBreakdown({
 			rows: [
 				{ number: 1, file: 'phase1-core.md', created: 1, touched: 1 },
 				{ number: 1, file: 'phase1-again.md', created: 1, touched: 1 },
@@ -152,7 +134,7 @@ describe('checkPhaseBreakdown', () => {
 	});
 
 	test('a filename that disagrees with its row number is blocking', () => {
-		const params = setupBreakdown({ rows: [{ number: 1, file: 'core.md', created: 1, touched: 1 }] });
+		const params = setupPhaseBreakdown({ rows: [{ number: 1, file: 'core.md', created: 1, touched: 1 }] });
 
 		const findings = checkPhaseBreakdown(params);
 
@@ -170,7 +152,7 @@ describe('checkPhaseBreakdown', () => {
 		{ label: 'Creates', cell: '| 1 | `phase1-core.md` | the work |  | 2 |', why: 'an empty cell' },
 		{ label: 'Touches', cell: '| 1 | `phase1-core.md` | the work | 1 | ~40 |', why: 'a non-integer cell' },
 	])('$why for $label stops the run rather than waving the phase through', ({ label, cell }) => {
-		const params = setupBreakdown({ overview: ({ text }) => text.replace('| 1 | `phase1-core.md` | the work | 1 | 2 |', cell) });
+		const params = setupPhaseBreakdown({ overview: ({ text }) => text.replace('| 1 | `phase1-core.md` | the work | 1 | 2 |', cell) });
 
 		const findings = checkPhaseBreakdown(params);
 
@@ -186,7 +168,7 @@ describe('checkPhaseBreakdown', () => {
 	});
 
 	test('a phase declaring more created files than the ceiling is blocking, and the fix is to split it', () => {
-		const params = setupBreakdown({ rows: [{ number: 1, file: 'phase1-core.md', created: 31, touched: 31 }] });
+		const params = setupPhaseBreakdown({ rows: [{ number: 1, file: 'phase1-core.md', created: 31, touched: 31 }] });
 
 		const findings = checkPhaseBreakdown(params);
 
@@ -203,183 +185,15 @@ describe('checkPhaseBreakdown', () => {
 	});
 
 	test('a phase declaring exactly the ceiling is silent — the ceiling is the last legal count', () => {
-		const params = setupBreakdown({ rows: [{ number: 1, file: 'phase1-core.md', created: 30, touched: 30 }] });
+		const params = setupPhaseBreakdown({ rows: [{ number: 1, file: 'phase1-core.md', created: 30, touched: 30 }] });
 
 		const findings = checkPhaseBreakdown(params);
 
 		expect(findings).toStrictEqual([]);
-	});
-
-	test('a phase declaring more touched files than the configured limit is advisory, naming that limit as the source', () => {
-		const params = setupBreakdown({ rows: [{ number: 1, file: 'phase1-core.md', created: 1, touched: 51 }], executorFileLimit: 50 });
-
-		const findings = checkPhaseBreakdown(params);
-
-		// touching many files is legal work — refusing it would park every
-		// mechanical rename phase
-		expect(findings.map(({ check, severity, issue }) => ({ check, severity, issue }))).toEqual([
-			{
-				check: StructuralCheck.ScopeWithinGuardrail,
-				severity: FindingSeverity.Advisory,
-				issue: expect.stringContaining('touch 51 source files, over the 50-file limit from the configured executor-file-limit'),
-			},
-		]);
-	});
-
-	test('a phase over its own declared budget names that budget rather than the configured limit', () => {
-		const params = setupBreakdown({ rows: [{ number: 1, file: 'phase1-core.md', created: 1, touched: 21, fileBudget: 20 }], executorFileLimit: 50 });
-
-		const findings = checkPhaseBreakdown(params);
-
-		expect(findings.map(({ check, severity, issue }) => ({ check, severity, issue }))).toEqual([
-			{
-				check: StructuralCheck.ScopeWithinGuardrail,
-				severity: FindingSeverity.Advisory,
-				issue: expect.stringContaining("over the 20-file limit from phase1-core.md's own declared file budget"),
-			},
-		]);
-	});
-
-	test('a declared budget covering the declared touched count silences the note, however far over the configured limit', () => {
-		const params = setupBreakdown({ rows: [{ number: 1, file: 'phase1-core.md', created: 1, touched: 70, fileBudget: 200 }], executorFileLimit: 50 });
-
-		const findings = checkPhaseBreakdown(params);
-
-		// declaring a budget is how a deliberately mechanical phase says so
-		expect(findings).toStrictEqual([]);
-	});
-
-	test('a phase declaring more touched files than the touched ceiling is blocking, naming the phase, its count and the ceiling', () => {
-		const params = setupBreakdown({ rows: [{ number: 1, file: 'phase1-core.md', created: 1, touched: 71 }], executorFileLimit: 50 });
-
-		const findings = checkPhaseBreakdown(params);
-
-		// 70 is the fixed touched ceiling; the advisory budget note still reads beside it
-		expect(findings.map(({ check, severity, location, issue }) => ({ check, severity, location, issue }))).toEqual([
-			{
-				check: StructuralCheck.TouchedFilesWithinCeiling,
-				severity: FindingSeverity.Blocking,
-				location: 'overview.md → Phases → phase1-core.md',
-				issue: expect.stringMatching(/phase1-core\.md.*\b71\b.*70-file ceiling/),
-			},
-			{
-				check: StructuralCheck.ScopeWithinGuardrail,
-				severity: FindingSeverity.Advisory,
-				location: 'overview.md → Phases → phase1-core.md',
-				issue: expect.stringContaining('touch 71 source files, over the 50-file limit'),
-			},
-		]);
-	});
-
-	test('a phase declaring exactly the touched ceiling is silent — the ceiling is the last legal count', () => {
-		const params = setupBreakdown({ rows: [{ number: 1, file: 'phase1-core.md', created: 1, touched: 70, fileBudget: 70 }], executorFileLimit: 50 });
-
-		const findings = checkPhaseBreakdown(params);
-
-		expect(findings).toStrictEqual([]);
-	});
-
-	test('a declared file budget never lifts a phase past the touched ceiling', () => {
-		const params = setupBreakdown({ rows: [{ number: 1, file: 'phase1-core.md', created: 1, touched: 120, fileBudget: 200 }], executorFileLimit: 50 });
-
-		const findings = checkPhaseBreakdown(params);
-
-		// the budget silences the advisory note but cannot raise the fixed ceiling
-		expect(findings.map(({ check, severity, location }) => ({ check, severity, location }))).toStrictEqual([
-			{
-				check: StructuralCheck.TouchedFilesWithinCeiling,
-				severity: FindingSeverity.Blocking,
-				location: 'overview.md → Phases → phase1-core.md',
-			},
-		]);
-	});
-
-	test.each([
-		{ fileBudget: 200, expected: [] },
-		{ fileBudget: undefined, expected: [{ check: StructuralCheck.ScopeWithinGuardrail, severity: FindingSeverity.Advisory }] },
-	])('a rename-only phase is exempt from the touched ceiling however many files it declares', ({ fileBudget, expected }) => {
-		const params = setupBreakdown({
-			rows: [{ number: 1, file: 'phase1-core.md', created: 0, touched: 120, fileBudget, buildMode: BuildMode.RenamesOnly }],
-			executorFileLimit: 50,
-		});
-
-		const findings = checkPhaseBreakdown(params);
-
-		// a rename's size is not what makes it hard; only the advisory budget note may still read
-		expect(findings.map(({ check, severity }) => ({ check, severity }))).toStrictEqual(expected);
-	});
-
-	test('checkPhaseBreakdown: a move-folders-and-files phase is exempt from the touched ceiling and the over-budget advisory, and a rename-only phase only from the ceiling', () => {
-		const params = setupBreakdown({
-			rows: [
-				{ number: 1, file: 'phase1-move.md', created: 0, touched: 300, buildMode: BuildMode.MoveFoldersAndFiles },
-				{ number: 2, file: 'phase2-rename.md', created: 0, touched: 120, buildMode: BuildMode.RenamesOnly },
-			],
-			executorFileLimit: 50,
-		});
-
-		const findings = checkPhaseBreakdown(params);
-
-		// neither phase declares a budget: only the rename-only phase still earns the advisory note
-		expect(findings.map(({ check, severity, location }) => ({ check, severity, location }))).toStrictEqual([
-			{
-				check: StructuralCheck.ScopeWithinGuardrail,
-				severity: FindingSeverity.Advisory,
-				location: 'overview.md → Phases → phase2-rename.md',
-			},
-		]);
-	});
-
-	test('checkPhaseBreakdown: the touched-ceiling fix for a standard phase names both mechanical mode bullets', () => {
-		const params = setupBreakdown({ rows: [{ number: 1, file: 'phase1-core.md', created: 1, touched: 71, fileBudget: 71 }], executorFileLimit: 50 });
-
-		const findings = checkPhaseBreakdown(params);
-
-		expect(
-			findings.map(({ check, severity, location, fix }) => ({
-				check,
-				severity,
-				location,
-				namesRenamesOnly: fix.includes('Renames only'),
-				namesMovesOnly: fix.includes('Moves folders and files only'),
-			})),
-		).toStrictEqual([
-			{
-				check: StructuralCheck.TouchedFilesWithinCeiling,
-				severity: FindingSeverity.Blocking,
-				location: 'overview.md → Phases → phase1-core.md',
-				namesRenamesOnly: true,
-				namesMovesOnly: true,
-			},
-		]);
-	});
-
-	test('checkPhaseBreakdown: a block declaring both build modes is one blocking finding', () => {
-		const params = setupBreakdown({
-			rows: [{ number: 1, file: 'phase1-core.md', created: 1, touched: 71, fileBudget: 71 }],
-			executorFileLimit: 50,
-			overview: ({ text }) => text.replace('- **Scripts:** none', '- **Scripts:** none\n- **Renames only:** yes\n- **Moves folders and files only:** yes'),
-		});
-
-		const findings = checkPhaseBreakdown(params);
-
-		// a block naming both modes declares neither, so the touched ceiling still binds it
-		expect(findings.map(({ check, severity, location }) => ({ check, severity, location }))).toStrictEqual([
-			{
-				check: StructuralCheck.DeclarationConsistent,
-				severity: FindingSeverity.Blocking,
-				location: 'overview.md → Phase Declarations',
-			},
-			{
-				check: StructuralCheck.TouchedFilesWithinCeiling,
-				severity: FindingSeverity.Blocking,
-				location: 'overview.md → Phases → phase1-core.md',
-			},
-		]);
 	});
 
 	test('a ninth phase raises the phase-count advisory alongside the size rules', () => {
-		const params = setupBreakdown({ rows: rowsFor({ count: 9 }) });
+		const params = setupPhaseBreakdown({ rows: rowsFor({ count: 9 }) });
 
 		const findings = checkPhaseBreakdown(params);
 
@@ -389,7 +203,7 @@ describe('checkPhaseBreakdown', () => {
 	});
 
 	test('eight phases sit on the soft threshold rather than over it', () => {
-		const params = setupBreakdown({ rows: rowsFor({ count: 8 }) });
+		const params = setupPhaseBreakdown({ rows: rowsFor({ count: 8 }) });
 
 		const findings = checkPhaseBreakdown(params);
 
@@ -397,7 +211,7 @@ describe('checkPhaseBreakdown', () => {
 	});
 
 	test('every finding is labelled with the overview it was read from, whatever that file is called', () => {
-		const params = { ...setupBreakdown({ rows: [{ number: 2, file: 'phase2-core.md', created: 1, touched: 1 }] }), overviewBase: 'plan-overview.md' };
+		const params = { ...setupPhaseBreakdown({ rows: [{ number: 2, file: 'phase2-core.md', created: 1, touched: 1 }] }), overviewBase: 'plan-overview.md' };
 
 		const findings = checkPhaseBreakdown(params);
 
