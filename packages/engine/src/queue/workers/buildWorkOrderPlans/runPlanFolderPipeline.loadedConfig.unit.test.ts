@@ -35,7 +35,9 @@ jest.mock('#src/phases/runPhasesPipeline/runPhasesPipeline.ts', () => ({ runPhas
 // -------------------------
 const mockRunImplementPipeline = jest.fn<(params: PipelineCall) => Promise<PipelineResult>>();
 
-jest.mock('#src/pipeline/runImplementPipeline.ts', () => ({ runImplementPipeline: (params: PipelineCall) => mockRunImplementPipeline(params) }));
+jest.mock('#src/pipeline/runImplementPipeline/runImplementPipeline.ts', () => ({
+	runImplementPipeline: (params: PipelineCall) => mockRunImplementPipeline(params),
+}));
 // -------------------------
 
 const driver: Driver = { name: 'claude-code', invoke: () => Promise.resolve({ text: '', exitCode: 0 }) };

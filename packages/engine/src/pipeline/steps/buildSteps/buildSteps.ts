@@ -2,16 +2,16 @@ import { BuildMode } from '#src/common/constants/BuildMode.ts';
 import { buildSelfCheckCommand } from '#src/common/selfCheck/buildSelfCheckCommand.ts';
 import type { PlanBuildMode } from '#src/common/types/PlanBuildMode.ts';
 import { isTestSideFile } from '#src/pipeline/common/isTestSideFile.ts';
-import type { PipelineRun } from '#src/pipeline/internal/PipelineRun.ts';
-import type { PipelineStep } from '#src/pipeline/internal/PipelineStep.ts';
-import { cleanSlateStep } from '#src/pipeline/internal/steps/cleanSlateStep.ts';
-import { writeLedgerTestsStep } from '#src/pipeline/internal/steps/writeLedgerTestsStep.ts';
-import { buildFeatureFix } from '#src/pipeline/steps/buildSteps/internal/common/utils/buildFeatureFix.ts';
-import { buildImplementSteps } from '#src/pipeline/steps/buildSteps/internal/common/utils/buildImplementSteps.ts';
-import { buildLedgerLintSteps } from '#src/pipeline/steps/buildSteps/internal/common/utils/buildLedgerLintSteps.ts';
-import { buildRefactorSteps } from '#src/pipeline/steps/buildSteps/internal/common/utils/buildRefactorSteps.ts';
-import { buildTestSteps } from '#src/pipeline/steps/buildSteps/internal/common/utils/buildTestSteps.ts';
-import { getLedgerMovePaths } from '#src/pipeline/steps/buildSteps/internal/common/utils/getLedgerMovePaths.ts';
+import type { PipelineRun } from '#src/pipeline/common/PipelineRun.ts';
+import type { PipelineStep } from '#src/pipeline/common/types/PipelineStep.ts';
+import { buildFeatureFix } from '#src/pipeline/steps/buildSteps/buildFeatureFix.ts';
+import { buildImplementSteps } from '#src/pipeline/steps/buildSteps/buildImplementSteps/buildImplementSteps.ts';
+import { buildLedgerLintSteps } from '#src/pipeline/steps/buildSteps/buildLedgerLintSteps.ts';
+import { buildRefactorSteps } from '#src/pipeline/steps/buildSteps/buildRefactorSteps/buildRefactorSteps.ts';
+import { buildTestSteps } from '#src/pipeline/steps/buildSteps/buildTestSteps/buildTestSteps.ts';
+import { cleanSlateStep } from '#src/pipeline/steps/buildSteps/cleanSlateStep.ts';
+import { getLedgerMovePaths } from '#src/pipeline/steps/buildSteps/getLedgerMovePaths.ts';
+import { writeLedgerTestsStep } from '#src/pipeline/steps/buildSteps/writeLedgerTestsStep/writeLedgerTestsStep.ts';
 import { parsePlan } from '#src/plan/parsePlan.ts';
 
 interface Params {

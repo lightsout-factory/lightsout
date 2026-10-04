@@ -15,7 +15,7 @@ import { persistStep } from '#src/phases/runPhasesPipeline/runPhase/common/persi
 import { recordFinishedChild } from '#src/phases/runPhasesPipeline/runPhase/recordFinishedChild.ts';
 import { refuseDirtyPhaseStart } from '#src/phases/runPhasesPipeline/runPhase/refuseDirtyPhaseStart.ts';
 import type { PipelineResult } from '#src/pipeline/PipelineResult.ts';
-import { runImplementPipeline } from '#src/pipeline/runImplementPipeline.ts';
+import { runImplementPipeline } from '#src/pipeline/runImplementPipeline/runImplementPipeline.ts';
 import { RunLockError } from '#src/runState/lock/RunLockError.ts';
 import { readRunManifest } from '#src/runState/readRunManifest.ts';
 

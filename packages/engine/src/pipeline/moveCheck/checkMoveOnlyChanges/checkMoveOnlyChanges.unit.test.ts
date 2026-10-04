@@ -3,7 +3,7 @@ import { dirname, join } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
-import type { PipelineRun } from '#src/pipeline/internal/PipelineRun.ts';
+import type { PipelineRun } from '#src/pipeline/common/PipelineRun.ts';
 import { checkMoveOnlyChanges } from '#src/pipeline/moveCheck/checkMoveOnlyChanges/checkMoveOnlyChanges.ts';
 import { commitAll } from '#tests/helpers/commitAll.ts';
 import { generatedPaths } from '#tests/helpers/generatedPaths.ts';
@@ -16,9 +16,9 @@ type CountTokens = (params: { text: string }) => Map<string, number>;
 // Mocked Imports
 // -------------------------
 const mockCountTokens = jest.fn<CountTokens>();
-const { countTokens } = jest.requireActual<{ countTokens: CountTokens }>('#src/pipeline/internal/common/tokens/countTokens.ts');
+const { countTokens } = jest.requireActual<{ countTokens: CountTokens }>('#src/pipeline/common/countTokens.ts');
 
-jest.mock('#src/pipeline/internal/common/tokens/countTokens.ts', () => ({ countTokens: (params: { text: string }) => mockCountTokens(params) }));
+jest.mock('#src/pipeline/common/countTokens.ts', () => ({ countTokens: (params: { text: string }) => mockCountTokens(params) }));
 // -------------------------
 
 type Content = string | Buffer;

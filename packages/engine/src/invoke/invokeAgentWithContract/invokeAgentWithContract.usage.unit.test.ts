@@ -7,7 +7,7 @@ import type { Driver } from '#src/common/types/Driver.ts';
 import type { HarnessProcessMark } from '#src/contracts/activity/HarnessProcessMark.ts';
 import { WorkReport } from '#src/contracts/work/WorkReport.ts';
 import { invokeAgentWithContract } from '#src/invoke/invokeAgentWithContract/invokeAgentWithContract.ts';
-import { runImplementPipeline } from '#src/pipeline/runImplementPipeline.ts';
+import { runImplementPipeline } from '#src/pipeline/runImplementPipeline/runImplementPipeline.ts';
 import { outcomeFields } from '#tests/helpers/outcomeFields.ts';
 import { report } from '#tests/helpers/report.ts';
 import { reviewOneAdvisory } from '#tests/helpers/reviewOneAdvisory.ts';

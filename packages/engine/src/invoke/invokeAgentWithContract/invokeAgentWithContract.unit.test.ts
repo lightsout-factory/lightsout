@@ -8,7 +8,7 @@ import { Effort } from '#src/contracts/Effort.ts';
 import { Permissions } from '#src/contracts/Permissions.ts';
 import { WorkReport } from '#src/contracts/work/WorkReport.ts';
 import { invokeAgentWithContract } from '#src/invoke/invokeAgentWithContract/invokeAgentWithContract.ts';
-import { runImplementPipeline } from '#src/pipeline/runImplementPipeline.ts';
+import { runImplementPipeline } from '#src/pipeline/runImplementPipeline/runImplementPipeline.ts';
 import { outcomeFields } from '#tests/helpers/outcomeFields.ts';
 import { report } from '#tests/helpers/report.ts';
 import { runDirFor } from '#tests/helpers/runDirFor.ts';

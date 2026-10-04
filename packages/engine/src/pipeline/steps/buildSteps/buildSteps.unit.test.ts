@@ -8,10 +8,10 @@ import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import type { StepRecord } from '#src/contracts/run/StepRecord.ts';
 import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFinding.ts';
 import type { StandardsSnapshot } from '#src/contracts/standardsCheck/StandardsSnapshot.ts';
-import type { VerificationResult } from '#src/pipeline/internal/common/types/VerificationResult.ts';
-import type { PipelineRun } from '#src/pipeline/internal/PipelineRun.ts';
-import type { PipelineStep } from '#src/pipeline/internal/PipelineStep.ts';
+import type { PipelineRun } from '#src/pipeline/common/PipelineRun.ts';
+import type { PipelineStep } from '#src/pipeline/common/types/PipelineStep.ts';
 import { buildSteps } from '#src/pipeline/steps/buildSteps/buildSteps.ts';
+import type { VerificationResult } from '#src/pipeline/steps/common/types/VerificationResult.ts';
 
 // Mocked Imports
 // -------------------------
@@ -31,7 +31,7 @@ interface LedgerWriterParams {
 
 const mockWriteLedgerTestsStep = jest.fn<(params: LedgerWriterParams) => PipelineStep['run']>();
 
-jest.mock('#src/pipeline/internal/steps/writeLedgerTestsStep.ts', () => ({
+jest.mock('#src/pipeline/steps/buildSteps/writeLedgerTestsStep/writeLedgerTestsStep.ts', () => ({
 	writeLedgerTestsStep: (params: LedgerWriterParams) => mockWriteLedgerTestsStep(params),
 }));
 // -------------------------
@@ -45,7 +45,7 @@ interface GateParams {
 
 const mockRunVerificationGates = jest.fn<(params: GateParams) => Promise<VerificationResult>>();
 
-jest.mock('#src/pipeline/internal/common/utils/runVerificationGates.ts', () => ({
+jest.mock('#src/pipeline/steps/common/runVerificationGates.ts', () => ({
 	runVerificationGates: (params: GateParams) => mockRunVerificationGates(params),
 }));
 // -------------------------

@@ -1,0 +1,336 @@
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { expect, test } from '@jest/globals';
+import { readConfig } from '#src/common/config/readConfig.ts';
+import type { Driver } from '#src/common/types/Driver.ts';
+import { runImplementPipeline } from '#src/pipeline/runImplementPipeline/runImplementPipeline.ts';
+import { createUncalledDriver } from '#tests/helpers/createUncalledDriver.ts';
+import { readGateLog } from '#tests/helpers/readGateLog.ts';
+import { report } from '#tests/helpers/report.ts';
+import { reviewReport } from '#tests/helpers/reviewReport.ts';
+import { roleOf } from '#tests/helpers/roleOf.ts';
+import { runDirFor } from '#tests/helpers/runDirFor.ts';
+import { setupMonorepo } from '#tests/helpers/setupMonorepo.ts';
+import { withTestChangeReview } from '#tests/helpers/withTestChangeReview.ts';
+import { writeSource } from '#tests/helpers/writeSource.ts';
+
+test('front-matter scope: scoped clean-slate, name substitution, expansion, root precedence', async () => {
+	const dir = setupMonorepo();
+	let cleanSlateGates: string[] = [];
+	const driver: Driver = {
+		name: 'stub',
+		invoke: withTestChangeReview({
+			invoke: async ({ prompt }) => {
+				const role = roleOf(prompt);
+
+				if (role === 'standards-review') {
+					return { text: reviewReport(), exitCode: 0 };
+				}
+
+				if (role === 'write-tests') {
+					const target = prompt.match(/- (\S+)/)?.[1] ?? 'unknown';
+					const parts = target.split('/');
+					const testDir = target.startsWith('packages/') ? `${parts[0]}/${parts[1]}/test` : 'test';
+					const testFile = `${testDir}/${parts.at(-1)?.replace('.js', '')}.test.js`;
+
+					mkdirSync(join(dir, testDir), { recursive: true });
+					writeFileSync(join(dir, testFile), '// stub test\n');
+
+					return { text: report({ changedFiles: [{ path: testFile, summary: 'tests' }] }), exitCode: 0 };
+				}
+
+				if (role !== 'implement') {
+					return { text: report(), exitCode: 0 };
+				}
+
+				// Clean-slate has already run — snapshot its gate log, then stray
+				// outside the declared scope (web) and into the root (shared.js).
+				cleanSlateGates = readGateLog({ dir });
+				writeSource({ dir, path: 'packages/api/src/feature.js', source: 'export const feature = () => 2;\n' });
+				writeSource({ dir, path: 'packages/web/src/widget.js', source: 'export const widget = () => 2;\n' });
+				writeSource({ dir, path: 'shared.js', source: 'export const shared = () => 2;\n' });
+
+				return {
+					text: report({
+						changedFiles: [
+							{ path: 'packages/api/src/feature.js', summary: 'feature' },
+							{ path: 'packages/web/src/widget.js', summary: 'widget' },
+							{ path: 'shared.js', summary: 'shared' },
+						],
+					}),
+					exitCode: 0,
+				};
+			},
+		}),
+	};
+	const result = await runImplementPipeline({
+		cwd: dir,
+		driver,
+		config: await readConfig({ cwd: dir }),
+		loadedConfig: { config: await readConfig({ cwd: dir }) },
+		planPath: 'plan.md',
+	});
+	const allGates = readGateLog({ dir });
+	const postImplementGates = allGates.slice(cleanSlateGates.length);
+
+	expect(result.ok).toBe(true);
+	// clean-slate ran the declared package
+	expect(cleanSlateGates.some((line) => line.startsWith('@acme/api '))).toBeTruthy();
+	// clean-slate skipped undeclared packages
+	expect(cleanSlateGates.some((line) => line.startsWith('@acme/web '))).toBeFalsy();
+	// clean-slate skipped the root group
+	expect(cleanSlateGates.some((line) => line.startsWith('root '))).toBeFalsy();
+	// {package} used the package.json name, not the directory
+	expect(allGates.some((line) => line.startsWith('api '))).toBeFalsy();
+	// the mixed post-implementation scope selected the whole-repository group
+	expect(postImplementGates.some((line) => line.startsWith('root '))).toBeTruthy();
+	expect(postImplementGates.some((line) => line.startsWith('@acme/api '))).toBeFalsy();
+	expect(postImplementGates.some((line) => line.startsWith('@acme/web '))).toBeFalsy();
+	// coverage evidence distinguishes the initial package clean slate from the
+	// later root-only mixed-scope verification
+	expect(cleanSlateGates.some((line) => line === '@acme/api coverage')).toBeTruthy();
+	expect(postImplementGates.some((line) => line === 'root coverage')).toBeTruthy();
+	expect([...result.manifest.packages].sort()).toStrictEqual(['api', 'web']);
+	expect(result.manifest.packagesSource).toBe('front-matter');
+
+	const commandLog = readFileSync(join(runDirFor({ cwd: dir, runId: result.manifest.runId }), 'commands.jsonl'), 'utf8')
+		.trim()
+		.split('\n')
+		.map((line) => JSON.parse(line) as Record<string, unknown>);
+
+	// command log labels package groups
+	expect(commandLog.some((entry) => entry.group === 'api')).toBeTruthy();
+	// command log labels the root group
+	expect(commandLog.some((entry) => entry.group === 'root')).toBeTruthy();
+});
+
+test('no scope anywhere: hard error before any gate or agent', async () => {
+	const dir = setupMonorepo({ plan: '# Plan: vague, names no packages\n' });
+	const driver: Driver = {
+		name: 'stub',
+		invoke: async () => {
+			throw new Error('no agent should be invoked');
+		},
+	};
+	const result = await runImplementPipeline({
+		cwd: dir,
+		driver,
+		config: await readConfig({ cwd: dir }),
+		loadedConfig: { config: await readConfig({ cwd: dir }) },
+		planPath: 'plan.md',
+	});
+
+	expect(result.manifest.status).toBe('failed');
+	expect(result.error ?? '').toMatch(/no package scope/);
+	// no gates ran
+	expect(readGateLog({ dir })).toStrictEqual([]);
+});
+
+test('--packages flag overrides front-matter; source recorded as flag', async () => {
+	const dir = setupMonorepo(); // front-matter declares api
+	let cleanSlateGates: string[] = [];
+	const driver: Driver = {
+		name: 'stub',
+		invoke: withTestChangeReview({
+			invoke: async ({ prompt }) => {
+				if (roleOf(prompt) !== 'implement') {
+					return { text: report(), exitCode: 0 };
+				}
+
+				cleanSlateGates = readGateLog({ dir });
+				writeSource({ dir, path: 'packages/web/src/widget.js', source: 'export const widget = () => 2;\n' });
+
+				return { text: report({ changedFiles: [{ path: 'packages/web/src/widget.js', summary: 'widget' }] }), exitCode: 0 };
+			},
+		}),
+	};
+	const result = await runImplementPipeline({
+		cwd: dir,
+		driver,
+		config: await readConfig({ cwd: dir }),
+		loadedConfig: { config: await readConfig({ cwd: dir }) },
+		planPath: 'plan.md',
+		packages: ['web'],
+	});
+
+	expect(result.ok).toBe(true);
+	expect(cleanSlateGates.some((line) => line.startsWith('@acme/web '))).toBeTruthy();
+	expect(cleanSlateGates.some((line) => line.startsWith('@acme/api '))).toBeFalsy();
+	expect(result.manifest.packagesSource).toBe('flag');
+});
+
+test('scope derived from concrete plan-body paths when nothing is declared', async () => {
+	const dir = setupMonorepo({ plan: '# Plan: fix api\n\nEdit `packages/api/src/index.js`; nothing else.\n' });
+	let cleanSlateGates: string[] = [];
+	const driver: Driver = {
+		name: 'stub',
+		invoke: withTestChangeReview({
+			invoke: async ({ prompt }) => {
+				if (roleOf(prompt) !== 'implement') {
+					return { text: report(), exitCode: 0 };
+				}
+
+				cleanSlateGates = readGateLog({ dir });
+				writeSource({ dir, path: 'packages/api/src/feature.js', source: 'export const feature = () => 2;\n' });
+
+				return { text: report({ changedFiles: [{ path: 'packages/api/src/feature.js', summary: 'feature' }] }), exitCode: 0 };
+			},
+		}),
+	};
+	const result = await runImplementPipeline({
+		cwd: dir,
+		driver,
+		config: await readConfig({ cwd: dir }),
+		loadedConfig: { config: await readConfig({ cwd: dir }) },
+		planPath: 'plan.md',
+	});
+
+	expect(result.ok).toBe(true);
+	expect(result.manifest.packages).toStrictEqual(['api']);
+	expect(result.manifest.packagesSource).toBe('plan-paths');
+	expect(cleanSlateGates.some((line) => line.startsWith('@acme/api '))).toBeTruthy();
+	expect(cleanSlateGates.some((line) => line.startsWith('@acme/web '))).toBeFalsy();
+});
+
+test('a package path the plan body invents is dropped, and the run says which', async () => {
+	const dir = setupMonorepo({ plan: '# Plan: fix api\n\nEdit `packages/api/src/index.js`, mirroring `packages/ghost/src/x.ts`.\n' });
+	const progress: string[] = [];
+	let cleanSlateGates: string[] = [];
+	const driver: Driver = {
+		name: 'stub',
+		invoke: withTestChangeReview({
+			invoke: async ({ prompt }) => {
+				if (roleOf(prompt) !== 'implement') {
+					return { text: report(), exitCode: 0 };
+				}
+
+				cleanSlateGates = readGateLog({ dir });
+				writeSource({ dir, path: 'packages/api/src/feature.js', source: 'export const feature = () => 2;\n' });
+
+				return { text: report({ changedFiles: [{ path: 'packages/api/src/feature.js', summary: 'feature' }] }), exitCode: 0 };
+			},
+		}),
+	};
+	const result = await runImplementPipeline({
+		cwd: dir,
+		driver,
+		config: await readConfig({ cwd: dir }),
+		loadedConfig: { config: await readConfig({ cwd: dir }) },
+		planPath: 'plan.md',
+		onProgress: (message) => progress.push(message),
+	});
+
+	expect(result.ok).toBe(true);
+	// ghost is a path an author typed, not a package: gating it would run every
+	// gate and then die at the clean slate blaming the codebase, not the scope
+	expect(result.manifest.packages).toStrictEqual(['api']);
+	expect(result.manifest.packagesSource).toBe('plan-paths');
+	expect(progress).toContain('ignored plan package paths: ghost — no such package under packages/');
+	expect(cleanSlateGates.some((line) => line.startsWith('@acme/api '))).toBeTruthy();
+});
+
+test('a plan body naming only packages that do not exist stops the run, and still records what it dropped', async () => {
+	const dir = setupMonorepo({ plan: '# Plan\n\nEdit `packages/ghost/src/x.ts`.\n' });
+	const progress: string[] = [];
+	const result = await runImplementPipeline({
+		cwd: dir,
+		driver: createUncalledDriver({ reason: 'no agent should be invoked — scope resolution must fail first' }),
+		config: await readConfig({ cwd: dir }),
+		loadedConfig: { config: await readConfig({ cwd: dir }) },
+		planPath: 'plan.md',
+		onProgress: (message) => progress.push(message),
+	});
+
+	expect(result.manifest.status).toBe('failed');
+	expect(result.error ?? '').toMatch(/no package scope/);
+	// the run that most needs the dropped names on the record is the one that
+	// ends up with no scope at all
+	expect(progress).toContain('ignored plan package paths: ghost — no such package under packages/');
+	expect(readGateLog({ dir })).toStrictEqual([]);
+});
+
+test('a declared package that does not exist stops the run before any gate, naming the packages that do', async () => {
+	const dir = setupMonorepo({ plan: '---\npackages:\n  - ghost\n---\n# Plan\n' });
+	const driver: Driver = {
+		name: 'stub',
+		invoke: async () => {
+			throw new Error('no agent should be invoked — scope resolution must fail first');
+		},
+	};
+	const result = await runImplementPipeline({
+		cwd: dir,
+		driver,
+		config: await readConfig({ cwd: dir }),
+		loadedConfig: { config: await readConfig({ cwd: dir }) },
+		planPath: 'plan.md',
+	});
+
+	expect(result.manifest.status).toBe('failed');
+	expect(result.error ?? '').toMatch(/ghost/);
+	expect(result.error ?? '').toMatch(/no such package under packages\//);
+	expect(result.error ?? '').toMatch(/api, web/);
+	// the run stops at scope resolution, so no gate command runs
+	expect(readGateLog({ dir })).toStrictEqual([]);
+});
+
+/**
+ * A monorepo run parked mid-flight: implement lands a file in the declared
+ * package, then the write-tests invocation is rate-limited, leaving a resumable
+ * manifest whose scope is already settled.
+ */
+const setupParkedMonorepoRun = async () => {
+	const dir = setupMonorepo();
+	const config = await readConfig({ cwd: dir });
+	const parkOnWrite: Driver = {
+		name: 'stub',
+		invoke: withTestChangeReview({
+			invoke: async ({ prompt }) => {
+				const role = roleOf(prompt);
+
+				if (role === 'standards-review') {
+					return { text: reviewReport(), exitCode: 0 };
+				}
+
+				if (role === 'write-tests') {
+					return { text: '', exitCode: 1, rateLimited: true };
+				}
+
+				if (role === 'implement') {
+					writeSource({ dir, path: 'packages/api/src/feature.js', source: 'export const feature = () => 2;\n' });
+
+					return { text: report({ changedFiles: [{ path: 'packages/api/src/feature.js', summary: 'feature' }] }), exitCode: 0 };
+				}
+
+				return { text: report(), exitCode: 0 };
+			},
+		}),
+	};
+	const parked = await runImplementPipeline({ cwd: dir, driver: parkOnWrite, config, loadedConfig: { config }, planPath: 'plan.md' });
+	const resumeDriver: Driver = {
+		name: 'stub',
+		invoke: async ({ prompt }) => (roleOf(prompt) === 'standards-review' ? { text: reviewReport(), exitCode: 0 } : { text: report(), exitCode: 0 }),
+	};
+
+	return { dir, config, parked, resumeDriver };
+};
+
+test('a resumed manifest with no recorded scope origin still narrates its scope, attributed to the manifest', async () => {
+	const { dir, config, parked, resumeDriver } = await setupParkedMonorepoRun();
+	const progress: string[] = [];
+
+	// `packagesSource` is optional on the contract, so a manifest written before
+	// the origin was recorded is a legitimate resume input
+	const resumed = await runImplementPipeline({
+		cwd: dir,
+		driver: resumeDriver,
+		config,
+		loadedConfig: { config },
+		existing: { ...parked.manifest, packagesSource: undefined },
+		onProgress: (message) => progress.push(message),
+	});
+
+	// the settled scope survives the resume untouched — it is never re-derived
+	expect(resumed.manifest.packages).toStrictEqual(['api']);
+	// and it is attributed to the manifest rather than narrated as `undefined`
+	expect(progress.includes('package scope: api (from manifest)')).toBeTruthy();
+});

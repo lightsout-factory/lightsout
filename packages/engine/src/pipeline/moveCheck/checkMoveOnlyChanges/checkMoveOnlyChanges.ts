@@ -2,16 +2,16 @@ import { MoveDirection } from '#src/common/constants/MoveDirection.ts';
 import { findCoveringMove } from '#src/common/findCoveringMove.ts';
 import { mapPathThroughMoves } from '#src/common/mapPathThroughMoves.ts';
 import { isGeneratedPath } from '#src/common/sourceFiles/isGeneratedPath.ts';
-import { pairCheckpointChanges } from '#src/pipeline/internal/common/checkpointChanges/pairCheckpointChanges.ts';
-import { readCheckpointChanges } from '#src/pipeline/internal/common/checkpointChanges/readCheckpointChanges.ts';
-import { readComparisonSides } from '#src/pipeline/internal/common/checkpointChanges/readComparisonSides.ts';
-import { countTokens } from '#src/pipeline/internal/common/tokens/countTokens.ts';
-import { describeTokenSurplus } from '#src/pipeline/internal/common/tokens/describeTokenSurplus.ts';
-import type { CheckpointComparison } from '#src/pipeline/internal/common/types/CheckpointComparison.ts';
-import type { PipelineRun } from '#src/pipeline/internal/PipelineRun.ts';
+import { countTokens } from '#src/pipeline/common/countTokens.ts';
+import { describeTokenSurplus } from '#src/pipeline/common/describeTokenSurplus.ts';
+import type { PipelineRun } from '#src/pipeline/common/PipelineRun.ts';
+import { pairCheckpointChanges } from '#src/pipeline/common/pairCheckpointChanges.ts';
+import { readCheckpointChanges } from '#src/pipeline/common/readCheckpointChanges.ts';
+import { readComparisonSides } from '#src/pipeline/common/readComparisonSides.ts';
+import type { CheckpointComparison } from '#src/pipeline/common/types/CheckpointComparison.ts';
+import { countPathTokens } from '#src/pipeline/moveCheck/checkMoveOnlyChanges/countPathTokens.ts';
 import { readGitHeadBlobIds } from '#src/pipeline/moveCheck/checkMoveOnlyChanges/readGitHeadBlobIds.ts';
 import { readGitWorkingBlobIds } from '#src/pipeline/moveCheck/checkMoveOnlyChanges/readGitWorkingBlobIds.ts';
-import { countPathTokens } from '#src/pipeline/moveCheck/internal/common/utils/countPathTokens.ts';
 
 interface Params {
 	run: PipelineRun;

@@ -35,7 +35,7 @@ jest.mock('#src/phases/runPhasesPipeline/runPhasesPipeline.ts', () => ({
 // -------------------------
 const mockRunImplementPipeline = jest.fn<(params: { planPath: string }) => Promise<PipelineResult>>();
 
-jest.mock('#src/pipeline/runImplementPipeline.ts', () => ({
+jest.mock('#src/pipeline/runImplementPipeline/runImplementPipeline.ts', () => ({
 	runImplementPipeline: (params: { planPath: string }) => mockRunImplementPipeline(params),
 }));
 // -------------------------

@@ -7,7 +7,7 @@ import type { RefactorStepReport } from '#src/contracts/run/RefactorStepReport.t
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import type { StepRecord } from '#src/contracts/run/StepRecord.ts';
-import { runImplementPipeline } from '#src/pipeline/runImplementPipeline.ts';
+import { runImplementPipeline } from '#src/pipeline/runImplementPipeline/runImplementPipeline.ts';
 import { summarizeRun } from '#src/runState/summarizeRun/summarizeRun.ts';
 import { countableFindings } from '#tests/helpers/countableFindings.ts';
 import { report } from '#tests/helpers/report.ts';
