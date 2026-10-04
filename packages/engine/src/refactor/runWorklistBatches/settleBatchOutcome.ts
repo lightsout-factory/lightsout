@@ -1,0 +1,76 @@
+import { maxConsecutiveDeclines } from '#src/common/constants/maxConsecutiveDeclines.ts';
+import { formatResumeCommand } from '#src/common/utils/formatResumeCommand.ts';
+import { BatchOutcome } from '#src/contracts/refactor/BatchOutcome.ts';
+import { BatchReport } from '#src/contracts/refactor/BatchReport.ts';
+import type { RefactorBatch } from '#src/contracts/refactor/RefactorBatch.ts';
+import { PipelineKind } from '#src/contracts/run/PipelineKind.ts';
+import { RunStatus } from '#src/contracts/run/RunStatus.ts';
+import type { StepRecord } from '#src/contracts/run/StepRecord.ts';
+import { BatchStopKind } from '#src/refactor/common/constants/BatchStopKind.ts';
+import type { RefactorRun } from '#src/refactor/common/RefactorRun.ts';
+import type { BatchStop } from '#src/refactor/common/types/BatchStop.ts';
+import type { RefactorResult } from '#src/refactor/RefactorResult.ts';
+
+interface Params {
+	run: RefactorRun;
+	batch: RefactorBatch;
+	record: StepRecord;
+	outcome: BatchStop;
+	/** Consecutive declines up to and excluding this batch. */
+	declineStreak: number;
+}
+
+interface BatchSettlement {
+	/** Present when this batch ends the whole run — park, failure, escalation. */
+	result?: RefactorResult;
+	declineStreak: number;
+}
+
+/**
+ * A declined batch is still a Passed step, written before the run escalates,
+ * so resume never re-spends on it. Consecutive declines stop the run as
+ * systemic rather than a per-batch judgment.
+ */
+export const settleBatchOutcome = async ({ run, batch, record, outcome, declineStreak }: Params): Promise<BatchSettlement> => {
+	if (outcome.kind === BatchStopKind.Parked) {
+		const resume = formatResumeCommand({ pipeline: PipelineKind.Refactor, runId: run.current().runId });
+		const error = `run parked: harness rate limited or overloaded — resume with \`${resume}\` when the window resets.`;
+
+		return { result: await run.stop({ record, status: RunStatus.PausedRateLimit, error }), declineStreak };
+	}
+
+	if (outcome.kind === BatchStopKind.Failed || outcome.kind === BatchStopKind.Escalated) {
+		const status = outcome.kind === BatchStopKind.Failed ? RunStatus.Failed : RunStatus.Escalated;
+
+		return { result: await run.stop({ record, status, error: outcome.error }), declineStreak };
+	}
+
+	const report = BatchReport.parse(outcome.report);
+
+	await run.setStep({
+		record: { ...record, status: RunStatus.Passed, report, changedFiles: outcome.changedFiles },
+		patch: { changedFiles: [...new Set([...run.current().changedFiles, ...outcome.changedFiles])] },
+	});
+
+	if (report.outcome !== BatchOutcome.Declined) {
+		run.progress(`${batch.id}: resolved`);
+
+		return { declineStreak: 0 };
+	}
+
+	const streak = declineStreak + 1;
+	const settlement: BatchSettlement = { declineStreak: streak };
+
+	run.declined.push({ batchId: batch.id, remainingSiteKeys: report.remainingSiteKeys, rationale: report.rationale });
+	run.progress(`${batch.id}: declined (${report.remainingSiteKeys.length} site(s) persist)`);
+
+	if (streak >= maxConsecutiveDeclines) {
+		const error = `${maxConsecutiveDeclines} consecutive batches declined — likely systemic (standards injection, gate config, or a rule bug), not worth further agent spend.`;
+
+		await run.update({ patch: { status: RunStatus.Escalated, currentStep: null } });
+		run.progress(`refactor run stopped after ${batch.id} — ${RunStatus.Escalated}`);
+		settlement.result = run.buildHaltedResult({ error });
+	}
+
+	return settlement;
+};

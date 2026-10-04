@@ -3,7 +3,7 @@ import type { CommandContext } from '#src/cli/common/types/CommandContext.ts';
 import { printRefactorResult } from '#src/cli/internal/common/render/printRefactorResult.ts';
 import { createProgressPrinter } from '#src/cli/internal/common/utils/createProgressPrinter.ts';
 import { runBatchedCommand } from '#src/cli/internal/common/utils/runBatchedCommand.ts';
-import { runRefactorPipeline } from '#src/refactor/runRefactorPipeline.ts';
+import { runRefactorPipeline } from '#src/refactor/runRefactorPipeline/runRefactorPipeline.ts';
 
 export const refactorCommand = ({ flags, cwd }: CommandContext): Promise<void> =>
 	runBatchedCommand({
