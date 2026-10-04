@@ -162773,7 +162773,6 @@ var rulePriority = [
   "lightsout/index-files",
   "lightsout/test-beside-subject",
   "lightsout/test-support-in-src",
-  "lightsout/internal-import-from-outside",
   "lightsout/multi-export",
   "lightsout/filename-mismatch",
   "lightsout/test-mock-prefix",
@@ -162787,8 +162786,7 @@ var rulePriority = [
   "lightsout/folder-size",
   "lightsout/duplicate-function-body",
   "lightsout/duplicate-code-block",
-  "lightsout/duplicate-export-name",
-  "lightsout/synonym-export-name"
+  "lightsout/duplicate-export-name"
 ];
 var maxBatchFindings = 12;
 var priorityOf2 = ({ rule }) => {

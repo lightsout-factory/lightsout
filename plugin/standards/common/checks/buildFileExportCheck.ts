@@ -9,7 +9,7 @@ import type { FileExport } from '../types/FileExport.ts';
 interface Params {
 	rule: string;
 	/** What one file's exports violate, or undefined when the file is clean. */
-	detail: ({ file, exports }: { file: string; exports: FileExport[] }) => string | undefined;
+	detail: ({ file, text, exports }: { file: string; text: string; exports: FileExport[] }) => string | undefined;
 	guidance: string;
 }
 
@@ -27,7 +27,8 @@ export const buildFileExportCheck = ({ rule, detail, guidance }: Params): Standa
 		return files
 			.filter((file) => !isTestFile({ path: file, standardsLibraries }) && !isBarrelFile({ path: file }))
 			.map((file) => {
-				const violation = detail({ file, exports: readFileExports({ text: contents.get(file) ?? '' }) });
+				const text = contents.get(file) ?? '';
+				const violation = detail({ file, text, exports: readFileExports({ text }) });
 
 				return violation === undefined ? undefined : buildRawFinding({ rule, files: [{ path: file }], detail: violation, guidance });
 			})

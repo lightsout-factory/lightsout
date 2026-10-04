@@ -2,8 +2,7 @@
 	"description": "Keeps the repo the same shape at every level, so any file's place is predictable and a duplicate is found by searching for its name.",
 	"include": {
 		"topics": [
-			"lightsout/code/fractal/modules",
-			"lightsout/code/fractal/shared-code",
+			"lightsout/code/fractal/layout",
 			"lightsout/code/fractal/size",
 			"lightsout/code/fractal/duplication",
 			"lightsout/code/fractal/imports",

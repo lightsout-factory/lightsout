@@ -38,7 +38,7 @@ const findCodeInIndexFiles = ({ input }: { input: SyntaxTreeInput | undefined })
 						rule: 'index-file-contents',
 						files: [{ path }],
 						detail: `${offending.length} statement(s) other than re-export lines, the first at line ${line}`,
-						guidance: 'An index file is the package’s doorway — re-export lines only. Executable code belongs in a named entry file such as main.ts.',
+						guidance: 'An index file holds re-export lines only. Put executable code in a named entry file such as main.ts.',
 					}),
 				);
 			}

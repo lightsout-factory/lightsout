@@ -8,16 +8,35 @@ severity: advisory
 
 Use the package's configured path alias for every import. A package has aliases when it declares `imports` in `package.json` or `compilerOptions.paths` in `tsconfig.json`, and then never uses a relative path (`./`, `../`), not even for a sibling file, a `common/` subfolder or a package entry's re-exports.
 
-When a package declares no aliases, use relative paths consistently, and consider adding aliases.
+When a package declares no aliases, use relative paths consistently.
 
-Read the alias from the package's own declaration; never write one from memory, because packages differ. An `imports` alias resolves literally, so the specifier carries the extension of the file it names: `#src/cli/shipCommand.ts`, never `#src/cli/shipCommand`. A `paths` alias is resolved the usual way, so it takes no extension.
+Read the alias from the package's own declaration; never write one from memory, because packages differ.
+
+A `paths` alias, declared in `tsconfig.json`. It takes no file extension:
+
+```jsonc
+// tsconfig.json
+"paths": { "@/*": ["./src/*"] }
+```
 
 ```typescript
-// Correct: an imports alias, then a paths alias
-import { features } from '#src/features/home/common/constants/features.ts';
 import { features } from '@/features/home/common/constants/features';
+```
 
-// Incorrect in a package with aliases
+An `imports` alias, declared in `package.json`. It names the real file, so it carries the extension:
+
+```jsonc
+// package.json
+"imports": { "#src/*": "./src/*" }
+```
+
+```typescript
+import { features } from '#src/features/home/common/constants/features.ts';
+```
+
+Incorrect in a package with either alias:
+
+```typescript
 import { features } from './common/constants/features';
 ```
 

@@ -80,7 +80,7 @@ export const check: StandardsCheckModule = {
 				rule: 'duplicate-function-body',
 				files,
 				detail: `${described.join('; ')} have the same body under different names`,
-				guidance: 'Renaming the identifiers did not make these different functions.',
+				guidance: 'Keep one function and pass what differs as arguments.',
 			}),
 		);
 	},
