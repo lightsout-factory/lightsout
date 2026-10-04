@@ -4,9 +4,9 @@ checks: agent
 severity: advisory
 ---
 
-## The Render Pattern
+## Component Test Rendering
 
-Render inside the `setup()` factory; query and assert in the `test`. For a component, `render()` *is* the act, but by convention it lives in the arrange factory — the one accepted exception to "the act lives in the `test`". Query from `screen` — never destructure queries from `render()`.
+Render the component inside the setup factory, and query and assert in the `test`. Rendering is the act, yet it sits in the setup factory: this is the one exception to the act living in the `test`. Query from `screen`; never destructure queries from `render()`.
 
 In a test of an interaction, the query that finds the element to act on groups with the act, the `userEvent` or `fireEvent` call, not with arrange.
 

@@ -1,4 +1,4 @@
-import { isBarrelFile } from '#common/paths/isBarrelFile.ts';
+import { isIndexFile } from '#common/paths/isIndexFile.ts';
 import { getFolderSegments } from './getFolderSegments.ts';
 import { getLowestSharedFolder } from './getLowestSharedFolder.ts';
 import { isMainFile } from './isMainFile.ts';
@@ -37,7 +37,7 @@ const getSharedHomeGuidance = ({ home }: { home: string }) =>
 const isPublic = ({ path, importers, moduleFolders }: Omit<Params, 'sourceRoot'>) => {
 	const container = getContainer({ path });
 
-	return !moduleFolders.has(container) && importers.some((importer) => isBarrelFile({ path: importer }) || !isUnder({ path: importer, folder: container }));
+	return !moduleFolders.has(container) && importers.some((importer) => isIndexFile({ path: importer }) || !isUnder({ path: importer, folder: container }));
 };
 
 /** Code one file uses sits beside that file, in the module folder the file is the main file of. */

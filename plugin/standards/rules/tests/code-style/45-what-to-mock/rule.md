@@ -4,7 +4,7 @@ checks: agent
 severity: advisory
 ---
 
-## `jest.spyOn` vs `jest.mock`
+## What to Mock
 
 Construct the subject under test directly, and stub only the boundaries you do not own: the network, the filesystem, other modules' services. Never mock what you own and could simply build.
 

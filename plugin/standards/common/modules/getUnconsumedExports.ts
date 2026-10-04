@@ -1,16 +1,16 @@
 import { readPackageEntries } from '../checkInput/readPackageEntries.ts';
 import { readFileExports } from '../parsing/readFileExports.ts';
-import { isBarrelFile } from '../paths/isBarrelFile.ts';
+import { isIndexFile } from '../paths/isIndexFile.ts';
 import { isTestFile } from '../paths/isTestFile.ts';
 import type { UnconsumedExport } from '../types/UnconsumedExport.ts';
 import { isPackageEntry } from './isPackageEntry.ts';
 
 /**
- * An index file is a BARREL only if it exports. An entry index that only
- * imports and runs is an ordinary consumer — counting it as a barrel reads
+ * An index file counts only if it exports. An entry index that only
+ * imports and runs is an ordinary consumer — counting it reads
  * every command a dispatcher invokes as "public but unconsumed".
  */
-const isBarrel = ({ file, text }: { file: string; text: string }) => isBarrelFile({ path: file }) && /^export\b/m.test(text);
+const isExportingIndex = ({ file, text }: { file: string; text: string }) => isIndexFile({ path: file }) && /^export\b/m.test(text);
 
 interface Params {
 	/** Files in scope — only these are judged, though everything in `contents` may reference them. */
@@ -27,13 +27,13 @@ interface Params {
  * a name mentioned in a comment or a string counts as a reference, so calling a
  * live export unconsumed is rare. A test's mention counts like any other: an
  * export its tests still use is not dead. Names under four characters are skipped —
- * they collide with ordinary words too often to measure. Barrels and test
- * files declare nothing that is judged: a barrel's names belong to the file it
+ * they collide with ordinary words too often to measure. Index files and test
+ * files declare nothing that is judged: an index file's names belong to the file it
  * re-exports, and a test's helpers are the test's own.
  *
  * A package's entry listing a name is a use of it: other packages read the
- * entry, and they are invisible here. A folder's barrel listing it is not —
- * every import names the declaring file, so a folder barrel's list is a name
+ * entry, and they are invisible here. A folder's index file listing it is not —
+ * every import names the declaring file, so a folder index file's list is a name
  * nothing reads through, and counting it would hide a dead export behind it.
  */
 export const getUnconsumedExports = ({ files, contents, standardsLibraries }: Params): UnconsumedExport[] => {
@@ -42,7 +42,7 @@ export const getUnconsumedExports = ({ files, contents, standardsLibraries }: Pa
 	const declarations: Array<{ name: string; file: string }> = [];
 
 	for (const [file, text] of contents) {
-		if (!scope.has(file) || isBarrelFile({ path: file }) || isTestFile({ path: file, standardsLibraries })) {
+		if (!scope.has(file) || isIndexFile({ path: file }) || isTestFile({ path: file, standardsLibraries })) {
 			continue;
 		}
 
@@ -64,9 +64,10 @@ export const getUnconsumedExports = ({ files, contents, standardsLibraries }: Pa
 				continue;
 			}
 
-			const isFolderBarrel = !isTestFile({ path: other, standardsLibraries }) && isBarrel({ file: other, text }) && !isPackageEntry({ path: other, entries });
+			const isFolderIndex =
+				!isTestFile({ path: other, standardsLibraries }) && isExportingIndex({ file: other, text }) && !isPackageEntry({ path: other, entries });
 
-			referenced ||= !isFolderBarrel;
+			referenced ||= !isFolderIndex;
 		}
 
 		if (!referenced) {

@@ -58,7 +58,7 @@ export const findEarlyFolders = ({ files, cap }: Params): RawStandardsFinding[] 
 			? []
 			: subjectFolders.map(([name]) =>
 					buildRawFinding({
-						rule: 'file-directly-in-common',
+						rule: 'common-folder-layout',
 						files: [{ path: `${common}/${name}` }],
 						detail: `folder '${name}' groups files in a common/ that holds ${size} (cap ${cap})`,
 						guidance: 'Move its files directly into `common/`. A `common/` is grouped by subject only once it holds more files than the cap.',

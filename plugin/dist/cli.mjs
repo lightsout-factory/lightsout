@@ -162769,7 +162769,7 @@ var RefactorWorklist = external_exports.object({
 // src/refactor/batch/batchFindings.ts
 var rulePriority = [
   "lightsout/banned-folder-name",
-  "lightsout/file-directly-in-common",
+  "lightsout/common-folder-layout",
   "lightsout/index-files",
   "lightsout/test-beside-subject",
   "lightsout/test-support-in-src",

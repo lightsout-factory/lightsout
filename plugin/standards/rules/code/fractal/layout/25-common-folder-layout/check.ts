@@ -1,6 +1,6 @@
 import type { RawStandardsFinding, StandardsCheckModule } from '@lightsout/standards-contracts';
 import { readFileTexts } from '#common/checkInput/readFileTexts.ts';
-import { isBarrelFile } from '#common/paths/isBarrelFile.ts';
+import { isIndexFile } from '#common/paths/isIndexFile.ts';
 import { isTestFile } from '#common/paths/isTestFile.ts';
 import { findEarlyFolders } from './findEarlyFolders.ts';
 import { findMisfiledFiles } from './findMisfiledFiles.ts';
@@ -13,7 +13,7 @@ export const check: StandardsCheckModule = {
 	// one finding.
 	run: ({ inputs, options }): RawStandardsFinding[] => {
 		const { files, contents, standardsLibraries } = readFileTexts({ input: inputs['file-text'] });
-		const sourceFiles = files.filter((file) => !isTestFile({ path: file, standardsLibraries }) && !isBarrelFile({ path: file }));
+		const sourceFiles = files.filter((file) => !isTestFile({ path: file, standardsLibraries }) && !isIndexFile({ path: file }));
 
 		return [...findMisfiledFiles({ files: sourceFiles, contents }), ...findEarlyFolders({ files: sourceFiles, cap: options.cap ?? 0 })];
 	},

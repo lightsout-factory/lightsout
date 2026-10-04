@@ -6,7 +6,7 @@ import { getUnconsumedExports } from '#common/modules/getUnconsumedExports.ts';
 export const check: StandardsCheckModule = {
 	inputKinds: ['file-text'],
 	/**
-	 * A folder barrel's mention does not count, since nothing imports through
+	 * A folder index file's mention does not count, since nothing imports through
 	 * one. Any other mention does, even in a comment or a string, so calling a
 	 * live export dead is rare. One finding per file, naming every dead export
 	 * it declares.

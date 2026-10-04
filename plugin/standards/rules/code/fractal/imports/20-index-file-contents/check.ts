@@ -2,12 +2,12 @@ import type { FileTextInput, RawStandardsFinding, StandardsCheckModule, SyntaxTr
 import type ts from 'typescript';
 import { readFileTexts } from '#common/checkInput/readFileTexts.ts';
 import { buildRawFinding } from '#common/findings/buildRawFinding.ts';
-import { readBarrelExports } from '#common/modules/readBarrelExports.ts';
+import { readIndexExports } from '#common/modules/readIndexExports.ts';
 import { getBaseName } from '#common/paths/getBaseName.ts';
-import { isBarrelFile } from '#common/paths/isBarrelFile.ts';
+import { isIndexFile } from '#common/paths/isIndexFile.ts';
 
 /** Every index file, wherever it stands: a package's entry holds no code any more than a folder's does. */
-const isIndexFile = ({ path }: { path: string }) => /^index\.tsx?$/.test(getBaseName({ path }));
+const isTypeScriptIndexFile = ({ path }: { path: string }) => /^index\.tsx?$/.test(getBaseName({ path }));
 
 /** `export *` passes here: the star is the file-text half's finding, so one line never reports twice. */
 const isReExport = ({ statement, compiler }: { statement: ts.Statement; compiler: typeof ts }) =>
@@ -26,7 +26,7 @@ const findCodeInIndexFiles = ({ input }: { input: SyntaxTreeInput | undefined })
 	const findings: RawStandardsFinding[] = [];
 
 	for (const [path, tree] of input.trees) {
-		if (isIndexFile({ path })) {
+		if (isTypeScriptIndexFile({ path })) {
 			const offending = tree.statements.filter((statement) => !isReExport({ statement, compiler: input.compiler }));
 			const [first] = offending;
 
@@ -58,16 +58,16 @@ const findStarReExports = ({ input }: { input: FileTextInput | undefined }): Raw
 	const fileSet = new Set(files);
 
 	return files
-		.filter((path) => isBarrelFile({ path }))
-		.flatMap((barrelPath) => {
-			const stars = readBarrelExports({ barrelPath, contents, files: fileSet }).filter(({ star }) => star);
+		.filter((path) => isIndexFile({ path }))
+		.flatMap((indexPath) => {
+			const stars = readIndexExports({ indexPath, contents, files: fileSet }).filter(({ star }) => star);
 
 			return stars.length === 0
 				? []
 				: [
 						buildRawFinding({
 							rule: 'index-file-contents',
-							files: [{ path: barrelPath }],
+							files: [{ path: indexPath }],
 							detail: `${stars.map(({ specifier }) => `'${specifier}'`).join(', ')} re-exported with \`export *\``,
 							guidance: 'An index file is a package’s public API — list named re-exports instead.',
 						}),
