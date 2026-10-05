@@ -1,5 +1,6 @@
 import type { RawStandardsFinding } from '@lightsout/standards-contracts';
 import { buildRawFinding } from '#common/findings/buildRawFinding.ts';
+import { getExportName } from '#common/naming/getExportName.ts';
 import { getBaseName } from '#common/paths/getBaseName.ts';
 import { getDirectory } from '#common/paths/getDirectory.ts';
 import { CodeKind } from './CodeKind.ts';
@@ -20,9 +21,15 @@ const guidanceByKind: Record<CodeKind, string> = {
 	[CodeKind.Constant]: 'Move it to `common/constants/`.',
 };
 
-/** The folder of a `common/` a file sits in, when it sits directly in the `common/` or in its `types/` or `constants/`. */
+/**
+ * The folder of a `common/` a file sits in, when it sits directly in the
+ * `common/` or in its `types/` or `constants/`. A module folder's main file is
+ * read as sitting where its folder sits, since the folder is that one module.
+ */
 const getCommonSlot = ({ file }: { file: string }) => {
-	const parent = getDirectory({ path: file });
+	const folder = getDirectory({ path: file });
+	const isMainFile = getExportName({ path: file }) === getBaseName({ path: folder });
+	const parent = isMainFile ? getDirectory({ path: folder }) : folder;
 	const name = getBaseName({ path: parent });
 	const isKindFolder = (name === 'types' || name === 'constants') && getBaseName({ path: getDirectory({ path: parent }) }) === 'common';
 

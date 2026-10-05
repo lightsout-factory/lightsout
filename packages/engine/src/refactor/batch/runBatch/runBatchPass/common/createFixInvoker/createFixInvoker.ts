@@ -2,7 +2,7 @@ import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFi
 import { standaloneBanner } from '#src/refactor/batch/runBatch/common/constants/standaloneBanner.ts';
 import type { settleBatchGates } from '#src/refactor/batch/runBatch/common/settleBatchGates.ts';
 import type { BatchTools } from '#src/refactor/batch/runBatch/common/types/BatchTools.ts';
-import { buildBatchFixInvocation } from '#src/refactor/batch/runBatch/runBatchPass/common/constants/createFixInvoker/buildBatchFixInvocation.ts';
+import { buildBatchFixInvocation } from '#src/refactor/batch/runBatch/runBatchPass/common/createFixInvoker/buildBatchFixInvocation.ts';
 
 interface Params {
 	tools: BatchTools;

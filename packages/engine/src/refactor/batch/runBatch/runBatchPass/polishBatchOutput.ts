@@ -6,7 +6,7 @@ import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFi
 import { SettleKind } from '#src/refactor/batch/common/constants/SettleKind.ts';
 import { standaloneBanner } from '#src/refactor/batch/runBatch/common/constants/standaloneBanner.ts';
 import type { BatchTools } from '#src/refactor/batch/runBatch/common/types/BatchTools.ts';
-import { createFixInvoker } from '#src/refactor/batch/runBatch/runBatchPass/common/constants/createFixInvoker/createFixInvoker.ts';
+import { createFixInvoker } from '#src/refactor/batch/runBatch/runBatchPass/common/createFixInvoker/createFixInvoker.ts';
 import { BatchStopKind } from '#src/refactor/common/constants/BatchStopKind.ts';
 import type { BatchStop } from '#src/refactor/common/types/BatchStop.ts';
 

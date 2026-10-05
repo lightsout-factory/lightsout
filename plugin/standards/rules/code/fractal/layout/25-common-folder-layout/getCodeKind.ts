@@ -17,7 +17,8 @@ const isFunction = ({ keyword, line }: FileExport) => keyword === 'function' || 
  * call returns cannot be read from the line.
  */
 export const getCodeKind = ({ text }: Params): CodeKind | undefined => {
-	const exports = readFileExports({ text });
+	// A declaration broken after its `=` carries its value on the next line, so the two are read as one.
+	const exports = readFileExports({ text: text.replace(/=[ \t]*\n\s*/g, '= ') });
 
 	if (exports.some(isFunction)) {
 		return CodeKind.Function;

@@ -105,6 +105,39 @@ describe('common-folder-layout check', () => {
 		]);
 	});
 
+	test('reads a function whose arrow starts on the line after the `=` as a function', async () => {
+		const text = ['export const createSender =', '\t({ retries }: { retries: number }) =>', '\t({ rate }: { rate: number }) =>', '\t\tretries + rate;'].join(
+			'\n',
+		);
+
+		const findings = await runCheck({
+			contents: [
+				['src/common/createSender.ts', text],
+				['src/common/constants/createSender.ts', text],
+			],
+		});
+
+		expect(findings.map(({ siteKey, guidance }) => ({ siteKey, guidance }))).toStrictEqual([
+			{
+				siteKey: 'common-folder-layout:src/common/constants/createSender.ts',
+				guidance: 'Move it directly into `common/`: only types and constants have a folder of their own.',
+			},
+		]);
+	});
+
+	test('judges a module folder by its main file, wherever in the common/ the folder sits', async () => {
+		const findings = await runCheck({
+			contents: [
+				['src/common/constants/formatRate/formatRate.ts', functionText],
+				['src/common/constants/formatRate/roundRate.ts', functionText],
+				['src/common/sendRate/sendRate.ts', functionText],
+			],
+		});
+
+		// the private file beside a main file is the module's own, so only the main file is judged
+		expect(findings.map((finding) => finding.siteKey)).toStrictEqual(['common-folder-layout:src/common/constants/formatRate/formatRate.ts']);
+	});
+
 	test('leaves alone files that sit nowhere near a common/ folder', async () => {
 		const findings = await runCheck({
 			contents: [

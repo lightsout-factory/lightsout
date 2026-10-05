@@ -163479,7 +163479,7 @@ var readStandingWork = ({ batch, findings, onProgress }) => {
   return findings.filter((finding6) => standing.has(finding6.siteKey));
 };
 
-// src/refactor/batch/runBatch/runBatchPass/common/constants/createFixInvoker/buildBatchFixInvocation.ts
+// src/refactor/batch/runBatch/runBatchPass/common/createFixInvoker/buildBatchFixInvocation.ts
 var buildBatchFixInvocation = ({
   planContent,
   files,
@@ -163506,7 +163506,7 @@ ${guidance}` : gateError;
   });
 };
 
-// src/refactor/batch/runBatch/runBatchPass/common/constants/createFixInvoker/createFixInvoker.ts
+// src/refactor/batch/runBatch/runBatchPass/common/createFixInvoker/createFixInvoker.ts
 var createFixInvoker = ({ tools, files, workFindings, advisories, standards, testStandards }) => ({ label: label2, gateError, guidance }) => tools.invoke({
   label: label2,
   invocation: buildBatchFixInvocation({
