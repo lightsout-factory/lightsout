@@ -15,7 +15,7 @@ const setupIndex = () => {
 				definitions: [],
 			},
 			{
-				path: 'packages/engine/src/plan/detectPriorArtCandidates.ts',
+				path: 'packages/engine/src/plan/common/detection/detectPriorArtCandidates.ts',
 				sha256: 'b'.repeat(64),
 				kind: 'definitions',
 				bytes: 19004,
@@ -59,7 +59,7 @@ describe('SourceEvidenceIndex', () => {
 						definitions: [],
 					},
 					{
-						path: 'packages/engine/src/plan/detectPriorArtCandidates.ts',
+						path: 'packages/engine/src/plan/common/detection/detectPriorArtCandidates.ts',
 						sha256: 'b'.repeat(64),
 						kind: 'definitions',
 						bytes: 19004,

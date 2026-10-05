@@ -3,7 +3,7 @@ import { BuildMode } from '#src/common/constants/BuildMode.ts';
 import type { PhaseFile } from '#src/plan/common/types/PhaseFile.ts';
 import { decisionLogReference } from '#src/plan/decisionLog/decisionLogReference.ts';
 import { renderDecisionLog } from '#src/plan/decisionLog/renderDecisionLog.ts';
-import { parsePlan } from '#src/plan/parsePlan.ts';
+import { parsePlan } from '#src/plan/parsePlan/parsePlan.ts';
 import { renderGlobalConstraints } from '#src/plan/sections/renderGlobalConstraints.ts';
 
 /** What one implementable phase file says it does — every field the cross-phase checks read. */

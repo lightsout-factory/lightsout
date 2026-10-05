@@ -1,5 +1,5 @@
-import type { WorkOrderListing } from '#src/workOrder/common/types/WorkOrderListing.ts';
-import { listWorkOrders } from '#src/workOrder/listWorkOrders.ts';
+import type { WorkOrderListing } from '#src/common/types/WorkOrderListing.ts';
+import { listWorkOrders } from '#src/workOrder/common/listWorkOrders.ts';
 
 interface Params {
 	/** Any checkout of the repository: the records this machine holds are found from it. */

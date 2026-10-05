@@ -1,10 +1,10 @@
 import { excludedSourcePaths } from '#src/common/sourceFiles/excludedSourcePaths.ts';
 import { isTestFile } from '#src/common/sourceFiles/isTestFile.ts';
 import { listSourceFiles } from '#src/common/sourceFiles/listSourceFiles.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
-import { getExportName } from '#src/plan/common/utils/getExportName.ts';
-import type { ExportCensus } from '#src/plan/evidence/common/types/ExportCensus.ts';
-import { getNameKey } from '#src/plan/internal/common/naming/getNameKey.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
+import { getExportName } from '#src/plan/common/getExportName.ts';
+import type { ExportCensus } from '#src/plan/common/types/ExportCensus.ts';
+import { getNameKey } from '#src/plan/evidence/common/getNameKey.ts';
 
 interface Params {
 	cwd: string;

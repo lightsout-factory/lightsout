@@ -1,8 +1,8 @@
-import type { GateRunResult } from '#src/gates/common/types/GateRunResult.ts';
+import type { GateRunResult } from '#src/common/types/GateRunResult.ts';
+import type { PullRequestSummary } from '#src/common/types/PullRequestSummary.ts';
+import type { CheckFailure } from '#src/ship/common/types/CheckFailure.ts';
+import type { ChecksSummary } from '#src/ship/common/types/ChecksSummary.ts';
 import type { ShipStepFailure } from '#src/ship/common/types/ShipStepFailure.ts';
-import type { CheckFailure } from '#src/ship/forge/common/types/CheckFailure.ts';
-import type { ChecksSummary } from '#src/ship/forge/common/types/ChecksSummary.ts';
-import type { PullRequestSummary } from '#src/ship/forge/common/types/PullRequestSummary.ts';
 
 const branch = 'lo-89-ship';
 

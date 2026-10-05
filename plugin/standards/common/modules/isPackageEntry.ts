@@ -1,5 +1,5 @@
 import { getDirectory } from '../paths/getDirectory.ts';
-import { isBarrelFile } from '../paths/isBarrelFile.ts';
+import { isIndexFile } from '../paths/isIndexFile.ts';
 import type { PackageEntries } from '../types/PackageEntries.ts';
 
 interface Params {
@@ -24,7 +24,7 @@ export const isPackageEntry = ({ path, entries }: Params): boolean => {
 	const directory = getDirectory({ path });
 
 	return (
-		isBarrelFile({ path }) &&
+		isIndexFile({ path }) &&
 		[...entries.packageDirectories].some(
 			(packageDirectory) => directory === packageDirectory || directory === (packageDirectory === '.' ? 'src' : `${packageDirectory}/src`),
 		)

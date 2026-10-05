@@ -1,9 +1,6 @@
 {
-	"description": "Keeps React components, hooks and their tests to one shape, in each package that uses React.",
+	"description": "The rules written for React: size caps for hooks and components, and one way to write a component test.",
 	"include": {
 		"topics": ["lightsout/code/frameworks/react", "lightsout/tests/frameworks/react"]
-	},
-	"applies-when": {
-		"dependencies": ["react", "preact", "react-dom"]
 	}
 }

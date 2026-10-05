@@ -90,12 +90,12 @@ describe('explicit-return-type check', () => {
 		expect(findings).toStrictEqual([]);
 	});
 
-	test('leaves every export of a `.tsx` file, where framework components live', async () => {
+	test('reports an export of a `.tsx` file like any other, since the rule knows nothing about a framework', async () => {
 		const input = setupSyntaxTreeInput({ sources: [['src/ui/Badge.tsx', 'export const Badge = ({ label }: { label: string }) => label;\n']] });
 
 		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: {} });
 
-		expect(findings).toStrictEqual([]);
+		expect(findings.map(({ detail }) => detail)).toStrictEqual(["exported 'Badge' declares no return type"]);
 	});
 
 	test.each([
@@ -230,44 +230,6 @@ describe('explicit-return-type check', () => {
 				guidance: 'Declare the return type — it is the output half of the contract, and it fails at the definition site rather than in a consumer.',
 			},
 		]);
-	});
-
-	test('passes over a query-options factory under a queries/ folder, whose inferred type is the contract', async () => {
-		const input = setupSyntaxTreeInput({
-			sources: [['src/runs/queries/runsQueryOptions.ts', "export const runsQueryOptions = () => queryOptions({ queryKey: ['runs'], queryFn: listRuns });\n"]],
-		});
-
-		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: {} });
-
-		expect(findings).toStrictEqual([]);
-	});
-
-	test('still reports a sibling utils/ file, so the exemption is the folder and not the package', async () => {
-		const input = setupSyntaxTreeInput({
-			sources: [['src/runs/utils/buildRunsKey.ts', "export const buildRunsKey = () => ['runs'];\n"]],
-		});
-
-		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: {} });
-
-		expect(findings[0]?.files).toStrictEqual([{ path: 'src/runs/utils/buildRunsKey.ts' }]);
-	});
-
-	test('reports a file merely NAMED queries.ts, since the exemption is a folder the factories live in', async () => {
-		const input = setupSyntaxTreeInput({ sources: [['src/runs/queries.ts', "export const queries = () => ['runs'];\n"]] });
-
-		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: {} });
-
-		expect(findings[0]?.files).toStrictEqual([{ path: 'src/runs/queries.ts' }]);
-	});
-
-	test('passes over a file nested below a queries/ folder, since the exemption is any folder above it', async () => {
-		const input = setupSyntaxTreeInput({
-			sources: [['src/runs/queries/common/buildRunsOptions.ts', "export const buildRunsOptions = () => queryOptions({ queryKey: ['runs'] });\n"]],
-		});
-
-		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: {} });
-
-		expect(findings).toStrictEqual([]);
 	});
 
 	test('reports nothing when its input is missing rather than refusing', async () => {

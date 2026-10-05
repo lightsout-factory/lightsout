@@ -5,15 +5,15 @@ const setupBatch = ({ omit, extra = {} }: { omit?: string; extra?: Record<string
 	const finding = {
 		rule: 'duplicate-code-block',
 		severity: 'blocking',
-		siteKey: 'duplicate-code-block:src/standardsCheck/runStandardsCheck.ts:12',
-		files: [{ path: 'src/standardsCheck/runStandardsCheck.ts', startLine: 12, endLine: 48 }],
+		siteKey: 'duplicate-code-block:src/standardsCheck/runStandardsCheck/runStandardsCheck.ts:12',
+		files: [{ path: 'src/standardsCheck/runStandardsCheck/runStandardsCheck.ts', startLine: 12, endLine: 48 }],
 		detail: 'a 36-line span repeated across two files',
 	};
 	const advisory = {
 		rule: 'file-size',
 		severity: 'advisory',
-		siteKey: 'file-size:src/standardsCheck/runStandardsCheck.ts',
-		files: [{ path: 'src/standardsCheck/runStandardsCheck.ts' }],
+		siteKey: 'file-size:src/standardsCheck/runStandardsCheck/runStandardsCheck.ts',
+		files: [{ path: 'src/standardsCheck/runStandardsCheck/runStandardsCheck.ts' }],
 		detail: 'the file is 240 lines against a 200-line guideline',
 	};
 	const batch: Record<string, unknown> = {
@@ -99,7 +99,7 @@ describe('RefactorBatch', () => {
 		// entry sits in is what decides whether the re-check blocks on it
 		expect(parsed.advisories[0]?.severity).toBe('blocking');
 		// the must-address list is untouched by what the advisory list holds
-		expect(parsed.blocking[0]?.siteKey).toBe('duplicate-code-block:src/standardsCheck/runStandardsCheck.ts:12');
+		expect(parsed.blocking[0]?.siteKey).toBe('duplicate-code-block:src/standardsCheck/runStandardsCheck/runStandardsCheck.ts:12');
 	});
 
 	test('one malformed finding rejects the whole batch', () => {
@@ -114,7 +114,7 @@ describe('RefactorBatch', () => {
 
 	test('a malformed advisory rejects the batch just as a malformed finding does', () => {
 		const { batch } = setupBatch({
-			extra: { advisories: [{ rule: 'file-size', severity: 'advisory', siteKey: 'file-size:src/standardsCheck/runStandardsCheck.ts' }] },
+			extra: { advisories: [{ rule: 'file-size', severity: 'advisory', siteKey: 'file-size:src/standardsCheck/runStandardsCheck/runStandardsCheck.ts' }] },
 		});
 
 		const result = RefactorBatch.safeParse(batch);
@@ -185,8 +185,8 @@ describe('RefactorBatch', () => {
 				{
 					rule: 'duplicate-code-block',
 					severity: 'blocking',
-					siteKey: 'duplicate-code-block:src/standardsCheck/runStandardsCheck.ts:12',
-					files: [{ path: 'src/standardsCheck/runStandardsCheck.ts', startLine: 12, endLine: 48 }],
+					siteKey: 'duplicate-code-block:src/standardsCheck/runStandardsCheck/runStandardsCheck.ts:12',
+					files: [{ path: 'src/standardsCheck/runStandardsCheck/runStandardsCheck.ts', startLine: 12, endLine: 48 }],
 					detail: 'a 36-line span repeated across two files',
 				},
 			],

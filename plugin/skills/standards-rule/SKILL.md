@@ -79,6 +79,15 @@ examples on the rule's page. The reviewing agent reads only the rules with an
 agent check — `checks: agent` and `checks: both`; a rule whose deterministic
 check decides all of it is never reviewed.
 
+## Before adding a rule
+
+A rule earns its place one of two ways: the mistake was seen, in an agent's
+output or in review, or the repo's owner deliberately chose the style. A rule
+written because it sounds right competes for the agent's attention with the
+rules that matter. Prefer a rule a check can decide over one that is text
+alone: a check catches the mistake every time, and text is followed most of the
+time.
+
 ## Steps
 
 1. **Find the library and the topic, or create them.** The library root is the

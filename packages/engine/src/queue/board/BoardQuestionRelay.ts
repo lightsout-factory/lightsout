@@ -1,6 +1,6 @@
+import type { QuestionRelay } from '#src/common/types/QuestionRelay.ts';
+import type { TicketSummary } from '#src/common/types/TicketSummary.ts';
 import type { QueueBoardRecorder } from '#src/queue/board/QueueBoardRecorder.ts';
-import type { QuestionRelay } from '#src/queue/common/types/QuestionRelay.ts';
-import type { TicketSummary } from '#src/queue/common/types/TicketSummary.ts';
 
 interface ConstructorParams {
 	/** The relay the CLI built — terminal or mailbox. Delivery, timing and answers stay its own. */

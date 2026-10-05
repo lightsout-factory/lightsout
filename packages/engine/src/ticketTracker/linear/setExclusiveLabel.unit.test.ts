@@ -1,5 +1,5 @@
 import { describe, expect, jest, test } from '@jest/globals';
-import { messageOf } from '#src/common/utils/messageOf.ts';
+import { messageOf } from '#src/common/messageOf.ts';
 import { setExclusiveLabel } from '#src/ticketTracker/linear/setExclusiveLabel.ts';
 import { trackerSettingsFixture } from '#tests/helpers/trackerSettingsFixture.ts';
 
@@ -12,7 +12,7 @@ type LinearCall = (client: unknown) => Promise<unknown>;
 
 const mockRunLinear = jest.fn<(params: { apiKey: string; call: LinearCall }) => Promise<unknown>>();
 
-jest.mock('#src/ticketTracker/linear/internal/runLinear.ts', () => ({ runLinear: (params: { apiKey: string; call: LinearCall }) => mockRunLinear(params) }));
+jest.mock('#src/ticketTracker/linear/common/runLinear.ts', () => ({ runLinear: (params: { apiKey: string; call: LinearCall }) => mockRunLinear(params) }));
 // -------------------------
 
 const settings = trackerSettingsFixture();

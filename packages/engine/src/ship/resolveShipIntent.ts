@@ -1,6 +1,6 @@
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
-import type { ShipIntent } from '#src/ship/common/types/ShipIntent.ts';
-import type { ShipRequestTerms } from '#src/ship/common/types/ShipRequestTerms.ts';
+import type { ShipIntent } from '#src/common/types/ShipIntent.ts';
+import type { ShipRequestTerms } from '#src/common/types/ShipRequestTerms.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { resolveShipSettings } from '#src/ship/resolveShipSettings.ts';
 
 interface Params {

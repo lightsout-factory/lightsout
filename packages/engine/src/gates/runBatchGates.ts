@@ -1,9 +1,9 @@
 import { defaultPackagesDir } from '#src/common/constants/defaultPackagesDir.ts';
 import { readGitChangedFiles } from '#src/common/git/readGitChangedFiles.ts';
+import type { GateRunResult } from '#src/common/types/GateRunResult.ts';
 import { packageOf } from '#src/common/workspace/packageOf.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
-import type { GateRunResult } from '#src/gates/common/types/GateRunResult.ts';
-import { runGates } from '#src/gates/runGates.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
+import { runGates } from '#src/gates/runGates/runGates.ts';
 
 interface Params {
 	cwd: string;

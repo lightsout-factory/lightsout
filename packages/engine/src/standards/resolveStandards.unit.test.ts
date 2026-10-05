@@ -2,7 +2,7 @@ import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { resolveStandards } from '#src/standards/resolveStandards.ts';
 import { getRejectionError } from '#tests/helpers/getRejectionError.ts';
 
@@ -68,10 +68,10 @@ describe('resolveStandards', () => {
 		const fractalWithReact = await resolveStandards({ cwd, config: fractalWithReactConfig });
 		const fractal = await resolveStandards({ cwd, config: fractalConfig });
 
-		// lightsout/react carries the react architecture topic
+		// lightsout/react carries the React topic
 		expect(fractalWithReact.standards ?? '').toContain('<!-- lightsout: code/frameworks/react -->');
 		expect(fractalWithReact.groups.map((group) => group.pack.name)).toStrictEqual(['lightsout/fractal + lightsout/react']);
-		// nothing is detected: the root manifest declares react, and the named fractal pack still leaves the react topic out
+		// nothing is detected: the root manifest declares react, and the named fractal pack still leaves its topic out
 		expect(fractal.standards ?? '').not.toContain('code/frameworks/react');
 	});
 

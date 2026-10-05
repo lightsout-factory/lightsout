@@ -1,9 +1,9 @@
 import { PlanningStatus } from '#src/common/constants/PlanningStatus.ts';
+import type { QueueSettings } from '#src/common/types/QueueSettings.ts';
+import type { TicketSummary } from '#src/common/types/TicketSummary.ts';
+import type { TrackerSettings } from '#src/common/types/TrackerSettings.ts';
+import { toPlanningSummaries } from '#src/queue/common/toPlanningSummaries/toPlanningSummaries.ts';
 import type { QueueFailure } from '#src/queue/common/types/QueueFailure.ts';
-import type { QueueSettings } from '#src/queue/common/types/QueueSettings.ts';
-import type { TicketSummary } from '#src/queue/common/types/TicketSummary.ts';
-import { toPlanningSummaries } from '#src/queue/internal/common/utils/toPlanningSummaries.ts';
-import type { TrackerSettings } from '#src/ticketTracker/common/types/TrackerSettings.ts';
 import { listTickets } from '#src/ticketTracker/listTickets.ts';
 
 interface Params {

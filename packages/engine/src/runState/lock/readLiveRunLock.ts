@@ -1,5 +1,5 @@
 import type { RunLock } from '#src/contracts/run/RunLock.ts';
-import { isPidAlive } from '#src/runState/isPidAlive.ts';
+import { isPidAlive } from '#src/runState/liveness/isPidAlive.ts';
 import { readRunLock } from '#src/runState/lock/readRunLock.ts';
 
 interface Params {

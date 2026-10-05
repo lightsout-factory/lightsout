@@ -30,7 +30,7 @@ describe('duplicate-code-block check', () => {
 					{ path: 'src/b/beta.ts', startLine: 3, endLine: 17 },
 				],
 				detail: '1 duplicated block(s), the longest 15 lines',
-				guidance: 'The same code is written out in both files. Extract the shared block, or say why the copies have to differ.',
+				guidance: 'The same code is written out in both files. Write it once where both can import it.',
 			},
 		]);
 	});
@@ -67,7 +67,7 @@ describe('duplicate-code-block check', () => {
 					{ path: 'src/b/beta.ts', startLine: 30, endLine: 49 },
 				],
 				detail: '2 duplicated block(s), the longest 20 lines',
-				guidance: 'The same code is written out in both files. Extract the shared block, or say why the copies have to differ.',
+				guidance: 'The same code is written out in both files. Write it once where both can import it.',
 			},
 		]);
 	});

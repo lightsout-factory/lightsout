@@ -1,6 +1,6 @@
 import { describe, expect, jest, test } from '@jest/globals';
 import { appendTicketNote } from '#src/ticketTracker/appendTicketNote.ts';
-import { appendTicketNote as jiraAppendTicketNote } from '#src/ticketTracker/jira/appendTicketNote.ts';
+import { appendTicketNote as jiraAppendTicketNote } from '#src/ticketTracker/jira/appendTicketNote/appendTicketNote.ts';
 import { appendTicketNote as linearAppendTicketNote } from '#src/ticketTracker/linear/appendTicketNote.ts';
 import { jiraTrackerSettingsFixture } from '#tests/helpers/jiraQueueSettingsFixture.ts';
 
@@ -11,7 +11,7 @@ import { jiraTrackerSettingsFixture } from '#tests/helpers/jiraQueueSettingsFixt
 // off the adapter it stands in for, so a signature that changes on one side
 // fails here rather than at the first call that trusted the stub.
 jest.mock('#src/ticketTracker/linear/appendTicketNote.ts', () => ({ appendTicketNote: jest.fn<typeof linearAppendTicketNote>() }));
-jest.mock('#src/ticketTracker/jira/appendTicketNote.ts', () => ({ appendTicketNote: jest.fn<typeof jiraAppendTicketNote>() }));
+jest.mock('#src/ticketTracker/jira/appendTicketNote/appendTicketNote.ts', () => ({ appendTicketNote: jest.fn<typeof jiraAppendTicketNote>() }));
 // -------------------------
 
 /** Both adapters answering successfully, so every test states only the answer it cares about. */

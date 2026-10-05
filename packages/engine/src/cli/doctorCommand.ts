@@ -1,12 +1,12 @@
-import { usage } from '#src/cli/common/constants/usage.ts';
-import type { CommandContext } from '#src/cli/common/types/CommandContext.ts';
-import { exitCli } from '#src/cli/common/utils/exitCli.ts';
-import { dim } from '#src/cli/internal/common/terminal/dim.ts';
-import { green } from '#src/cli/internal/common/terminal/green.ts';
-import { red } from '#src/cli/internal/common/terminal/red.ts';
-import { yellow } from '#src/cli/internal/common/terminal/yellow.ts';
+import { dim } from '#src/cli/common/terminal/dim.ts';
+import { green } from '#src/cli/common/terminal/green.ts';
+import { red } from '#src/cli/common/terminal/red.ts';
+import { yellow } from '#src/cli/common/terminal/yellow.ts';
 import { readOptionalConfig } from '#src/common/config/readOptionalConfig.ts';
-import { runDoctor } from '#src/doctor/runDoctor.ts';
+import { usage } from '#src/common/constants/usage.ts';
+import { exitCli } from '#src/common/exitCli.ts';
+import type { CommandContext } from '#src/common/types/CommandContext.ts';
+import { runDoctor } from '#src/doctor/runDoctor/runDoctor.ts';
 
 // A config that does not parse is left to the doctor's own `config` check, which
 // reports it a line later; a throw here would replace that report.

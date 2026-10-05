@@ -52,7 +52,7 @@ describe('import-path-alias check', () => {
 				files: [{ path: 'src/billing/getChargeLabel.ts' }],
 				detail: "'../common/utils/formatRate' is imported by relative path",
 				guidance:
-					"Import through the package's configured alias — read the package's `package.json` → `imports` or `tsconfig.json` → `compilerOptions.paths` for the right one.",
+					"Import through the package's alias. Read it from `imports` in the package's `package.json` or `compilerOptions.paths` in its `tsconfig.json`.",
 			},
 		]);
 	});
@@ -77,7 +77,7 @@ describe('import-path-alias check', () => {
 				files: [{ path: 'src/billing/getChargeLabel.ts' }],
 				detail: "'../common/utils/formatRate', './roundAmount' are imported by relative path",
 				guidance:
-					"Import through the package's configured alias — read the package's `package.json` → `imports` or `tsconfig.json` → `compilerOptions.paths` for the right one.",
+					"Import through the package's alias. Read it from `imports` in the package's `package.json` or `compilerOptions.paths` in its `tsconfig.json`.",
 			},
 		]);
 	});
@@ -98,7 +98,7 @@ describe('import-path-alias check', () => {
 				files: [{ path: 'src/app/main.ts' }],
 				detail: "'./registerHandlers' is imported by relative path",
 				guidance:
-					"Import through the package's configured alias — read the package's `package.json` → `imports` or `tsconfig.json` → `compilerOptions.paths` for the right one.",
+					"Import through the package's alias. Read it from `imports` in the package's `package.json` or `compilerOptions.paths` in its `tsconfig.json`.",
 			},
 		]);
 	});
@@ -134,7 +134,7 @@ describe('import-path-alias check', () => {
 				files: [{ path: 'packages/engine/src/billing/getChargeLabel.ts' }],
 				detail: "'../common/utils/formatRate.ts' is imported by relative path",
 				guidance:
-					"Import through the package's configured alias — read the package's `package.json` → `imports` or `tsconfig.json` → `compilerOptions.paths` for the right one.",
+					"Import through the package's alias. Read it from `imports` in the package's `package.json` or `compilerOptions.paths` in its `tsconfig.json`.",
 			},
 		]);
 	});

@@ -10,11 +10,11 @@ test('cli: standards-health reports every rule as deterministic or agent, and ex
 
 	// the coverage claim is counted off the package's own folders, so it lands
 	// even in a repo that has never run anything
-	expect(stdout).toMatch(/│ lightsout\/synonym-export-name\s+│\s+deterministic\s+│/);
+	expect(stdout).toMatch(/│ lightsout\/duplicate-export-name\s+│\s+deterministic\s+│/);
 	expect(stdout).toMatch(/│ lightsout\/object-args\s+│\s+agent\s+│/);
 	// a repo with no refactor history has nothing to say about declines, and says
 	// so with a dash rather than a zero that would read as "never declined"
-	expect(stdout).toMatch(/│ lightsout\/synonym-export-name\s+│\s+deterministic\s+│\s+—\s+│\s+—\s+│\s+—\s+│\s+—\s+│\s+—\s+│\s+—\s+│\s+—\s+│/);
+	expect(stdout).toMatch(/│ lightsout\/duplicate-export-name\s+│\s+deterministic\s+│\s+—\s+│\s+—\s+│\s+—\s+│\s+—\s+│\s+—\s+│\s+—\s+│\s+—\s+│/);
 	// every rule is counted as deterministic or agent, and a rule with both kinds
 	// of check is counted under both
 	const totals = readRuleTotals({ stdout });

@@ -1,6 +1,6 @@
 import { readFile } from 'node:fs/promises';
 import { RunManifest } from '#src/contracts/run/RunManifest.ts';
-import { getRunManifestPath } from '#src/runState/internal/common/paths/getRunManifestPath.ts';
+import { getRunManifestPath } from '#src/runState/common/getRunManifestPath.ts';
 
 interface Params {
 	cwd: string;

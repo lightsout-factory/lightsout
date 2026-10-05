@@ -1,0 +1,12 @@
+import { getField } from '#src/voice/common/getField.ts';
+
+interface Params {
+	value: unknown;
+	key: string;
+}
+
+export const getStringField = ({ value, key }: Params): string | undefined => {
+	const field = getField({ value, key });
+
+	return typeof field === 'string' ? field : undefined;
+};

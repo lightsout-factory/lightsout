@@ -17,13 +17,12 @@ describe('test-support-in-src check', () => {
 				siteKey: 'test-support-in-src:src/feature/fixtures',
 				files: [{ path: 'src/feature/fixtures' }],
 				detail: "test-support folder 'fixtures' under src/",
-				guidance:
-					"Shared helpers, mocks and fixtures live in the package's test-support directories outside `src/` — under `src/` they read as production source to scanners and humans alike. A `__mocks__/` folder beside the module it doubles is the one exception.",
+				guidance: "Move it to the package's `tests/` folder, outside `src/`.",
 			},
 		]);
 	});
 
-	test.each([{ folder: 'fixtures' }, { folder: 'mocks' }, { folder: 'testUtils' }, { folder: 'test-utils' }])(
+	test.each([{ folder: 'fixtures' }, { folder: 'mocks' }, { folder: '__mocks__' }, { folder: 'testUtils' }, { folder: 'test-utils' }])(
 		'names $folder among the test-support folders it places outside src/, restated here so one dropped from the list stops enforcing loudly',
 		async ({ folder }) => {
 			const input = setupFileListInput({ source: [`src/feature/${folder}/sampleLabel.ts`] });
@@ -34,8 +33,8 @@ describe('test-support-in-src check', () => {
 		},
 	);
 
-	test('leaves a __mocks__ beside its module alone, which the same prose allows, and helpers, which another rule owns', async () => {
-		const input = setupFileListInput({ source: ['src/feature/__mocks__/getLabel.ts', 'src/feature/helpers/buildLabel.ts'] });
+	test('leaves helpers alone, which the folder-name rule owns', async () => {
+		const input = setupFileListInput({ source: ['src/feature/helpers/buildLabel.ts'] });
 
 		const findings = await check.run({ inputs: { 'file-list': input }, options: {} });
 

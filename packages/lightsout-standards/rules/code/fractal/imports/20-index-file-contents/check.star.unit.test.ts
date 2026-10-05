@@ -3,7 +3,7 @@ import { setupFileTextInput } from '@lightsout/standards-testkit';
 import { check } from './check.ts';
 
 describe('index-file-contents check: star re-exports', () => {
-	test('reports a module barrel that re-exports with `export *`', async () => {
+	test('reports a module index file that re-exports with `export *`', async () => {
 		const input = setupFileTextInput({
 			contents: [
 				['src/feature/index.ts', "export * from './renderGreeting';"],
@@ -44,7 +44,7 @@ describe('index-file-contents check: star re-exports', () => {
 		]);
 	});
 
-	test('leaves a barrel of named re-exports alone — that is the contract the rule asks for', async () => {
+	test('leaves an index file of named re-exports alone — that is the contract the rule asks for', async () => {
 		const input = setupFileTextInput({
 			contents: [
 				['src/feature/index.ts', "export { renderGreeting } from './renderGreeting';"],
@@ -70,21 +70,7 @@ describe('index-file-contents check: star re-exports', () => {
 		expect(findings.map(({ siteKey }) => siteKey)).toStrictEqual(['index-file-contents:src/index.ts']);
 	});
 
-	test('spares a route index file the framework loads, which is no index file', async () => {
-		const input = setupFileTextInput({
-			contents: [
-				['src/routes/index.tsx', "export * from './home';"],
-				['package.json', JSON.stringify({ dependencies: { '@tanstack/react-router': '1.0.0' } })],
-			],
-			files: ['src/routes/index.tsx'],
-		});
-
-		const findings = await check.run({ inputs: { 'file-text': input }, options: {} });
-
-		expect(findings).toStrictEqual([]);
-	});
-
-	test('reports a JavaScript-spelled barrel too — these rules judge paths, so a repo with no TypeScript is judged at full strength', async () => {
+	test('reports a JavaScript-spelled index file too — these rules judge paths, so a repo with no TypeScript is judged at full strength', async () => {
 		const input = setupFileTextInput({
 			contents: [
 				['src/ingestion/index.js', "export * from './ingestRecords.js';"],
@@ -104,7 +90,7 @@ describe('index-file-contents check: star re-exports', () => {
 		]);
 	});
 
-	test('reports the remaining source dialects on the same footing — an `.mjs` and a `.jsx` barrel are barrels', async () => {
+	test('reports the remaining source dialects on the same footing — an `.mjs` and a `.jsx` index file are index files', async () => {
 		const input = setupFileTextInput({
 			contents: [
 				['src/reporting/index.mjs', "export * from './collectRows.mjs';"],
@@ -132,7 +118,7 @@ describe('index-file-contents check: star re-exports', () => {
 		]);
 	});
 
-	test('spares a file whose name merely starts with index — the barrel question is the whole name, so widening the dialects did not widen it to near-misses', async () => {
+	test('spares a file whose name merely starts with index — the index file question is the whole name, so widening the dialects did not widen it to near-misses', async () => {
 		const input = setupFileTextInput({
 			contents: [
 				['src/feature/index.helpers.ts', "export * from './renderGreeting';"],

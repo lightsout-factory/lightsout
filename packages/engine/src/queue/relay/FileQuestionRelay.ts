@@ -1,13 +1,13 @@
 import { readFile, rename, rm } from 'node:fs/promises';
 import { join } from 'node:path';
-import { writeJsonFile } from '#src/common/utils/writeJsonFile.ts';
+import { writeJsonFile } from '#src/common/json/writeJsonFile.ts';
+import type { QuestionRelay } from '#src/common/types/QuestionRelay.ts';
+import type { QueueSettings } from '#src/common/types/QueueSettings.ts';
+import type { TicketSummary } from '#src/common/types/TicketSummary.ts';
+import type { TrackerSettings } from '#src/common/types/TrackerSettings.ts';
 import { RelayAnswer } from '#src/contracts/queue/RelayAnswer.ts';
 import { RelayQuestion } from '#src/contracts/queue/RelayQuestion.ts';
-import type { QuestionRelay } from '#src/queue/common/types/QuestionRelay.ts';
-import type { QueueSettings } from '#src/queue/common/types/QueueSettings.ts';
-import type { TicketSummary } from '#src/queue/common/types/TicketSummary.ts';
-import { recordRelayedAnswer } from '#src/queue/relay/internal/recordRelayedAnswer.ts';
-import type { TrackerSettings } from '#src/ticketTracker/common/types/TrackerSettings.ts';
+import { recordRelayedAnswer } from '#src/queue/relay/common/recordRelayedAnswer.ts';
 
 /** Said both by an `ask` that arrives after `close`, and by a wait `close` cuts short — one fact, one wording. */
 const relayClosedMessage = 'the question relay is closed — no answer can arrive';

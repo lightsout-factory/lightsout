@@ -76,19 +76,22 @@
 		"test-e2e": "pnpm --filter {package} run test:e2e"
 	},
 	"standards-pack": "lightsout/standards",
+	"package-standards-packs": {
+		"web-app": ["lightsout/react", "lightsout/tanstack-start"]
+	},
 	"standards-rule-settings": {
 		"prefer-functions": "blocking",
 		"banned-folder-name": "blocking",
 		"named-string-values": "blocking",
 		"index-file-contents": "blocking",
 		"class-inheritance": "blocking",
-		"file-directly-in-common": "blocking",
+		"common-folder-layout": "blocking",
 		"file-size": "blocking",
 		"index-files": "blocking",
 		"folder-size": "blocking",
 		"function-size": "blocking",
+		"react-function-size": "blocking",
 		"import-path-alias": "blocking",
-		"internal-import-from-outside": "blocking",
 		"multi-export": "blocking",
 		"single-use-scalar": "blocking",
 		"test-beside-subject": "blocking",

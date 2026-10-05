@@ -1,9 +1,9 @@
 import { basename, join } from 'node:path';
-import { pathExists } from '#src/plan/common/paths/pathExists.ts';
-import { resolvePlanDeliverable } from '#src/plan/common/utils/resolvePlanDeliverable.ts';
-import { durablePlanFileNames } from '#src/plan/internal/common/constants/durablePlanFileNames.ts';
-import type { DurablePlanFile } from '#src/plan/internal/common/types/DurablePlanFile.ts';
+import { pathExists } from '#src/common/paths/pathExists.ts';
+import { durablePlanFileNames } from '#src/plan/common/constants/durablePlanFileNames.ts';
+import { resolvePlanDeliverable } from '#src/plan/common/resolvePlanDeliverable.ts';
 import { planWorkspaceDir } from '#src/plan/planWorkspaceDir.ts';
+import type { DurablePlanFile } from '#src/plan/publish/common/types/DurablePlanFile.ts';
 
 interface Params {
 	cwd: string;

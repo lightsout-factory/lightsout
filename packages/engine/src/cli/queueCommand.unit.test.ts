@@ -3,11 +3,11 @@ import { join, resolve } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
 import { queueCommand } from '#src/cli/queueCommand.ts';
 import { readConfig } from '#src/common/config/readConfig.ts';
-import type { QueueDrainReport } from '#src/queue/common/types/QueueDrainReport.ts';
+import type { QueueDrainReport } from '#src/common/types/QueueDrainReport.ts';
+import type { QueueSettings } from '#src/common/types/QueueSettings.ts';
+import type { TrackerFailure } from '#src/common/types/TrackerFailure.ts';
+import type { TrackerSettings } from '#src/common/types/TrackerSettings.ts';
 import type { QueueFailure } from '#src/queue/common/types/QueueFailure.ts';
-import type { QueueSettings } from '#src/queue/common/types/QueueSettings.ts';
-import type { TrackerFailure } from '#src/ticketTracker/common/types/TrackerFailure.ts';
-import type { TrackerSettings } from '#src/ticketTracker/common/types/TrackerSettings.ts';
 import { captureCommandOutput } from '#tests/helpers/captureCommandOutput.ts';
 import { queueSettingsFixture } from '#tests/helpers/queueSettingsFixture.ts';
 import { setupConsumerRepo } from '#tests/helpers/setupConsumerRepo.ts';
@@ -20,7 +20,7 @@ import { trackerSettingsFixture } from '#tests/helpers/trackerSettingsFixture.ts
 // refuses and the terminal it opens and closes, both observable with the drain
 // stubbed. What it prints once a drain has finished is stated in
 // `queueCommand.report.unit.test.ts`.
-type RunQueueParams = Parameters<typeof import('#src/queue/runQueue.ts').runQueue>[0];
+type RunQueueParams = Parameters<typeof import('#src/queue/runQueue/runQueue.ts').runQueue>[0];
 /** What each relay constructor was handed — enough of it to read the two settings objects the command threads in. */
 type RelayParams = { settings: QueueSettings; trackerSettings: TrackerSettings };
 
@@ -53,8 +53,8 @@ function mockRecordingRelay({ kind }: { kind: string }) {
 	};
 }
 
-jest.mock('#src/queue/startup/resolveQueueSettings.ts', () => ({ resolveQueueSettings: () => mockResolveQueueSettings() }));
-jest.mock('#src/queue/runQueue.ts', () => ({ runQueue: (params: RunQueueParams) => mockRunQueue(params) }));
+jest.mock('#src/queue/startup/resolveQueueSettings/resolveQueueSettings.ts', () => ({ resolveQueueSettings: () => mockResolveQueueSettings() }));
+jest.mock('#src/queue/runQueue/runQueue.ts', () => ({ runQueue: (params: RunQueueParams) => mockRunQueue(params) }));
 jest.mock('#src/queue/relay/emptyRelayMailbox.ts', () => ({ emptyRelayMailbox: (params: { directory: string }) => mockEmptyRelayMailbox(params) }));
 jest.mock('#src/queue/relay/TerminalQuestionRelay.ts', () => ({ TerminalQuestionRelay: mockRecordingRelay({ kind: 'terminal' }) }));
 jest.mock('#src/queue/relay/FileQuestionRelay.ts', () => ({ FileQuestionRelay: mockRecordingRelay({ kind: 'file' }) }));

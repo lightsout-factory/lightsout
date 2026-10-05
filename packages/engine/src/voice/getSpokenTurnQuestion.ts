@@ -1,6 +1,6 @@
-import { getStringField } from '#src/voice/internal/common/fields/getStringField.ts';
-import { formatSpeakable } from '#src/voice/internal/common/utils/formatSpeakable.ts';
-import { isQuestionText } from '#src/voice/internal/common/utils/isQuestionText.ts';
+import { formatSpeakable } from '#src/voice/common/formatSpeakable.ts';
+import { getStringField } from '#src/voice/common/getStringField.ts';
+import { isQuestionText } from '#src/voice/common/isQuestionText.ts';
 
 interface Params {
 	/** The finished turn's message content blocks, as the harness reports them — shape untrusted. */

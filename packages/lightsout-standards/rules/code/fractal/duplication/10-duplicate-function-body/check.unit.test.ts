@@ -83,6 +83,11 @@ const hookWrapper = ({ name, hook, field }: { name: string; hook: string; field:
 };
 `;
 
+/** A function that does nothing but hand its own fixed text to one shared function. */
+const sectionWrapper = ({ name, heading, rule }: { name: string; heading: string; rule: string }) => `export const ${name} = ({ items }: { items: string[] }) =>
+	listSection({ heading: '${heading}', items: items.map((item) => \`- \${item}\`), rules: ['${rule}'] });
+`;
+
 /** The same body on lines 1–6 again, under a third set of names. */
 const formatGrossSource = `export const formatGross = ({ base, levy }: { base: number; levy: number }) => {
 	const whole = base + levy;
@@ -91,16 +96,6 @@ const formatGrossSource = `export const formatGross = ({ base, levy }: { base: n
 	return { whole, squared };
 };
 `;
-
-/** A body the suite already measures at 32 tokens, so the floor can be probed from either side of it. */
-const splitWordsSource = ({ name }: { name: string }) =>
-	`export const ${name} = ({ text }: { text: string }): string[] =>\n\ttext\n\t\t.replace(/([a-z0-9])([A-Z])/g, '$1 $2')\n\t\t.split(/[\\s\\-_.]+/)\n\t\t.filter(Boolean)\n\t\t.map((token) => token.toLowerCase());\n`;
-
-/** That 32-token body written twice, as the two sources a floor probe needs. */
-const splitWordsPair: Array<[string, string]> = [
-	['src/common/naming/getTokens.ts', splitWordsSource({ name: 'getTokens' })],
-	['src/common/naming/splitWords.ts', splitWordsSource({ name: 'splitWords' })],
-];
 
 describe('duplicate-function-body check', () => {
 	test('asks for parsed trees, since the verdict is about shape rather than text', () => {
@@ -125,7 +120,7 @@ describe('duplicate-function-body check', () => {
 					{ path: 'src/invoices/formatTotal.ts', startLine: 1, endLine: 6 },
 				],
 				detail: expect.stringMatching(/^'formatAmount', 'formatTotal' \(\d+ tokens\) have the same body under different names$/),
-				guidance: 'Renaming the identifiers did not make these different functions.',
+				guidance: 'Keep one function and pass what differs as arguments.',
 			},
 		]);
 	});
@@ -187,6 +182,32 @@ describe('duplicate-function-body check', () => {
 		expect(findings.map(({ siteKey }) => siteKey)).toStrictEqual(['duplicate-function-body:src/alpha/AlphaButton.ts|src/beta/BetaButton.ts']);
 	});
 
+	test('two functions that only call the same function with their own fixed values are not duplicates, since the shared code is already in one place', async () => {
+		const input = setupSyntaxTreeInput({
+			sources: [
+				['src/brief/renameSection.ts', sectionWrapper({ name: 'renameSection', heading: 'Rename-only phase', rule: 'Apply exactly these renames.' })],
+				['src/brief/acceptanceSection.ts', sectionWrapper({ name: 'acceptanceSection', heading: 'Acceptance tests', rule: 'Every one must pass.' })],
+			],
+		});
+
+		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: { minBodyTokens: 5 } });
+
+		expect(findings).toStrictEqual([]);
+	});
+
+	test('two functions that call the same function with the same fixed values are duplicates, whatever they are named', async () => {
+		const input = setupSyntaxTreeInput({
+			sources: [
+				['src/brief/renameSection.ts', sectionWrapper({ name: 'renameSection', heading: 'Rename-only phase', rule: 'Apply exactly these renames.' })],
+				['src/brief/movesSection.ts', sectionWrapper({ name: 'movesSection', heading: 'Rename-only phase', rule: 'Apply exactly these renames.' })],
+			],
+		});
+
+		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: { minBodyTokens: 5 } });
+
+		expect(findings.map(({ siteKey }) => siteKey)).toStrictEqual(['duplicate-function-body:src/brief/movesSection.ts|src/brief/renameSection.ts']);
+	});
+
 	test('two duplicated bodies across the same pair of files are one finding naming both, since the identity is the paths', async () => {
 		const input = setupSyntaxTreeInput({
 			sources: [
@@ -209,7 +230,7 @@ describe('duplicate-function-body check', () => {
 				detail: expect.stringMatching(
 					/^'formatAmount', 'formatTotal' \(\d+ tokens\); 'buildLabel', 'buildTag' \(\d+ tokens\) have the same body under different names$/,
 				),
-				guidance: 'Renaming the identifiers did not make these different functions.',
+				guidance: 'Keep one function and pass what differs as arguments.',
 			},
 		]);
 	});
@@ -228,19 +249,6 @@ describe('duplicate-function-body check', () => {
 				],
 			},
 		]);
-	});
-
-	test('bodies under the token floor are too small to call duplicates', async () => {
-		const input = setupSyntaxTreeInput({
-			sources: [
-				['src/billing/formatAmount.ts', formatAmountSource],
-				['src/invoices/formatTotal.ts', formatTotalSource],
-			],
-		});
-
-		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: { minBodyTokens: 200 } });
-
-		expect(findings).toStrictEqual([]);
 	});
 
 	test('bodies of different shape are different functions, however alike their names read', async () => {
@@ -366,43 +374,8 @@ describe('duplicate-function-body check', () => {
 					{ path: 'src/reports/formatGross.ts', startLine: 1, endLine: 6 },
 				],
 				detail: expect.stringMatching(/^'formatAmount', 'formatTotal', 'formatGross' \(\d+ tokens\) have the same body under different names$/),
-				guidance: 'Renaming the identifiers did not make these different functions.',
+				guidance: 'Keep one function and pass what differs as arguments.',
 			},
 		]);
-	});
-
-	test('a body exactly at the token floor is still a duplicate — the floor is the smallest size that counts', async () => {
-		const input = setupSyntaxTreeInput({ sources: splitWordsPair });
-
-		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: { minBodyTokens: 32 } });
-
-		expect(findings.map(({ detail }) => detail)).toStrictEqual(["'getTokens', 'splitWords' (32 tokens) have the same body under different names"]);
-	});
-
-	test('a body one token short of the floor is silent', async () => {
-		const input = setupSyntaxTreeInput({ sources: splitWordsPair });
-
-		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: { minBodyTokens: 33 } });
-
-		expect(findings).toStrictEqual([]);
-	});
-
-	test('reads its body-size threshold from the minBodyTokens option', async () => {
-		const input = setupSyntaxTreeInput({
-			sources: [
-				['src/billing/formatAmount.ts', formatAmountSource],
-				['src/invoices/formatTotal.ts', formatTotalSource],
-			],
-		});
-
-		const [lowFloor, highFloor] = await Promise.all([
-			check.run({ inputs: { 'syntax-tree': input }, options: { minBodyTokens: 5 } }),
-			check.run({ inputs: { 'syntax-tree': input }, options: { minBodyTokens: 500 } }),
-		]);
-
-		expect({ lowFloor: lowFloor.map(({ siteKey }) => siteKey), highFloor }).toStrictEqual({
-			lowFloor: ['duplicate-function-body:src/billing/formatAmount.ts|src/invoices/formatTotal.ts'],
-			highFloor: [],
-		});
 	});
 });

@@ -1,7 +1,7 @@
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
-import { sha256 } from '#src/common/utils/sha256.ts';
+import { sha256 } from '#src/common/sha256.ts';
 import { workOrderFolderDir } from '#src/common/workspace/workOrderFolderDir.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import { PlanProgress } from '#src/contracts/workOrder/PlanProgress.ts';
@@ -30,7 +30,7 @@ import {
 // the sync sidecar and the plan's own files — is a real file in a temporary
 // directory, because what this helper promises is about which bytes reach disk
 // and when.
-const mockReadGitHeadCommit: MockedReadGitHeadCommit = jest.fn();
+const mockReadGitHeadCommit: MockedReadGitHeadCommit = jest.fn<(params: { cwd: string }) => Promise<string | undefined>>();
 
 jest.mock('#src/common/git/readGitHeadCommit.ts', () => ({
 	readGitHeadCommit: (params: { cwd: string }) => mockReadGitHeadCommit(params),

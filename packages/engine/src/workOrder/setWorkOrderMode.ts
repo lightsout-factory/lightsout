@@ -1,17 +1,17 @@
 import { planNumberOf } from '#src/common/planAddress/planNumberOf.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { WorkOrderStateChange } from '#src/common/types/WorkOrderStateChange.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { PlanProgress } from '#src/contracts/workOrder/PlanProgress.ts';
 import { WorkOrderEventKind } from '#src/contracts/workOrder/WorkOrderEventKind.ts';
 import { WorkOrderMode } from '#src/contracts/workOrder/WorkOrderMode.ts';
 import type { WorkOrderPlan } from '#src/contracts/workOrder/WorkOrderPlan.ts';
 import type { WorkOrderState } from '#src/contracts/workOrder/WorkOrderState.ts';
 import { resolveShipSettings } from '#src/ship/resolveShipSettings.ts';
-import type { WorkOrderStateChange } from '#src/workOrder/common/types/WorkOrderStateChange.ts';
-import { appendWorkOrderEvent } from '#src/workOrder/internal/common/record/appendWorkOrderEvent.ts';
-import { changeExistingWorkOrderState } from '#src/workOrder/internal/common/record/changeExistingWorkOrderState.ts';
-import { isPlanImplementationStarted } from '#src/workOrder/internal/common/record/isPlanImplementationStarted.ts';
-import { recordHandBuiltShipAuthorizationWithdrawal } from '#src/workOrder/internal/common/record/recordHandBuiltShipAuthorizationWithdrawal.ts';
-import { recordShipRequestWithdrawal } from '#src/workOrder/internal/common/record/recordShipRequestWithdrawal.ts';
+import { appendWorkOrderEvent } from '#src/workOrder/common/appendWorkOrderEvent.ts';
+import { isPlanImplementationStarted } from '#src/workOrder/common/isPlanImplementationStarted.ts';
+import { recordHandBuiltShipAuthorizationWithdrawal } from '#src/workOrder/common/recordHandBuiltShipAuthorizationWithdrawal.ts';
+import { recordShipRequestWithdrawal } from '#src/workOrder/common/recordShipRequestWithdrawal.ts';
+import { changeExistingWorkOrderState } from '#src/workOrder/common/state/changeExistingWorkOrderState.ts';
 
 interface Params {
 	/** Any checkout of the repository: the one record this machine holds is found from it. */

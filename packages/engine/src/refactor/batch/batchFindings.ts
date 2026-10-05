@@ -11,19 +11,16 @@ import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFi
  */
 const rulePriority: string[] = [
 	'lightsout/banned-folder-name',
-	'lightsout/file-directly-in-common',
+	'lightsout/common-folder-layout',
 	'lightsout/index-files',
 	'lightsout/test-beside-subject',
 	'lightsout/test-support-in-src',
-	'lightsout/internal-import-from-outside',
 	'lightsout/multi-export',
 	'lightsout/filename-mismatch',
 	'lightsout/test-mock-prefix',
 	'lightsout/test-mock-untyped',
-	'lightsout/test-mock-wrapper-untyped',
 	'lightsout/no-test-state-in-hooks',
 	'lightsout/test-manual-mock-cleanup',
-	'lightsout/test-strict-equal-matcher',
 	'lightsout/index-file-contents',
 	'lightsout/dead-export',
 	'lightsout/file-size',
@@ -32,7 +29,6 @@ const rulePriority: string[] = [
 	'lightsout/duplicate-function-body',
 	'lightsout/duplicate-code-block',
 	'lightsout/duplicate-export-name',
-	'lightsout/synonym-export-name',
 ];
 
 /** Keeps one agent job readable. */

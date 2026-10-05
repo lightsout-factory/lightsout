@@ -1,10 +1,10 @@
 import { describe, expect, test } from '@jest/globals';
 import { StandardsSet } from '@lightsout/standards-contracts';
+import type { LoadedStandardsRule } from '#src/common/types/LoadedStandardsRule.ts';
+import type { LoadedStandardsTopic } from '#src/common/types/LoadedStandardsTopic.ts';
+import type { StandardsGroup } from '#src/common/types/StandardsGroup.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
-import type { StandardsGroup } from '#src/standards/common/types/StandardsGroup.ts';
 import { buildStandardsDocuments } from '#src/standardsLibraries/buildStandardsDocuments.ts';
-import type { LoadedStandardsRule } from '#src/standardsLibraries/common/types/LoadedStandardsRule.ts';
-import type { LoadedStandardsTopic } from '#src/standardsLibraries/common/types/LoadedStandardsTopic.ts';
 
 /** A lightsout rule whose prose opens with a level-2 title, as a rule.md body does. */
 const buildRule = ({ id, title, text, set = StandardsSet.Code }: { id: string; title: string; text: string; set?: StandardsSet }): LoadedStandardsRule => ({

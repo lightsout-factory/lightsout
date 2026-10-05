@@ -1,0 +1,206 @@
+import { basename, join } from 'node:path';
+import { PlanRunStatus } from '#src/common/constants/PlanRunStatus.ts';
+import { getBlockingFindings } from '#src/common/findings/getBlockingFindings.ts';
+import { getBlockingGaps } from '#src/common/findings/getBlockingGaps.ts';
+import { gradeMemoryPath } from '#src/common/gradeMemoryPath.ts';
+import { writeJsonFile } from '#src/common/json/writeJsonFile.ts';
+import { messageOf } from '#src/common/messageOf.ts';
+import type { GradeReport } from '#src/contracts/plan/grade/GradeReport.ts';
+import type { StructuralFinding } from '#src/contracts/plan/grade/StructuralFinding.ts';
+import type { GradeInputs } from '#src/contracts/plan/memory/GradeInputs.ts';
+import type { GradeMemory } from '#src/contracts/plan/memory/GradeMemory.ts';
+import { GradeScope } from '#src/contracts/plan/memory/GradeScope.ts';
+import { gradeFileName } from '#src/plan/common/constants/gradeFileName.ts';
+import { getPlanDetectionPass } from '#src/plan/common/detection/getPlanDetectionPass.ts';
+import type { DeliverableFile } from '#src/plan/common/types/DeliverableFile.ts';
+import { lintPlanStructure } from '#src/plan/lint/lintPlanStructure/lintPlanStructure.ts';
+import { appendGradeHistory } from '#src/plan/runPlanGrade/common/appendGradeHistory.ts';
+import { createGradeReport } from '#src/plan/runPlanGrade/common/createGradeReport.ts';
+import type { DetectionPass } from '#src/plan/runPlanGrade/common/types/DetectionPass.ts';
+import type { GradeScopeDecision } from '#src/plan/runPlanGrade/common/types/GradeScopeDecision.ts';
+import type { GradeStamp } from '#src/plan/runPlanGrade/common/types/GradeStamp.ts';
+import type { PlanGradeParams } from '#src/plan/runPlanGrade/common/types/PlanGradeParams.ts';
+import { decideGradeScope } from '#src/plan/runPlanGrade/decideGradeScope.ts';
+import { getGradeInputs } from '#src/plan/runPlanGrade/getGradeInputs/getGradeInputs.ts';
+import { notePriorArtCollisions } from '#src/plan/runPlanGrade/notePriorArtCollisions.ts';
+import { readGradeMemory } from '#src/plan/runPlanGrade/readGradeMemory.ts';
+import { readGradeStamp } from '#src/plan/runPlanGrade/readGradeStamp.ts';
+import { readReusableGrade } from '#src/plan/runPlanGrade/readReusableGrade.ts';
+import { runGradePass } from '#src/plan/runPlanGrade/runGradePass/runGradePass.ts';
+import { selectPhaseFiles } from '#src/plan/runPlanGrade/selectPhaseFiles.ts';
+
+type RunPlanGradeResult =
+	| { status: typeof PlanRunStatus.Complete; workspaceDir: string; grade: GradeReport; gradePath: string; reused?: boolean }
+	| { status: typeof PlanRunStatus.Failed; workspaceDir: string; error: string; grade?: GradeReport; gradePath?: string }
+	| { status: typeof PlanRunStatus.PausedRateLimit; workspaceDir: string; error: string; grade?: GradeReport; gradePath?: string };
+
+interface PassContext {
+	params: PlanGradeParams;
+	pass: DetectionPass;
+	selected: DeliverableFile[];
+	decision: GradeScopeDecision;
+	inputs: GradeInputs;
+	memory: GradeMemory;
+	structural: StructuralFinding[];
+	stamp: GradeStamp;
+	progress: (message: string) => void;
+}
+
+/**
+ * Recorded as an incomplete pass, which every reader of `grade.json` already
+ * understands. The finding memory is left alone because nothing was judged: a
+ * stop that rewrote it would move a plan's settled decisions on evidence it
+ * never gathered.
+ */
+const stopOnStructure = async ({
+	params,
+	gradePath,
+	structural,
+	blocking,
+	stamp,
+	progress,
+}: {
+	params: PlanGradeParams;
+	gradePath: string;
+	structural: StructuralFinding[];
+	blocking: number;
+	stamp: GradeStamp;
+	progress: (message: string) => void;
+}) => {
+	const report = createGradeReport({
+		name: params.name,
+		phases: params.phases,
+		structural,
+		gaps: [],
+		failures: [`${blocking} blocking structural finding(s) — the semantic readers were not launched`],
+		phasesChecked: [],
+		commit: stamp.commit,
+		treeDirty: stamp.treeDirty,
+		phasesRequired: [],
+		documentationComplete: false,
+	});
+
+	await writeJsonFile({ path: gradePath, value: report });
+	await appendGradeHistory({ cwd: params.cwd, name: params.name, report });
+	progress(`plan grade ${params.name}: ${blocking} blocking structural finding(s) — stopped before any agent was spawned`);
+
+	return report;
+};
+
+/**
+ * Approval is granted from the read coverage and the closed findings rather than
+ * from how far one pass reached, so the pass that reads a repair is the pass that
+ * may approve it. A whole-plan review bought afterwards would re-read files the
+ * record already covers at the very text they still carry, which is the repeated
+ * work the record exists to stop.
+ */
+const runDecidedPass = async (context: PassContext) => {
+	const { params, pass, selected, decision, inputs, memory, structural, stamp, progress } = context;
+	const focused = decision.scope === GradeScope.Focused;
+
+	return runGradePass({
+		params,
+		pass,
+		selected: focused ? selected.filter((file) => decision.phases.includes(basename(file.path))) : selected,
+		scope: decision.scope,
+		focusedOn: focused ? decision.phases : [],
+		scopeReason: decision.reason,
+		inputs,
+		memory,
+		structural,
+		stamp,
+		progress,
+	});
+};
+
+/**
+ * Never edits the plan.
+ *
+ * A blocking structural finding stops the pass before any agent is spawned,
+ * since those findings alone put the plan below A. The verdict is an incomplete
+ * pass with an empty gap list: a stage that did not run is unchecked, never
+ * passed.
+ *
+ * A plan file a recorded pass already read at its current text is not read
+ * again, and a pass approves once every plan file is covered at its current
+ * text and every finding is closed, whatever that one pass itself read.
+ *
+ * A finding nobody has verified as answered keeps blocking even when a later
+ * reader does not report it again; a record closes only when a re-verification
+ * judge cites where the plan now states the answer and the engine confirms it.
+ *
+ * The structural lint and prior-art detection cover every plan file even when
+ * `phases` narrows the pass, because the lint is cross-phase.
+ */
+export const runPlanGrade = async (params: PlanGradeParams): Promise<RunPlanGradeResult> => {
+	const { cwd, name, phases, onProgress, standards, model, effort } = params;
+	const progress = onProgress ?? (() => undefined);
+	const pass = await getPlanDetectionPass({ cwd, name });
+	const { workspaceDir, files, planPaths, config, error } = pass;
+
+	if (error) {
+		return { status: PlanRunStatus.Failed, workspaceDir, error };
+	}
+
+	const selection = selectPhaseFiles({ files, phases });
+
+	if ('error' in selection) {
+		return { status: PlanRunStatus.Failed, workspaceDir, error: selection.error };
+	}
+
+	const gradePath = join(workspaceDir, gradeFileName);
+	// Both deterministic passes cover every plan file, overview included — the
+	// overview has its own required-section set, and the lint is cross-phase.
+	const structural = await lintPlanStructure({ cwd, planPaths, decisions: pass.decisions, config });
+	// Read beside the lint rather than after the fan-out, so the stamped sha is the one the structural findings were measured against.
+	const stamp = await readGradeStamp({ cwd });
+	const blockingStructural = getBlockingFindings({ findings: structural });
+
+	if (blockingStructural.length > 0) {
+		const stopped = await stopOnStructure({ params, gradePath, structural, blocking: blockingStructural.length, stamp, progress });
+
+		return { status: PlanRunStatus.Complete, workspaceDir, grade: stopped, gradePath };
+	}
+
+	await notePriorArtCollisions({ cwd, name, workspaceDir, planPaths, config, onProgress: progress });
+
+	let found: GradeMemory | undefined;
+
+	try {
+		found = await readGradeMemory({ cwd, name });
+	} catch (cause) {
+		return { status: PlanRunStatus.Failed, workspaceDir, error: messageOf({ error: cause }) };
+	}
+
+	const inputs = await getGradeInputs({ cwd, planPaths, decisions: pass.decisions.decisions, standards, config, model, effort });
+	const decision = decideGradeScope({ files, overviewText: pass.overviewText, memory: found, inputs, narrowed: phases !== undefined });
+	const reusable = decision.reuse ? await readReusableGrade({ gradePath, sha256: inputs.sha256 }) : undefined;
+
+	if (reusable !== undefined) {
+		progress(
+			`plan grade ${name}: the recorded passing full review still covers the current inputs — nothing was re-run; delete ${await gradeMemoryPath({ cwd, name })} to force a new baseline`,
+		);
+
+		return { status: PlanRunStatus.Complete, workspaceDir, grade: reusable, gradePath, reused: true };
+	}
+
+	const memory: GradeMemory = found ?? { planName: name, findings: [], coverage: { readers: [] }, nextFindingNumber: 1, updatedAt: new Date().toISOString() };
+	const last = await runDecidedPass({ params, pass, selected: selection.selected, decision, inputs, memory, structural, stamp, progress });
+	const report = last.report;
+	const blocking = getBlockingGaps({ gaps: report.gaps });
+
+	progress(`plan grade ${name}: judged ${report.gaps.length} finding(s), ${blocking.length} blocking`);
+	progress(`plan grade ${name}: ${report.grade} (${structural.length} structural, ${report.gaps.length} gap(s), ${blocking.length} blocking)`);
+
+	// A wall outranks a gap-check failure: it stops the pass wherever it landed,
+	// and the re-run line is the only thing a human can act on.
+	if (last.rateLimited) {
+		const parked = `rate limited or overloaded — re-run: lightsout plan grade --name ${name}`;
+
+		return { status: PlanRunStatus.PausedRateLimit, workspaceDir, error: parked, grade: report, gradePath };
+	}
+
+	return last.failures.length > 0
+		? { status: PlanRunStatus.Failed, workspaceDir, error: `gap-check failed for ${last.failures.join('; ')}`, grade: report, gradePath }
+		: { status: PlanRunStatus.Complete, workspaceDir, grade: report, gradePath };
+};

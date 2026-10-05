@@ -1,8 +1,8 @@
 import { readdir } from 'node:fs/promises';
 import { join } from 'node:path';
+import type { WorkOrderListing } from '#src/common/types/WorkOrderListing.ts';
 import { readWorkOrderRecordFile } from '#src/common/workspace/readWorkOrderRecordFile.ts';
 import { workOrdersDir } from '#src/common/workspace/workOrdersDir.ts';
-import type { WorkOrderListing } from '#src/workOrder/common/types/WorkOrderListing.ts';
 
 interface Params {
 	/** Any checkout of the repository; the primary is resolved from it. */

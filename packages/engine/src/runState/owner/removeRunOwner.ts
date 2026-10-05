@@ -1,5 +1,5 @@
 import { rm } from 'node:fs/promises';
-import { getRunOwnerPath } from '#src/runState/owner/getRunOwnerPath.ts';
+import { getRunOwnerPath } from '#src/runState/owner/common/getRunOwnerPath.ts';
 import { RunNotFoundError } from '#src/runState/RunNotFoundError.ts';
 
 interface Params {

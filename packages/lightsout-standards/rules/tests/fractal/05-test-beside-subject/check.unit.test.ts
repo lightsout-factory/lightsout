@@ -134,26 +134,6 @@ describe('test-beside-subject check', () => {
 		]);
 	});
 
-	test('accepts a route-side test, whose dots the router owns rather than the naming convention', async () => {
-		const input = setupFileListInput({
-			source: ['src/routes/runs.$runId.tsx'],
-			tests: ['src/routes/runs.$runId.unit.test.tsx'],
-			dependencies: [['.', ['@tanstack/react-router']]],
-		});
-
-		const findings = await check.run({ inputs: { 'file-list': input }, options: {} });
-
-		expect(findings).toStrictEqual([]);
-	});
-
-	test('reports the same pair in a package declaring no router, so the carve-out is what changed the verdict rather than the names', async () => {
-		const input = setupFileListInput({ source: ['src/routes/runs.$runId.tsx'], tests: ['src/routes/runs.$runId.unit.test.tsx'] });
-
-		const findings = await check.run({ inputs: { 'file-list': input }, options: {} });
-
-		expect(findings.map(({ detail }) => detail)).toStrictEqual(["no source file named 'runs' in src/routes"]);
-	});
-
 	test('reports nothing when its input is missing rather than refusing', async () => {
 		const findings = await check.run({ inputs: {}, options: {} });
 

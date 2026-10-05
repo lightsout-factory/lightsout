@@ -1,0 +1,222 @@
+import { spawn } from 'node:child_process';
+import { expect, test } from '@jest/globals';
+import { collectChildOutput } from '#src/common/processes/collectChildOutput/collectChildOutput.ts';
+import { getRejectionError } from '#tests/helpers/getRejectionError.ts';
+
+/**
+ * A shell child with both output streams piped, spawned detached — the shape
+ * every caller hands in. Detached matters: it makes the child its own
+ * process-group leader, which is what lets a timeout kill the tree it started.
+ */
+const shellChild = ({ script }: { script: string }) => spawn(script, { shell: true, stdio: ['ignore', 'pipe', 'pipe'], detached: true });
+
+/**
+ * A detached child that DECLINES SIGTERM and runs until something uncatchable
+ * ends it. Node rather than a shell script: a `sleep` in the group dies to the
+ * group's SIGTERM however the shell above it traps, so only a process handling
+ * the signal itself can prove the escalation ran.
+ */
+const stubbornChild = () =>
+	spawn(process.execPath, ['-e', "process.on('SIGTERM', () => {}); process.stdout.write('ready\\n'); setInterval(() => {}, 1000);"], {
+		stdio: ['ignore', 'pipe', 'pipe'],
+		detached: true,
+	});
+
+test('collectChildOutput: both streams are collected and the exit code is a result, not an exception', async () => {
+	const result = await collectChildOutput({ child: shellChild({ script: 'echo out; echo err 1>&2; exit 3' }) });
+
+	// a non-zero exit reaches the caller as data — the caller owns what failure means
+	expect(result).toStrictEqual({ exitCode: 3, stdout: 'out\n', stderr: 'err\n' });
+});
+
+test('collectChildOutput: a signalled death reports -1 rather than a null code', async () => {
+	const result = await collectChildOutput({ child: shellChild({ script: 'kill -9 $$' }) });
+
+	expect(result.exitCode).toBe(-1);
+});
+
+test('collectChildOutput: a child that outlives its deadline is killed and rejects with the caller-supplied message', async () => {
+	const error = await getRejectionError({
+		promise: collectChildOutput({ child: shellChild({ script: 'sleep 30' }), timeout: { ms: 50, message: 'gate timed out after 50ms' } }),
+	});
+
+	// the message is the caller's, so each caller keeps its own phrasing
+	expect(error.message).toBe('gate timed out after 50ms');
+});
+
+test('collectChildOutput: a child that never spawns rejects with the spawn error', async () => {
+	const error = await getRejectionError({
+		promise: collectChildOutput({ child: spawn('lightsout-no-such-binary', [], { stdio: ['ignore', 'pipe', 'pipe'] }) }),
+	});
+
+	expect(error.message).toMatch(/ENOENT/);
+});
+
+test('collectChildOutput: complete stdout lines stream as they arrive, blanks skipped, and the trailing partial flushes on close', async () => {
+	const lines: string[] = [];
+
+	// no trailing newline after `tail` — it is only a whole line once close proves
+	// nothing more is coming
+	const result = await collectChildOutput({
+		child: shellChild({ script: "printf 'first\\nsecond\\n\\n   \\ntail'" }),
+		onStdoutLine: (line) => lines.push(line),
+	});
+
+	expect(lines).toStrictEqual(['first', 'second', 'tail']);
+	// streaming never costs the caller the full capture
+	expect(result.stdout).toBe('first\nsecond\n\n   \ntail');
+});
+
+test('collectChildOutput: stdout is still captured in full when no line sink is given', async () => {
+	const result = await collectChildOutput({ child: shellChild({ script: "printf 'one\\ntwo\\n'" }) });
+
+	expect(result.stdout).toBe('one\ntwo\n');
+});
+
+test('collectChildOutput: a deadline takes the tree with it, not just the process it spawned', async () => {
+	const child = shellChild({ script: 'sleep 30 & echo $!; wait' });
+	const grandchildPid = await new Promise<number>((resolve) => {
+		child.stdout?.once('data', (chunk: Buffer) => resolve(Number(chunk.toString().trim())));
+	});
+	const alive = () => {
+		try {
+			process.kill(grandchildPid, 0);
+
+			return true;
+		} catch {
+			return false;
+		}
+	};
+
+	const error = await getRejectionError({
+		promise: collectChildOutput({ child, timeout: { ms: 50, message: 'gate timed out after 50ms' } }),
+	});
+
+	expect(error.message).toBe('gate timed out after 50ms');
+
+	// killing only the direct child would leave this running, holding the
+	// stdout pipe it inherited, with nothing left to reap it
+	for (let attempt = 1; attempt <= 100 && alive(); attempt += 1) {
+		await new Promise((resolve) => setTimeout(resolve, 20));
+	}
+
+	expect(alive()).toBe(false);
+});
+
+test('collectChildOutput: the deadline asks before it insists, so a child can flush what it owns', async () => {
+	const lines: string[] = [];
+	const child = shellChild({ script: "trap 'echo flushed-on-term; exit 0' TERM; sleep 30 & wait" });
+
+	await getRejectionError({
+		promise: collectChildOutput({ child, timeout: { ms: 80, message: 'timed out' }, onStdoutLine: (line) => lines.push(line) }),
+	});
+
+	// The caller is rejected at the deadline and never sees this output — the
+	// point is that the child got a signal it could CATCH, so its own cleanup
+	// ran. SIGKILL cannot be caught, so leading with it would strand the temp
+	// files and half-written transcripts a harness removes on its way out.
+	await new Promise((resolve) => child.once('close', resolve));
+
+	expect(lines).toContain('flushed-on-term');
+});
+
+test('collectChildOutput: a child that declines SIGTERM is killed outright once the grace period runs out', async () => {
+	const child = stubbornChild();
+
+	// Start the deadline only after the child proves its SIGTERM handler is
+	// installed. Under load, a fixed timeout can expire during Node startup and
+	// test the operating system's default SIGTERM behaviour instead.
+	await new Promise<void>((resolve) => child.stdout?.once('data', () => resolve()));
+
+	const closed = new Promise<void>((resolve) => {
+		child.once('close', () => resolve());
+	});
+
+	const error = await getRejectionError({ promise: collectChildOutput({ child, timeout: { ms: 50, message: 'timed out' } }) });
+
+	expect(error.message).toBe('timed out');
+
+	await closed;
+
+	// asking politely is the courtesy; SIGKILL is the guarantee. Without the
+	// escalation a harness that traps SIGTERM would outlive the run that spawned
+	// it, holding its pipes and still billing.
+	expect(child.signalCode).toBe('SIGKILL');
+});
+
+test('collectChildOutput: the deadline reports that it fired before it rejects', async () => {
+	const events: string[] = [];
+	const child = shellChild({ script: 'sleep 30' });
+	const closed = new Promise<void>((resolve) => {
+		child.once('close', () => resolve());
+	});
+
+	const error = await getRejectionError({
+		promise: collectChildOutput({
+			child,
+			timeout: { ms: 50, message: 'gate timed out after 50ms' },
+			onTimeout: () => events.push('timeout'),
+		}).catch((rejection: unknown) => {
+			events.push('rejected');
+
+			throw rejection;
+		}),
+	});
+
+	// wait for the kill to land, so a late second report would be seen too
+	await closed;
+
+	expect(error.message).toBe('gate timed out after 50ms');
+	// the report comes first, so a caller's flag is already set when its catch runs
+	expect(events).toStrictEqual(['timeout', 'rejected']);
+});
+
+test('collectChildOutput: a child that settles before its deadline, or never spawns, reports no timeout', async () => {
+	const timeouts: string[] = [];
+	const timeout = { ms: 1000, message: 'timed out' };
+
+	const [exited, neverSpawned] = await Promise.allSettled([
+		collectChildOutput({ child: shellChild({ script: 'exit 0' }), timeout, onTimeout: () => timeouts.push('exited') }),
+		collectChildOutput({
+			child: spawn('lightsout-no-such-binary', [], { stdio: ['ignore', 'pipe', 'pipe'] }),
+			timeout,
+			onTimeout: () => timeouts.push('never-spawned'),
+		}),
+	]);
+
+	// outlast both deadlines, so a timer left armed after settling would have fired
+	await new Promise((resolve) => setTimeout(resolve, timeout.ms + 100));
+
+	expect(exited).toStrictEqual({ status: 'fulfilled', value: { exitCode: 0, stdout: '', stderr: '' } });
+	expect(neverSpawned.status === 'rejected' ? String(neverSpawned.reason) : neverSpawned.status).toMatch(/ENOENT/);
+	expect(timeouts).toStrictEqual([]);
+});
+
+test('collectChildOutput: a multi-byte character split across chunks is decoded whole', async () => {
+	const lines: string[] = [];
+	// `€` is the three bytes E2 82 AC: the first write ends after its first byte,
+	// and the pause keeps the pipe from joining the two writes into one chunk
+	const child = spawn(
+		process.execPath,
+		['-e', 'process.stdout.write(Buffer.from([0x61, 0xe2])); setTimeout(() => process.stdout.write(Buffer.from([0x82, 0xac, 0x0a])), 100);'],
+		{ stdio: ['ignore', 'pipe', 'pipe'], detached: true },
+	);
+
+	const result = await collectChildOutput({ child, onStdoutLine: (line) => lines.push(line) });
+
+	// decoding each chunk alone turns either half into U+FFFD
+	expect({ stdout: result.stdout, lines }).toStrictEqual({ stdout: 'a€\n', lines: ['a€'] });
+});
+
+test('collectChildOutput: a multi-byte character split across stderr chunks is decoded whole', async () => {
+	// the same split `€` as on stdout, written to stderr, which is decoded by its own stream
+	const child = spawn(
+		process.execPath,
+		['-e', 'process.stderr.write(Buffer.from([0x62, 0xe2, 0x82])); setTimeout(() => process.stderr.write(Buffer.from([0xac, 0x0a])), 100);'],
+		{ stdio: ['ignore', 'pipe', 'pipe'], detached: true },
+	);
+
+	const result = await collectChildOutput({ child });
+
+	expect(result).toStrictEqual({ exitCode: 0, stdout: '', stderr: 'b€\n' });
+});

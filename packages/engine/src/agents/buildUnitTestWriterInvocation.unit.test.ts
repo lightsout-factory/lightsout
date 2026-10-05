@@ -1,5 +1,5 @@
 import { expect, test } from '@jest/globals';
-import { buildFeatureExecutorInvocation } from '#src/agents/buildFeatureExecutorInvocation.ts';
+import { buildFeatureExecutorInvocation } from '#src/agents/buildFeatureExecutorInvocation/buildFeatureExecutorInvocation.ts';
 import { buildUnitTestWriterInvocation } from '#src/agents/buildUnitTestWriterInvocation.ts';
 
 const planContent = '# Plan: add the widget flag\n\nPLAN-SENTINEL';

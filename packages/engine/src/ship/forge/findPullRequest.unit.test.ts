@@ -1,5 +1,5 @@
 import { describe, expect, test } from '@jest/globals';
-import { PullRequestState } from '#src/ship/forge/common/constants/PullRequestState.ts';
+import { PullRequestState } from '#src/common/constants/PullRequestState.ts';
 import { findPullRequest } from '#src/ship/forge/findPullRequest.ts';
 import { freshCwd } from '#tests/helpers/freshCwd.ts';
 import { stubForgeOnPath } from '#tests/helpers/stubForgeOnPath.ts';

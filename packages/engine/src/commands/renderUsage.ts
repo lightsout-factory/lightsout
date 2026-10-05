@@ -1,4 +1,4 @@
-import { commandCatalog } from '#src/commands/commandCatalog.ts';
+import { commandCatalog } from '#src/commands/commandCatalog/commandCatalog.ts';
 import { spellFlag } from '#src/commands/spellFlag.ts';
 import type { CommandCatalogEntry } from '#src/contracts/commands/CommandCatalogEntry.ts';
 import type { CommandFlag } from '#src/contracts/commands/CommandFlag.ts';

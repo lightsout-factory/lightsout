@@ -2,7 +2,7 @@ import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
-import { getQueueSummaryPath } from '#src/queue/board/getQueueSummaryPath.ts';
+import { getQueueSummaryPath } from '#src/queue/board/common/getQueueSummaryPath.ts';
 import { readQueueSummary } from '#src/queue/board/readQueueSummary.ts';
 import { runDirFor } from '#tests/helpers/runDirFor.ts';
 

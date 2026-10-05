@@ -1,15 +1,15 @@
 import { randomUUID } from 'node:crypto';
 import { mkdir } from 'node:fs/promises';
 import { resolve } from 'node:path';
+import { runDirectoryIndex } from '#src/common/constants/runDirectoryIndex.ts';
 import { readGitCurrentBranch } from '#src/common/git/readGitCurrentBranch.ts';
+import { toRepoRelativePath } from '#src/common/paths/toRepoRelativePath.ts';
+import { resolveNewRunDir } from '#src/common/runs/resolveNewRunDir.ts';
 import type { LoadedConfig } from '#src/common/types/LoadedConfig.ts';
-import { toRepoRelativePath } from '#src/common/utils/toRepoRelativePath.ts';
 import type { PipelineKind } from '#src/contracts/run/PipelineKind.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import { planNameFromPath } from '#src/plan/planNameFromPath.ts';
-import { resolveNewRunDir } from '#src/runState/common/paths/resolveNewRunDir.ts';
-import { runDirectoryIndex } from '#src/runState/internal/common/constants/runDirectoryIndex.ts';
 import { writeRunOwner } from '#src/runState/owner/writeRunOwner.ts';
 import { writeRunManifest } from '#src/runState/writeRunManifest.ts';
 

@@ -1,0 +1,51 @@
+import { publishBrainstorm } from '#src/brainstorm/publish/publishBrainstorm.ts';
+import { getRequiredFlag } from '#src/cli/common/args/getRequiredFlag.ts';
+import { createProgressPrinter } from '#src/cli/common/createProgressPrinter.ts';
+import { describeMissingPlanAddress } from '#src/cli/common/describeMissingPlanAddress.ts';
+import { bold } from '#src/cli/common/terminal/bold.ts';
+import { readConfig } from '#src/common/config/readConfig.ts';
+import { exitCli } from '#src/common/exitCli.ts';
+import { parsePlanAddress } from '#src/common/planAddress/parsePlanAddress/parsePlanAddress.ts';
+import type { CommandContext } from '#src/common/types/CommandContext.ts';
+
+/**
+ * The config is read with `readConfig` rather than the optional reader:
+ * publishing needs a `ticket-tracker` block, so a repo with no config is refused
+ * by name. A plan publishes under its own plan id so one plan's brainstorm never
+ * replaces another's, which is why a `--name` that is not a plan address is
+ * refused before the config is read. The ticket record is not synced here:
+ * `plan publish` is what says a plan's generation changed.
+ */
+export const brainstormPublishCommand = async ({ flags, cwd }: CommandContext): Promise<void> => {
+	const name = await getRequiredFlag({ flags, name: 'name' });
+	const address = parsePlanAddress({ name });
+
+	if (address === undefined) {
+		console.error(describeMissingPlanAddress({ name, missing: 'plan whose brainstorm could be published' }));
+
+		return exitCli({ code: 1 });
+	}
+
+	const config = await readConfig({ cwd });
+	const report = await publishBrainstorm({
+		cwd,
+		name,
+		config,
+		env: process.env,
+		onProgress: createProgressPrinter(),
+		titlePrefix: address.planId,
+	});
+
+	if (report.error !== undefined) {
+		console.error(`\n${report.error}`);
+		return exitCli({ code: 1 });
+	}
+
+	console.log(`\n${bold(`brainstorm publish ${name}`)} — ${report.published.length} file(s) attached to ${report.ticketRef}`);
+
+	for (const file of report.published) {
+		console.log(`  ${file}`);
+	}
+
+	return exitCli({ code: 0 });
+};

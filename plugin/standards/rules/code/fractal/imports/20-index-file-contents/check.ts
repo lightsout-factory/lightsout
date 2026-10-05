@@ -1,17 +1,13 @@
 import type { FileTextInput, RawStandardsFinding, StandardsCheckModule, SyntaxTreeInput } from '@lightsout/standards-contracts';
 import type ts from 'typescript';
 import { readFileTexts } from '#common/checkInput/readFileTexts.ts';
-import { readManifestDependencies } from '#common/checkInput/readManifestDependencies.ts';
 import { buildRawFinding } from '#common/findings/buildRawFinding.ts';
-import { getFrameworkCarveOuts } from '#common/frameworks/getFrameworkCarveOuts.ts';
-import { getPathCarveOut } from '#common/frameworks/getPathCarveOut.ts';
-import { isFrameworkLoadedFile } from '#common/frameworks/isFrameworkLoadedFile.ts';
-import { readBarrelExports } from '#common/modules/readBarrelExports.ts';
+import { readIndexExports } from '#common/modules/readIndexExports.ts';
 import { getBaseName } from '#common/paths/getBaseName.ts';
-import { isBarrelFile } from '#common/paths/isBarrelFile.ts';
+import { isIndexFile } from '#common/paths/isIndexFile.ts';
 
 /** Every index file, wherever it stands: a package's entry holds no code any more than a folder's does. */
-const isIndexFile = ({ path }: { path: string }) => /^index\.tsx?$/.test(getBaseName({ path }));
+const isTypeScriptIndexFile = ({ path }: { path: string }) => /^index\.tsx?$/.test(getBaseName({ path }));
 
 /** `export *` passes here: the star is the file-text half's finding, so one line never reports twice. */
 const isReExport = ({ statement, compiler }: { statement: ts.Statement; compiler: typeof ts }) =>
@@ -28,18 +24,9 @@ const findCodeInIndexFiles = ({ input }: { input: SyntaxTreeInput | undefined })
 	}
 
 	const findings: RawStandardsFinding[] = [];
-	const carveOuts = getFrameworkCarveOuts({ dependencies: input.dependencies });
 
 	for (const [path, tree] of input.trees) {
-		// A file-based router MANDATES an index route file whose content is a route
-		// definition, and a convention-resolved entry file is code by definition;
-		// demanding re-export lines of either asks for a file the framework could
-		// not use.
-		if (isFrameworkLoadedFile({ path, carveOut: getPathCarveOut({ carveOuts, path }) })) {
-			continue;
-		}
-
-		if (isIndexFile({ path })) {
+		if (isTypeScriptIndexFile({ path })) {
 			const offending = tree.statements.filter((statement) => !isReExport({ statement, compiler: input.compiler }));
 			const [first] = offending;
 
@@ -51,7 +38,7 @@ const findCodeInIndexFiles = ({ input }: { input: SyntaxTreeInput | undefined })
 						rule: 'index-file-contents',
 						files: [{ path }],
 						detail: `${offending.length} statement(s) other than re-export lines, the first at line ${line}`,
-						guidance: 'An index file is the package’s doorway — re-export lines only. Executable code belongs in a named entry file such as main.ts.',
+						guidance: 'An index file holds re-export lines only. Put executable code in a named entry file such as main.ts.',
 					}),
 				);
 			}
@@ -69,19 +56,18 @@ const findCodeInIndexFiles = ({ input }: { input: SyntaxTreeInput | undefined })
 const findStarReExports = ({ input }: { input: FileTextInput | undefined }): RawStandardsFinding[] => {
 	const { files, contents } = readFileTexts({ input });
 	const fileSet = new Set(files);
-	const carveOuts = getFrameworkCarveOuts({ dependencies: readManifestDependencies({ contents }) });
 
 	return files
-		.filter((path) => isBarrelFile({ path }) && !isFrameworkLoadedFile({ path, carveOut: getPathCarveOut({ carveOuts, path }) }))
-		.flatMap((barrelPath) => {
-			const stars = readBarrelExports({ barrelPath, contents, files: fileSet }).filter(({ star }) => star);
+		.filter((path) => isIndexFile({ path }))
+		.flatMap((indexPath) => {
+			const stars = readIndexExports({ indexPath, contents, files: fileSet }).filter(({ star }) => star);
 
 			return stars.length === 0
 				? []
 				: [
 						buildRawFinding({
 							rule: 'index-file-contents',
-							files: [{ path: barrelPath }],
+							files: [{ path: indexPath }],
 							detail: `${stars.map(({ specifier }) => `'${specifier}'`).join(', ')} re-exported with \`export *\``,
 							guidance: 'An index file is a package’s public API — list named re-exports instead.',
 						}),

@@ -1,6 +1,6 @@
 import { describe, expect, test } from '@jest/globals';
 import { resolveGateOverride } from '#src/common/config/resolveGateOverride.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 
 const setupOverrides = (): { overrides: LightsoutConfig['gate-overrides'] } => ({
 	overrides: {

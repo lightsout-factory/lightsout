@@ -1,52 +1,55 @@
 import type { RawStandardsFinding, StandardsCheckModule } from '@lightsout/standards-contracts';
 import { readPathLists } from '#common/checkInput/readPathLists.ts';
 import { buildRawFinding } from '#common/findings/buildRawFinding.ts';
-import { getFrameworkCarveOuts } from '#common/frameworks/getFrameworkCarveOuts.ts';
-import { getPathCarveOut } from '#common/frameworks/getPathCarveOut.ts';
-import { isFrameworkLoadedFile } from '#common/frameworks/isFrameworkLoadedFile.ts';
+import { getExportName } from '#common/naming/getExportName.ts';
+import { getBaseName } from '#common/paths/getBaseName.ts';
 import { getDirectory } from '#common/paths/getDirectory.ts';
+import { isIndexFile } from '#common/paths/isIndexFile.ts';
+import { findEarlyFolders } from './findEarlyFolders.ts';
+
+/** `types/` and `constants/` at the top of a `common/` hold files only, so they have no folder to group into. */
+const isKindFolder = ({ directory }: { directory: string }) => {
+	const name = getBaseName({ path: directory });
+
+	return (name === 'types' || name === 'constants') && getBaseName({ path: getDirectory({ path: directory }) }) === 'common';
+};
 
 export const check: StandardsCheckModule = {
 	inputKinds: ['file-list'],
 	// Tests are not counted: a test beside its subject is the convention working.
-	// Barrels count, because the question is how long the listing has grown.
-	//
-	// A file the package's framework put there is not counted: a router root's
-	// population is the number of routes the app has, and consolidating it is
-	// not an edit any author is allowed to make.
+	// Index files count, because the question is how long the listing has grown. A
+	// module folder counts once in the folder that holds it, as the one module
+	// it is: its main file carries the folder's name.
 	run: ({ inputs, options }): RawStandardsFinding[] => {
 		const { files, tests } = readPathLists({ input: inputs['file-list'] });
-		const carveOuts = getFrameworkCarveOuts({ dependencies: inputs['file-list']?.dependencies ?? new Map<string, string[]>() });
 		const testPaths = new Set(tests);
-		const filesPerDirectory = new Map<string, string[]>();
+		const countPerDirectory = new Map<string, number>();
 		const { cap } = options;
+		const addTo = ({ directory }: { directory: string }) => countPerDirectory.set(directory, (countPerDirectory.get(directory) ?? 0) + 1);
 
-		for (const file of files) {
-			if (!testPaths.has(file)) {
-				// Skipped file by file rather than filtered off the finished map, so a
-				// router root contributes no group at all.
-				if (isFrameworkLoadedFile({ path: file, carveOut: getPathCarveOut({ carveOuts, path: file }) })) {
-					continue;
-				}
+		for (const file of files.filter((path) => !testPaths.has(path))) {
+			const directory = getDirectory({ path: file });
 
-				const directory = getDirectory({ path: file });
+			addTo({ directory });
 
-				filesPerDirectory.set(directory, [...(filesPerDirectory.get(directory) ?? []), file]);
+			if (directory !== '.' && getExportName({ path: file }) === getBaseName({ path: directory })) {
+				addTo({ directory: getDirectory({ path: directory }) });
 			}
 		}
 
-		return [...filesPerDirectory]
-			.filter(([, paths]) => paths.length > cap)
-			.map(([directory, paths]) =>
+		const oversized = [...countPerDirectory]
+			.filter(([directory, count]) => count > cap && !isKindFolder({ directory }))
+			.map(([directory, count]) =>
 				buildRawFinding({
 					rule: 'folder-size',
 					files: [{ path: directory }],
-					detail: `${paths.length} files in one flat folder (cap ~${cap})`,
-					guidance: 'Group them by domain, or graduate the concepts hiding in the pile.',
-					// The narrowed count, not the raw directory listing — a folder must not
-					// read as grown because a framework put another route file in it.
-					measure: paths.length,
+					detail: `${count} files in one flat folder (cap ~${cap})`,
+					guidance: 'Group them into folders named for their subject.',
+					measure: count,
 				}),
 			);
+
+		// The other direction of the same cap: no subject folder before there are too many files for one.
+		return [...oversized, ...findEarlyFolders({ files: files.filter((path) => !testPaths.has(path) && !isIndexFile({ path })), cap })];
 	},
 };

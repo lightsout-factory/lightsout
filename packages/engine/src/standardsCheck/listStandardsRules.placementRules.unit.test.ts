@@ -1,8 +1,8 @@
 import { join } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
-import { resolveStandardsGroups } from '#src/standards/resolveStandardsGroups.ts';
+import { resolveStandardsGroups } from '#src/standards/resolveStandardsGroups/resolveStandardsGroups.ts';
 import { listStandardsRules } from '#src/standardsCheck/listStandardsRules.ts';
 
 /**
@@ -19,7 +19,7 @@ const standardsPackConfig: LightsoutConfig = { gates: { check: 'true', test: 'tr
 const listDefaults = async () => listStandardsRules({ groups: await resolveStandardsGroups({ cwd, config: standardsPackConfig }) });
 
 /** The five file-placement rules with a deterministic check — listed rather than derived, because an id no longer says which kind it is. */
-const durablePathRules = ['banned-folder-name', 'file-directly-in-common', 'index-files', 'test-beside-subject', 'test-support-in-src'];
+const durablePathRules = ['banned-folder-name', 'common-folder-layout', 'index-files', 'test-beside-subject', 'test-support-in-src'];
 
 /** The shipped library's rules are listed by full name, the name a finding and a baseline key carry. */
 const builtInNameOf = ({ id }: { id: string }) => `lightsout/${id}`;
@@ -42,10 +42,10 @@ describe('listStandardsRules file-placement rules', () => {
 
 		// the main suite proves a document is there, not that it is the right one:
 		// the index-files rule comes from imports, the two test-location
-		// rules from the tests tree's fractal topic, and the rest from shared-code
+		// rules from the tests tree's fractal topic, and the rest from layout
 		expect(docs).toStrictEqual({
-			'lightsout/banned-folder-name': 'code/fractal/shared-code',
-			'lightsout/file-directly-in-common': 'code/fractal/shared-code',
+			'lightsout/banned-folder-name': 'code/fractal/layout',
+			'lightsout/common-folder-layout': 'code/fractal/layout',
 			'lightsout/index-files': 'code/fractal/imports',
 			'lightsout/test-beside-subject': 'tests/fractal',
 			'lightsout/test-support-in-src': 'tests/fractal',
@@ -63,20 +63,21 @@ describe('listStandardsRules file-placement rules', () => {
 		// standards-rule-settings, as this repository does
 		expect(severities).toStrictEqual({
 			'lightsout/banned-folder-name': StandardsSeverity.Advisory,
-			'lightsout/file-directly-in-common': StandardsSeverity.Advisory,
+			'lightsout/common-folder-layout': StandardsSeverity.Advisory,
 			'lightsout/index-files': StandardsSeverity.Advisory,
 			'lightsout/test-beside-subject': StandardsSeverity.Advisory,
 			'lightsout/test-support-in-src': StandardsSeverity.Advisory,
 		});
 	});
 
-	test('no file-placement rule carries a number a repo could tune', async () => {
+	test('no file-placement rule carries a number a repo can tune', async () => {
 		const rules = await listDefaults();
 		const tunable = rules.filter((rule) => durablePathRuleNames.includes(rule.rule) && Object.keys(rule.options).length > 0);
 
-		// every threshold in this group is a closed list of names from a doc, never a
-		// count — a knob here would be a rule that can be quietly widened until it
-		// stops firing
-		expect(tunable.map((rule) => rule.rule)).toStrictEqual([]);
+		// every threshold in this group is a closed list of names from a doc,
+		// never a count — a knob there would be a rule that can be quietly widened
+		// until it stops firing. The one count, the folder size cap, belongs to the
+		// folder size rule
+		expect(tunable.map((rule) => ({ rule: rule.rule, options: rule.options }))).toStrictEqual([]);
 	});
 });

@@ -1,7 +1,7 @@
 import { describe, expect, jest, test } from '@jest/globals';
+import type { TrackerFailure } from '#src/common/types/TrackerFailure.ts';
+import type { TrackerTicket } from '#src/common/types/TrackerTicket.ts';
 import { listEligibleTickets } from '#src/queue/ticketSelection/listEligibleTickets.ts';
-import type { TrackerFailure } from '#src/ticketTracker/common/types/TrackerFailure.ts';
-import type { TrackerTicket } from '#src/ticketTracker/common/types/TrackerTicket.ts';
 import { queueSettingsFixture } from '#tests/helpers/queueSettingsFixture.ts';
 import { trackerSettingsFixture } from '#tests/helpers/trackerSettingsFixture.ts';
 

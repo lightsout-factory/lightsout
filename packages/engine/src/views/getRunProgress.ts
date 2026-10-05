@@ -1,15 +1,15 @@
 import { formatShortRunId } from '@lightsout/shared';
-import { formatResumeCommand } from '#src/common/utils/formatResumeCommand.ts';
+import { buildCleanupSummary } from '#src/common/buildCleanupSummary.ts';
+import { formatResumeCommand } from '#src/common/runs/formatResumeCommand.ts';
+import type { RunProgress } from '#src/common/types/RunProgress.ts';
+import type { RunProgressRow } from '#src/common/types/RunProgressRow.ts';
 import { PipelineKind } from '#src/contracts/run/PipelineKind.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import { ShipStatus } from '#src/contracts/ship/ShipStatus.ts';
-import { buildCleanupSummary } from '#src/runState/common/utils/buildCleanupSummary.ts';
 import { readLastProgressMessage } from '#src/runState/progress/readLastProgressMessage.ts';
 import { readShipResult } from '#src/ship/readShipResult.ts';
-import type { RunProgress } from '#src/views/common/types/RunProgress.ts';
-import type { RunProgressRow } from '#src/views/common/types/RunProgressRow.ts';
-import { getRunTitle } from '#src/views/internal/common/utils/getRunTitle.ts';
+import { getRunTitle } from '#src/views/common/getRunTitle.ts';
 
 /** Statuses from which this run can still reach ship — a run that ended any other way never will. */
 const shippableStatuses: RunStatus[] = [RunStatus.Running, RunStatus.Pending, RunStatus.PausedRateLimit, RunStatus.PausedBudget, RunStatus.Passed];

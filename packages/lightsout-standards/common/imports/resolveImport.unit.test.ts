@@ -22,7 +22,7 @@ describe('resolveImport', () => {
 		expect(target).toStrictEqual({ kind: 'file', path: expected });
 	});
 
-	test('takes the file over the folder barrel of the same name, in the order a bundler would', () => {
+	test('takes the file over the folder index file of the same name, in the order a bundler would', () => {
 		const { from, files, aliases } = setupScope({
 			paths: ['packages/engine/src/billing/widget.ts', 'packages/engine/src/billing/widget/index.ts'],
 			patterns: [],
@@ -41,7 +41,7 @@ describe('resolveImport', () => {
 		expect(target).toStrictEqual({ kind: 'unknown' });
 	});
 
-	test('resolves through the alias the package declares — the case that made every engine barrel look empty', () => {
+	test('resolves through the alias the package declares — the case that made every engine index file look empty', () => {
 		const { from, files, aliases } = setupScope({
 			paths: ['packages/engine/src/agents/buildFeatureExecutorInvocation.ts'],
 			patterns: [['@/*', ['./src/*']]],
@@ -52,7 +52,7 @@ describe('resolveImport', () => {
 		expect(target).toStrictEqual({ kind: 'file', path: 'packages/engine/src/agents/buildFeatureExecutorInvocation.ts' });
 	});
 
-	test('resolves an alias onto a folder barrel', () => {
+	test('resolves an alias onto a folder index file', () => {
 		const { from, files, aliases } = setupScope({ paths: ['packages/engine/src/agents/index.ts'], patterns: [['@/*', ['./src/*']]] });
 
 		const target = resolveImport({ from, specifier: '@/agents', files, aliases });

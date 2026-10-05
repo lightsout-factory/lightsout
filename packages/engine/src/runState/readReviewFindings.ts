@@ -1,6 +1,6 @@
-import { readJsonlRecords } from '#src/common/utils/readJsonlRecords.ts';
+import { readJsonlRecords } from '#src/common/json/readJsonlRecords.ts';
 import { ReviewFindingRecord } from '#src/contracts/standardsCheck/ReviewFindingRecord.ts';
-import { getReviewFindingsPath } from '#src/runState/internal/common/paths/getReviewFindingsPath.ts';
+import { getReviewFindingsPath } from '#src/runState/common/getReviewFindingsPath.ts';
 
 interface Params {
 	cwd: string;

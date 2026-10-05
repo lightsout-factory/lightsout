@@ -1,5 +1,5 @@
+import { sha256 } from '#src/common/sha256.ts';
 import type { AttachmentManifest } from '#src/common/types/AttachmentManifest.ts';
-import { sha256 } from '#src/common/utils/sha256.ts';
 
 interface Params {
 	files: { name: string; content: Buffer }[];

@@ -1,0 +1,21 @@
+import type { Effort } from '#src/contracts/Effort.ts';
+import type { AgentUsage } from '#src/contracts/run/AgentUsage.ts';
+import { appendRunLog } from '#src/runState/common/appendRunLog.ts';
+
+interface Params {
+	cwd: string;
+	runId: string;
+	record: AgentUsage & {
+		at: string;
+		/** Pipeline step the invocation served (supervisor consultations suffixed `-supervisor`). */
+		step: string;
+		/** Model override in force, if any — harness default otherwise. */
+		model?: string;
+		/** Resolved effort in force, if any — harness default otherwise. */
+		effort?: Effort;
+	};
+}
+
+export const appendAgentLog = async ({ cwd, runId, record }: Params): Promise<void> => {
+	await appendRunLog({ cwd, runId, fileName: 'agents.jsonl', record });
+};

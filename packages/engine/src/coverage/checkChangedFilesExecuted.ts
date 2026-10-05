@@ -6,10 +6,10 @@ import { isInertSourceFile } from '#src/common/sourceFiles/isInertSourceFile.ts'
 import { isTestableSourceFile } from '#src/common/sourceFiles/isTestableSourceFile.ts';
 import { isTestFile } from '#src/common/sourceFiles/isTestFile.ts';
 import { isToolingConfigFile } from '#src/common/sourceFiles/isToolingConfigFile.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
-import { buildMissingSummaryMessage } from '#src/coverage/internal/common/utils/buildMissingSummaryMessage.ts';
-import { coverageScopeOf } from '#src/coverage/internal/common/utils/coverageScopeOf.ts';
-import { resolveScopeContext } from '#src/coverage/internal/common/utils/resolveScopeContext.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
+import { buildMissingSummaryMessage } from '#src/coverage/common/buildMissingSummaryMessage.ts';
+import { coverageScopeOf } from '#src/coverage/common/coverageScopeOf.ts';
+import { resolveScopeContext } from '#src/coverage/common/resolveScopeContext.ts';
 import { selectCollectedFiles } from '#src/coverage/selectCollectedFiles/selectCollectedFiles.ts';
 import { selectUnloadableFiles } from '#src/coverage/selectUnloadableFiles/selectUnloadableFiles.ts';
 

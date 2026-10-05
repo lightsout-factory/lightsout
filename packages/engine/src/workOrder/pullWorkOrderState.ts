@@ -1,19 +1,19 @@
 import { join } from 'node:path';
-import { messageOf } from '#src/common/utils/messageOf.ts';
-import { sha256 } from '#src/common/utils/sha256.ts';
+import { messageOf } from '#src/common/messageOf.ts';
+import { sha256 } from '#src/common/sha256.ts';
 import { workOrderFolderDir } from '#src/common/workspace/workOrderFolderDir.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { WorkOrderState } from '#src/contracts/workOrder/WorkOrderState.ts';
-import { workOrderFileNames } from '#src/workOrder/internal/common/constants/workOrderFileNames.ts';
-import type { PublishedWorkOrderState } from '#src/workOrder/internal/common/types/PublishedWorkOrderState.ts';
-import { readPublishedWorkOrderState } from '#src/workOrder/internal/common/utils/readPublishedWorkOrderState.ts';
-import { readWorkOrderSyncState } from '#src/workOrder/internal/common/utils/readWorkOrderSyncState.ts';
-import { readWorkOrderWithTrackerTarget } from '#src/workOrder/internal/common/utils/readWorkOrderWithTrackerTarget.ts';
-import { serializeWorkOrderState } from '#src/workOrder/internal/common/utils/serializeWorkOrderState.ts';
-import { surfaceWorkOrderDivergence } from '#src/workOrder/internal/common/utils/surfaceWorkOrderDivergence.ts';
-import { updateWorkOrderSyncState } from '#src/workOrder/internal/common/utils/updateWorkOrderSyncState.ts';
-import { withWorkOrderStateLock } from '#src/workOrder/internal/common/utils/withWorkOrderStateLock.ts';
-import { writeWorkOrderFolderFile } from '#src/workOrder/internal/common/utils/writeWorkOrderFolderFile.ts';
+import { workOrderFileNames } from '#src/workOrder/common/constants/workOrderFileNames.ts';
+import { readWorkOrderWithTrackerTarget } from '#src/workOrder/common/readWorkOrderWithTrackerTarget.ts';
+import { readPublishedWorkOrderState } from '#src/workOrder/common/state/readPublishedWorkOrderState.ts';
+import { serializeWorkOrderState } from '#src/workOrder/common/state/serializeWorkOrderState.ts';
+import { withWorkOrderStateLock } from '#src/workOrder/common/state/withWorkOrderStateLock.ts';
+import { surfaceWorkOrderDivergence } from '#src/workOrder/common/surfaceWorkOrderDivergence.ts';
+import { readWorkOrderSyncState } from '#src/workOrder/common/sync/readWorkOrderSyncState.ts';
+import { updateWorkOrderSyncState } from '#src/workOrder/common/sync/updateWorkOrderSyncState.ts';
+import type { PublishedWorkOrderState } from '#src/workOrder/common/types/PublishedWorkOrderState.ts';
+import { writeWorkOrderFolderFile } from '#src/workOrder/common/writeWorkOrderFolderFile.ts';
 import { readWorkOrderState } from '#src/workOrder/readWorkOrderState.ts';
 
 interface Params {

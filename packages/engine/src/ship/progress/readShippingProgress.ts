@@ -1,7 +1,7 @@
 import { readFile } from 'node:fs/promises';
+import type { ShippingProgressReading } from '#src/common/types/ShippingProgressReading.ts';
 import { ShippingProgress } from '#src/contracts/ship/ShippingProgress.ts';
-import type { ShippingProgressReading } from '#src/ship/progress/common/types/ShippingProgressReading.ts';
-import { getShippingProgressPath } from '#src/ship/progress/internal/common/utils/getShippingProgressPath.ts';
+import { getShippingProgressPath } from '#src/ship/progress/common/getShippingProgressPath.ts';
 
 interface Params {
 	/** Any checkout; the primary is resolved from it. */

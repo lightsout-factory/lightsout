@@ -1,6 +1,6 @@
 import { join } from 'node:path';
 import { readGitPrimaryCheckout } from '#src/common/git/readGitPrimaryCheckout.ts';
-import { isSamePath } from '#src/common/utils/isSamePath.ts';
+import { isSamePath } from '#src/common/paths/isSamePath.ts';
 
 interface Params {
 	/** The directory this run works in — a primary checkout, a linked worktree, or no repository at all. */

@@ -20,12 +20,12 @@ describe('index-file-contents check: code in an index file', () => {
 				siteKey: 'index-file-contents:src/cli/index.ts',
 				files: [{ path: 'src/cli/index.ts' }],
 				detail: '3 statement(s) other than re-export lines, the first at line 1',
-				guidance: 'An index file is the package’s doorway — re-export lines only. Executable code belongs in a named entry file such as main.ts.',
+				guidance: 'An index file holds re-export lines only. Put executable code in a named entry file such as main.ts.',
 			},
 		]);
 	});
 
-	test('leaves a pure barrel alone, the multi-line type re-export and comments included', async () => {
+	test('leaves a pure index file alone, the multi-line type re-export and comments included', async () => {
 		const input = setupSyntaxTreeInput({
 			sources: [
 				[
@@ -66,12 +66,12 @@ describe('index-file-contents check: code in an index file', () => {
 				siteKey: 'index-file-contents:src/reporting/index.ts',
 				files: [{ path: 'src/reporting/index.ts' }],
 				detail: '2 statement(s) other than re-export lines, the first at line 1',
-				guidance: 'An index file is the package’s doorway — re-export lines only. Executable code belongs in a named entry file such as main.ts.',
+				guidance: 'An index file holds re-export lines only. Put executable code in a named entry file such as main.ts.',
 			},
 		]);
 	});
 
-	test('reports a component barrel named index.tsx, which is an index file like any other', async () => {
+	test('reports a component’s index.tsx, which is an index file like any other', async () => {
 		const input = setupSyntaxTreeInput({
 			sources: [['src/features/Dashboard/index.tsx', 'export const Dashboard = () => <section />;']],
 		});
@@ -83,7 +83,7 @@ describe('index-file-contents check: code in an index file', () => {
 				siteKey: 'index-file-contents:src/features/Dashboard/index.tsx',
 				files: [{ path: 'src/features/Dashboard/index.tsx' }],
 				detail: '1 statement(s) other than re-export lines, the first at line 1',
-				guidance: 'An index file is the package’s doorway — re-export lines only. Executable code belongs in a named entry file such as main.ts.',
+				guidance: 'An index file holds re-export lines only. Put executable code in a named entry file such as main.ts.',
 			},
 		]);
 	});
@@ -98,7 +98,7 @@ describe('index-file-contents check: code in an index file', () => {
 				siteKey: 'index-file-contents:src/index.ts',
 				files: [{ path: 'src/index.ts' }],
 				detail: '1 statement(s) other than re-export lines, the first at line 1',
-				guidance: 'An index file is the package’s doorway — re-export lines only. Executable code belongs in a named entry file such as main.ts.',
+				guidance: 'An index file holds re-export lines only. Put executable code in a named entry file such as main.ts.',
 			},
 		]);
 	});
@@ -119,58 +119,6 @@ describe('index-file-contents check: code in an index file', () => {
 		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: {} });
 
 		expect(findings).toStrictEqual([]);
-	});
-
-	test('spares an index route file — a file-based router mandates it and forbids it being a barrel', async () => {
-		const input = setupSyntaxTreeInput({
-			sources: [
-				[
-					'packages/web-app/src/routes/index.tsx',
-					["import { createFileRoute } from '@tanstack/react-router';", '', "export const Route = createFileRoute('/')({ component: Home });"].join('\n'),
-				],
-			],
-			dependencies: [['packages/web-app', ['@tanstack/react-router']]],
-		});
-
-		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: {} });
-
-		expect(findings).toStrictEqual([]);
-	});
-
-	test('still judges an index outside the router root in a package that has a router', async () => {
-		const input = setupSyntaxTreeInput({
-			sources: [['packages/web-app/src/features/index.ts', "console.log('boot');"]],
-			dependencies: [['packages/web-app', ['@tanstack/react-router']]],
-		});
-
-		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: {} });
-
-		expect(findings).toStrictEqual([
-			{
-				siteKey: 'index-file-contents:packages/web-app/src/features/index.ts',
-				files: [{ path: 'packages/web-app/src/features/index.ts' }],
-				detail: '1 statement(s) other than re-export lines, the first at line 1',
-				guidance: 'An index file is the package’s doorway — re-export lines only. Executable code belongs in a named entry file such as main.ts.',
-			},
-		]);
-	});
-
-	test('a routes folder in a package with no router earns no exemption', async () => {
-		const input = setupSyntaxTreeInput({
-			sources: [['packages/api/src/routes/index.ts', "console.log('boot');"]],
-			dependencies: [['packages/api', ['zod']]],
-		});
-
-		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: {} });
-
-		expect(findings).toStrictEqual([
-			{
-				siteKey: 'index-file-contents:packages/api/src/routes/index.ts',
-				files: [{ path: 'packages/api/src/routes/index.ts' }],
-				detail: '1 statement(s) other than re-export lines, the first at line 1',
-				guidance: 'An index file is the package’s doorway — re-export lines only. Executable code belongs in a named entry file such as main.ts.',
-			},
-		]);
 	});
 
 	test('reports nothing when its input is missing rather than refusing', async () => {

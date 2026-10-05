@@ -1,9 +1,9 @@
 import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
-import { sha256 } from '#src/common/utils/sha256.ts';
+import { sha256 } from '#src/common/sha256.ts';
 import type { ApprovedTestRecord } from '#src/contracts/run/ApprovedTestRecord.ts';
-import { approvedTestPath } from '#src/pipeline/approvedTests/internal/approvedTestPath.ts';
-import type { PipelineRun } from '#src/pipeline/internal/PipelineRun.ts';
+import { approvedTestPath } from '#src/pipeline/approvedTests/common/approvedTestPath.ts';
+import type { PipelineRun } from '#src/pipeline/common/PipelineRun.ts';
 
 interface Params {
 	run: PipelineRun;

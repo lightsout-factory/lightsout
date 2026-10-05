@@ -1,6 +1,6 @@
-import { sharedPromptSections } from '#src/agents/internal/common/constants/sharedPromptSections.ts';
-import { applyPromptTokens } from '#src/agents/internal/common/utils/applyPromptTokens.ts';
-import { selfCheckSection } from '#src/agents/internal/common/utils/selfCheckSection.ts';
+import { applyPromptTokens } from '#src/agents/common/applyPromptTokens.ts';
+import { sharedPromptSections } from '#src/agents/common/constants/sharedPromptSections.ts';
+import { selfCheckSection } from '#src/agents/common/selfCheckSection.ts';
 import refactorExecutorPrompt from '#src/agents/prompts/refactorExecutor.md';
 import refactorScopeFeaturePrompt from '#src/agents/prompts/refactorScopeFeature.md';
 import refactorScopeStandalonePrompt from '#src/agents/prompts/refactorScopeStandalone.md';

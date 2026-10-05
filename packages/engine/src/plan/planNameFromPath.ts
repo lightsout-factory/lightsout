@@ -1,8 +1,8 @@
 import { relative, sep } from 'node:path';
 import { formatPlanAddress } from '#src/common/planAddress/formatPlanAddress.ts';
-import { parsePlanAddress } from '#src/common/planAddress/parsePlanAddress.ts';
+import { parsePlanAddress } from '#src/common/planAddress/parsePlanAddress/parsePlanAddress.ts';
+import { resolveRecordedPlanPath } from '#src/common/resolveRecordedPlanPath.ts';
 import { workOrdersDir } from '#src/common/workspace/workOrdersDir.ts';
-import { resolveRecordedPlanPath } from '#src/plan/common/paths/resolveRecordedPlanPath.ts';
 
 interface Params {
 	cwd: string;

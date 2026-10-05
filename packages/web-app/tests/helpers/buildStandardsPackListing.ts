@@ -32,6 +32,6 @@ export const buildStandardsPackListing = ({
 	include,
 	topics,
 	rules,
-	totals: { rules: rules.length, deterministic: rules.length, agent: 0, topics: topics.length, ...totals },
+	totals: { rules: rules.length, deterministic: rules.length, agent: 0, topics: topics.length, tokens: 0, ...totals },
 	...overrides,
 });

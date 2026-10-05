@@ -1,4 +1,4 @@
-import { commandCatalog } from '#src/commands/commandCatalog.ts';
+import { commandCatalog } from '#src/commands/commandCatalog/commandCatalog.ts';
 import type { CommandCatalogEntry } from '#src/contracts/commands/CommandCatalogEntry.ts';
 
 interface Params {

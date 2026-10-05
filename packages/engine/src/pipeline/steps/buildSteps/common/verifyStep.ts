@@ -1,0 +1,112 @@
+import { RunStatus } from '#src/contracts/run/RunStatus.ts';
+import type { StepRecord } from '#src/contracts/run/StepRecord.ts';
+import { SupervisorDecision } from '#src/contracts/work/SupervisorDecision.ts';
+import type { PipelineStep } from '#src/pipeline/common/types/PipelineStep.ts';
+import { stopOnGateCoordination } from '#src/pipeline/steps/buildSteps/common/stopOnGateCoordination.ts';
+import { formatAndVerify } from '#src/pipeline/steps/common/formatAndVerify.ts';
+import type { RepairOutcome } from '#src/pipeline/steps/common/types/RepairOutcome.ts';
+import type { VerifyContext } from '#src/pipeline/steps/common/types/VerifyContext.ts';
+import { withResult } from '#src/pipeline/steps/common/withResult.ts';
+import { reviewAndVerify } from '#src/pipeline/steps/verify/reviewAndVerify/reviewAndVerify.ts';
+import { runCheapRepairs } from '#src/pipeline/steps/verifyStep/runCheapRepairs.ts';
+import { runGuidedRepair } from '#src/pipeline/steps/verifyStep/runGuidedRepair/runGuidedRepair.ts';
+import { stopOnGateNoVerdict } from '#src/pipeline/steps/verifyStep/stopOnGateNoVerdict.ts';
+
+const enterVerification = async ({ context, record }: { context: VerifyContext; record: StepRecord }): Promise<RepairOutcome> => {
+	const { run, id, coverage, final, planContent, overviewContent, acceptanceTests, planBuildMode } = context;
+	const result = await reviewAndVerify({ run, id, coverage, final, planContent, overviewContent, acceptanceTests, planBuildMode });
+
+	if ('rateLimited' in result) {
+		return { parked: await run.stop({ record, status: RunStatus.PausedRateLimit, error: run.parkMessage() }) };
+	}
+
+	return { record, result };
+};
+
+const runVerificationStep = async ({ context }: { context: VerifyContext }) => {
+	const { run, id } = context;
+	const previous = run.current().steps.find((step) => step.id === id);
+	let record: StepRecord = { ...run.nextRecord({ id }), ...(previous?.verification ? { verification: previous.verification } : {}) };
+
+	await run.setStep({ record });
+	run.progress(`step ${id} — attempt ${record.attempts}`);
+
+	const initial = record.verification?.needsFormatting ? await formatAndVerify({ context, record }) : await enterVerification({ context, record });
+
+	if ('parked' in initial) {
+		return initial.parked;
+	}
+
+	let result = initial.result;
+	record = initial.record;
+
+	if (result.error) {
+		record = withResult({ record, result });
+		await run.setStep({ record });
+	}
+
+	const repaired = await runCheapRepairs({ context, record, result });
+
+	if ('parked' in repaired) {
+		return repaired.parked;
+	}
+
+	const guided = await runGuidedRepair({ context, ...repaired });
+
+	if ('parked' in guided) {
+		return guided.parked;
+	}
+
+	({ record, result } = guided);
+
+	// Both repair stages step aside for a gate run that never started, so one check here catches it wherever it appeared. It comes
+	// before the crash check: a checkpoint that never got the machine spent no gate for a crash to be attributed to.
+	if (result.coordination !== undefined) {
+		return stopOnGateCoordination({ run, stepId: id, record, coordination: result.coordination, error: result.error });
+	}
+
+	// Both repair stages step aside for a crash and for a timeout, so one check here catches them wherever they appeared. The
+	// order is coordination, then crash, then timeout; the stop carries the full gate output, which names any other gate too.
+	if (result.crashes.length > 0 || result.timeouts.length > 0) {
+		return stopOnGateNoVerdict({ run, stepId: id, record, crashes: result.crashes, timeouts: result.timeouts, error: result.error });
+	}
+
+	if (result.error) {
+		const diagnosis = record.verification?.supervisorDiagnosis;
+		const decision = guided.ruling?.decision ?? (record.verification?.guidedRepairAttempted ? SupervisorDecision.Retry : undefined);
+		const detail = diagnosis && decision ? `\nsupervisor (${decision}): ${diagnosis}` : '';
+
+		return run.stop({ record, status: RunStatus.Escalated, error: `${id}: still failing after retries.${detail}\n\n${result.error}` });
+	}
+
+	const passedRecord = record.verification
+		? { ...record, verification: { ...record.verification, failedFamilies: [], failures: [], needsFormatting: false } }
+		: record;
+
+	await run.setStep({ record: { ...passedRecord, status: RunStatus.Passed } });
+	run.progress(`step ${id} passed`);
+
+	return undefined;
+};
+
+/**
+ * The test-change review, or a mechanical plan's code check (the rename check or the move check),
+ * can go red without a gate being spent, and rides this checkpoint's repair budget rather than
+ * opening its own.
+ */
+export const verifyStep = ({
+	run,
+	gitPrefix,
+	planContent,
+	overviewContent,
+	id,
+	coverage,
+	acceptanceTests,
+	final,
+	planBuildMode,
+	buildFix,
+}: VerifyContext): PipelineStep['run'] => {
+	const context: VerifyContext = { run, gitPrefix, planContent, overviewContent, id, coverage, acceptanceTests, final, planBuildMode, buildFix };
+
+	return () => runVerificationStep({ context });
+};

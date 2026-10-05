@@ -1,11 +1,11 @@
 import { PlanningStatus } from '#src/common/constants/PlanningStatus.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
-import { describeGateHold } from '#src/gates/gateHolds/common/utils/describeGateHold.ts';
-import { isTicketGateHeld } from '#src/gates/gateHolds/common/utils/isTicketGateHeld.ts';
-import { syncGateHolds } from '#src/gates/gateHolds/syncGateHolds.ts';
-import { TrackerStatusRole } from '#src/ticketLifecycle/common/constants/TrackerStatusRole.ts';
-import type { LifecycleSettings } from '#src/ticketLifecycle/common/types/LifecycleSettings.ts';
-import { resolveLifecycleSettings } from '#src/ticketLifecycle/resolveLifecycleSettings.ts';
+import { TrackerStatusRole } from '#src/common/constants/TrackerStatusRole.ts';
+import { describeGateHold } from '#src/common/gates/describeGateHold.ts';
+import { isTicketGateHeld } from '#src/common/gates/isTicketGateHeld.ts';
+import type { LifecycleSettings } from '#src/common/types/LifecycleSettings.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
+import { syncGateHolds } from '#src/gates/gateHolds/syncGateHolds/syncGateHolds.ts';
+import { resolveLifecycleSettings } from '#src/ticketLifecycle/resolveLifecycleSettings/resolveLifecycleSettings.ts';
 import { updateTicketLifecycle } from '#src/ticketLifecycle/updateTicketLifecycle.ts';
 import { getTicketsByIdentifiers } from '#src/ticketTracker/getTicketsByIdentifiers.ts';
 import { resolveTrackerSettings } from '#src/ticketTracker/resolveTrackerSettings.ts';

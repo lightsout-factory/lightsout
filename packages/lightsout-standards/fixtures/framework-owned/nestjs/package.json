@@ -1,8 +1,0 @@
-{
-	"name": "framework-owned-nestjs",
-	"private": true,
-	"dependencies": {
-		"@nestjs/common": "*",
-		"@nestjs/core": "*"
-	}
-}

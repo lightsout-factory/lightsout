@@ -1,9 +1,9 @@
+import { WorkOrderShipStateKind } from '#src/common/constants/WorkOrderShipStateKind.ts';
 import { planNumberOf } from '#src/common/planAddress/planNumberOf.ts';
+import type { WorkOrderShipState } from '#src/common/types/WorkOrderShipState.ts';
 import { PlanProgress } from '#src/contracts/workOrder/PlanProgress.ts';
 import { WorkOrderMode } from '#src/contracts/workOrder/WorkOrderMode.ts';
 import type { WorkOrderState } from '#src/contracts/workOrder/WorkOrderState.ts';
-import { WorkOrderShipStateKind } from '#src/workOrder/common/constants/WorkOrderShipStateKind.ts';
-import type { WorkOrderShipState } from '#src/workOrder/common/types/WorkOrderShipState.ts';
 
 interface Params {
 	record: WorkOrderState;

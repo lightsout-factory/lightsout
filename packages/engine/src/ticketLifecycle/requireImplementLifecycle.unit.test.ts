@@ -1,11 +1,11 @@
 import { describe, expect, jest, test } from '@jest/globals';
+import type { GateHolds } from '#src/common/types/GateHolds.ts';
+import type { TrackerFailure } from '#src/common/types/TrackerFailure.ts';
+import type { TrackerSettings } from '#src/common/types/TrackerSettings.ts';
+import type { TrackerTicket } from '#src/common/types/TrackerTicket.ts';
 import type { GateHold } from '#src/contracts/gates/GateHold.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
-import type { GateHolds } from '#src/gates/gateHolds/common/types/GateHolds.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { requireImplementLifecycle } from '#src/ticketLifecycle/requireImplementLifecycle.ts';
-import type { TrackerFailure } from '#src/ticketTracker/common/types/TrackerFailure.ts';
-import type { TrackerSettings } from '#src/ticketTracker/common/types/TrackerSettings.ts';
-import type { TrackerTicket } from '#src/ticketTracker/common/types/TrackerTicket.ts';
 
 // Mocked Imports
 // -------------------------
@@ -41,13 +41,13 @@ jest.mock('#src/ticketTracker/getTicketsByIdentifiers.ts', () => ({
 jest.mock('#src/ticketLifecycle/updateTicketLifecycle.ts', () => ({
 	updateTicketLifecycle: (params: LifecycleParams) => mockUpdateTicketLifecycle(params),
 }));
-jest.mock('#src/gates/gateHolds/common/utils/describeGateHold.ts', () => ({
+jest.mock('#src/common/gates/describeGateHold.ts', () => ({
 	describeGateHold: (params: { hold: GateHold | undefined; identifier: string }) => mockDescribeGateHold(params),
 }));
-jest.mock('#src/gates/gateHolds/common/utils/isTicketGateHeld.ts', () => ({
+jest.mock('#src/common/gates/isTicketGateHeld.ts', () => ({
 	isTicketGateHeld: (params: { holds: GateHolds; identifier: string; labels: string[] }) => mockIsTicketGateHeld(params),
 }));
-jest.mock('#src/gates/gateHolds/syncGateHolds.ts', () => ({
+jest.mock('#src/gates/gateHolds/syncGateHolds/syncGateHolds.ts', () => ({
 	syncGateHolds: (params: { cwd: string; settings: TrackerSettings; onProgress?: (message: string) => void }) => mockSyncGateHolds(params),
 }));
 jest.mock('#src/workOrder/readWorkOrderTicketRef.ts', () => ({

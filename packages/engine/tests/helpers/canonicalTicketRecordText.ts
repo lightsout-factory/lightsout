@@ -2,7 +2,7 @@ import { mkdtempSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import type { WorkOrderState } from '#src/contracts/workOrder/WorkOrderState.ts';
-import { updateLocalWorkOrderState } from '#src/workOrder/updateLocalWorkOrderState.ts';
+import { updateLocalWorkOrderState } from '#src/workOrder/common/state/updateLocalWorkOrderState.ts';
 
 interface Params {
 	/** The record to write, whose `branch` names the ticket folder it lands in. */

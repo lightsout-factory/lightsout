@@ -1,17 +1,13 @@
-import type { TrackerAttachment } from '#src/ticketTracker/common/types/TrackerAttachment.ts';
-import type { TrackerFailure } from '#src/ticketTracker/common/types/TrackerFailure.ts';
-import type { JiraTrackerSettings } from '#src/ticketTracker/common/types/TrackerSettings.ts';
-import { parseTicketNumber } from '#src/ticketTracker/internal/common/utils/parseTicketNumber.ts';
-import { runJira } from '#src/ticketTracker/jira/internal/runJira.ts';
+import type { TrackerAttachment } from '#src/common/types/TrackerAttachment.ts';
+import type { TrackerFailure } from '#src/common/types/TrackerFailure.ts';
+import type { JiraTrackerSettings } from '#src/common/types/TrackerSettings.ts';
+import { parseTicketNumber } from '#src/ticketTracker/common/parseTicketNumber.ts';
+import { runJira } from '#src/ticketTracker/jira/common/runJira.ts';
+import type { JiraAttachment } from '#src/ticketTracker/jira/common/types/JiraAttachment.ts';
 
 interface Params {
 	settings: JiraTrackerSettings;
 	identifier: string;
-}
-
-export interface JiraAttachment {
-	id: string;
-	filename: string;
 }
 
 interface AttachmentsResponse {

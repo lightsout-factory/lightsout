@@ -1,0 +1,276 @@
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { describe, expect, test } from '@jest/globals';
+import { gradeMemoryPath } from '#src/common/gradeMemoryPath.ts';
+import type { Driver } from '#src/common/types/Driver.ts';
+import type { DriverInvocation } from '#src/common/types/DriverInvocation.ts';
+import { GradeMemory } from '#src/contracts/plan/memory/GradeMemory.ts';
+import { runPlanGrade } from '#src/plan/runPlanGrade/runPlanGrade.ts';
+import { cleanOverviewBody } from '#tests/helpers/cleanOverviewBody.ts';
+import { cleanPlanBody } from '#tests/helpers/cleanPlanBody.ts';
+import { createGapCheckDriver } from '#tests/helpers/createGapCheckDriver.ts';
+import { createUncalledDriver } from '#tests/helpers/createUncalledDriver.ts';
+import { expectStatus } from '#tests/helpers/expectStatus.ts';
+import { gapCheckLensOf } from '#tests/helpers/gapCheckLensOf.ts';
+import { gapCheckMarker, setupGraded } from '#tests/helpers/gradedThreePhasePlan.ts';
+import { secondPhaseBody } from '#tests/helpers/secondPhaseBody.ts';
+import { setupConsumerRepo } from '#tests/helpers/setupConsumerRepo.ts';
+import { writePhasedPlanDeliverable } from '#tests/helpers/writePhasedPlanDeliverable.ts';
+import { writePlanDeliverable } from '#tests/helpers/writePlanDeliverable.ts';
+
+// What a grading pass does to the plan's finding memory: the baseline an
+// unfinished pass must not move, the memory a first pass starts from nothing,
+// and the memory a pass refuses to run against at all.
+
+/** One decision-level gap, as a checker reports it. */
+const omittedDecisionGap = { area: 'omitted-decision', gap: 'no error handling decided', decision: 'what to return on failure', options: [] };
+
+/** Prose with no JSON object in it — what a reader returns when it never answers on contract. */
+const offContractProse = 'the plan looks fine to me';
+
+/** The timestamp the seeded baseline carries, so a rewritten one is recognisable. */
+const baselineAt = '2026-01-01T00:00:00.000Z';
+
+/**
+ * A fingerprint from an earlier pass that shares nothing with the current one:
+ * every hash is a literal, so the pass under test can only decide a full review
+ * and can never mistake this for a reusable one.
+ */
+const staleInputs = {
+	planFiles: [{ file: 'phase1-core.md', sha256: 'stale-phase-one' }],
+	gradedCommit: 'stalecommit',
+	changedFiles: [],
+	config: 'stale-config',
+	prompts: 'stale-prompts',
+	sha256: 'stale-combined',
+};
+
+/**
+ * A two-phase plan whose second phase's reader never answers on contract, over a
+ * memory already holding a baseline from a complete pass.
+ *
+ * The failing reader is told from the answering one by the plan text under
+ * check, and a re-emit — whose prompt is the reconstruct instruction rather than
+ * the plan — is answered off contract too, because the only reader failing here
+ * is the second phase's.
+ */
+const setupLostReader = async ({ name }: { name: string }) => {
+	const cwd = setupConsumerRepo();
+	const dir = writePhasedPlanDeliverable({
+		cwd,
+		name,
+		files: {
+			'overview.md': cleanOverviewBody(),
+			'phase1-core.md': cleanPlanBody({ title: 'Graded Plan', reference: true }),
+			'phase2-extra.md': secondPhaseBody(),
+		},
+	});
+
+	writeFileSync(
+		join(dir, 'grade-memory.json'),
+		JSON.stringify({
+			planName: name,
+			findings: [],
+			lastPass: { scope: 'full', inputs: staleInputs, at: baselineAt },
+			coverage: { readers: [] },
+			nextFindingNumber: 1,
+			updatedAt: baselineAt,
+		}),
+	);
+
+	const invocations: DriverInvocation[] = [];
+	const driver: Driver = {
+		name: 'stub',
+		invoke: async (invocation) => {
+			invocations.push(invocation);
+
+			if (invocation.prompt.includes('# Gap-judge input')) {
+				const covers = [...invocation.prompt.matchAll(/^### (o\d+)$/gm)].map(([, id]) => id);
+
+				return { text: JSON.stringify({ verdicts: [{ covers, outcome: 'needs-a-human', humanDecision: 'what the plan should do here' }] }), exitCode: 0 };
+			}
+
+			if (invocation.prompt.includes('# Validation error') || invocation.prompt.includes('src/other-thing.ts')) {
+				return { text: offContractProse, exitCode: 0 };
+			}
+
+			// One lens reports the finding and the other two report nothing, so the
+			// merged record set has exactly one member to state.
+			return { text: JSON.stringify({ gaps: gapCheckLensOf(invocation) === 'decisions' ? [omittedDecisionGap] : [] }), exitCode: 0 };
+		},
+	};
+
+	return { cwd, name, driver, memoryPath: await gradeMemoryPath({ cwd, name }) };
+};
+
+/**
+ * The three-phase fixture's driver, except that phase 2's readers never answer
+ * on contract — and neither does a re-emit, whose prompt is the reconstruct
+ * instruction rather than the plan, because the only reader failing here is
+ * phase 2's.
+ */
+const withLostPhaseTwoReader = ({ driver }: { driver: Driver }): Driver => ({
+	name: driver.name,
+	invoke: async (invocation) => {
+		const phaseTwoReader = invocation.prompt.includes(gapCheckMarker) && invocation.prompt.includes('src/beta-thing.ts');
+
+		if (phaseTwoReader || invocation.prompt.includes('# Validation error')) {
+			return { text: offContractProse, exitCode: 0 };
+		}
+
+		return driver.invoke(invocation);
+	},
+});
+
+/**
+ * The three-phase plan graded once with a finding on every phase, so a complete
+ * full pass left open records and a baseline behind, then `edited` nudged the way
+ * a repair would. The baseline is read back before the act, so a case can say the
+ * act left it exactly where it was — timestamp and fingerprint alike.
+ */
+const setupRegraded = async ({ name, edited, lostReader = false }: { name: string; edited?: string; lostReader?: boolean }) => {
+	const graded = await setupGraded({ name, gaps: [omittedDecisionGap], edited });
+	const memoryPath = await gradeMemoryPath({ cwd: graded.cwd, name });
+	const baseline = GradeMemory.parse(JSON.parse(readFileSync(memoryPath, 'utf8'))).lastPass;
+
+	// an absent baseline would make "left where it was" hold vacuously
+	if (baseline === undefined) {
+		throw new Error("the fixture's baseline pass recorded no lastPass");
+	}
+
+	return { cwd: graded.cwd, name, driver: lostReader ? withLostPhaseTwoReader({ driver: graded.driver }) : graded.driver, memoryPath, baseline };
+};
+
+/** A clean single plan with no memory file beside it, and a stub whose readers find nothing. */
+const setupFirstPass = async ({ name }: { name: string }) => {
+	const cwd = setupConsumerRepo();
+
+	writePlanDeliverable({ cwd, name, body: cleanPlanBody({ title: 'Graded Plan' }) });
+
+	return { cwd, name, driver: createGapCheckDriver(), memoryPath: await gradeMemoryPath({ cwd, name }) };
+};
+
+/** The same clean plan, over a memory file that is valid JSON and not a `GradeMemory`, read by a driver that must never be spawned. */
+const setupMalformedMemory = async ({ name }: { name: string }) => {
+	const cwd = setupConsumerRepo();
+	const dir = writePlanDeliverable({ cwd, name, body: cleanPlanBody({ title: 'Graded Plan' }) });
+	const malformed = '{ "planName": 5 }';
+
+	writeFileSync(join(dir, 'grade-memory.json'), malformed);
+
+	return {
+		cwd,
+		name,
+		malformed,
+		driver: createUncalledDriver({ reason: 'a malformed memory file must stop the pass before any agent is spawned' }),
+		memoryPath: await gradeMemoryPath({ cwd, name }),
+		gradePath: join(dir, 'grade.json'),
+	};
+};
+
+describe('runPlanGrade', () => {
+	test('plan grade: a pass that lost a reader does not become the scope baseline', async () => {
+		const { cwd, name, driver, memoryPath } = await setupLostReader({ name: 'lost-reader' });
+
+		const result = await runPlanGrade({ cwd, driver, name });
+
+		expectStatus(result, 'failed');
+		expect(result.grade?.complete).toBe(false);
+
+		const memory = GradeMemory.parse(JSON.parse(readFileSync(memoryPath, 'utf8')));
+
+		// what the reader that DID answer found is kept
+		expect(memory.findings).toEqual([expect.objectContaining({ phase: 'phase1-core.md', gap: 'no error handling decided', status: 'open' })]);
+		// and the baseline the next pass narrows against is still the last complete
+		// pass's: a pass that never read a phase cannot vouch for that phase's text
+		expect(memory.lastPass).toEqual(expect.objectContaining({ at: baselineAt }));
+		expect(memory.lastPass?.inputs.sha256).toBe('stale-combined');
+	});
+
+	test('plan grade: a focused pass that lost a reader leaves the baseline where it was', async () => {
+		const { cwd, name, driver, memoryPath, baseline } = await setupRegraded({ name: 'focused-lost-reader', edited: 'phase2-extra.md', lostReader: true });
+
+		const result = await runPlanGrade({ cwd, driver, name });
+
+		expectStatus(result, 'failed');
+		// the repair reached phases 1 and 2, and only phase 1's readers answered
+		expect(result.grade?.scope).toBe('focused');
+		expect(result.grade?.phasesChecked).toStrictEqual(['phase1-core.md']);
+		expect(result.grade?.scopeComplete).toBe(false);
+
+		const memory = GradeMemory.parse(JSON.parse(readFileSync(memoryPath, 'utf8')));
+
+		// a pass that never read the repaired phase cannot vouch for its text, so
+		// the next repair still narrows against the earlier pass
+		expect(memory.lastPass).toStrictEqual(baseline);
+	});
+
+	test('plan grade: a --phase narrowing never becomes the baseline', async () => {
+		const { cwd, name, driver, memoryPath, baseline } = await setupRegraded({ name: 'narrowed-baseline', edited: 'phase2-extra.md' });
+
+		const result = await runPlanGrade({ cwd, driver, name, phases: ['3'] });
+
+		expectStatus(result, 'complete');
+		// every reader the human asked for answered, and still the pass speaks only
+		// for the phase they chose, never for the ones they left out
+		expect(result.grade.phasesChecked).toStrictEqual(['phase3-final.md']);
+		expect(result.grade.scopeComplete).toBe(false);
+
+		const memory = GradeMemory.parse(JSON.parse(readFileSync(memoryPath, 'utf8')));
+
+		expect(memory.lastPass).toStrictEqual(baseline);
+	});
+
+	test('plan grade: a pass that offered no plan file to a reader records no baseline', async () => {
+		const { cwd, name, driver, memoryPath, baseline } = await setupRegraded({ name: 'nothing-offered' });
+
+		const result = await runPlanGrade({ cwd, driver, name });
+
+		expectStatus(result, 'complete');
+		// no phase text moved, so nothing was read and nothing was exempted either
+		expect(result.grade.phasesChecked).toStrictEqual([]);
+		expect(result.grade.phasesLight).toStrictEqual([]);
+		expect(result.grade.scopeComplete).toBe(false);
+
+		const memory = GradeMemory.parse(JSON.parse(readFileSync(memoryPath, 'utf8')));
+
+		// a pass that established nothing remembers nothing — not even a fresh timestamp
+		expect(memory.lastPass).toStrictEqual(baseline);
+	});
+
+	test('plan grade: an absent memory file yields a full review and a fresh memory', async () => {
+		const { cwd, name, driver, memoryPath } = await setupFirstPass({ name: 'first-pass' });
+
+		const result = await runPlanGrade({ cwd, driver, name });
+
+		expectStatus(result, 'complete');
+		// nothing was on record to narrow against, so every plan file was offered to
+		// the readers
+		expect(result.grade.scope).toBe('full');
+		expect(result.grade.passed).toBe(true);
+		expect(existsSync(memoryPath)).toBeTruthy();
+
+		const memory = GradeMemory.parse(JSON.parse(readFileSync(memoryPath, 'utf8')));
+
+		expect(memory).toEqual(expect.objectContaining({ planName: 'first-pass', findings: [] }));
+		expect(memory.lastPass?.scope).toBe('full');
+		// and the passing full review is recorded against the fingerprint this pass
+		// measured, which is what a later pass compares itself to
+		expect(typeof memory.lastPassingFullReview?.inputs.sha256).toBe('string');
+		expect(memory.lastPassingFullReview?.inputs.sha256).toBe(result.grade.inputs?.sha256);
+	});
+
+	test('plan grade: a malformed memory file fails the pass before any spawn', async () => {
+		const { cwd, name, driver, malformed, memoryPath, gradePath } = await setupMalformedMemory({ name: 'malformed-memory' });
+
+		const result = await runPlanGrade({ cwd, driver, name });
+
+		expectStatus(result, 'failed');
+		// the message names the file a human has to look at
+		expect(result.error).toContain(memoryPath);
+		// nothing was spawned, nothing was graded, and the unreadable record was left
+		// exactly as it was rather than being overwritten with a fresh one
+		expect(existsSync(gradePath)).toBe(false);
+		expect(readFileSync(memoryPath, 'utf8')).toBe(malformed);
+	});
+});

@@ -1,0 +1,93 @@
+import { buildRefactorExecutorInvocation } from '#src/agents/buildRefactorExecutorInvocation.ts';
+import { RefactorScope } from '#src/common/constants/RefactorScope.ts';
+import { buildSelfCheckCommand } from '#src/common/selfCheck/buildSelfCheckCommand.ts';
+import { RunStatus } from '#src/contracts/run/RunStatus.ts';
+import type { StepRecord } from '#src/contracts/run/StepRecord.ts';
+import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFinding.ts';
+import type { WorkReport } from '#src/contracts/work/WorkReport.ts';
+import { WorkReportStatus } from '#src/contracts/work/WorkReportStatus.ts';
+import type { PipelineRun } from '#src/pipeline/common/PipelineRun.ts';
+import type { PipelineResult } from '#src/pipeline/PipelineResult.ts';
+import { collectChanged } from '#src/pipeline/steps/common/collectChanged.ts';
+import { fingerprintScopeFiles } from '#src/pipeline/steps/common/fingerprintScopeFiles.ts';
+import { standardsScopeFiles } from '#src/pipeline/steps/common/standardsScopeFiles.ts';
+import { withStepFiles } from '#src/pipeline/steps/common/withStepFiles.ts';
+import { appendFriction } from '#src/runState/friction/appendFriction.ts';
+
+interface Params {
+	run: PipelineRun;
+	gitPrefix?: string;
+	planContent: string;
+	overviewContent?: string;
+	standards?: string;
+	/** Already carrying the step's cleanup record in its `report` slot — this pass forwards it rather than writing over it. */
+	record: StepRecord;
+	findings: StandardsFinding[];
+	/** Judgment-carrying findings the executor weighs but is never held on. */
+	advisories: StandardsFinding[];
+	/** Fingerprints of the standards-scope files as cleanup began, unchanged across every round. */
+	before: Record<string, string>;
+}
+
+const failureOf = ({ report, failure }: { report: WorkReport | undefined; failure: string | undefined }) => {
+	if (failure !== undefined) {
+		return `refactor: ${failure}`;
+	}
+
+	return report === undefined || report.status === WorkReportStatus.Complete ? undefined : `refactor: ${report.status} — ${report.failures.join('; ')}`;
+};
+
+const editedSince = ({ before, after }: { before: Record<string, string>; after: Record<string, string> }) =>
+	Object.keys(after).filter((file) => after[file] !== before[file]);
+
+/**
+ * Calls `run.invokeRole` rather than `invokeRoleOrStop`: cleanup is best-effort, so only a rate
+ * limit parks the run and every other failure is recorded. `collectChanged` runs before the
+ * fingerprint diff so a file the round created is already in scope; the other order would
+ * never count a new file as edited.
+ */
+export const runExecutorPass = async ({
+	run,
+	gitPrefix,
+	planContent,
+	overviewContent,
+	standards,
+	record,
+	findings,
+	advisories,
+	before,
+}: Params): Promise<{ parked: PipelineResult } | { record: StepRecord; report?: WorkReport; failure?: string; edited: string[] }> => {
+	const outcome = await run.invokeRole({
+		invocation: buildRefactorExecutorInvocation({
+			scope: RefactorScope.Feature,
+			planContent,
+			overviewContent,
+			changedFiles: standardsScopeFiles({ run }),
+			standards,
+			findings,
+			advisories,
+			selfCheckCommand: buildSelfCheckCommand({ cwd: run.cwd, runId: run.current().runId }).command,
+		}),
+		step: 'refactor',
+	});
+
+	if (!outcome.ok && outcome.rateLimited) {
+		return { parked: await run.stop({ record, status: RunStatus.PausedRateLimit, error: run.parkMessage() }) };
+	}
+
+	const report = outcome.ok ? outcome.report : undefined;
+	const reports = report === undefined ? [] : [report];
+
+	if (report !== undefined) {
+		await appendFriction({ cwd: run.cwd, runId: run.current().runId, step: 'refactor', friction: report.friction ?? [] });
+	}
+
+	await run.setStep({ record, patch: await collectChanged({ run, gitPrefix, reports }) });
+
+	const edited = editedSince({ before, after: await fingerprintScopeFiles({ run }) });
+	const next = withStepFiles({ record: { ...record, changedFiles: [...new Set([...(record.changedFiles ?? []), ...edited])] }, reports, gitPrefix });
+
+	await run.setStep({ record: next });
+
+	return { record: next, report, failure: failureOf({ report, failure: outcome.ok ? undefined : outcome.failure }), edited };
+};

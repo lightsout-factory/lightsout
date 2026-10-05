@@ -1,18 +1,14 @@
-import { mkdirSync, readdirSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
 import { queueCommand } from '#src/cli/queueCommand.ts';
 import { PlanningStatus } from '#src/common/constants/PlanningStatus.ts';
-import type { QueueDrainReport } from '#src/queue/common/types/QueueDrainReport.ts';
+import type { QueueDrainReport } from '#src/common/types/QueueDrainReport.ts';
+import type { QueueSettings } from '#src/common/types/QueueSettings.ts';
+import type { TrackerFailure } from '#src/common/types/TrackerFailure.ts';
+import type { TrackerSettings } from '#src/common/types/TrackerSettings.ts';
+import type { WorkOrderRunOutcome } from '#src/common/types/WorkOrderRunOutcome.ts';
 import type { QueueFailure } from '#src/queue/common/types/QueueFailure.ts';
-import type { QueueSettings } from '#src/queue/common/types/QueueSettings.ts';
-import type { WorkOrderRunOutcome } from '#src/queue/common/types/WorkOrderRunOutcome.ts';
-import type { TrackerFailure } from '#src/ticketTracker/common/types/TrackerFailure.ts';
-import type { TrackerSettings } from '#src/ticketTracker/common/types/TrackerSettings.ts';
 import { captureCommandOutput } from '#tests/helpers/captureCommandOutput.ts';
-import { expectDefined } from '#tests/helpers/expectDefined.ts';
 import { queueSettingsFixture } from '#tests/helpers/queueSettingsFixture.ts';
-import { seedRunFolder } from '#tests/helpers/seedRunFolder.ts';
 import { setupConsumerRepo } from '#tests/helpers/setupConsumerRepo.ts';
 import { trackerSettingsFixture } from '#tests/helpers/trackerSettingsFixture.ts';
 
@@ -31,7 +27,7 @@ import { trackerSettingsFixture } from '#tests/helpers/trackerSettingsFixture.ts
 // The drain spawns harnesses and talks to a tracker — the queue module's entry
 // point, covered by its own tests. What a report amounts to on screen is
 // observable with the drain stubbed.
-type RunQueueParams = Parameters<typeof import('#src/queue/runQueue.ts').runQueue>[0];
+type RunQueueParams = Parameters<typeof import('#src/queue/runQueue/runQueue.ts').runQueue>[0];
 const mockResolveQueueSettings = jest.fn<() => QueueSettings | QueueFailure>();
 const mockResolveTrackerSettings = jest.fn<() => TrackerSettings | TrackerFailure>();
 const mockRunQueue = jest.fn<(params: RunQueueParams) => Promise<QueueDrainReport | QueueFailure>>();
@@ -51,8 +47,8 @@ function mockRecordingRelay() {
 	};
 }
 
-jest.mock('#src/queue/startup/resolveQueueSettings.ts', () => ({ resolveQueueSettings: () => mockResolveQueueSettings() }));
-jest.mock('#src/queue/runQueue.ts', () => ({ runQueue: (params: RunQueueParams) => mockRunQueue(params) }));
+jest.mock('#src/queue/startup/resolveQueueSettings/resolveQueueSettings.ts', () => ({ resolveQueueSettings: () => mockResolveQueueSettings() }));
+jest.mock('#src/queue/runQueue/runQueue.ts', () => ({ runQueue: (params: RunQueueParams) => mockRunQueue(params) }));
 jest.mock('#src/queue/relay/emptyRelayMailbox.ts', () => ({ emptyRelayMailbox: (params: { directory: string }) => mockEmptyRelayMailbox(params) }));
 jest.mock('#src/queue/relay/TerminalQuestionRelay.ts', () => ({ TerminalQuestionRelay: mockRecordingRelay() }));
 jest.mock('#src/queue/relay/FileQuestionRelay.ts', () => ({ FileQuestionRelay: mockRecordingRelay() }));
@@ -132,48 +128,6 @@ const openOutcomeOf = ({ identifier, title, branch, open }: { identifier: string
 		open,
 	};
 };
-
-/**
- * The drain stubbed as `setupQueueCommand` stubs it, but recording the queue run
- * id it was handed and — when `recordsRun`, as a drain with work does — creating
- * that run's folder. `blocksSummary` stands a directory at the summary's
- * temporary path, so the save fails for a reason other than a missing folder.
- */
-const setupSavedSummary = ({
-	report,
-	recordsRun = true,
-	blocksSummary = false,
-}: {
-	report: QueueDrainReport;
-	recordsRun?: boolean;
-	blocksSummary?: boolean;
-}) => {
-	const captured = setupQueueCommand({ report });
-	const handedRunIds: string[] = [];
-	const runDirs: string[] = [];
-
-	mockRunQueue.mockImplementation(async (params) => {
-		expectDefined(params.runId);
-		handedRunIds.push(params.runId);
-
-		if (recordsRun) {
-			const runDir = seedRunFolder({ cwd: params.cwd, runId: params.runId, pipeline: 'queue' });
-
-			if (blocksSummary) {
-				mkdirSync(join(runDir, 'summary.json.tmp'));
-			}
-
-			runDirs.push(runDir);
-		}
-
-		return report;
-	});
-
-	return { ...captured, handedRunIds, runDirs };
-};
-
-/** One ticket parked on a gate failure, so the drain ends on the paused code. */
-const parkedReport: QueueDrainReport = { outcomes: [outcomeOf({ ready: false, error: 'tsc: 3 errors' })], leftBehind: [] };
 
 /** The final board's heading: the finish time is the moment the command ran, so only its shape is pinned. */
 const finishedHeading = expect.stringMatching(/^Queue finished · \d{2}:\d{2}$/);
@@ -375,44 +329,6 @@ describe('queueCommand', () => {
 		await expect(queueCommand(context)).rejects.toThrow(/process\.exit/);
 
 		expect(logged).toContain('LO-75 lo-75-import parked: tsc: 3 errors');
-		expect(exitCodes).toStrictEqual([2]);
-	});
-
-	test('saves the finished board, report and exit code in the queue run folder', async () => {
-		const { context, logged, exitCodes, runDirs } = setupSavedSummary({ report: parkedReport });
-
-		await expect(queueCommand(context)).rejects.toThrow(/process\.exit/);
-
-		// The board ends in one blank line; the report, which holds none, is what follows it.
-		const separator = logged.lastIndexOf('');
-		const printedBoard = logged.slice(0, separator);
-		const printedReport = logged.slice(separator + 1);
-		const summary: unknown = JSON.parse(readFileSync(join(runDirs[0], 'summary.json'), 'utf8'));
-
-		expect(printedReport).toStrictEqual(['LO-70 lo-70-drain parked: tsc: 3 errors', '  worktree: /tmp/worktrees/lo-70-drain']);
-		expect(summary).toEqual({ boardLines: printedBoard, reportLines: printedReport, exitCode: 2, finishedAt: expect.any(String) });
-		expect(exitCodes).toStrictEqual([2]);
-	});
-
-	test('a drain that created no run saves no summary and says nothing about it', async () => {
-		const { context, cwd, logged, errors, exitCodes } = setupSavedSummary({ report: { outcomes: [], leftBehind: [] }, recordsRun: false });
-
-		await expect(queueCommand(context)).rejects.toThrow(/process\.exit/);
-
-		const summaries = readdirSync(cwd, { recursive: true }).filter((entry) => String(entry).includes('summary.json'));
-
-		expect(logged).toEqual([finishedHeading, '', boardHeaderRow, boardSeparatorRow, '| — | — | — | — | — | — | — |', '']);
-		expect(errors).toStrictEqual([]);
-		expect(summaries).toStrictEqual([]);
-		expect(exitCodes).toStrictEqual([0]);
-	});
-
-	test('a summary that cannot be written is one stderr line and never changes the exit code', async () => {
-		const { context, errors, exitCodes, handedRunIds } = setupSavedSummary({ report: parkedReport, blocksSummary: true });
-
-		await expect(queueCommand(context)).rejects.toThrow(/process\.exit/);
-
-		expect(errors).toEqual([expect.stringContaining(handedRunIds[0])]);
 		expect(exitCodes).toStrictEqual([2]);
 	});
 });

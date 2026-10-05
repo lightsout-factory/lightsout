@@ -1,0 +1,263 @@
+import { mkdtempSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { PassThrough, Writable } from 'node:stream';
+import { describe, expect, jest, test } from '@jest/globals';
+import { PlanningStatus } from '#src/common/constants/PlanningStatus.ts';
+import { QueueWorker } from '#src/common/constants/QueueWorker.ts';
+import type { Driver } from '#src/common/types/Driver.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
+import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
+import { RunStatus } from '#src/contracts/run/RunStatus.ts';
+import type { WorkOrderState } from '#src/contracts/workOrder/WorkOrderState.ts';
+import type { PipelineResult } from '#src/pipeline/PipelineResult.ts';
+import type { RunnableTicket } from '#src/queue/common/types/RunnableTicket.ts';
+import type { WorkerOutcome } from '#src/queue/common/types/WorkerOutcome.ts';
+import { TerminalQuestionRelay } from '#src/queue/relay/TerminalQuestionRelay.ts';
+import { runWorkerWithRelay } from '#src/queue/workers/runWorkerWithRelay/runWorkerWithRelay.ts';
+import { queueSettingsFixture } from '#tests/helpers/queueSettingsFixture.ts';
+import { trackerSettingsFixture } from '#tests/helpers/trackerSettingsFixture.ts';
+
+/**
+ * How the plan worker decides what to build: the ticket record it pulls first,
+ * and what it falls back to when the ticket carries none.
+ *
+ * A sibling of `runWorkerWithRelay.unit.test.ts` rather than more cases in it:
+ * that file states which worker a ticket gets and the loop between a question
+ * and its answer, while every case here turns on the record the pull answers.
+ */
+
+// Mocked Imports
+// -------------------------
+// Every build here spawns a harness or a pipeline — another module's entry
+// point, each covered by its own tests. What this file owns is the fork between
+// them, which is observable with them stubbed.
+const mockRunDirectWork = jest.fn<(params: { answeredQuestion?: { question: string; answer: string } }) => Promise<PipelineResult>>();
+const mockAppendTicketNote = jest.fn<() => Promise<undefined>>();
+
+jest.mock('#src/direct/runDirectWork/runDirectWork.ts', () => ({
+	runDirectWork: (params: { answeredQuestion?: { question: string; answer: string } }) => mockRunDirectWork(params),
+}));
+jest.mock('#src/ticketTracker/appendTicketNote.ts', () => ({ appendTicketNote: () => mockAppendTicketNote() }));
+// -------------------------
+// Reading the record, and building a work order's plans one at a time, each have
+// their own tests. What this file owns is the fork between them: a record sends
+// the ticket to the ordered per-plan build, no record builds from the ticket
+// body, and a failed pull builds nothing.
+interface PullTicketRecordParams {
+	cwd: string;
+	workOrderName: string;
+	config: LightsoutConfig;
+	env: NodeJS.ProcessEnv;
+	onProgress?: (message: string) => void;
+}
+
+type PullTicketRecordResult = { record: WorkOrderState | undefined } | { error: string };
+
+const mockPullTicketRecord = jest.fn<(params: PullTicketRecordParams) => Promise<PullTicketRecordResult>>();
+
+// The no-record fallback reaches the direct worker, which builds through the
+// body-build lifecycle; with no record it writes nothing, so this stand-in only
+// hands the run an id and answers its result.
+interface BodyBuildLifecycleParams {
+	run: (params: { runId: string }) => Promise<PipelineResult>;
+}
+
+jest.mock('#src/workOrder/implementRun/runWorkOrderBodyBuildLifecycle.ts', () => ({
+	runWorkOrderBodyBuildLifecycle: async ({ run }: BodyBuildLifecycleParams) => ({ result: await run({ runId: 'run-body-1' }) }),
+}));
+jest.mock('#src/workOrder/pullWorkOrderState.ts', () => ({ pullWorkOrderState: (params: PullTicketRecordParams) => mockPullTicketRecord(params) }));
+// -------------------------
+interface BuildTicketPlansParams {
+	cwd: string;
+	workOrderName: string;
+	record: WorkOrderState;
+	env: NodeJS.ProcessEnv;
+	driverName: string;
+	workOrderRunDir: string;
+	allowTicketBodyBuild: boolean;
+}
+
+const mockBuildTicketPlans = jest.fn<(params: BuildTicketPlansParams) => Promise<WorkerOutcome>>();
+
+jest.mock('#src/queue/workers/runWorkerWithRelay/common/buildWorkOrderPlans/buildWorkOrderPlans.ts', () => ({
+	buildWorkOrderPlans: (params: BuildTicketPlansParams) => mockBuildTicketPlans(params),
+}));
+// -------------------------
+
+const settings = queueSettingsFixture();
+
+const config: LightsoutConfig = { gates: { check: 'true', test: 'true', 'test-coverage': false } };
+const driver: Driver = { name: 'claude-code', invoke: () => Promise.resolve({ text: '', exitCode: 0 }) };
+
+const ticketOf = (worker: QueueWorker): RunnableTicket => ({
+	id: 'id-70',
+	identifier: 'LO-70',
+	title: 'Drain the backlog',
+	url: 'https://linear.app/lightsout/issue/LO-70',
+	description: 'Build the thing.',
+	priority: 2,
+	createdAt: '2026-01-01T00:00:00.000Z',
+	labels: [],
+	planningStatus: PlanningStatus.NotNeeded,
+	worker,
+	status: 'Ready to implement',
+	finished: false,
+	unfinishedBlockers: [],
+});
+
+const manifestOf = (status: RunStatus): RunManifest => ({
+	runId: 'run-1',
+	createdAt: '2026-01-01T00:00:00.000Z',
+	updatedAt: '2026-01-01T00:00:01.000Z',
+	plan: '.lightsout/runs/run-1/ticket.md',
+	harness: 'claude-code',
+	status,
+	currentStep: null,
+	steps: [],
+	changedFiles: [],
+	commits: [],
+	packages: [],
+	baselineDirtyFiles: [],
+	testSubjects: [],
+	acceptanceTests: [],
+	approvedTests: [],
+	unreachableChangedFiles: [],
+	coverageExcludedChangedFiles: [],
+});
+
+/** A relay on a pair of streams. No case here escalates, so nothing is ever typed back. */
+const setupRelay = () => {
+	const input = new PassThrough();
+	const output = new Writable({
+		write(_chunk: Buffer, _encoding, done) {
+			done();
+		},
+	});
+
+	mockAppendTicketNote.mockResolvedValue(undefined);
+
+	return {
+		relay: new TerminalQuestionRelay({ settings, trackerSettings: trackerSettingsFixture(), input, output }),
+		coordinatorRunDir: mkdtempSync(join(tmpdir(), 'lightsout-plan-worker-')),
+	};
+};
+
+/**
+ * A plan worker on a ticket that carries a published brainstorm and no plan:
+ * the worktree has no plan folder, and the fetch answers with nothing restored
+ * and no error, which is what a brainstorm-only ticket reads as.
+ */
+const setupBrainstormOnlyTicket = () => {
+	const { relay, coordinatorRunDir } = setupRelay();
+
+	// A ticket with no record carries no published plan.
+	mockPullTicketRecord.mockResolvedValue({ record: undefined });
+	mockRunDirectWork.mockResolvedValue({ ok: true, manifest: manifestOf(RunStatus.Passed) });
+
+	const progress: string[] = [];
+
+	return {
+		relay,
+		progress,
+		params: {
+			worktreePath: mkdtempSync(join(tmpdir(), 'lightsout-brainstorm-only-')),
+			workOrderName: 'lo-70-drain',
+			ticket: { ...ticketOf(QueueWorker.Plan), planningStatus: PlanningStatus.Complete },
+			config,
+			loadedConfig: { config },
+			driver,
+			driverName: 'claude-code',
+			settings,
+			relay,
+			coordinatorRunId: 'run-q',
+			coordinatorRunDir,
+			workOrderRunDir: join(coordinatorRunDir, 'work-orders', 'LO-70'),
+			env: {},
+			onProgress: (message: string) => {
+				progress.push(message);
+			},
+		},
+	};
+};
+
+/** The ticket record the queue pulls before it builds, handed on to the build loop whole. */
+const ticketRecord: WorkOrderState = {
+	schemaVersion: 1,
+	name: 'lo-70-drain',
+	ticketRef: 'LO-70',
+	branch: 'lo-70-drain',
+	mode: 'multiple-plan',
+	plans: [{ id: '002-drain-order', title: 'Drain order', progress: 'ready', createdAt: '2026-01-02T00:00:00.000Z' }],
+	history: [{ at: '2026-01-02T00:00:00.000Z', kind: 'plan-added', detail: 'added plan 002-drain-order' }],
+};
+
+/** A plan worker on a fresh empty worktree for branch `lo-70-drain`, with the record pull arranged by the row. */
+const setupPlanWorkerTicket = ({ pull }: { pull: PullTicketRecordResult }) => {
+	const { relay, coordinatorRunDir } = setupRelay();
+	const worktreePath = mkdtempSync(join(tmpdir(), 'lightsout-ticket-record-'));
+	const workOrderRunDir = join(coordinatorRunDir, 'work-orders', 'LO-70');
+
+	mockPullTicketRecord.mockResolvedValue(pull);
+	mockBuildTicketPlans.mockResolvedValue({});
+
+	return {
+		relay,
+		workOrderRunDir,
+		worktreePath,
+		params: {
+			worktreePath,
+			workOrderName: 'lo-70-drain',
+			ticket: ticketOf(QueueWorker.Plan),
+			config,
+			loadedConfig: { config },
+			driver,
+			driverName: 'claude-code',
+			settings,
+			relay,
+			coordinatorRunId: 'run-q',
+			coordinatorRunDir,
+			workOrderRunDir,
+			env: { LINEAR_API_KEY: 'key-1' },
+		},
+	};
+};
+
+describe('runWorkerWithRelay', () => {
+	test('runWorkerWithRelay: builds a planning-complete ticket carrying only a published brainstorm from the ticket body', async () => {
+		const { relay, progress, params } = setupBrainstormOnlyTicket();
+
+		const outcome = await runWorkerWithRelay(params);
+
+		relay.close();
+
+		expect(outcome).toStrictEqual({});
+		expect(mockRunDirectWork).toHaveBeenCalledWith(expect.objectContaining({ ticketBody: 'Build the thing.', ticketRef: 'LO-70', cwd: params.worktreePath }));
+		expect(progress).toEqual([expect.stringContaining('carries no published plan')]);
+	});
+
+	test('runWorkerWithRelay: a plan-worker ticket with a record is built plan by plan', async () => {
+		const { relay, params, workOrderRunDir, worktreePath } = setupPlanWorkerTicket({ pull: { record: ticketRecord } });
+
+		const outcome = await runWorkerWithRelay(params);
+
+		relay.close();
+
+		expect(outcome).toStrictEqual({});
+		expect(mockBuildTicketPlans).toHaveBeenCalledWith(
+			expect.objectContaining({ cwd: worktreePath, workOrderName: 'lo-70-drain', record: ticketRecord, workOrderRunDir, allowTicketBodyBuild: true }),
+		);
+	});
+
+	test('runWorkerWithRelay: a plan worker whose record pull fails builds nothing', async () => {
+		const divergence = 'the ticket record on LO-70 and the local one both moved: resolve them with lightsout work-order sync --name lo-70-drain';
+		const { relay, params } = setupPlanWorkerTicket({ pull: { error: divergence } });
+
+		const outcome = await runWorkerWithRelay(params);
+
+		relay.close();
+
+		expect(outcome).toStrictEqual({ error: divergence });
+		expect(mockBuildTicketPlans).not.toHaveBeenCalled();
+	});
+});

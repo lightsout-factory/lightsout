@@ -2,6 +2,13 @@ import { expect, describe, test, jest } from '@jest/globals';
 
 const mockGetLocale = jest.fn<() => string>();
 
+const mockSaveOrder = jest.fn<(params: { id: string }) => string>();
+
+// The wrapper takes the real function's parameters and forwards them all.
+jest.mock('@/orders/saveOrder', () => ({
+	saveOrder: (params: { id: string }) => mockSaveOrder(params),
+}));
+
 const mockQueryResult = {
 	data: 'p.png',
 	isLoading: false,

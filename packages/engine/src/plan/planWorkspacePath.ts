@@ -1,4 +1,4 @@
-import { parsePlanAddress } from '#src/common/planAddress/parsePlanAddress.ts';
+import { parsePlanAddress } from '#src/common/planAddress/parsePlanAddress/parsePlanAddress.ts';
 
 interface Params {
 	/** A plan address, or a work order's name for its plans folder as a whole. */

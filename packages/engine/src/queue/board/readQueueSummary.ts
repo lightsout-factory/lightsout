@@ -1,6 +1,6 @@
-import { readJsonFile } from '#src/common/utils/readJsonFile.ts';
+import { readJsonFile } from '#src/common/json/readJsonFile.ts';
 import { QueueSummary } from '#src/contracts/queue/QueueSummary.ts';
-import { getQueueSummaryPath } from '#src/queue/board/getQueueSummaryPath.ts';
+import { getQueueSummaryPath } from '#src/queue/board/common/getQueueSummaryPath.ts';
 
 interface Params {
 	/** The MAIN repository checkout the coordinator run lives in. */

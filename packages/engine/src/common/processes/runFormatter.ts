@@ -1,8 +1,8 @@
+import { messageOf } from '#src/common/messageOf.ts';
 import { runCommand } from '#src/common/processes/runCommand.ts';
 import type { CommandResult } from '#src/common/types/CommandResult.ts';
-import { messageOf } from '#src/common/utils/messageOf.ts';
 import type { GateResult } from '#src/contracts/gates/GateResult.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { appendCommandLog } from '#src/runState/appendCommandLog.ts';
 
 interface Params {

@@ -25,7 +25,7 @@ describe('dead-export check', () => {
 		expect(check.inputKinds).toStrictEqual(['file-text']);
 	});
 
-	test('reports an export no module or test mentions, a folder barrel listing it aside', async () => {
+	test('reports an export no module or test mentions, a folder index file listing it aside', async () => {
 		const input = setupFileTextInput({
 			contents: [
 				['src/feature/index.ts', "export { renderGreeting, buildGreeting } from './renderGreeting';"],
@@ -42,7 +42,7 @@ describe('dead-export check', () => {
 				siteKey: 'dead-export:src/feature/buildGreeting.ts',
 				files: [{ path: 'src/feature/buildGreeting.ts' }],
 				detail: "'buildGreeting' is referenced nowhere else",
-				guidance: 'A dead code candidate. Delete it — version control has the history.',
+				guidance: 'Nothing references it. Delete it.',
 			},
 		]);
 	});
@@ -86,23 +86,6 @@ describe('dead-export check', () => {
 
 		const findings = await check.run({ inputs: { 'file-text': input }, options: {} });
 
-		expect(findings).toStrictEqual([]);
-	});
-
-	test('derives the framework carve-outs from the manifests in scope, so a route file consuming a screen is its consumer', async () => {
-		const input = setupFileTextInput({
-			contents: [
-				['package.json', '{ "dependencies": { "@tanstack/react-start": "1.0.0" } }'],
-				['src/routes/index.tsx', "import { RunsIndex } from '../features/app/screens/RunsIndex';\n\nexport const Route = { component: RunsIndex };"],
-				['src/features/app/screens/RunsIndex/index.ts', "export { RunsIndex } from './RunsIndex';"],
-				['src/features/app/screens/RunsIndex/RunsIndex.tsx', 'export const RunsIndex = (): null => null;'],
-			],
-		});
-
-		const findings = await check.run({ inputs: { 'file-text': input }, options: {} });
-
-		// with no carve-out derived, that route file reads as a barrel and the
-		// screen it renders as used by nobody
 		expect(findings).toStrictEqual([]);
 	});
 

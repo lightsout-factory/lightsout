@@ -1,12 +1,12 @@
 import { basename } from 'node:path';
 import type { DecisionsRecord } from '#src/contracts/plan/decisions/DecisionsRecord.ts';
 import type { StructuralFinding } from '#src/contracts/plan/grade/StructuralFinding.ts';
+import type { DeliverableFile } from '#src/plan/common/types/DeliverableFile.ts';
 import { buildPlanSyncDecisionsCommand } from '#src/plan/decisionLog/buildPlanSyncDecisionsCommand.ts';
-import type { DeliverableFile } from '#src/plan/internal/common/types/DeliverableFile.ts';
-import { checkDecisionLog } from '#src/plan/lint/checkDecisionLog.ts';
-import { checkGlobalConstraints } from '#src/plan/lint/checkGlobalConstraints.ts';
-import { isPhasedDeliverable } from '#src/plan/lint/internal/common/utils/isPhasedDeliverable.ts';
-import { parsePlan } from '#src/plan/parsePlan.ts';
+import { checkDecisionLog } from '#src/plan/lint/common/checkDecisionLog.ts';
+import { checkGlobalConstraints } from '#src/plan/lint/common/checkGlobalConstraints.ts';
+import { isPhasedDeliverable } from '#src/plan/lint/common/isPhasedDeliverable.ts';
+import { parsePlan } from '#src/plan/parsePlan/parsePlan.ts';
 
 interface Params {
 	cwd: string;

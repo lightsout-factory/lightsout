@@ -1,9 +1,9 @@
-import type { TrackerAttachment } from '#src/ticketTracker/common/types/TrackerAttachment.ts';
-import type { TrackerFailure } from '#src/ticketTracker/common/types/TrackerFailure.ts';
-import type { LinearTrackerSettings } from '#src/ticketTracker/common/types/TrackerSettings.ts';
-import { parseTicketNumber } from '#src/ticketTracker/internal/common/utils/parseTicketNumber.ts';
-import { collectNodes } from '#src/ticketTracker/linear/internal/common/utils/collectNodes.ts';
-import { runLinear } from '#src/ticketTracker/linear/internal/runLinear.ts';
+import type { TrackerAttachment } from '#src/common/types/TrackerAttachment.ts';
+import type { TrackerFailure } from '#src/common/types/TrackerFailure.ts';
+import type { LinearTrackerSettings } from '#src/common/types/TrackerSettings.ts';
+import { parseTicketNumber } from '#src/ticketTracker/common/parseTicketNumber.ts';
+import { collectNodes } from '#src/ticketTracker/linear/common/collectNodes.ts';
+import { runLinear } from '#src/ticketTracker/linear/common/runLinear.ts';
 
 interface Params {
 	settings: LinearTrackerSettings;

@@ -2,12 +2,16 @@
 summary: "Exports in different places that share one name."
 checks: deterministic
 severity: advisory
+requires:
+  - multi-export
+  - filename-mismatch
 ---
 
 ## Duplicate Export Name
 
-Before you add an export, search the repository for one with the same name. Two exports with one name are usually one thing written twice: keep one, and move it to the `common/` both users share, as `shared-code-placement` says.
+Within a package, give every export a name no other export has. Before you add an export, search the package for that name.
 
-Two may share a name only when they are different things, or the same idea built separately for packages that cannot share code.
+- The same thing written twice: keep one, and move it where `file-placement` says.
+- Two different things: rename one, so each name says what it is.
 
 Then a search by name finds the one place a concept lives.

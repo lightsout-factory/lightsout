@@ -1,14 +1,14 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
-import { parseFlags } from '#src/cli/common/args/parseFlags.ts';
-import type { CommandContext } from '#src/cli/common/types/CommandContext.ts';
+import { parseFlags } from '#src/cli/parseFlags.ts';
 import { selfCheckCommand } from '#src/cli/selfCheckCommand.ts';
+import { SelfCheckReason } from '#src/common/constants/SelfCheckReason.ts';
+import type { CommandContext } from '#src/common/types/CommandContext.ts';
 import type { GateResult } from '#src/contracts/gates/GateResult.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { PipelineKind } from '#src/contracts/run/PipelineKind.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
-import { SelfCheckReason } from '#src/gates/common/constants/SelfCheckReason.ts';
 import { captureCommandOutput } from '#tests/helpers/captureCommandOutput.ts';
 import { seedRunDir } from '#tests/helpers/seedRunDir.ts';
 import { setupConsumerRepo } from '#tests/helpers/setupConsumerRepo.ts';
@@ -45,7 +45,7 @@ interface SelfCheckResult {
 
 const mockRunSelfCheck = jest.fn<(params: SelfCheckParams) => Promise<SelfCheckResult>>();
 
-jest.mock('#src/gates/runSelfCheck.ts', () => ({ runSelfCheck: (params: SelfCheckParams) => mockRunSelfCheck(params) }));
+jest.mock('#src/gates/runSelfCheck/runSelfCheck.ts', () => ({ runSelfCheck: (params: SelfCheckParams) => mockRunSelfCheck(params) }));
 // -------------------------
 
 const redGate: GateResult = { kind: 'check', group: 'api', command: 'pnpm check', exitCode: 1, outputTail: 'src/thing.ts:3 unused import' };

@@ -1,4 +1,4 @@
-import type { ParsedPlan } from '#src/plan/internal/common/types/ParsedPlan.ts';
+import type { ParsedPlan } from '#src/plan/common/types/ParsedPlan.ts';
 
 export interface PhaseFile {
 	/** Absolute path on disk. */

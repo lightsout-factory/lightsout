@@ -1,0 +1,303 @@
+import { execSync } from 'node:child_process';
+import { writeFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { describe, expect, jest, test } from '@jest/globals';
+import { shipCommand } from '#src/cli/shipCommand/shipCommand.ts';
+import { PlanProgress } from '#src/contracts/workOrder/PlanProgress.ts';
+import { WorkOrderEventKind } from '#src/contracts/workOrder/WorkOrderEventKind.ts';
+import { WorkOrderMode } from '#src/contracts/workOrder/WorkOrderMode.ts';
+import type { WorkOrderState } from '#src/contracts/workOrder/WorkOrderState.ts';
+import { updateLocalWorkOrderState } from '#src/workOrder/common/state/updateLocalWorkOrderState.ts';
+import { captureCommandOutput } from '#tests/helpers/captureCommandOutput.ts';
+import { setupBranchRepo } from '#tests/helpers/setupBranchRepo.ts';
+import { stubForgeOnPath } from '#tests/helpers/stubForgeOnPath.ts';
+
+// Mocked Imports
+// -------------------------
+// The ship sequence itself is not stubbed out — it still runs for real, so every
+// case here keeps the outcome it had. The stand-in only records what the command
+// handed it, because the integration bundle is built here and read by an agent
+// spawn that a green ship never reaches.
+type RunShip = typeof import('#src/ship/runShip/runShip.ts').runShip;
+
+const mockRunShip = jest.fn<RunShip>((params) =>
+	jest.requireActual<typeof import('#src/ship/runShip/runShip.ts')>('#src/ship/runShip/runShip.ts').runShip(params),
+);
+
+jest.mock('#src/ship/runShip/runShip.ts', () => ({ runShip: (params: Parameters<RunShip>[0]) => mockRunShip(params) }));
+// -------------------------
+
+const viewed = '{"number":41,"url":"https://forge.example/acme/repo/pull/41","title":"Add the ship command","headRefName":"lo-60-ship"}';
+
+/**
+ * A tracker block naming a credential no environment ever holds, so the Done
+ * write that follows a merge fails before it can reach a network — the failure
+ * path this file needs, without a mock and without planting a real key.
+ */
+const unreachableTracker = {
+	provider: 'linear',
+	team: 'LO',
+	'api-key-env': 'LIGHTSOUT_SHIP_RECONCILE_ABSENT_KEY',
+};
+
+/** A repo whose config carries the ship block under test, and a forge that answers every call. */
+const setupShipCommand = ({
+	ship,
+	checks = '[{"name":"unit","bucket":"pass"}]',
+	dirty,
+	tracker,
+	workOrder = true,
+}: {
+	ship?: Record<string, unknown>;
+	checks?: string;
+	/** Files left uncommitted after the config is committed — what a dirty tree looks like. */
+	dirty?: Record<string, string>;
+	/** The `ticket-tracker` block, when the test wants the merge reconciled to Done. */
+	tracker?: Record<string, unknown>;
+	/** Whether a work order claims the branch. Off for a branch that predates work order states. */
+	workOrder?: boolean;
+} = {}) => {
+	const captured = captureCommandOutput();
+
+	stubForgeOnPath({
+		responses: {
+			'auth status': { exitCode: 0 },
+			'pr list': { stdout: '[]' },
+			'pr create': { stdout: 'https://forge.example/acme/repo/pull/41' },
+			'pr edit': { exitCode: 0 },
+			'pr view 41 --json number': { stdout: viewed },
+			'pr view 41 --json headRefOid': { stdout: '{"headRefOid":"__HEAD__"}' },
+			'pr view 41 --json state': {
+				stdout: '{"state":"MERGED","mergeCommit":{"oid":"0f1e2d3c"},"headRefOid":"__HEAD__","mergeStateStatus":"CLEAN","reviewDecision":null}',
+			},
+			'pr checks': { stdout: checks },
+			'pr merge': { exitCode: 0 },
+		},
+	});
+
+	const { cwd } = setupBranchRepo({ branch: 'lo-60-ship', workOrder });
+
+	writeFileSync(
+		join(cwd, 'lightsout.config.json'),
+		JSON.stringify({
+			gates: { check: 'true', test: 'true', 'test-coverage': false },
+			...(ship === undefined ? {} : { ship }),
+			...(tracker === undefined ? {} : { 'ticket-tracker': tracker }),
+		}),
+	);
+	// Committed, not just written: an untracked config would be the dirty tree
+	// ship blocks on, and every test here would stop on that instead.
+	execSync('git add -A && git -c user.name=t -c user.email=t@t commit -qm config', { cwd, stdio: 'ignore' });
+
+	// Written after the commit, so these are the only thing the tree is dirty with.
+	for (const [path, content] of Object.entries(dirty ?? {})) {
+		writeFileSync(join(cwd, path), content);
+	}
+
+	return { context: { flags: new Map<string, string | true>(), rest: [], cwd }, ...captured };
+};
+
+/** A repo whose `commands.implement` names a harness of its own, standing beside a global harness that is not it. */
+const setupImplementHarness = () => {
+	const captured = captureCommandOutput();
+
+	stubForgeOnPath({
+		responses: {
+			'auth status': { exitCode: 0 },
+			'pr list': { stdout: '[]' },
+			'pr create': { stdout: 'https://forge.example/acme/repo/pull/41' },
+			'pr edit': { exitCode: 0 },
+			'pr view 41 --json number': { stdout: viewed },
+			'pr view 41 --json headRefOid': { stdout: '{"headRefOid":"__HEAD__"}' },
+			'pr view 41 --json state': {
+				stdout: '{"state":"MERGED","mergeCommit":{"oid":"0f1e2d3c"},"headRefOid":"__HEAD__","mergeStateStatus":"CLEAN","reviewDecision":null}',
+			},
+			'pr checks': { stdout: '[{"name":"unit","bucket":"pass"}]' },
+			'pr merge': { exitCode: 0 },
+		},
+	});
+
+	const { cwd } = setupBranchRepo({ branch: 'lo-60-ship' });
+
+	writeFileSync(
+		join(cwd, 'lightsout.config.json'),
+		JSON.stringify({
+			gates: { check: 'true', test: 'true', 'test-coverage': false },
+			harness: 'claude-code',
+			model: 'opus',
+			commands: { implement: { harness: 'codex', model: 'gpt-5-codex' } },
+			ship: { 'ticket-pattern': '^(?<ticket>lo-(?<number>\\d+))' },
+		}),
+	);
+	execSync('git add -A && git -c user.name=t -c user.email=t@t commit -qm config', { cwd, stdio: 'ignore' });
+
+	return { context: { flags: new Map<string, string | true>(), rest: [], cwd }, ...captured };
+};
+
+/**
+ * The record `lo-60-ship` carries: multiple-plan, its one plan implemented, and
+ * no ship request — the ticket whose own record says it may not be merged yet.
+ */
+const unrequestedShipRecord: WorkOrderState = {
+	schemaVersion: 1,
+	name: 'lo-60-ship',
+	ticketRef: 'LO-60',
+	branch: 'lo-60-ship',
+	mode: WorkOrderMode.MultiplePlan,
+	plans: [
+		{
+			id: '001-ship-command',
+			title: 'Add the ship command',
+			progress: PlanProgress.Implemented,
+			createdAt: '2026-01-01T00:00:00.000Z',
+		},
+	],
+	history: [{ at: '2026-01-01T00:00:00.000Z', kind: WorkOrderEventKind.PlanAdded, detail: 'added plan 001-ship-command' }],
+};
+
+/**
+ * The same repo and forge every other case here uses, with a ticket record
+ * standing in the plans folder beside the config.
+ *
+ * The forge still answers every call and the remote is still real, so a ship
+ * that failed to consult the record would run all the way to a merge — which is
+ * what makes the absent push an assertion rather than a coincidence. The record
+ * is written before the commit because it is a file on disk: written after, it
+ * would be the dirty tree ship stops on instead.
+ */
+const setupTicketShipCommand = async () => {
+	const captured = captureCommandOutput();
+
+	stubForgeOnPath({
+		responses: {
+			'auth status': { exitCode: 0 },
+			'pr list': { stdout: '[]' },
+			'pr create': { stdout: 'https://forge.example/acme/repo/pull/41' },
+			'pr edit': { exitCode: 0 },
+			'pr view 41 --json number': { stdout: viewed },
+			'pr view 41 --json headRefOid': { stdout: '{"headRefOid":"__HEAD__"}' },
+			'pr view 41 --json state': {
+				stdout: '{"state":"MERGED","mergeCommit":{"oid":"0f1e2d3c"},"headRefOid":"__HEAD__","mergeStateStatus":"CLEAN","reviewDecision":null}',
+			},
+			'pr checks': { stdout: '[{"name":"unit","bucket":"pass"}]' },
+			'pr merge': { exitCode: 0 },
+		},
+	});
+
+	const { cwd } = setupBranchRepo({ branch: 'lo-60-ship' });
+	const seeded = await updateLocalWorkOrderState({ cwd, name: 'lo-60-ship', change: () => unrequestedShipRecord });
+
+	if ('error' in seeded) {
+		throw new Error(seeded.error);
+	}
+
+	writeFileSync(
+		join(cwd, 'lightsout.config.json'),
+		JSON.stringify({
+			gates: { check: 'true', test: 'true', 'test-coverage': false },
+			ship: { 'ticket-pattern': '^(?<ticket>lo-(?<number>\\d+))' },
+		}),
+	);
+	execSync('git add -A && git -c user.name=t -c user.email=t@t commit -qm config', { cwd, stdio: 'ignore' });
+
+	return { context: { flags: new Map<string, string | true>(), rest: [], cwd }, cwd, ...captured };
+};
+
+describe('shipCommand', () => {
+	test('a branch that ships names the pull request, the merge commit and its URL, and exits 0', async () => {
+		const { context, errors, logged, exitCodes } = setupShipCommand({ ship: { 'ticket-pattern': '^(?<ticket>lo-(?<number>\\d+))' } });
+
+		await expect(shipCommand(context)).rejects.toThrow(/process\.exit/);
+
+		expect(logged.some((line) => line.includes('shipped lo-60') && line.includes('#41') && line.includes('0f1e2d3c'))).toBe(true);
+		expect(logged).toContain('  https://forge.example/acme/repo/pull/41');
+		// A repo that named no tracker never asked for the Done write, so the
+		// shipped path says nothing about one.
+		expect(errors).toStrictEqual([]);
+		expect(exitCodes).toStrictEqual([0]);
+	});
+
+	test('a ship whose tracker cannot be reached prints why the ticket is not Done, and still exits 0', async () => {
+		// No work order claims this branch: a branch that DOES carry a record is
+		// refused outright when its tracker cannot be read, so the Done write is
+		// only ever reached on one that does not.
+		const { context, errors, logged, exitCodes } = setupShipCommand({
+			ship: { 'ticket-pattern': '^(?<ticket>lo-(?<number>\\d+))' },
+			tracker: unreachableTracker,
+			workOrder: false,
+		});
+
+		await expect(shipCommand(context)).rejects.toThrow(/process\.exit/);
+
+		expect(errors.some((line) => line.includes('lo-60') && line.includes('LIGHTSOUT_SHIP_RECONCILE_ABSENT_KEY'))).toBe(true);
+		// The merge happened, so the shipped lines and the exit code are the ones
+		// a successful ship always writes — a stale ticket cannot unship a branch.
+		expect(logged.some((line) => line.includes('shipped lo-60') && line.includes('0f1e2d3c'))).toBe(true);
+		expect(exitCodes).toStrictEqual([0]);
+	});
+
+	test('a blocked ship names the reason, the failing checks and the result file, and exits 1', async () => {
+		const { context, errors, logged, exitCodes } = setupShipCommand({ checks: '[{"name":"unit","bucket":"fail"}]' });
+
+		await expect(shipCommand(context)).rejects.toThrow(/process\.exit/);
+
+		expect(errors.some((line) => line.includes('checks-failed'))).toBe(true);
+		expect(errors).toContain('  checks: unit');
+		expect(logged.some((line) => line.includes(join('.lightsout', 'work-orders', 'lo-60-ship', 'ship.json')))).toBe(true);
+		expect(exitCodes).toStrictEqual([1]);
+	});
+
+	test('a block that named no checks prints no checks line, so a reader is never handed an empty list to chase', async () => {
+		const { context, errors, logged, exitCodes } = setupShipCommand({ dirty: { 'brainstorm-notes.md': '# uncommitted\n' } });
+
+		await expect(shipCommand(context)).rejects.toThrow(/process\.exit/);
+
+		expect(errors.some((line) => line.includes('dirty-tree') && line.includes('brainstorm-notes.md'))).toBe(true);
+		expect(errors.some((line) => line.startsWith('  checks:'))).toBe(false);
+		// the run still happened, so it still left the result file a tracker skill reads
+		expect(logged.some((line) => line.includes(join('.lightsout', 'work-orders', 'lo-60-ship', 'ship.json')))).toBe(true);
+		expect(exitCodes).toStrictEqual([1]);
+	});
+
+	test('resolves the integration harness from the implement command entry', async () => {
+		const { context } = setupImplementHarness();
+
+		await expect(shipCommand(context)).rejects.toThrow(/process\.exit/);
+
+		const handed = mockRunShip.mock.calls[0]?.[0];
+
+		// The `implement` entry, not the global harness beside it: a merge conflict
+		// and a red gate are implementation work, so the recovery spawns the
+		// harness the repo picked for implementing.
+		expect(handed?.integration).toEqual(
+			expect.objectContaining({
+				config: expect.objectContaining({ harness: 'codex', model: 'gpt-5-codex' }),
+				driver: expect.objectContaining({ name: 'codex' }),
+			}),
+		);
+	});
+
+	test('a ticket pattern that cannot capture a ticket is a startup usage error, and no run is recorded for it', async () => {
+		const { context, errors, logged, exitCodes } = setupShipCommand({ ship: { 'ticket-pattern': '^lo-\\d+' } });
+
+		await expect(shipCommand(context)).rejects.toThrow(/process\.exit/);
+
+		expect(errors.some((line) => line.includes('ship.ticket-pattern'))).toBe(true);
+		expect(logged).toStrictEqual([]);
+		expect(exitCodes).toStrictEqual([1]);
+	});
+
+	test('refuses to ship a multiple-plan ticket branch that has no ship request', async () => {
+		const { context, cwd, errors, exitCodes } = await setupTicketShipCommand();
+
+		await expect(shipCommand(context)).rejects.toThrow(/process\.exit/);
+
+		const onOrigin = execSync('git ls-remote --heads origin lo-60-ship', { cwd, encoding: 'utf8' });
+
+		expect(errors.some((line) => line.includes('ticket-not-authorized') && /ship request/i.test(line))).toBe(true);
+		// The record is consulted before anything leaves the machine, so the branch
+		// the standalone command refused never reached the remote.
+		expect(onOrigin).toBe('');
+		expect(exitCodes).toStrictEqual([1]);
+	});
+});

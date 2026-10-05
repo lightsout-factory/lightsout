@@ -1,84 +1,13 @@
-import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
+import { mkdtemp } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { dirname, join } from 'node:path';
+import { join } from 'node:path';
 import { expect, test } from '@jest/globals';
-import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFinding.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 import { writeStandardsSnapshot } from '#src/standardsCheck/writeStandardsSnapshot.ts';
 import { getStandardsView } from '#src/views/getStandardsView.ts';
-import { seedRunDir } from '#tests/helpers/seedRunDir.ts';
+import { standardsViewFixtures } from '#tests/helpers/standardsViewFixtures.ts';
 
-/** Write a set of pack-relative files, creating the folders they need. */
-const writeTree = async ({ dir, files }: { dir: string; files: Record<string, string> }) => {
-	for (const [rel, content] of Object.entries(files)) {
-		await mkdir(dirname(join(dir, rel)), { recursive: true });
-		await writeFile(join(dir, rel), content, 'utf8');
-	}
-};
-
-/** The pack file that selects the house topic whole, which every library below ships as its `house` pack. */
-const housePackFile = JSON.stringify({ description: 'what this shop agrees on', include: { topics: ['acme/code/house'] } });
-
-/** A standards library of somebody's own, whose house pack holds one deterministic rule and one agent-only rule. */
-const writeStandardsPack = async () => {
-	const packPath = await mkdtemp(join(tmpdir(), 'lightsout-view-standards-'));
-
-	await writeTree({
-		dir: packPath,
-		files: {
-			'lightsout-standards.json': '{ "name": "acme", "formatVersion": 2 }\n',
-			'packs/house.json': housePackFile,
-			'rules/code/house/topic.md': '# House Style\n\nWhat this shop agrees on.\n',
-			'rules/code/house/05-house-loose-file/rule.md':
-				'---\nsummary: a source file outside a module\nchecks: deterministic\nseverity: blocking\n---\n\nEvery file belongs to a module.\n',
-			'rules/code/house/05-house-loose-file/check.ts':
-				"export const check = {\n\tinputKinds: ['file-list'],\n\trun: ({ inputs }) => input.files.map((path) => ({ siteKey: `house-loose-file:${path}`, files: [{ path }], detail: 'loose' })),\n};\n",
-			'rules/code/house/05-house-loose-file/fixtures/pass/src/mod/index.ts': 'export const mod = 1;\n',
-			'rules/code/house/05-house-loose-file/fixtures/fail/src/loose.ts': 'export const loose = 1;\n',
-			'rules/code/house/10-house-name-things-well/rule.md':
-				'---\nsummary: a name that hides what it does\nchecks: agent\nseverity: advisory\n---\n\nNames are the cheapest documentation.\n',
-		},
-	});
-
-	return packPath;
-};
-
-/** A repo that registers that library as acme and selects its house pack, optionally overriding one rule's state in its own config. */
-const seedStandardsRepo = async ({
-	overrides,
-	library,
-	pack = 'acme/house',
-}: {
-	overrides?: Record<string, unknown>;
-	library?: string;
-	pack?: string | false;
-} = {}) => {
-	const cwd = await mkdtemp(join(tmpdir(), 'lightsout-view-repo-'));
-
-	await writeTree({
-		dir: cwd,
-		files: {
-			'src/loose.ts': 'export const loose = 1;\n',
-			'lightsout.config.json': JSON.stringify({
-				gates: { check: 'true', test: 'true', 'test-coverage': false },
-				'standards-libraries': { acme: library ?? (await writeStandardsPack()) },
-				'standards-pack': pack,
-				...(overrides ? { 'standards-rule-settings': overrides } : {}),
-			}),
-		},
-	});
-
-	return cwd;
-};
-
-const finding = (overrides: Partial<StandardsFinding> = {}): StandardsFinding => ({
-	rule: 'acme/house-loose-file',
-	severity: StandardsSeverity.Blocking,
-	siteKey: 'acme/house-loose-file:src/loose.ts',
-	files: [{ path: 'src/loose.ts' }],
-	detail: 'loose',
-	...overrides,
-});
+const { writeTree, housePackFile, writeStandardsPack, seedStandardsRepo, finding } = standardsViewFixtures;
 
 test('a repo that has never run a check still describes what it enforces', async () => {
 	const cwd = await seedStandardsRepo();
@@ -240,41 +169,6 @@ test('each rule row carries its resolved options', async () => {
 	]);
 });
 
-test('refactor history is folded onto the rule whose sites a run attempted', async () => {
-	const cwd = await seedStandardsRepo();
-	const worklist = JSON.stringify({
-		at: '2026-01-01T00:00:00.000Z',
-		path: '.',
-		all: false,
-		batches: [{ id: 'batch-00:house-loose-file:src', rule: 'acme/house-loose-file', folder: 'src', blocking: [finding()], advisories: [] }],
-	});
-
-	await seedRunDir({
-		cwd,
-		manifest: {
-			runId: 'run-refactor',
-			pipeline: 'refactor',
-			plan: '.lightsout/runs/run-refactor/worklist.json',
-			steps: [{ id: 'batch-00:house-loose-file:src', status: 'passed', attempts: 1, report: { outcome: 'resolved', remainingSiteKeys: [], rationale: [] } }],
-		},
-		worklist,
-	});
-
-	const view = await getStandardsView({ cwd });
-
-	// the site was frozen and is gone afterwards, so it counts as resolved
-	expect(view.rules[0]?.history).toStrictEqual({
-		attempted: 1,
-		resolved: 1,
-		declined: 0,
-		untracked: 0,
-		adviceApplied: 0,
-		adviceDeclined: 0,
-		adviceAlreadyMet: 0,
-		reasons: [],
-	});
-});
-
 test('the trend comes back oldest first, one point per check the user took', async () => {
 	const cwd = await seedStandardsRepo();
 
@@ -289,90 +183,6 @@ test('the trend comes back oldest first, one point per check the user took', asy
 		{ at: '2026-08-20T12:00:00.000Z', total: 1 },
 	]);
 	expect(view.at).toBe('2026-08-20T12:00:00.000Z');
-});
-
-test('every history count and reason lands in its own column, on the rule it belongs to', async () => {
-	const cwd = await seedStandardsRepo();
-	const worklist = JSON.stringify({
-		at: '2026-01-01T00:00:00.000Z',
-		path: '.',
-		all: false,
-		batches: [
-			{
-				id: 'batch-00:house-loose-file:src',
-				rule: 'acme/house-loose-file',
-				folder: 'src',
-				blocking: [finding({ siteKey: 'a' }), finding({ siteKey: 'b' }), finding({ siteKey: 'c' }), finding({ siteKey: 'd' })],
-				advisories: [],
-			},
-			{
-				id: 'batch-01:house-loose-file:lib',
-				rule: 'acme/house-loose-file',
-				folder: 'lib',
-				blocking: [finding({ siteKey: 'e' }), finding({ siteKey: 'f' })],
-				advisories: [],
-			},
-		],
-	});
-
-	await seedRunDir({
-		cwd,
-		manifest: {
-			runId: 'run-refactor',
-			pipeline: 'refactor',
-			plan: '.lightsout/runs/run-refactor/worklist.json',
-			steps: [
-				{
-					id: 'batch-00:house-loose-file:src',
-					status: 'passed',
-					attempts: 1,
-					report: {
-						outcome: 'declined',
-						remainingSiteKeys: ['b', 'c', 'd'],
-						rationale: ['the generated module is not ours to split'],
-						advisoryOutcomes: [
-							{ rule: 'acme/house-name-things-well', siteKey: 'name:a', outcome: 'applied' },
-							{ rule: 'acme/house-name-things-well', siteKey: 'name:b', outcome: 'declined', reason: 'the name is a term of art here' },
-							{ rule: 'acme/house-name-things-well', siteKey: 'name:c', outcome: 'declined', reason: 'renaming it would break the published API' },
-						],
-					},
-				},
-				{
-					id: 'batch-01:house-loose-file:lib',
-					status: 'passed',
-					attempts: 1,
-					report: { outcome: 'resolved', remainingSiteKeys: ['e', 'f'], rationale: [] },
-				},
-			],
-		},
-		worklist,
-	});
-
-	const view = await getStandardsView({ cwd });
-
-	// six sites frozen: one gone, three the agent declined and said why, and two
-	// a batch that called itself resolved left standing without an account
-	expect(view.rules[0]?.history).toStrictEqual({
-		attempted: 6,
-		resolved: 1,
-		declined: 3,
-		untracked: 2,
-		adviceApplied: 0,
-		adviceDeclined: 0,
-		adviceAlreadyMet: 0,
-		reasons: ['the generated module is not ours to split'],
-	});
-	// advice is recorded against the rule that gave it, never the rule the batch was working
-	expect(view.rules[1]?.history).toStrictEqual({
-		attempted: 0,
-		resolved: 0,
-		declined: 0,
-		untracked: 0,
-		adviceApplied: 1,
-		adviceDeclined: 2,
-		adviceAlreadyMet: 0,
-		reasons: ['the name is a term of art here', 'renaming it would break the published API'],
-	});
 });
 
 test('a repo that declares no standards packs still reports the findings its last check left', async () => {

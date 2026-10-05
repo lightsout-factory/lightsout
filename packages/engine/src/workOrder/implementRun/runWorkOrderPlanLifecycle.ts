@@ -1,8 +1,9 @@
 import { randomUUID } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import { readGitHeadCommit } from '#src/common/git/readGitHeadCommit.ts';
-import { parsePlanAddress } from '#src/common/planAddress/parsePlanAddress.ts';
-import { sha256 } from '#src/common/utils/sha256.ts';
+import { parsePlanAddress } from '#src/common/planAddress/parsePlanAddress/parsePlanAddress.ts';
+import { sha256 } from '#src/common/sha256.ts';
+import type { WorkOrderPlanOutcome } from '#src/common/types/WorkOrderPlanOutcome.ts';
 import { workOrderFolderDir } from '#src/common/workspace/workOrderFolderDir.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import { PlanProgress } from '#src/contracts/workOrder/PlanProgress.ts';
@@ -10,13 +11,12 @@ import type { WorkOrderPlan } from '#src/contracts/workOrder/WorkOrderPlan.ts';
 import type { WorkOrderState } from '#src/contracts/workOrder/WorkOrderState.ts';
 import type { PipelineResult } from '#src/pipeline/PipelineResult.ts';
 import { durablePlanFiles } from '#src/plan/publish/durablePlanFiles.ts';
-import type { WorkOrderPlanOutcome } from '#src/workOrder/common/types/WorkOrderPlanOutcome.ts';
-import { findPlanImplementationBlocker } from '#src/workOrder/findPlanImplementationBlocker.ts';
-import { findDivergentPlanIds } from '#src/workOrder/internal/common/utils/findDivergentPlanIds.ts';
-import { isWholePlanRun } from '#src/workOrder/internal/common/utils/isWholePlanRun.ts';
-import { readWorkOrderSyncState } from '#src/workOrder/internal/common/utils/readWorkOrderSyncState.ts';
+import { findDivergentPlanIds } from '#src/workOrder/common/findDivergentPlanIds.ts';
+import { updateLocalWorkOrderState } from '#src/workOrder/common/state/updateLocalWorkOrderState.ts';
+import { readWorkOrderSyncState } from '#src/workOrder/common/sync/readWorkOrderSyncState.ts';
+import { findPlanImplementationBlocker } from '#src/workOrder/implementRun/common/findPlanImplementationBlocker.ts';
+import { isWholePlanRun } from '#src/workOrder/implementRun/common/isWholePlanRun.ts';
 import { readWorkOrderState } from '#src/workOrder/readWorkOrderState.ts';
-import { updateLocalWorkOrderState } from '#src/workOrder/updateLocalWorkOrderState.ts';
 
 interface Params {
 	/** HEAD is read and the plan's durable files are hashed here; the record is resolved through its primary checkout. */

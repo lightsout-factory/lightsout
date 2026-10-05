@@ -205,10 +205,10 @@ for, so a repository can take one goal without the others:
 | Pack | What it is for |
 | --- | --- |
 | `lightsout/fractal` | Keeps the repo the same shape at every level, so any file's place is predictable and a duplicate is found by searching for its name. |
-| `lightsout/agent-corrections` | Corrects mistakes current models make by default. |
-| `lightsout/code-style` | Makes code read the same whoever wrote it: one way to write a function, a class, a set of named values and a unit test. |
-| `lightsout/react`, `lightsout/tanstack-start` | Framework rules. Each reaches only the packages whose `package.json` declares that framework. |
-| `lightsout/standards` | All of the above. |
+| `lightsout/code-style` | Makes code read the same whoever wrote it: one way to write a function, a class, a named value and a unit test. |
+| `lightsout/standards` | Both of the above: the standard for a package with no framework pack of its own. |
+| `lightsout/react` | The rules written for React: size caps for hooks and components, and one way to write a component test. |
+| `lightsout/tanstack-start` | The rules written for TanStack Start: which of its files get unit tests. |
 
 `standards-pack` takes one pack address or a list of them. Listed packs apply
 in order, and the last listed wins where two grade one rule differently:
@@ -315,14 +315,6 @@ pack does not hold it, or the pack holds it at `off` and the repository has
 not turned it on. `standards-validate` warns the library's author about each
 missing requirement, and `lightsout doctor` warns the repository, per package
 group. Runs never warn.
-
-A pack may also ship one `fixtures/framework-owned/<framework>/` tree per
-framework — a miniature repo whose `package.json` declares that framework, so
-the same carve-outs a real package earns apply. `standards-validate` runs every
-deterministic check against every such tree and expects silence: a rule that fires
-there is judging code its framework owns, and it is named as that. The tree is
-found by convention, never declared, and a pack that ships none gets a note
-rather than a problem.
 
 `lightsout standards-health` reports on the rules rather than on your code: per
 rule, whether it has a deterministic check or an agent check, and how often agents
@@ -479,7 +471,7 @@ Run `lightsout standards-check --list` to print every rule with the standards do
 
 #### What the default pack blocks
 
-The pack lightsout ships blocks only what is wrong on its own terms — code that lies about its types (`no-any`, `type-assertion`, `explicit-return-type`), code nothing uses (`dead-export`, `duplicate-function-body`), a tree that breaks across filesystems (`case-collision`), and tests that are silently weaker than they read (`no-test-state-in-hooks`, `test-mock-prefix`, `test-mock-untyped`, `test-mock-wrapper-untyped`, `test-strict-equal-matcher`). Every rule about where files go, what they are called, and how many exports they hold ships `advisory`: it is still reported and still handed to the refactor agent, but a repository adopting lightsout is not blocked on day one by a layout it has not yet agreed to.
+The pack lightsout ships blocks only what is wrong on its own terms — code that lies about its types (`no-any`, `type-assertion`, `explicit-return-type`), code nothing uses (`dead-export`, `duplicate-function-body`), a tree that breaks across filesystems (`case-collision`), and tests that are silently weaker than they read (`no-test-state-in-hooks`, `test-mock-prefix`, `test-mock-untyped`). Every rule about where files go, what they are called, and how many exports they hold ships `advisory`: it is still reported and still handed to the refactor agent, but a repository adopting lightsout is not blocked on day one by a layout it has not yet agreed to.
 
 A repository that wants the strict profile promotes those rules itself — an explicit, committed list of what it holds itself to. This is the block lightsout's own repository runs:
 
@@ -491,13 +483,13 @@ A repository that wants the strict profile promotes those rules itself — an ex
     "named-string-values": "blocking",
     "index-file-contents": "blocking",
     "class-inheritance": "blocking",
-    "file-directly-in-common": "blocking",
+    "common-folder-layout": "blocking",
     "file-size": "blocking",
     "index-files": "blocking",
     "folder-size": "blocking",
     "function-size": "blocking",
+    "react-function-size": "blocking",
     "import-path-alias": "blocking",
-    "internal-import-from-outside": "blocking",
     "multi-export": "blocking",
     "single-use-scalar": "blocking",
     "test-beside-subject": "blocking",

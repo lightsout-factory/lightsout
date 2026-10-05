@@ -1,7 +1,7 @@
 import { readdir } from 'node:fs/promises';
+import { getWorkOrderRunsDir } from '#src/common/runs/getWorkOrderRunsDir.ts';
+import { listRunLocations } from '#src/common/runs/listRunLocations.ts';
 import { workOrderFolderDir } from '#src/common/workspace/workOrderFolderDir.ts';
-import { getWorkOrderRunsDir } from '#src/runState/internal/common/paths/getWorkOrderRunsDir.ts';
-import { listRunLocations } from '#src/runState/internal/common/paths/listRunLocations.ts';
 
 interface Params {
 	cwd: string;

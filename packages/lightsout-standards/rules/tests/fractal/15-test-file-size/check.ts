@@ -13,8 +13,7 @@ const buildFileFindings = ({ file, text, limit }: { file: string; text: string; 
 					rule: 'test-file-size',
 					files: [{ path: file }],
 					detail: `${lineCount} lines (cap ~${limit})`,
-					guidance:
-						'A test file this long is a module asking for promotion — give each internal unit a direct test beside it, export the unit from the module’s barrel, and leave the boundary file its orchestration.',
+					guidance: 'Split it by named scenario, one concern per file.',
 					measure: lineCount,
 				}),
 			];

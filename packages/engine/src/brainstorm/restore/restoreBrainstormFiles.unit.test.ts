@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
 import { restoreBrainstormFiles } from '#src/brainstorm/restore/restoreBrainstormFiles.ts';
 import { serializeAttachmentManifest } from '#src/common/attachmentManifest/serializeAttachmentManifest.ts';
-import { sha256 } from '#src/common/utils/sha256.ts';
+import { sha256 } from '#src/common/sha256.ts';
 import { planWorkspaceFolder } from '#tests/helpers/planWorkspaceFolder.ts';
 import { trackerSettingsFixture } from '#tests/helpers/trackerSettingsFixture.ts';
 

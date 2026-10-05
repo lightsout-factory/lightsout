@@ -1,0 +1,254 @@
+import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { dirname, join } from 'node:path';
+import { describe, expect, test } from '@jest/globals';
+import { FindingSeverity } from '#src/contracts/plan/grade/FindingSeverity.ts';
+import { StructuralCheck } from '#src/contracts/plan/grade/StructuralCheck.ts';
+import { checkAcceptanceLedger } from '#src/plan/lint/lintPlanStructure/checkAcceptanceLedger.ts';
+import { parsePlan } from '#src/plan/parsePlan/parsePlan.ts';
+
+/** The gates a repository declares, so a row cannot name one nothing runs. */
+const gateKeys = new Set(['check', 'test']);
+
+/** One well-formed row covering the plan's created file. */
+const goodRow = '| the parser reads a row | `src/parse.unit.test.ts` | reads a row | test |';
+
+/** A plan creating one source file, with whatever ledger and prose sections the case gives it. */
+const planWith = ({ ledger, prose = '' }: { ledger?: string; prose?: string }) =>
+	parsePlan({
+		content: `# Plan
+
+## Files to Create
+
+### \`src/parse.ts\`
+
+The parser.
+${ledger === undefined ? '' : `\n## Acceptance Tests\n\n| Criterion | Test file | Test name | Gate |\n|---|---|---|---|\n${ledger}\n`}${prose === '' ? '' : `\n## Prose Files\n\n${prose}\n`}`,
+		base: 'plan.md',
+	});
+
+/** A repo holding `files`, and the check as the lint calls it. */
+const check = async ({
+	plan,
+	required = true,
+	files = {},
+	gates = gateKeys,
+}: {
+	plan: ReturnType<typeof parsePlan>;
+	required?: boolean;
+	files?: Record<string, string>;
+	gates?: Set<string>;
+}) => {
+	const cwd = mkdtempSync(join(tmpdir(), 'lightsout-ledger-'));
+
+	for (const [path, text] of Object.entries(files)) {
+		mkdirSync(join(cwd, dirname(path)), { recursive: true });
+		writeFileSync(join(cwd, path), text);
+	}
+
+	return checkAcceptanceLedger({ plan, cwd, phase: 'plan.md', required, gateKeys: gates });
+};
+
+/** Each finding as the terse pair the cases assert on. */
+const reported = async (params: Parameters<typeof check>[0]) => (await check(params)).map(({ check: rule, location }) => ({ check: rule, location }));
+
+/** A plan modifying one source file under an Acceptance Tests heading with no rows and no Prose Files, with a `## Renames` section or without one. */
+const renamePlanWith = ({ renames }: { renames: boolean }) =>
+	parsePlan({
+		content: `# Plan
+
+## Files to Modify
+
+### \`src/parse.ts\`
+
+Rename the parser.
+${renames ? '\n## Renames\n\n- `parseRow` → `readRow`\n' : ''}
+## Acceptance Tests
+
+| Criterion | Test file | Test name | Gate |
+|---|---|---|---|
+`,
+		base: 'plan.md',
+	});
+
+/** A plan moving one file and modifying one source file with no Acceptance Tests section, with a `## Build Mode` section reading `move-folders-and-files` or without one. */
+const movePlanWith = ({ moveMode }: { moveMode: boolean }) =>
+	parsePlan({
+		content: `# Plan
+${moveMode ? '\n## Build Mode\n\nmove-folders-and-files\n' : ''}
+## Files to Move
+
+### \`src/old/parse.ts\` → \`src/new/parse.ts\`
+
+Moved.
+
+## Files to Modify
+
+### \`src/app.ts\`
+
+Point the import at the moved parser.
+`,
+		base: 'plan.md',
+	});
+
+describe('checkAcceptanceLedger', () => {
+	test('a well-formed ledger covering the plan is silent', async () => {
+		await expect(check({ plan: planWith({ ledger: goodRow }) })).resolves.toStrictEqual([]);
+	});
+
+	test('no section at all, on a plan that writes a source file, is one blocking finding', async () => {
+		const findings = await check({ plan: planWith({}) });
+
+		expect(findings).toStrictEqual([
+			{
+				check: StructuralCheck.LedgerWellFormed,
+				severity: FindingSeverity.Blocking,
+				phase: 'plan.md',
+				issue: 'no `## Acceptance Tests` section, and this plan writes source files no prose-files entry excuses',
+				location: 'plan.md → Acceptance Tests',
+				fix: 'add a `## Acceptance Tests` section with one row per acceptance criterion',
+			},
+		]);
+	});
+
+	test('with the switch off, an absent section is silence — a repository that never opted in sees nothing new', async () => {
+		await expect(check({ plan: planWith({}), required: false })).resolves.toStrictEqual([]);
+	});
+
+	test('a section present but empty is a coverage finding whatever the switch says', async () => {
+		expect(await reported({ plan: planWith({ ledger: '' }), required: false })).toStrictEqual([
+			{ check: StructuralCheck.LedgerCovers, location: 'plan.md → Acceptance Tests' },
+		]);
+	});
+
+	test('a malformed row is reported by its line', async () => {
+		expect(await reported({ plan: planWith({ ledger: '| it parses | not-a-span | it parses | test |' }) })).toStrictEqual([
+			{ check: StructuralCheck.LedgerWellFormed, location: 'plan.md:13' },
+			{ check: StructuralCheck.LedgerCovers, location: 'plan.md → Acceptance Tests' },
+		]);
+	});
+
+	test('a prose-files bullet naming a path with no reason is reported by its line', async () => {
+		const plan = planWith({ ledger: goodRow, prose: '- `src/parse.ts`' });
+
+		expect(await reported({ plan })).toStrictEqual([{ check: StructuralCheck.LedgerWellFormed, location: 'plan.md:17' }]);
+	});
+
+	test('a row naming a file that is not a test is a finding — the ledger names verifiers, not sources', async () => {
+		const plan = planWith({ ledger: '| it parses | `src/parse.ts` | it parses | test |' });
+		const findings = await check({ plan });
+
+		expect(findings.map(({ issue }) => issue)).toStrictEqual(["ledger row names 'src/parse.ts', which is not a test file"]);
+	});
+
+	test('a row naming a gate nothing runs is a finding', async () => {
+		const plan = planWith({ ledger: '| it parses | `src/parse.unit.test.ts` | it parses | test-smoke |' });
+		const findings = await check({ plan });
+
+		expect(findings.map(({ issue }) => issue)).toStrictEqual(["ledger row names gate 'test-smoke', which no configured gate runs"]);
+	});
+
+	test('a gate that is neither configured nor a test gate is reported once, as the one mistake it is', async () => {
+		const plan = planWith({ ledger: '| it parses | `src/parse.unit.test.ts` | it parses | smoke |' });
+		const findings = await check({ plan });
+
+		// saying it twice — unrun AND untestable — would bury the findings beside it
+		expect(findings.map(({ issue }) => issue)).toStrictEqual(["ledger row names gate 'smoke', which no configured gate runs"]);
+	});
+
+	test('a caller that declared no gates judges no row against them, rather than reporting every row', async () => {
+		const plan = planWith({ ledger: '| it parses | `src/parse.unit.test.ts` | it parses | test-smoke |' });
+
+		// an empty set is evidence of a missing config, never of a repository that
+		// runs nothing
+		await expect(check({ plan, gates: new Set() })).resolves.toStrictEqual([]);
+	});
+
+	test('a row naming a gate that runs no tests is refused even when the caller declared no gates', async () => {
+		const plan = planWith({ ledger: '| it parses | `src/parse.unit.test.ts` | it parses | check |' });
+
+		// no execution of a lint gate can carry a test result, whatever the config
+		// declares — the row could never be proven
+		const findings = await check({ plan, gates: new Set() });
+
+		expect(findings).toEqual([
+			expect.objectContaining({
+				check: StructuralCheck.LedgerWellFormed,
+				severity: FindingSeverity.Blocking,
+				issue: expect.stringContaining("ledger row names gate 'check', which runs no tests"),
+				fix: expect.stringContaining('name a test gate'),
+			}),
+		]);
+	});
+
+	test('two rows naming the same test in the same file are a finding on the second', async () => {
+		const plan = planWith({ ledger: `${goodRow}\n${goodRow}` });
+		const findings = await check({ plan });
+
+		expect(findings.map(({ issue, location }) => ({ issue, location }))).toStrictEqual([
+			{ issue: "two ledger rows name the same test: 'reads a row' in src/parse.unit.test.ts", location: 'plan.md:14' },
+		]);
+	});
+
+	test('a row naming a test the file already holds is refused — an old test must not become a new criterion’s verifier', async () => {
+		const plan = planWith({ ledger: goodRow });
+		const files = { 'src/parse.unit.test.ts': "test('reads a row', () => {});\n" };
+		const findings = await check({ plan, files });
+
+		expect(findings.map(({ issue }) => issue)).toStrictEqual(["'reads a row' is already a test in src/parse.unit.test.ts"]);
+	});
+
+	test('a prose-files entry naming a path under none of the plan’s file headings is a coverage finding', async () => {
+		const plan = planWith({ ledger: goodRow, prose: '- `docs/elsewhere.md` — a document states no behaviour' });
+
+		expect(await reported({ plan })).toStrictEqual([{ check: StructuralCheck.LedgerCovers, location: 'plan.md:17' }]);
+	});
+
+	test('a plan whose only source file is excused by a reasoned prose entry needs no ledger at all', async () => {
+		const plan = planWith({ prose: '- `src/parse.ts` — a config shim with no behaviour a test states' });
+
+		await expect(check({ plan })).resolves.toStrictEqual([]);
+	});
+
+	test('accepts a ledger row naming a test file the plan creates, which has no prior content to preserve', async () => {
+		const plan = planWith({ ledger: goodRow });
+
+		expect(await reported({ plan })).toStrictEqual([]);
+	});
+
+	test('accepts a ledger row naming an existing test file the plan does not otherwise change, because adding a case to one is ordinary work', async () => {
+		const plan = planWith({ ledger: goodRow });
+
+		expect(await reported({ plan, files: { 'src/parse.unit.test.ts': "test('an older case', () => {});\n" } })).toStrictEqual([]);
+	});
+
+	test('a rename-only plan is asked for no acceptance-test rows', async () => {
+		const renameOnly = renamePlanWith({ renames: true });
+		const withoutRenames = renamePlanWith({ renames: false });
+
+		const findings = {
+			renameOnly: await reported({ plan: renameOnly }),
+			withoutRenames: await reported({ plan: withoutRenames }),
+		};
+
+		expect(findings).toStrictEqual({
+			renameOnly: [],
+			withoutRenames: [{ check: StructuralCheck.LedgerCovers, location: 'plan.md → Acceptance Tests' }],
+		});
+	});
+
+	test('a move-folders-and-files plan is asked for no acceptance-test rows', async () => {
+		const moveOnly = movePlanWith({ moveMode: true });
+		const standard = movePlanWith({ moveMode: false });
+
+		const findings = {
+			moveOnly: await reported({ plan: moveOnly }),
+			standard: await reported({ plan: standard }),
+		};
+
+		expect(findings).toStrictEqual({
+			moveOnly: [],
+			standard: [{ check: StructuralCheck.LedgerWellFormed, location: 'plan.md → Acceptance Tests' }],
+		});
+	});
+});

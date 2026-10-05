@@ -8,7 +8,7 @@ import { getRejectionError } from '#tests/helpers/getRejectionError.ts';
 // itself cannot be read, which no temporary repository can stage on demand.
 const mockGetRunOwnerPath = jest.fn<(params: { cwd: string; runId: string }) => Promise<string>>();
 
-jest.mock('#src/runState/owner/getRunOwnerPath.ts', () => ({
+jest.mock('#src/runState/owner/common/getRunOwnerPath.ts', () => ({
 	getRunOwnerPath: (params: { cwd: string; runId: string }) => mockGetRunOwnerPath(params),
 }));
 // -------------------------

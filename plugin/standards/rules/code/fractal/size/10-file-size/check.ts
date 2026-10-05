@@ -1,25 +1,25 @@
 import type { RawStandardsFinding, StandardsCheckModule, SyntaxTreeInput } from '@lightsout/standards-contracts';
 import { buildRawFinding } from '#common/findings/buildRawFinding.ts';
-import { isBarrelFile } from '#common/paths/isBarrelFile.ts';
+import { isIndexFile } from '#common/paths/isIndexFile.ts';
 
 /**
- * A barrel is exempt at any length: the remedy the finding asks for, split it
- * or graduate the concept, is what a module's public API cannot do.
+ * An index file is exempt at any length: the remedy the finding asks for, split it
+ * or turn its module into a folder, is what a package's public API cannot do.
  */
 const buildFileFindings = ({ input, options }: { input: SyntaxTreeInput; options: Record<string, number> }) => {
 	const findings: RawStandardsFinding[] = [];
 
 	for (const [path, tree] of input.trees) {
 		const lineCount = tree.getFullText().split('\n').length;
-		const cap = path.endsWith('.tsx') ? options.tsxFile : options.file;
+		const cap = options.file;
 
-		if (lineCount > cap && !isBarrelFile({ path })) {
+		if (lineCount > cap && !isIndexFile({ path })) {
 			findings.push(
 				buildRawFinding({
 					rule: 'file-size',
 					files: [{ path }],
 					detail: `${lineCount} lines (cap ~${cap})`,
-					guidance: 'Split the file, or graduate the concept it has grown into.',
+					guidance: 'Split the file, or turn its module into a folder.',
 					// The length, not the distance past the cap, so the same file measures
 					// the same however the cap is retuned.
 					measure: lineCount,

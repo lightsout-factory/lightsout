@@ -1,0 +1,22 @@
+import type { CleanupSummary } from '#src/common/types/CleanupSummary.ts';
+import type { StepSummary } from '#src/common/types/StepSummary.ts';
+import type { RunUsage } from '#src/contracts/run/RunUsage.ts';
+
+export interface RunSummary {
+	wallMs: number;
+	/** Sum of step durations — actual working time, unlike wall, which spans idle gaps between a failure and its resume. */
+	activeMs: number;
+	gateMs: number;
+	usage: RunUsage | undefined;
+	/** Share of all input the model read from cache — the run's cost-efficiency dial. */
+	cacheReadShare: number | undefined;
+	steps: StepSummary[];
+	gates: { commands: number; reruns: number; skipped: number };
+	/** Sum of the authoritative per-step verification repair counters, in first-seen step/family order. */
+	verificationRepairs: { gateFamily: string; attempts: number }[];
+	/** The implementation cleanup pass's outcome; undefined for a run whose refactor step recorded none. */
+	cleanup: CleanupSummary | undefined;
+	/** Final messages that failed their contract and cost a re-emit retry. */
+	rejectedReports: number;
+	frictionByArea: { area: string; count: number }[];
+}

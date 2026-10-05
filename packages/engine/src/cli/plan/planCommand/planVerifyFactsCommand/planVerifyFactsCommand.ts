@@ -1,0 +1,68 @@
+import { createProgressPrinter } from '#src/cli/common/createProgressPrinter.ts';
+import { bold } from '#src/cli/common/terminal/bold.ts';
+import { yellow } from '#src/cli/common/terminal/yellow.ts';
+import { ensureBrainstormFiles } from '#src/cli/plan/planCommand/planVerifyFactsCommand/ensureBrainstormFiles.ts';
+import { PlanRunStatus } from '#src/common/constants/PlanRunStatus.ts';
+import { usage } from '#src/common/constants/usage.ts';
+import { exitCli } from '#src/common/exitCli.ts';
+import { getStringFlag } from '#src/common/getStringFlag.ts';
+import type { CommandContext } from '#src/common/types/CommandContext.ts';
+import { PlanningStep } from '#src/contracts/plan/progress/PlanningStep.ts';
+import { RunStatus } from '#src/contracts/run/RunStatus.ts';
+import { recordPlanCommandRun } from '#src/plan/progress/recordPlanCommandRun.ts';
+import { recordPlanningStep } from '#src/plan/progress/recordPlanningStep/recordPlanningStep.ts';
+import { runPlanVerifyFacts } from '#src/plan/runPlanVerifyFacts/runPlanVerifyFacts.ts';
+
+export const planVerifyFactsCommand = async ({ flags, cwd }: CommandContext): Promise<void> => {
+	const name = getStringFlag({ flags, name: 'name' });
+
+	if (!name) {
+		console.error(usage);
+		return exitCli({ code: 1 });
+	}
+
+	// Before anything reads the plan folder, so a fetched `brainstorm-notes.md` is
+	// already home and the write-once `--notes` snapshot below keeps it.
+	await ensureBrainstormFiles({ cwd, name });
+
+	const notesFile = getStringFlag({ flags, name: 'notes' });
+	const statusOf = ({ result: verified }: { result: Awaited<ReturnType<typeof runPlanVerifyFacts>> }) =>
+		verified.status === PlanRunStatus.Failed || !verified.facts ? RunStatus.Failed : RunStatus.Passed;
+	// Wrapped after the refusals above, so a command that refuses opens no level.
+	const result = await recordPlanCommandRun({
+		cwd,
+		name,
+		label: 'plan verify-facts',
+		statusOf,
+		work: () =>
+			recordPlanningStep({
+				cwd,
+				name,
+				step: PlanningStep.VerifyFacts,
+				work: () => runPlanVerifyFacts({ cwd, name, notesFile, onProgress: createProgressPrinter() }),
+				statusOf,
+			}),
+	});
+
+	if (result.status === PlanRunStatus.Failed || !result.facts) {
+		console.error(`\n${result.error ?? 'plan verify-facts failed'}`);
+		return exitCli({ code: 1 });
+	}
+
+	const { verification } = result.facts;
+
+	console.log(`\n${bold(`plan verify-facts ${name}`)} — ${result.facts.areas.length} area(s), verified ${result.facts.verifiedAt}`);
+	console.log(`  paths:   ${verification.pathsChecked} checked · ${verification.missingPaths.length} missing`);
+	console.log(`  scripts: ${verification.scriptsChecked} checked · ${verification.missingScripts.length} missing`);
+
+	for (const missing of verification.missingPaths) {
+		console.log(`${yellow('⚠')} path not found: ${missing}`);
+	}
+
+	for (const missing of verification.missingScripts) {
+		console.log(`${yellow('⚠')} script not found: ${missing}`);
+	}
+
+	console.log(`\nfacts: ${result.factsPath}`);
+	return exitCli({ code: 0 });
+};

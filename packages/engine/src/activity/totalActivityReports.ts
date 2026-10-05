@@ -1,6 +1,6 @@
-import { spanOfActivityNodes } from '#src/activity/common/utils/spanOfActivityNodes.ts';
-import { gatherNodeProcesses } from '#src/activity/internal/common/utils/gatherNodeProcesses.ts';
-import { totalActivityNode } from '#src/activity/internal/common/utils/totalActivityNode.ts';
+import { gatherNodeProcesses } from '#src/activity/common/gatherNodeProcesses.ts';
+import { totalActivityNode } from '#src/activity/common/totalActivityNode.ts';
+import { spanOfActivityNodes } from '#src/common/spanOfActivityNodes.ts';
 import type { ActivityReport } from '#src/contracts/activity/ActivityReport.ts';
 import type { ActivityTotals } from '#src/contracts/activity/ActivityTotals.ts';
 

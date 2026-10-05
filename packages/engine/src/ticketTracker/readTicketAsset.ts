@@ -1,5 +1,5 @@
-import type { TrackerFailure } from '#src/ticketTracker/common/types/TrackerFailure.ts';
-import type { TrackerSettings } from '#src/ticketTracker/common/types/TrackerSettings.ts';
+import type { TrackerFailure } from '#src/common/types/TrackerFailure.ts';
+import type { TrackerSettings } from '#src/common/types/TrackerSettings.ts';
 import { readTicketAsset as readJiraTicketAsset } from '#src/ticketTracker/jira/readTicketAsset.ts';
 import { readTicketAsset as readLinearTicketAsset } from '#src/ticketTracker/linear/readTicketAsset.ts';
 

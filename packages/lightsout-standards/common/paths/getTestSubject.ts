@@ -1,4 +1,3 @@
-import type { FrameworkCarveOut } from '../types/FrameworkCarveOut.ts';
 import { getDirectory } from './getDirectory.ts';
 import { getTestSubjectName } from './getTestSubjectName.ts';
 
@@ -15,12 +14,10 @@ interface Params {
 	test: string;
 	/** Every file in scope — the subject is looked up here. */
 	files: Set<string>;
-	/** The carve-out of the package that governs this test, forwarded to the subject-name read. */
-	carveOut?: FrameworkCarveOut;
 }
 
-export const getTestSubject = ({ test, files, carveOut }: Params): string | undefined => {
-	const stem = `${getDirectory({ path: test })}/${getTestSubjectName({ test, carveOut })}`;
+export const getTestSubject = ({ test, files }: Params): string | undefined => {
+	const stem = `${getDirectory({ path: test })}/${getTestSubjectName({ test })}`;
 
 	return sourceExtensions.map((extension) => `${stem}${extension}`).find((candidate) => files.has(candidate));
 };

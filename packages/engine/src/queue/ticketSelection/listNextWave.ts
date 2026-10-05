@@ -1,11 +1,11 @@
-import type { GateHolds } from '#src/gates/gateHolds/common/types/GateHolds.ts';
+import type { GateHolds } from '#src/common/types/GateHolds.ts';
+import type { QueueSettings } from '#src/common/types/QueueSettings.ts';
+import type { TrackerSettings } from '#src/common/types/TrackerSettings.ts';
 import type { QueueFailure } from '#src/queue/common/types/QueueFailure.ts';
-import type { QueueSettings } from '#src/queue/common/types/QueueSettings.ts';
-import type { WaveSelection } from '#src/queue/internal/common/types/WaveSelection.ts';
+import type { WaveSelection } from '#src/queue/common/types/WaveSelection.ts';
 import { listEligibleTickets } from '#src/queue/ticketSelection/listEligibleTickets.ts';
 import { orderTickets } from '#src/queue/ticketSelection/orderTickets.ts';
-import { selectWaveTickets } from '#src/queue/ticketSelection/selectWaveTickets.ts';
-import type { TrackerSettings } from '#src/ticketTracker/common/types/TrackerSettings.ts';
+import { selectWaveTickets } from '#src/queue/ticketSelection/selectWaveTickets/selectWaveTickets.ts';
 
 interface Params {
 	settings: QueueSettings;

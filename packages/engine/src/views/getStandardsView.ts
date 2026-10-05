@@ -1,16 +1,16 @@
 import { readOptionalConfig } from '#src/common/config/readOptionalConfig.ts';
+import type { LoadedStandardsRule } from '#src/common/types/LoadedStandardsRule.ts';
+import type { StandardsHealthRule } from '#src/common/types/StandardsHealthRule.ts';
+import type { StandardsRuleListing } from '#src/common/types/StandardsRuleListing.ts';
 import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFinding.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 import type { StandardsRuleView } from '#src/contracts/views/StandardsRuleView.ts';
 import type { StandardsView } from '#src/contracts/views/StandardsView.ts';
-import { resolveStandardsGroups } from '#src/standards/resolveStandardsGroups.ts';
+import { resolveStandardsGroups } from '#src/standards/resolveStandardsGroups/resolveStandardsGroups.ts';
 import { buildStandardsHealth } from '#src/standardsCheck/buildStandardsHealth.ts';
-import type { StandardsHealthRule } from '#src/standardsCheck/common/types/StandardsHealthRule.ts';
-import type { StandardsRuleListing } from '#src/standardsCheck/common/types/StandardsRuleListing.ts';
 import { listStandardsRules } from '#src/standardsCheck/listStandardsRules.ts';
 import { listStandardsSnapshots } from '#src/standardsCheck/listStandardsSnapshots.ts';
 import { readStandardsSnapshot } from '#src/standardsCheck/readStandardsSnapshot.ts';
-import type { LoadedStandardsRule } from '#src/standardsLibraries/common/types/LoadedStandardsRule.ts';
 import { mapPackRules } from '#src/standardsLibraries/mapPackRules.ts';
 
 const countByRule = ({ findings }: { findings: StandardsFinding[] }) => {

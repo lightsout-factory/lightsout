@@ -1,12 +1,12 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
+import type { Driver } from '#src/common/types/Driver.ts';
+import type { DriverInvocation } from '#src/common/types/DriverInvocation.ts';
 import type { ConfigDocs } from '#src/contracts/ConfigDocs.ts';
 import { GradeReport } from '#src/contracts/plan/grade/GradeReport.ts';
-import type { Driver } from '#src/drivers/common/types/Driver.ts';
-import type { DriverInvocation } from '#src/drivers/common/types/DriverInvocation.ts';
 import { renderDecisionLog } from '#src/plan/decisionLog/renderDecisionLog.ts';
 import { gradeHistoryPath } from '#src/plan/gradeHistoryPath.ts';
-import { runPlanGrade } from '#src/plan/runPlanGrade.ts';
+import { runPlanGrade } from '#src/plan/runPlanGrade/runPlanGrade.ts';
 import { renderGlobalConstraints } from '#src/plan/sections/renderGlobalConstraints.ts';
 import { cleanPlanBody } from '#tests/helpers/cleanPlanBody.ts';
 import { createGapCheckDriver } from '#tests/helpers/createGapCheckDriver.ts';

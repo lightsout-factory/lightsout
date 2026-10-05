@@ -2,7 +2,7 @@ import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { Effort } from '#src/contracts/Effort.ts';
-import { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { DecisionRow } from '#src/contracts/plan/decisions/DecisionRow.ts';
 
 /** A parsed consumer config differing only in the one plan-relevant key each case varies. */

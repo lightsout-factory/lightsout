@@ -1,5 +1,5 @@
-import type { Driver } from '#src/drivers/common/types/Driver.ts';
-import type { DriverInvocation } from '#src/drivers/common/types/DriverInvocation.ts';
+import type { Driver } from '#src/common/types/Driver.ts';
+import type { DriverInvocation } from '#src/common/types/DriverInvocation.ts';
 
 interface Params {
 	/** True for the spawns that answer off-contract — which one of a fan-out is the dead one. */

@@ -1,8 +1,8 @@
 import { existsSync, readFileSync, rmSync } from 'node:fs';
 import { describe, expect, jest, test } from '@jest/globals';
 import { PlanProgress } from '#src/contracts/workOrder/PlanProgress.ts';
+import { updateLocalWorkOrderState } from '#src/workOrder/common/state/updateLocalWorkOrderState.ts';
 import { runWorkOrderPlanLifecycle } from '#src/workOrder/implementRun/runWorkOrderPlanLifecycle.ts';
-import { updateLocalWorkOrderState } from '#src/workOrder/updateLocalWorkOrderState.ts';
 import {
 	firstPlan,
 	type MockedReadGitHeadCommit,
@@ -19,7 +19,7 @@ import {
 // value the row controls. The record, the sync sidecar and the plan's own files
 // are real files in a temporary directory, because what these rows promise is
 // that a refused plan leaves those bytes as they were.
-const mockReadGitHeadCommit: MockedReadGitHeadCommit = jest.fn();
+const mockReadGitHeadCommit: MockedReadGitHeadCommit = jest.fn<(params: { cwd: string }) => Promise<string | undefined>>();
 
 jest.mock('#src/common/git/readGitHeadCommit.ts', () => ({
 	readGitHeadCommit: (params: { cwd: string }) => mockReadGitHeadCommit(params),

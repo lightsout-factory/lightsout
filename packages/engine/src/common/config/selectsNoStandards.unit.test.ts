@@ -1,6 +1,6 @@
 import { describe, expect, test } from '@jest/globals';
 import { selectsNoStandards } from '#src/common/config/selectsNoStandards.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 
 interface StandardsCase {
 	label: string;

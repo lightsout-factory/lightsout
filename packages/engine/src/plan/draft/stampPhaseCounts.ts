@@ -1,13 +1,13 @@
 import { readFile } from 'node:fs/promises';
 import { basename } from 'node:path';
-import type { PhaseDeclaration } from '#src/plan/common/types/PhaseDeclaration.ts';
-import { writePlanFileIfChanged } from '#src/plan/internal/common/rewriting/writePlanFileIfChanged.ts';
-import type { PhaseSizeCounts } from '#src/plan/internal/common/types/PhaseSizeCounts.ts';
-import { getPlanTouchedPaths } from '#src/plan/internal/common/utils/getPlanTouchedPaths.ts';
-import { readPhaseFiles } from '#src/plan/internal/common/utils/readPhaseFiles.ts';
-import { expandFolderMoves } from '#src/plan/internal/expandFolderMoves/expandFolderMoves.ts';
-import { parsePhaseDeclarations } from '#src/plan/parsePhaseDeclarations.ts';
-import { parsePlan } from '#src/plan/parsePlan.ts';
+import type { PhaseDeclaration } from '#src/common/types/PhaseDeclaration.ts';
+import { expandFolderMoves } from '#src/plan/common/expandFolderMoves/expandFolderMoves.ts';
+import { getPlanTouchedPaths } from '#src/plan/common/getPlanTouchedPaths.ts';
+import { parsePhaseDeclarations } from '#src/plan/common/phases/parsePhaseDeclarations.ts';
+import { readPhaseFiles } from '#src/plan/common/phases/readPhaseFiles.ts';
+import { writePlanFileIfChanged } from '#src/plan/common/rewriting/writePlanFileIfChanged.ts';
+import type { PhaseSizeCounts } from '#src/plan/common/types/PhaseSizeCounts.ts';
+import { parsePlan } from '#src/plan/parsePlan/parsePlan.ts';
 
 interface Params {
 	/** The run's working directory, from which git lists the files a folder move carries. */

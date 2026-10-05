@@ -6,12 +6,11 @@ import { getBaseName } from '#common/paths/getBaseName.ts';
 import { isUnderSrc } from '#common/paths/isUnderSrc.ts';
 
 /**
- * The shared test-support folders the rule places outside `src/`. `__mocks__`
- * is deliberately absent — the same prose allows one beside its module — and so
- * is `helpers`, which the banned-module-name rule already owns, so one
- * misplaced folder never reports twice.
+ * The shared test-support folders the rule places outside `src/`. `helpers` is
+ * absent because the folder-name rule already reports it, so one misplaced
+ * folder never reports twice.
  */
-const testSupportDirectories = new Set(['fixtures', 'mocks', 'testUtils', 'test-utils']);
+const testSupportDirectories = new Set(['fixtures', 'mocks', '__mocks__', 'testUtils', 'test-utils']);
 
 export const check: StandardsCheckModule = {
 	inputKinds: ['file-list'],
@@ -25,8 +24,7 @@ export const check: StandardsCheckModule = {
 					rule: 'test-support-in-src',
 					files: [{ path: directory }],
 					detail: `test-support folder '${getBaseName({ path: directory })}' under src/`,
-					guidance:
-						"Shared helpers, mocks and fixtures live in the package's test-support directories outside `src/` — under `src/` they read as production source to scanners and humans alike. A `__mocks__/` folder beside the module it doubles is the one exception.",
+					guidance: "Move it to the package's `tests/` folder, outside `src/`.",
 				}),
 			),
 };

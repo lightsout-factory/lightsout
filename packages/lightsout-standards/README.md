@@ -19,9 +19,6 @@ The library root holds:
 - `packs/` — one JSON file per pack.
 - `common/` — helpers the checks share. A check imports one through the
   `#common/*` entry of this package's `imports`.
-- `fixtures/framework-owned/` — one miniature repo per framework. Every
-  deterministic check must stay silent on each of them, so no rule judges code
-  its framework owns.
 
 A topic is a folder holding a `topic.md` and one folder per rule, each named
 `<NN>-<id>`. `rule.md` is required; `check.ts` and `fixtures/` are optional.
@@ -34,7 +31,7 @@ agent reads the rest.
 
 `<NN>` decides the order the rules read in and nothing else. The `<id>` —
 everything after the first dash group, as
-`packages/engine/src/standardsLibraries/internal/common/parsing/parseRuleFolder.ts`
+`packages/engine/src/standardsLibraries/readStandardsLibrary/parseTopicFolder/parseRuleFolder/parseRuleFolder.ts`
 derives it — is the rule's durable key, and its full name is `lightsout/<id>`.
 Findings, baselines and frozen refactor work-lists are written with the full
 name, so it outlives the folder it came from. A repository names a rule in
@@ -48,20 +45,20 @@ Packs are grouped by what the rules are for, and the rule tree mirrors them:
 
 - `fractal` — keeps the repo the same shape at every level: modules, shared
   code, size caps, duplication and imports, plus where tests sit.
-- `agent-corrections` — corrects mistakes current models make by default:
-  design, type safety, comments, and what a test asserts and mocks. A rule
-  stays only while models still make the mistake without it.
-- `code-style` — one way to write a function, a class, a set of named values
-  and a unit test.
-- `react`, `tanstack-start` — framework rules, under
-  `rules/code/frameworks/` and `rules/tests/frameworks/`. Each declares
-  `applies-when`, so it reaches only the packages that depend on the framework.
-- `standards` — every pack above. It is the pack the docs tell a repository to
-  opt into, and the one this repo runs.
+- `code-style` — one way to write a function, a class, a set of named values,
+  a type-safe value and a unit test.
+- `standards` — both packs above. It is the pack the docs tell a repository to
+  opt into, and the one this repo runs for every package but the web app.
+- `react`, `tanstack-start` — the rules written for one framework, under
+  `rules/code/frameworks/` and `rules/tests/frameworks/`, and nothing else. A
+  package selects them through `package-standards-packs`. The general rules
+  know nothing about a framework, so a framework pack is where a framework's
+  differences live. Neither holds a general rule yet: which of those a
+  framework package also runs is still to be decided, and `react-function-size`
+  replaces `function-size`, so the two never go to one package together.
 
-`fractal` and `agent-corrections` each stand alone: no rule in them names, or
-`requires`, a rule in another pack. `code-style` and the framework packs may
-refer to `fractal` rules.
+`fractal` stands alone: no rule in it names, or `requires`, a rule in another
+pack. `code-style` and the framework packs may refer to `fractal` rules.
 
 The shipped packs carry no `rule-settings`, so every rule keeps the severity
 and options its `rule.md` gives it. A new rule in an existing topic reaches
@@ -78,14 +75,14 @@ holds only what is particular to this library and this repo.
 ## In This Library
 
 - **Prefixes this library uses:** `no-` (a ban), `prefer-` (a default), and
-  subject prefixes: `test-` (a rule about a test file), `barrel-`, `class-` and
+  subject prefixes: `test-` (a rule about a test file), `class-` and
   `duplicate-`. `path-` named how a check worked, and is retired.
 - **Shared words:** ids are also read in the `durableRuleIds` ledger, so
   `test-beside-subject` keeps its `test-`. Word order: `folder-size`, not
   `folder-census`.
 - **Framework topics:** a framework topic states what the framework mandates as fact, and this library's own conventions as conventions.
 - **The model rule:**
-  `rules/code/fractal/modules/05-module-file-to-folder/rule.md`
+  `rules/code/fractal/layout/15-module-file-to-folder/rule.md`
   sets the register for prose.
 - **Shared helpers:** a check imports a helper from `common/` through
   `#common/*`, never by a relative path into `common/`.
@@ -96,7 +93,7 @@ holds only what is particular to this library and this repo.
 - **Finding text:** a measured value stays in it, such as
   `${lineCount} lines (cap ~${cap})`.
 - **Examples are tested here too:**
-  `packages/engine/src/standardsCheck/validateStandardsLibrary.defaultPack.unit.test.ts`
+  `packages/engine/src/standardsCheck/validateStandardsLibrary/validateStandardsLibrary.defaultPack.unit.test.ts`
   runs every check against its examples and checks each rule's declared shape.
 
 ## After Changing a Rule
@@ -108,6 +105,14 @@ holds only what is particular to this library and this repo.
    from `packages/engine`.
 3. Note every other rule that still uses the rule's old name or words, and fix
    each when its own review reaches it.
+
+## Naming a Rule
+
+An id is short and says what the rule is about. It may name the mistake
+(`multi-export`, `dead-export`, `case-collision`) or the instruction
+(`object-args`, `prefer-functions`): an id named for the mistake reads well in
+a list of findings, which is where ids are seen most. Rename an id only when it
+is too long, unclear, or no longer true of the rule.
 
 ## Renaming a Rule
 

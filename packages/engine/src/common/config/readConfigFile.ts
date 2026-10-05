@@ -1,5 +1,5 @@
 import { readFile } from 'node:fs/promises';
-import { messageOf } from '#src/common/utils/messageOf.ts';
+import { messageOf } from '#src/common/messageOf.ts';
 
 interface Params {
 	configPath: string;

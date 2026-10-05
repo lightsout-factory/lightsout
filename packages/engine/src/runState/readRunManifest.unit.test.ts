@@ -1,7 +1,7 @@
 import { writeFile } from 'node:fs/promises';
 import { describe, expect, test } from '@jest/globals';
+import { getRunManifestPath } from '#src/runState/common/getRunManifestPath.ts';
 import { createRun } from '#src/runState/createRun.ts';
-import { getRunManifestPath } from '#src/runState/internal/common/paths/getRunManifestPath.ts';
 import { RunNotFoundError } from '#src/runState/RunNotFoundError.ts';
 import { readRunManifest } from '#src/runState/readRunManifest.ts';
 import { setupConsumerRepo } from '#tests/helpers/setupConsumerRepo.ts';

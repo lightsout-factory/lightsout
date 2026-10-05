@@ -1,9 +1,6 @@
 {
-	"description": "Gives a TanStack Start app one place for each feature, server function, query and hook, in each package that uses TanStack Start.",
+	"description": "The rules written for TanStack Start: which of its files get unit tests.",
 	"include": {
-		"topics": ["lightsout/code/frameworks/tanstack-start"]
-	},
-	"applies-when": {
-		"dependencies": ["@tanstack/react-start", "@tanstack/start"]
+		"topics": ["lightsout/tests/frameworks/tanstack-start"]
 	}
 }

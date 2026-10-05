@@ -153,7 +153,7 @@ describe('routeTree standards routes', () => {
 	test('the packs route shows a card for each pack the shipped library holds', () => {
 		setupPacksPage();
 
-		expect(screen.getByRole('heading', { level: 3, name: 'lightsout/standards' })).toBeInTheDocument();
+		expect(screen.getByRole('heading', { level: 3, name: 'standards' })).toBeInTheDocument();
 	});
 
 	test('the packs route warms its own list before the page renders', async () => {

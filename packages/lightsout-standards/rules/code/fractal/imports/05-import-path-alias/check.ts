@@ -62,7 +62,7 @@ export const check: StandardsCheckModule = {
 							files: [{ path: file }],
 							detail: `${relative.map((specifier) => `'${specifier}'`).join(', ')} ${relative.length > 1 ? 'are' : 'is'} imported by relative path`,
 							guidance:
-								"Import through the package's configured alias — read the package's `package.json` → `imports` or `tsconfig.json` → `compilerOptions.paths` for the right one.",
+								"Import through the package's alias. Read it from `imports` in the package's `package.json` or `compilerOptions.paths` in its `tsconfig.json`.",
 						});
 			})
 			.filter((finding): finding is RawStandardsFinding => finding !== undefined);

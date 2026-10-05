@@ -1,5 +1,5 @@
 import { describe, expect, test } from '@jest/globals';
-import { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { buildExportCensus } from '#src/plan/evidence/buildExportCensus.ts';
 import { seedSourceRepo } from '#tests/helpers/seedSourceRepo.ts';
 

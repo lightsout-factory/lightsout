@@ -36,7 +36,7 @@ describe('getDefaultPackBundle', () => {
 		expect(bundle.rootPath).toBe('packages/lightsout-standards');
 	});
 
-	test('parses the committed library bundle with its six packs and a repo-relative root', () => {
+	test('parses the committed library bundle with its five packs and a repo-relative root', () => {
 		const bundle = getDefaultPackBundle();
 
 		expect({
@@ -48,14 +48,7 @@ describe('getDefaultPackBundle', () => {
 		}).toStrictEqual({
 			name: 'lightsout',
 			rootPath: 'packages/lightsout-standards',
-			packAddresses: [
-				'lightsout/agent-corrections',
-				'lightsout/code-style',
-				'lightsout/fractal',
-				'lightsout/react',
-				'lightsout/standards',
-				'lightsout/tanstack-start',
-			],
+			packAddresses: ['lightsout/code-style', 'lightsout/fractal', 'lightsout/react', 'lightsout/standards', 'lightsout/tanstack-start'],
 			carriesPath: false,
 			carriesIsDefault: false,
 		});

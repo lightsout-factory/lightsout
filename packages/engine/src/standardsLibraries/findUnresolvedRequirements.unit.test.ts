@@ -1,7 +1,7 @@
 import { describe, expect, test } from '@jest/globals';
+import type { LoadedStandardsLibrary } from '#src/common/types/LoadedStandardsLibrary.ts';
+import type { LoadedStandardsRule } from '#src/common/types/LoadedStandardsRule.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
-import type { LoadedStandardsLibrary } from '#src/standardsLibraries/common/types/LoadedStandardsLibrary.ts';
-import type { LoadedStandardsRule } from '#src/standardsLibraries/common/types/LoadedStandardsRule.ts';
 import { findUnresolvedRequirements } from '#src/standardsLibraries/findUnresolvedRequirements.ts';
 
 /** A loaded rule `<library>/<id>` requiring `requires`, with every other field at a neutral value. */

@@ -1,7 +1,7 @@
 import { PassThrough } from 'node:stream';
-import type { QueueSettings } from '#src/queue/common/types/QueueSettings.ts';
+import type { QueueSettings } from '#src/common/types/QueueSettings.ts';
+import type { TrackerSettings } from '#src/common/types/TrackerSettings.ts';
 import { TerminalQuestionRelay } from '#src/queue/relay/TerminalQuestionRelay.ts';
-import type { TrackerSettings } from '#src/ticketTracker/common/types/TrackerSettings.ts';
 import { queueSettingsFixture } from '#tests/helpers/queueSettingsFixture.ts';
 import { trackerSettingsFixture } from '#tests/helpers/trackerSettingsFixture.ts';
 

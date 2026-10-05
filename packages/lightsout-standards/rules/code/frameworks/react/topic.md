@@ -1,3 +1,3 @@
-# React Architecture
+# React
 
-How the base rules apply to React code: components, hooks and JSX. React mandates no file layout and no file names.
+How React code is written: components, hooks and JSX.

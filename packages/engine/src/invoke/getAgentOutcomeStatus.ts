@@ -1,5 +1,5 @@
+import type { AgentOutcome } from '#src/common/types/AgentOutcome.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
-import type { AgentOutcome } from '#src/invoke/common/types/AgentOutcome.ts';
 
 interface Params {
 	outcome: AgentOutcome<unknown>;

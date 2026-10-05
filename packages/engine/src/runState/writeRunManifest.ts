@@ -1,7 +1,7 @@
 import { rename } from 'node:fs/promises';
-import { writeJsonFile } from '#src/common/utils/writeJsonFile.ts';
+import { writeJsonFile } from '#src/common/json/writeJsonFile.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
-import { getRunManifestPath } from '#src/runState/internal/common/paths/getRunManifestPath.ts';
+import { getRunManifestPath } from '#src/runState/common/getRunManifestPath.ts';
 
 interface Params {
 	cwd: string;

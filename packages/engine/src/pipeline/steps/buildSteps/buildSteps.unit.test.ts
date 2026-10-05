@@ -1,6 +1,6 @@
 import { describe, expect, jest, test } from '@jest/globals';
 import type { AcceptanceRow } from '#src/common/types/AcceptanceRow.ts';
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { LedgerRow } from '#src/contracts/plan/ledger/LedgerRow.ts';
 import type { ApprovedTestRecord } from '#src/contracts/run/ApprovedTestRecord.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
@@ -8,10 +8,10 @@ import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import type { StepRecord } from '#src/contracts/run/StepRecord.ts';
 import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFinding.ts';
 import type { StandardsSnapshot } from '#src/contracts/standardsCheck/StandardsSnapshot.ts';
-import type { VerificationResult } from '#src/pipeline/internal/common/types/VerificationResult.ts';
-import type { PipelineRun } from '#src/pipeline/internal/PipelineRun.ts';
-import type { PipelineStep } from '#src/pipeline/internal/PipelineStep.ts';
+import type { PipelineRun } from '#src/pipeline/common/PipelineRun.ts';
+import type { PipelineStep } from '#src/pipeline/common/types/PipelineStep.ts';
 import { buildSteps } from '#src/pipeline/steps/buildSteps/buildSteps.ts';
+import type { VerificationResult } from '#src/pipeline/steps/common/types/VerificationResult.ts';
 
 // Mocked Imports
 // -------------------------
@@ -31,7 +31,7 @@ interface LedgerWriterParams {
 
 const mockWriteLedgerTestsStep = jest.fn<(params: LedgerWriterParams) => PipelineStep['run']>();
 
-jest.mock('#src/pipeline/internal/steps/writeLedgerTestsStep.ts', () => ({
+jest.mock('#src/pipeline/steps/buildSteps/writeLedgerTestsStep/writeLedgerTestsStep.ts', () => ({
 	writeLedgerTestsStep: (params: LedgerWriterParams) => mockWriteLedgerTestsStep(params),
 }));
 // -------------------------
@@ -45,7 +45,7 @@ interface GateParams {
 
 const mockRunVerificationGates = jest.fn<(params: GateParams) => Promise<VerificationResult>>();
 
-jest.mock('#src/pipeline/internal/common/utils/runVerificationGates.ts', () => ({
+jest.mock('#src/pipeline/steps/common/runVerificationGates.ts', () => ({
 	runVerificationGates: (params: GateParams) => mockRunVerificationGates(params),
 }));
 // -------------------------
@@ -73,7 +73,7 @@ interface StandardsCheckParams {
 
 const mockRunStandardsCheck = jest.fn<(params: StandardsCheckParams) => Promise<{ findings: StandardsFinding[]; notes: string[] }>>();
 
-jest.mock('#src/standardsCheck/runStandardsCheck.ts', () => ({
+jest.mock('#src/standardsCheck/runStandardsCheck/runStandardsCheck.ts', () => ({
 	runStandardsCheck: (params: StandardsCheckParams) => mockRunStandardsCheck(params),
 }));
 // -------------------------

@@ -1,9 +1,9 @@
-import type { LightsoutConfig } from '#src/contracts/LightsoutConfig.ts';
-import type { Driver } from '#src/drivers/common/types/Driver.ts';
-import type { QueueSettings } from '#src/queue/common/types/QueueSettings.ts';
-import { runQueue } from '#src/queue/runQueue.ts';
-import type { ShipSettings } from '#src/ship/common/types/ShipSettings.ts';
-import type { TrackerSettings } from '#src/ticketTracker/common/types/TrackerSettings.ts';
+import type { Driver } from '#src/common/types/Driver.ts';
+import type { QueueSettings } from '#src/common/types/QueueSettings.ts';
+import type { ShipSettings } from '#src/common/types/ShipSettings.ts';
+import type { TrackerSettings } from '#src/common/types/TrackerSettings.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
+import { runQueue } from '#src/queue/runQueue/runQueue.ts';
 import { queueSettingsFixture } from '#tests/helpers/queueSettingsFixture.ts';
 import { setupBranchRepo } from '#tests/helpers/setupBranchRepo.ts';
 import { shipSettingsFixture } from '#tests/helpers/shipSettingsFixture.ts';
