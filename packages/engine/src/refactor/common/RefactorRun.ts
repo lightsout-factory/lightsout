@@ -57,6 +57,10 @@ export class RefactorRun {
 		this.runState.progress(message);
 	}
 
+	parkMessage(): string {
+		return this.runState.parkMessage();
+	}
+
 	update({ patch }: { patch: Partial<RunManifest> }): Promise<void> {
 		return this.runState.update({ patch });
 	}

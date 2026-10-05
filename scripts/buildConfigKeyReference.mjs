@@ -3,7 +3,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { renderConfigKeyReference } from '../packages/engine/src/views/renderConfigKeyReference.ts';
 import { invokedDirectly } from './invokedDirectly.mjs';
-import { messageOf } from './messageOf.mjs';
+import { runScript } from './runScript.mjs';
 
 /**
  * Writes the top-level key table of `docs/configuration.md` from the engine's
@@ -59,38 +59,31 @@ export const buildConfigKeyReference = ({ text }) => {
 const main = () => {
 	const checking = process.argv.includes('--check');
 
-	try {
-		const onDisk = readFileSync(join(repoRoot, documentPath), 'utf8');
-		const text = buildConfigKeyReference({ text: onDisk });
+	const onDisk = readFileSync(join(repoRoot, documentPath), 'utf8');
+	const text = buildConfigKeyReference({ text: onDisk });
 
-		if (!checking) {
-			writeFileSync(join(repoRoot, documentPath), text);
-			console.log(`wrote ${documentPath}`);
+	if (!checking) {
+		writeFileSync(join(repoRoot, documentPath), text);
+		console.log(`wrote ${documentPath}`);
 
-			return;
-		}
-
-		if (onDisk === text) {
-			console.log(`${documentPath} matches configKeyDescriptions`);
-
-			return;
-		}
-
-		console.error('');
-		console.error(`  ${documentPath}'s key reference no longer matches configKeyDescriptions.`);
-		console.error('  It is the table every reader of the configuration page meets first.');
-		console.error('');
-		console.error(`    pnpm build:config-reference && git add ${documentPath}`);
-		console.error('');
-		process.exitCode = 1;
-	} catch (error) {
-		console.error('');
-		console.error(`  ${messageOf({ error })}`);
-		console.error('');
-		process.exitCode = 1;
+		return;
 	}
+
+	if (onDisk === text) {
+		console.log(`${documentPath} matches configKeyDescriptions`);
+
+		return;
+	}
+
+	console.error('');
+	console.error(`  ${documentPath}'s key reference no longer matches configKeyDescriptions.`);
+	console.error('  It is the table every reader of the configuration page meets first.');
+	console.error('');
+	console.error(`    pnpm build:config-reference && git add ${documentPath}`);
+	console.error('');
+	process.exitCode = 1;
 };
 
 if (invokedDirectly({ moduleUrl: import.meta.url })) {
-	main();
+	runScript({ run: main });
 }

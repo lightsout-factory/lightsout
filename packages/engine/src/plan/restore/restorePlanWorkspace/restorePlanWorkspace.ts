@@ -1,6 +1,7 @@
 import { attachmentTitle } from '#src/common/attachmentManifest/attachmentTitle.ts';
 import { parseAttachmentManifest } from '#src/common/attachmentManifest/parseAttachmentManifest.ts';
 import { scopeAttachments } from '#src/common/attachmentManifest/scopeAttachments.ts';
+import { selectListedAttachment } from '#src/common/attachmentManifest/selectListedAttachment.ts';
 import { planAttachmentManifestName } from '#src/common/constants/planAttachmentManifestName.ts';
 import { readAttachmentText } from '#src/common/readAttachmentText.ts';
 import { sha256 } from '#src/common/sha256.ts';
@@ -53,19 +54,13 @@ const selectGeneration = ({
 	const files: GenerationFile[] = [];
 
 	for (const listed of manifest.files) {
-		const matches = durableAttachments.filter(({ title }) => title === listed.name);
-		const attachment = matches.length === 1 ? matches[0] : undefined;
+		const match = selectListedAttachment({ attachments: durableAttachments, name: listed.name, markerName });
 
-		if (attachment === undefined) {
-			return {
-				error:
-					matches.length === 0
-						? `${markerName} lists ${listed.name}, but the ticket carries no attachment with that title`
-						: `the ticket carries more than one attachment named ${listed.name}, so ${markerName} cannot select one generation`,
-			};
+		if ('error' in match) {
+			return match;
 		}
 
-		files.push({ title: attachment.title, url: attachment.url, sha256: listed.sha256 });
+		files.push({ title: match.attachment.title, url: match.attachment.url, sha256: listed.sha256 });
 	}
 
 	return { files };

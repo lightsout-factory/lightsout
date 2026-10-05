@@ -15,35 +15,40 @@ interface Params {
 	runId: string;
 	driver: Driver;
 	config: LightsoutConfig;
-	batchId: string;
+	/** The step the invocation belongs to. It names the evidence files, the usage entry and the friction. */
+	step: string;
 	invocation: { systemPrompt: string; prompt: string };
-	/** Usage-ledger suffix for this invocation ('' | 'fix-N'). */
+	/** Usage-ledger suffix for this invocation: '' for the first, a name such as 'fix-N' for a later one. */
 	label: string;
-	/** 1-based invocation number within the batch, for evidence file names. */
+	/** 1-based invocation number within the step, for evidence file names. */
 	invocationCount: number;
 	agentTimeoutMs: number;
-	/** Mutable batch-level collectors: agent-reported paths and friction lines accumulate here across invocations. */
+	/** Mutable collectors: agent-reported paths and friction lines accumulate here across invocations. */
 	reportedFiles: Set<string>;
 	rationale: string[];
+	/** Runs once the agent has returned, whether or not its report was accepted, before its usage is recorded. */
+	afterAgent?: () => Promise<void>;
 	recordUsage: (params: { step: string; usage?: AgentUsage }) => Promise<void>;
 }
 
-export const invokeCoverageAgent = async ({
+/** One agent invocation that answers with a `WorkReport`, with its stream and any rejected output kept in the run's folder. */
+export const invokeWorkReportAgent = async ({
 	cwd,
 	runId,
 	driver,
 	config,
-	batchId,
+	step,
 	invocation,
 	label,
 	invocationCount,
 	agentTimeoutMs,
 	reportedFiles,
 	rationale,
+	afterAgent,
 	recordUsage,
 }: Params): Promise<Awaited<ReturnType<typeof invokeAgentWithContract<typeof WorkReport>>>> => {
 	const agentsDir = join(await resolveRunDir({ cwd, runId }), 'agents');
-	const slug = batchId.replace(/[:/]/g, '_');
+	const slug = step.replace(/[:/]/g, '_');
 	const streamPath = join(agentsDir, `stream-${slug}-${invocationCount}.jsonl`);
 
 	await mkdir(agentsDir, { recursive: true });
@@ -64,7 +69,8 @@ export const invokeCoverageAgent = async ({
 		},
 	});
 
-	await recordUsage({ step: `${batchId}${label ? ` ${label}` : ''}`, usage: outcome.usage });
+	await afterAgent?.();
+	await recordUsage({ step: `${step}${label ? ` ${label}` : ''}`, usage: outcome.usage });
 
 	if (!outcome.ok) {
 		return outcome;
@@ -75,7 +81,7 @@ export const invokeCoverageAgent = async ({
 	}
 
 	if (outcome.report.friction && outcome.report.friction.length > 0) {
-		await appendFriction({ cwd, runId, step: batchId, friction: outcome.report.friction });
+		await appendFriction({ cwd, runId, step, friction: outcome.report.friction });
 		rationale.push(...outcome.report.friction.map((entry) => `[${entry.area}] ${entry.detail}`));
 	}
 

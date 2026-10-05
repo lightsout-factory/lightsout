@@ -1,4 +1,5 @@
 import { renderDocsSurfaces } from '#src/agents/plan/common/renderDocsSurfaces.ts';
+import { renderPlanFixInputs } from '#src/agents/plan/common/renderPlanFixInputs.ts';
 import planRepairPrompt from '#src/agents/prompts/planRepair.md';
 import type { ConfigDocs } from '#src/contracts/ConfigDocs.ts';
 import type { StructuralFinding } from '#src/contracts/plan/grade/StructuralFinding.ts';
@@ -46,18 +47,13 @@ export const buildPlanRepairInvocation = ({
 	factsPath,
 	docs,
 }: Params): { systemPrompt: string; prompt: string } => {
-	const findingLines = findings.map((finding) => `- [${finding.check}] ${finding.location} — ${finding.issue}\n  fix: ${finding.fix}`);
-	const referenceLines = [
-		`- Decisions record: ${decisionsPath}`,
-		...(brainstormDecisionsPath ? [`- Brainstorm decisions (settled during brainstorm, before planning began): ${brainstormDecisionsPath}`] : []),
-		`- Verified facts: ${factsPath}`,
-	];
+	const { findingList, referenceList } = renderPlanFixInputs({ findings, decisionsPath, brainstormDecisionsPath, factsPath });
 	const sections = [
 		`# Repair input`,
 		`## Plan files to repair (Edit in place)\n\n- ${planPaths.join('\n- ')}`,
-		`## Structural findings to resolve\n\n${findingLines.join('\n')}`,
+		`## Structural findings to resolve\n\n${findingList}`,
 		...(docs && docs.length > 0 ? [documentationSection({ docs })] : []),
-		`## Reference files (Read on demand)\n\n${referenceLines.join('\n')}`,
+		`## Reference files (Read on demand)\n\n${referenceList}`,
 		'Remember: minimal edits resolving only the flagged findings, then your entire final message must be exactly one JSON PlanFixReport object — nothing else.',
 	];
 

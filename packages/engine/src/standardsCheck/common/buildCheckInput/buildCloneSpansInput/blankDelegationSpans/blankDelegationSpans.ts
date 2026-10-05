@@ -22,8 +22,8 @@ const isAssigningConstructor = ({ node, compiler }: { node: ts.ConstructorDeclar
 
 /**
  * The standards mandate composition in place of `extends`, so a class that
- * forwards to a shared collaborator through one-line methods repeats that shape
- * by design; counting it as duplication reports the remedy as the disease.
+ * forwards to a shared collaborator through one-line methods and getters repeats
+ * that shape by design; counting it as duplication reports the remedy as the disease.
  *
  * Uses `isDelegationForwardBody`, the predicate the duplicate-function-body
  * rule consults, so the two duplication tiers never disagree about the exempt
@@ -48,7 +48,9 @@ export const blankDelegationSpans = ({ path, text, compiler }: Params): string =
 					blank({ node: member });
 				}
 
-				if (compiler.isMethodDeclaration(member) && member.body !== undefined && isDelegationForwardBody({ body: member.body, compiler })) {
+				const forwards = compiler.isMethodDeclaration(member) || compiler.isGetAccessorDeclaration(member);
+
+				if (forwards && member.body !== undefined && isDelegationForwardBody({ body: member.body, compiler })) {
 					blank({ node: member });
 				}
 			}

@@ -2,8 +2,8 @@ import { buildUnitTestWriterInvocation } from '#src/agents/buildUnitTestWriterIn
 import type { Driver } from '#src/common/types/Driver.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { AgentUsage } from '#src/contracts/run/AgentUsage.ts';
-import { invokeCoverageAgent } from '#src/coverage/batch/createCoverageInvoker/invokeCoverageAgent.ts';
 import type { CoverageBatch } from '#src/coverage/common/types/CoverageBatch.ts';
+import { invokeWorkReportAgent } from '#src/invoke/invokeWorkReportAgent.ts';
 
 interface Params {
 	cwd: string;
@@ -36,7 +36,7 @@ export const createCoverageInvoker = ({
 	reportedFiles,
 	rationale,
 	recordUsage,
-}: Params): ((params: { label: string; errorContext?: string }) => ReturnType<typeof invokeCoverageAgent>) => {
+}: Params): ((params: { label: string; errorContext?: string }) => ReturnType<typeof invokeWorkReportAgent>) => {
 	let invocationCount = 0;
 
 	return ({ label, errorContext }) => {
@@ -45,12 +45,12 @@ export const createCoverageInvoker = ({
 
 		invocationCount += 1;
 
-		return invokeCoverageAgent({
+		return invokeWorkReportAgent({
 			cwd,
 			runId,
 			driver,
 			config,
-			batchId: batch.id,
+			step: batch.id,
 			invocation: buildUnitTestWriterInvocation({
 				planContent: standaloneBanner,
 				subjects: batch.members,

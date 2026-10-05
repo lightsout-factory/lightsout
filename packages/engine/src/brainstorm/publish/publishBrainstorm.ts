@@ -1,19 +1,18 @@
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { attachmentTitle } from '#src/common/attachmentManifest/attachmentTitle.ts';
+import { attachPreparedFiles } from '#src/common/attachmentManifest/attachPreparedFiles.ts';
 import { serializeAttachmentManifest } from '#src/common/attachmentManifest/serializeAttachmentManifest.ts';
 import { brainstormAttachmentFileNames } from '#src/common/constants/brainstormAttachmentFileNames.ts';
 import { brainstormAttachmentManifestName } from '#src/common/constants/brainstormAttachmentManifestName.ts';
 import { brainstormNotesFileName } from '#src/common/constants/brainstormNotesFileName.ts';
 import { messageOf } from '#src/common/messageOf.ts';
 import { workOrderNameOf } from '#src/common/planAddress/workOrderNameOf.ts';
-import type { TrackerSettings } from '#src/common/types/TrackerSettings.ts';
+import type { PreparedAttachment } from '#src/common/types/PreparedAttachment.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { planWorkspaceDir } from '#src/plan/planWorkspaceDir.ts';
 import { readPlanWorkOrderRef } from '#src/plan/readPlanWorkOrderRef.ts';
 import { getTicketsByIdentifiers } from '#src/ticketTracker/getTicketsByIdentifiers.ts';
 import { resolveTrackerSettings } from '#src/ticketTracker/resolveTrackerSettings.ts';
-import { setTicketAttachment } from '#src/ticketTracker/setTicketAttachment.ts';
 
 interface Params {
 	cwd: string;
@@ -33,14 +32,6 @@ interface BrainstormPublishReport {
 	published: string[];
 	error?: string;
 }
-
-interface PreparedAttachment {
-	name: string;
-	content: Buffer;
-}
-
-/** The tracker previews an attachment by its content type, and this generation holds only these two shapes. */
-const contentTypeOf = ({ name }: { name: string }) => (name.endsWith('.json') ? 'application/json' : 'text/markdown');
 
 /**
  * Read as one snapshot before any outward mutation, so the marker commits
@@ -62,47 +53,6 @@ const prepareAttachments = async ({ dir }: { dir: string }): Promise<{ attachmen
 	}
 
 	return { attachments: [...files, { name: brainstormAttachmentManifestName, content: serializeAttachmentManifest({ files }) }] };
-};
-
-/** Attach the prepared snapshot in order, with its marker last, stopping at the first tracker refusal. */
-const attachBrainstormFiles = async ({
-	settings,
-	ticketId,
-	ticketRef,
-	attachments,
-	onProgress,
-	titlePrefix,
-}: {
-	settings: TrackerSettings;
-	ticketId: string;
-	ticketRef: string;
-	attachments: PreparedAttachment[];
-	onProgress: (message: string) => void;
-	titlePrefix: string;
-}) => {
-	const published: string[] = [];
-
-	for (const attachment of attachments) {
-		const title = attachmentTitle({ prefix: titlePrefix, name: attachment.name });
-		const failure = await setTicketAttachment({
-			settings,
-			ticketId,
-			title,
-			content: attachment.content,
-			contentType: contentTypeOf({ name: attachment.name }),
-		});
-
-		// A stopped loop keeps what did land, so a partial publish is visible
-		// rather than silent.
-		if (failure !== undefined) {
-			return { published, error: failure.error };
-		}
-
-		published.push(title);
-		onProgress(`attached ${title} to ${ticketRef}`);
-	}
-
-	return { published, error: undefined };
 };
 
 /**
@@ -146,7 +96,8 @@ export const publishBrainstorm = async ({ cwd, name, config, env, onProgress, ti
 		return { ticketRef, published: [], error: `there is no ${ticketRef} on the configured ticket tracker` };
 	}
 
-	const { published, error } = await attachBrainstormFiles({
+	// The marker is last in the snapshot, so a stopped upload never commits a generation.
+	const { published, error } = await attachPreparedFiles({
 		settings,
 		ticketId: ticket.id,
 		ticketRef,

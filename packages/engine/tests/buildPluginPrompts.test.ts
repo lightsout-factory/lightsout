@@ -6,7 +6,7 @@ import { describe, expect, test } from '@jest/globals';
 
 const repoRoot = join(__dirname, '..', '..', '..');
 const pluginDirs = ['plugin', 'plugin-linear', 'plugin-jira'];
-const copiedScripts = ['buildPluginPrompts.mjs', 'invokedDirectly.mjs', 'messageOf.mjs'];
+const copiedScripts = ['buildPluginPrompts.mjs', 'invokedDirectly.mjs', 'messageOf.mjs', 'runScript.mjs'];
 
 /**
  * A copy of the script in a tree of its own, since it reads the plugins beside it: three plugins,

@@ -1,8 +1,7 @@
 import { maxConsecutiveDeclines } from '#src/common/constants/maxConsecutiveDeclines.ts';
-import { formatResumeCommand } from '#src/common/runs/formatResumeCommand.ts';
+import { recordPassedBatch } from '#src/common/runs/recordPassedBatch.ts';
 import { CoverageBatchReport } from '#src/contracts/coverage/CoverageBatchReport.ts';
 import { BatchOutcome } from '#src/contracts/refactor/BatchOutcome.ts';
-import { PipelineKind } from '#src/contracts/run/PipelineKind.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import type { StepRecord } from '#src/contracts/run/StepRecord.ts';
 import type { CoverageResult } from '#src/coverage/CoverageResult.ts';
@@ -32,10 +31,7 @@ interface CoverageSettlement {
 
 export const settleCoverageBatch = async ({ run, batch, record, outcome, declineStreak, fileStrikes }: Params): Promise<CoverageSettlement> => {
 	if (outcome.kind === CoverageBatchStopKind.Parked) {
-		const resume = formatResumeCommand({ pipeline: PipelineKind.Coverage, runId: run.current().runId });
-		const error = `run parked: harness rate limited or overloaded — resume with \`${resume}\` when the window resets.`;
-
-		return { result: await run.stop({ record, status: RunStatus.PausedRateLimit, error }), declineStreak };
+		return { result: await run.stop({ record, status: RunStatus.PausedRateLimit, error: run.parkMessage() }), declineStreak };
 	}
 
 	if (outcome.kind === CoverageBatchStopKind.Failed || outcome.kind === CoverageBatchStopKind.Escalated) {
@@ -46,10 +42,7 @@ export const settleCoverageBatch = async ({ run, batch, record, outcome, decline
 
 	const report = CoverageBatchReport.parse(outcome.report);
 
-	await run.setStep({
-		record: { ...record, status: RunStatus.Passed, report, changedFiles: outcome.changedFiles },
-		patch: { changedFiles: [...new Set([...run.current().changedFiles, ...outcome.changedFiles])] },
-	});
+	await recordPassedBatch({ run, record, report, changedFiles: outcome.changedFiles });
 
 	const settlement: CoverageSettlement = { declineStreak: 0 };
 

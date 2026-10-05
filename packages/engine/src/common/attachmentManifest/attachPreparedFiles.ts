@@ -1,6 +1,6 @@
 import { attachmentTitle } from '#src/common/attachmentManifest/attachmentTitle.ts';
+import type { PreparedAttachment } from '#src/common/types/PreparedAttachment.ts';
 import type { TrackerSettings } from '#src/common/types/TrackerSettings.ts';
-import type { PreparedAttachment } from '#src/plan/publish/publishPlan/common/types/PreparedAttachment.ts';
 import { setTicketAttachment } from '#src/ticketTracker/setTicketAttachment.ts';
 
 interface Params {
@@ -13,10 +13,10 @@ interface Params {
 	titlePrefix: string;
 }
 
-/** The tracker previews an attachment by its content type, and the durable set holds only these two shapes. */
+/** The tracker previews an attachment by its content type, and a published generation holds only these two shapes. */
 const contentTypeOf = ({ name }: { name: string }) => (name.endsWith('.json') ? 'application/json' : 'text/markdown');
 
-export const attachDurableFiles = async ({
+export const attachPreparedFiles = async ({
 	settings,
 	ticketId,
 	ticketRef,

@@ -49,4 +49,28 @@ describe('isDelegationForwardBody', () => {
 
 		expect(bodies).toStrictEqual([{ name: 'update', forward: false }]);
 	});
+
+	test('a method that calls a this-held field without returning is the shape too', () => {
+		const bodies = setupBodies({
+			source: ['class RefactorRun {', '\tprogress(message: string): void {', '\t\tthis.runState.progress(message);', '\t}', '}'].join('\n'),
+		});
+
+		expect(bodies).toStrictEqual([{ name: 'progress', forward: true }]);
+	});
+
+	test('a body that only reads a field of a this-held field is the shape too', () => {
+		const bodies = setupBodies({
+			source: ['class RefactorRun {', '\tcwd = () => this.runState.cwd;', '}'].join('\n'),
+		});
+
+		expect(bodies.map(({ forward }) => forward)).toStrictEqual([true]);
+	});
+
+	test("a read of the object's own field is not a forward", () => {
+		const bodies = setupBodies({
+			source: ['class RefactorRun {', '\tcount = () => this.total;', '}'].join('\n'),
+		});
+
+		expect(bodies.map(({ forward }) => forward)).toStrictEqual([false]);
+	});
 });

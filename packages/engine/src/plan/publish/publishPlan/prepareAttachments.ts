@@ -3,9 +3,9 @@ import { serializeAttachmentManifest } from '#src/common/attachmentManifest/seri
 import { brainstormNotesFileName } from '#src/common/constants/brainstormNotesFileName.ts';
 import { planAttachmentManifestName } from '#src/common/constants/planAttachmentManifestName.ts';
 import { messageOf } from '#src/common/messageOf.ts';
+import type { PreparedAttachment } from '#src/common/types/PreparedAttachment.ts';
 import { validatePlanAttachmentGeneration } from '#src/plan/common/validatePlanAttachmentGeneration.ts';
 import type { DurablePlanFile } from '#src/plan/publish/common/types/DurablePlanFile.ts';
-import type { PreparedAttachment } from '#src/plan/publish/publishPlan/common/types/PreparedAttachment.ts';
 
 interface Params {
 	files: DurablePlanFile[];

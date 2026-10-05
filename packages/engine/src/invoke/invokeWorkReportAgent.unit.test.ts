@@ -6,15 +6,15 @@ import type { Driver } from '#src/common/types/Driver.ts';
 import type { DriverInvocation } from '#src/common/types/DriverInvocation.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { AgentUsage } from '#src/contracts/run/AgentUsage.ts';
-import { invokeCoverageAgent } from '#src/coverage/batch/createCoverageInvoker/invokeCoverageAgent.ts';
+import { invokeWorkReportAgent } from '#src/invoke/invokeWorkReportAgent.ts';
 import { report } from '#tests/helpers/report.ts';
 import { runDirFor } from '#tests/helpers/runDirFor.ts';
 import { seedRunFolder } from '#tests/helpers/seedRunFolder.ts';
 
 const runId = 'run-1';
 // The colon is what the evidence file names have to survive: a run directory is
-// a real path, and a batch id is not.
-const batchId = 'batch-01:root';
+// a real path, and a step name is not.
+const step = 'batch-01:root';
 const stubUsage: AgentUsage = { inputTokens: 10, outputTokens: 100, cacheReadTokens: 1_000, cacheCreationTokens: 5, costUsd: 0.5 };
 
 const baseConfig: LightsoutConfig = { gates: { check: 'true', test: 'true', 'test-coverage': 'true' } };
@@ -74,19 +74,20 @@ const setupInvocation = ({
 	const rationale: string[] = [];
 	const ledger: { step: string; usage?: AgentUsage }[] = [];
 
-	const invoke = ({ label = '', invocationCount = 1 }: { label?: string; invocationCount?: number } = {}) =>
-		invokeCoverageAgent({
+	const invoke = ({ label = '', invocationCount = 1, afterAgent }: { label?: string; invocationCount?: number; afterAgent?: () => Promise<void> } = {}) =>
+		invokeWorkReportAgent({
 			cwd,
 			runId,
 			driver,
 			config,
-			batchId,
+			step,
 			invocation: { systemPrompt: 'the writer role', prompt: 'cover src/target.ts' },
 			label,
 			invocationCount,
 			agentTimeoutMs: 60_000,
 			reportedFiles,
 			rationale,
+			afterAgent,
 			recordUsage: async (entry) => {
 				ledger.push(entry);
 			},
@@ -108,7 +109,7 @@ const frictionLines = ({ cwd }: { cwd: string }) => {
 		: [];
 };
 
-describe('invokeCoverageAgent', () => {
+describe('invokeWorkReportAgent', () => {
 	test.each([
 		{ named: 'defaults to write when the config sets no level', config: baseConfig, expected: 'write' },
 		{ named: 'passes a configured full-access level through', config: fullAccessConfig, expected: 'full-access' },
@@ -131,15 +132,15 @@ describe('invokeCoverageAgent', () => {
 	});
 
 	test.each([
-		{ named: 'the first invocation is recorded under the batch id alone', label: '', step: 'batch-01:root' },
-		{ named: 'a labelled re-invocation is recorded under the batch id plus its label', label: 'fix-1', step: 'batch-01:root fix-1' },
-	])('$named', async ({ label, step }) => {
+		{ named: 'the first invocation is recorded under the step alone', label: '', recordedAs: 'batch-01:root' },
+		{ named: 'a labelled re-invocation is recorded under the step plus its label', label: 'fix-1', recordedAs: 'batch-01:root fix-1' },
+	])('$named', async ({ label, recordedAs }) => {
 		const { invoke, ledger } = setupInvocation();
 
 		await invoke({ label });
 
 		// the ledger is what a run's cost is read back from, per invocation
-		expect(ledger).toStrictEqual([{ step, usage: stubUsage }]);
+		expect(ledger).toStrictEqual([{ step: recordedAs, usage: stubUsage }]);
 	});
 
 	test('the report’s changed files are folded into the batch’s collector', async () => {
@@ -230,5 +231,18 @@ describe('invokeCoverageAgent', () => {
 		const stream = await readStreamLines({ path: join(agentsDir, 'stream-batch-01_root-2.jsonl'), expected: 2 });
 
 		expect(stream).toBe('{"type":"tool_use","name":"Write"}\n{"type":"result"}\n');
+	});
+
+	test('the caller’s follow-up runs after the agent returns and before its usage is recorded, even when the report is rejected', async () => {
+		const { invoke, ledger } = setupInvocation({ text: 'no report' });
+		const ledgerSizeAtFollowUp: number[] = [];
+
+		await invoke({
+			afterAgent: async () => {
+				ledgerSizeAtFollowUp.push(ledger.length);
+			},
+		});
+
+		expect(ledgerSizeAtFollowUp).toStrictEqual([0]);
 	});
 });

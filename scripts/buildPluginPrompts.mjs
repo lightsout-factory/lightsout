@@ -3,6 +3,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { invokedDirectly } from './invokedDirectly.mjs';
 import { messageOf } from './messageOf.mjs';
+import { runScript } from './runScript.mjs';
 
 /**
  * Writes each plugin's slash-command routers from its skills, for the
@@ -144,53 +145,46 @@ const differsOnDisk = ({ path, text }) => !existsSync(path) || readFileSync(path
 const main = () => {
 	const checking = process.argv.includes('--check');
 
-	try {
-		const plugins = pluginDirs.map((pluginDir) => buildRouters({ pluginDir }));
+	const plugins = pluginDirs.map((pluginDir) => buildRouters({ pluginDir }));
 
-		for (const { promptsDir, pluginName, routers } of plugins) {
-			if (!checking) {
-				mkdirSync(promptsDir, { recursive: true });
+	for (const { promptsDir, pluginName, routers } of plugins) {
+		if (!checking) {
+			mkdirSync(promptsDir, { recursive: true });
 
-				// only a generated router is ever pruned — a hand-added file is
-				// none of this script's business
-				for (const stale of onDiskRouterNames({ promptsDir })) {
-					rmSync(join(promptsDir, `${stale}.md`));
-				}
-
-				for (const [name, text] of routers) {
-					writeFileSync(join(promptsDir, `${name}.md`), text);
-				}
-
-				console.log(`wrote ${promptsDir.replace(`${repoRoot}/`, '')} (${routers.size} routers)`);
-
-				continue;
+			// only a generated router is ever pruned — a hand-added file is
+			// none of this script's business
+			for (const stale of onDiskRouterNames({ promptsDir })) {
+				rmSync(join(promptsDir, `${stale}.md`));
 			}
 
-			const stale = onDiskRouterNames({ promptsDir });
-			const mismatched = [...routers].some(([name, text]) => differsOnDisk({ path: join(promptsDir, `${name}.md`), text }));
-			const missing = [...routers.keys()].some((name) => !stale.includes(name));
-
-			if (mismatched || missing || stale.length !== routers.size) {
-				console.error('');
-				console.error(`  ${promptsDir.replace(`${repoRoot}/`, '')} no longer mirrors its skills.`);
-				console.error(`  These are the slash commands pi and omp users meet for the ${pluginName} plugin.`);
-				console.error('');
-				console.error(`    pnpm build:plugin-prompts && git add ${pluginDirs.map((dir) => `${dir}/prompts`).join(' ')}`);
-				console.error('');
-				process.exitCode = 1;
-				return;
+			for (const [name, text] of routers) {
+				writeFileSync(join(promptsDir, `${name}.md`), text);
 			}
 
-			console.log(`${promptsDir.replace(`${repoRoot}/`, '')} matches its skills (${routers.size} routers)`);
+			console.log(`wrote ${promptsDir.replace(`${repoRoot}/`, '')} (${routers.size} routers)`);
+
+			continue;
 		}
-	} catch (error) {
-		console.error('');
-		console.error(`  ${messageOf({ error })}`);
-		console.error('');
-		process.exitCode = 1;
+
+		const stale = onDiskRouterNames({ promptsDir });
+		const mismatched = [...routers].some(([name, text]) => differsOnDisk({ path: join(promptsDir, `${name}.md`), text }));
+		const missing = [...routers.keys()].some((name) => !stale.includes(name));
+
+		if (mismatched || missing || stale.length !== routers.size) {
+			console.error('');
+			console.error(`  ${promptsDir.replace(`${repoRoot}/`, '')} no longer mirrors its skills.`);
+			console.error(`  These are the slash commands pi and omp users meet for the ${pluginName} plugin.`);
+			console.error('');
+			console.error(`    pnpm build:plugin-prompts && git add ${pluginDirs.map((dir) => `${dir}/prompts`).join(' ')}`);
+			console.error('');
+			process.exitCode = 1;
+			return;
+		}
+
+		console.log(`${promptsDir.replace(`${repoRoot}/`, '')} matches its skills (${routers.size} routers)`);
 	}
 };
 
 if (invokedDirectly({ moduleUrl: import.meta.url })) {
-	main();
+	runScript({ run: main });
 }

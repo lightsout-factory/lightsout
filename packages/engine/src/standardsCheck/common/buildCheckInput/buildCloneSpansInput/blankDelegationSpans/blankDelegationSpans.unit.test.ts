@@ -13,6 +13,18 @@ const delegatingClass = [
 	'\t\tthis.runState = runState;',
 	'\t}',
 	'',
+	'\tget cwd(): string {',
+	'\t\treturn this.runState.cwd;',
+	'\t}',
+	'',
+	'\tget label(): string {',
+	'\t\treturn `run in ${this.runState.cwd}`;',
+	'\t}',
+	'',
+	'\tprogress(message: string): void {',
+	'\t\tthis.runState.progress(message);',
+	'\t}',
+	'',
 	'\tupdate({ patch }: { patch: Partial<RunManifest> }): Promise<void> {',
 	'\t\treturn this.runState.update({ patch });',
 	'\t}',
@@ -36,6 +48,23 @@ describe('blankDelegationSpans', () => {
 		expect(lines).toHaveLength(delegatingClass.split('\n').length);
 		expect(blanked).not.toContain('this.runState = runState');
 		expect(blanked).not.toContain('return this.runState.update');
+	});
+
+	test('blanks a getter that reads a field of the held value, and a method that calls it without returning', () => {
+		expectDefined(compiler);
+
+		const blanked = blankDelegationSpans({ path: 'src/RefactorRun.ts', text: delegatingClass, compiler });
+
+		expect(blanked).not.toContain('get cwd()');
+		expect(blanked).not.toContain('this.runState.progress(message)');
+	});
+
+	test('keeps a getter that computes from the held value', () => {
+		expectDefined(compiler);
+
+		const blanked = blankDelegationSpans({ path: 'src/RefactorRun.ts', text: delegatingClass, compiler });
+
+		expect(blanked).toContain('get label()');
 	});
 
 	test('keeps a method that does more than forward', () => {

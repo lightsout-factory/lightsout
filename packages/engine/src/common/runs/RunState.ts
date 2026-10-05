@@ -1,6 +1,8 @@
 import { defaultAgentTimeoutMinutes } from '#src/common/constants/defaultAgentTimeoutMinutes.ts';
+import { formatResumeCommand } from '#src/common/runs/formatResumeCommand.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { AgentUsage } from '#src/contracts/run/AgentUsage.ts';
+import { PipelineKind } from '#src/contracts/run/PipelineKind.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import type { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import type { RunUsage } from '#src/contracts/run/RunUsage.ts';
@@ -60,6 +62,13 @@ export class RunState {
 	progress(message: string): void {
 		this.progressSink(message);
 		this.onProgress?.(message);
+	}
+
+	/** The error a run carries when it stops because the harness is rate limited or overloaded. */
+	parkMessage(): string {
+		const { pipeline = PipelineKind.Implement, runId } = this.manifest;
+
+		return `run parked: harness rate limited or overloaded — resume with \`${formatResumeCommand({ pipeline, runId })}\` when the window resets.`;
 	}
 
 	async update({ patch }: { patch: Partial<RunManifest> }): Promise<void> {

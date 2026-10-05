@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import { attachmentTitle } from '#src/common/attachmentManifest/attachmentTitle.ts';
 import { parseAttachmentManifest } from '#src/common/attachmentManifest/parseAttachmentManifest.ts';
 import { scopeAttachments } from '#src/common/attachmentManifest/scopeAttachments.ts';
+import { selectListedAttachment } from '#src/common/attachmentManifest/selectListedAttachment.ts';
 import { brainstormAttachmentFileNames } from '#src/common/constants/brainstormAttachmentFileNames.ts';
 import { brainstormAttachmentManifestName } from '#src/common/constants/brainstormAttachmentManifestName.ts';
 import { brainstormNotesFileName } from '#src/common/constants/brainstormNotesFileName.ts';
@@ -55,19 +56,13 @@ const readGeneration = async ({
 	const files: ReadGenerationFile[] = [];
 
 	for (const listed of manifest.files) {
-		const matches = selected.filter(({ title }) => title === listed.name);
-		const attachment = matches.length === 1 ? matches[0] : undefined;
+		const match = selectListedAttachment({ attachments: selected, name: listed.name, markerName });
 
-		if (attachment === undefined) {
-			return {
-				error:
-					matches.length === 0
-						? `${markerName} lists ${listed.name}, but the ticket carries no attachment with that title`
-						: `the ticket carries more than one attachment named ${listed.name}, so ${markerName} cannot select one generation`,
-			};
+		if ('error' in match) {
+			return match;
 		}
 
-		const read = await readAttachmentText({ settings, attachment });
+		const read = await readAttachmentText({ settings, attachment: match.attachment });
 
 		if ('error' in read) {
 			return { error: read.error };

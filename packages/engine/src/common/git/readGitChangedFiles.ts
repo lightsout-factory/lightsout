@@ -1,6 +1,4 @@
-import { gitTimeoutMs } from '#src/common/constants/gitTimeoutMs.ts';
-import { readGitPrefix } from '#src/common/git/readGitPrefix.ts';
-import { runCommand } from '#src/common/processes/runCommand.ts';
+import { readGitStatusEntries } from '#src/common/git/readGitStatusEntries.ts';
 
 interface Params {
 	cwd: string;
@@ -11,32 +9,7 @@ interface Params {
  * relative to `cwd`; undefined outside a git worktree.
  */
 export const readGitChangedFiles = async ({ cwd }: Params): Promise<string[] | undefined> => {
-	const prefix = await readGitPrefix({ cwd });
+	const entries = await readGitStatusEntries({ cwd, splitRenames: false });
 
-	if (prefix === undefined) {
-		return undefined;
-	}
-
-	const status = await runCommand({ command: 'git status --porcelain=v1 -uall -- .', cwd, timeoutMs: gitTimeoutMs }).catch(() => undefined);
-
-	if (status?.exitCode !== 0) {
-		return undefined;
-	}
-
-	// Porcelain paths are repo-root-relative; strip the cwd's prefix so they
-	// line up with the repo-relative paths agents report.
-	return status.stdout
-		.split('\n')
-		.filter(Boolean)
-		.map((line) => {
-			const path = line.slice(3);
-			// A rename is recorded as `old -> new`; only the destination is a file
-			// that now exists.
-			const arrow = path.lastIndexOf(' -> ');
-			const renameTarget = arrow === -1 ? path : path.slice(arrow + ' -> '.length);
-
-			return renameTarget.replace(/^"|"$/g, '');
-		})
-		.map((path) => (prefix && path.startsWith(prefix) ? path.slice(prefix.length) : path))
-		.filter((path) => !path.startsWith('.lightsout/'));
+	return entries?.map((entry) => entry.path);
 };
