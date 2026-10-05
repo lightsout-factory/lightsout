@@ -1,6 +1,6 @@
-import { getDirectory } from '../paths/getDirectory.ts';
-import type { PathAliases } from '../types/PathAliases.ts';
-import { isRecord } from '../utils/isRecord.ts';
+import { getDirectory } from '../../paths/getDirectory.ts';
+import type { PathAliases } from '../../types/PathAliases.ts';
+import { isRecord } from '../../utils/isRecord.ts';
 
 const readTargets = ({ target }: { target: unknown }): string[] | undefined => {
 	if (typeof target === 'string') {

@@ -1,5 +1,5 @@
 import type { RawStandardsFinding, StandardsCheckModule } from '@lightsout/standards-contracts';
-import { readFileTexts } from '#common/checkInput/readFileTexts.ts';
+import { readFileTexts } from '#common/checkInput/readFileTexts/readFileTexts.ts';
 import { isIndexFile } from '#common/paths/isIndexFile.ts';
 import { isTestFile } from '#common/paths/isTestFile.ts';
 import { findMisfiledFiles } from './findMisfiledFiles.ts';

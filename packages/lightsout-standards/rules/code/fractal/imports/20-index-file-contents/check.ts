@@ -1,8 +1,8 @@
 import type { FileTextInput, RawStandardsFinding, StandardsCheckModule, SyntaxTreeInput } from '@lightsout/standards-contracts';
 import type ts from 'typescript';
-import { readFileTexts } from '#common/checkInput/readFileTexts.ts';
+import { readFileTexts } from '#common/checkInput/readFileTexts/readFileTexts.ts';
 import { buildRawFinding } from '#common/findings/buildRawFinding.ts';
-import { readIndexExports } from '#common/modules/readIndexExports.ts';
+import { readIndexExports } from '#common/modules/readIndexExports/readIndexExports.ts';
 import { getBaseName } from '#common/paths/getBaseName.ts';
 import { isIndexFile } from '#common/paths/isIndexFile.ts';
 

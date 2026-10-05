@@ -1,7 +1,7 @@
 import type { RawStandardsFinding, StandardsCheckModule, SyntaxTreeInput } from '@lightsout/standards-contracts';
 import { buildRawFinding } from '#common/findings/buildRawFinding.ts';
 import { getSiteGroupKey } from '#common/findings/getSiteGroupKey.ts';
-import { collectFunctionNodes } from '#common/parsing/collectFunctionNodes.ts';
+import { collectFunctionNodes } from '#common/parsing/collectFunctionNodes/collectFunctionNodes.ts';
 import { isDelegationForwardBody } from '#common/parsing/isDelegationForwardBody.ts';
 import { getOwningPack } from '#common/paths/getOwningPack.ts';
 import { isSingleCallBody } from './isSingleCallBody.ts';

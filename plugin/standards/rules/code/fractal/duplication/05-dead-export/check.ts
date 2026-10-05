@@ -1,7 +1,7 @@
 import type { RawStandardsFinding, StandardsCheckModule } from '@lightsout/standards-contracts';
-import { readFileTexts } from '#common/checkInput/readFileTexts.ts';
+import { readFileTexts } from '#common/checkInput/readFileTexts/readFileTexts.ts';
 import { buildRawFinding } from '#common/findings/buildRawFinding.ts';
-import { getUnconsumedExports } from '#common/modules/getUnconsumedExports.ts';
+import { getUnconsumedExports } from '#common/modules/getUnconsumedExports/getUnconsumedExports.ts';
 
 export const check: StandardsCheckModule = {
 	inputKinds: ['file-text'],

@@ -1,5 +1,5 @@
-import { getDirectory } from '../paths/getDirectory.ts';
-import type { PathAliases } from '../types/PathAliases.ts';
+import { getDirectory } from '../../paths/getDirectory.ts';
+import type { PathAliases } from '../../types/PathAliases.ts';
 import { readPackageImports } from './readPackageImports.ts';
 import { readPathAliases } from './readPathAliases.ts';
 

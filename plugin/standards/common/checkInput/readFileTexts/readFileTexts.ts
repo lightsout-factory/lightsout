@@ -1,5 +1,5 @@
 import type { FileTextInput } from '@lightsout/standards-contracts';
-import type { FileTexts } from '../types/FileTexts.ts';
+import type { FileTexts } from './FileTexts.ts';
 
 interface Params {
 	/** The file-text input the engine built for this run, when the rule declared that kind. */
