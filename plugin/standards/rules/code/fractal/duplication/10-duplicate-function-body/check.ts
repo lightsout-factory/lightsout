@@ -4,6 +4,7 @@ import { getSiteGroupKey } from '#common/findings/getSiteGroupKey.ts';
 import { collectFunctionNodes } from '#common/parsing/collectFunctionNodes.ts';
 import { isDelegationForwardBody } from '#common/parsing/isDelegationForwardBody.ts';
 import { getOwningPack } from '#common/paths/getOwningPack.ts';
+import { isSingleCallBody } from './isSingleCallBody.ts';
 import { normalizeFunctionTokens } from './normalizeFunctionTokens.ts';
 
 interface BodySite {
@@ -25,7 +26,10 @@ const groupByBody = ({ input, minBodyTokens }: { input: SyntaxTreeInput; minBody
 
 	for (const [path, tree] of input.trees) {
 		for (const { name, startLine, endLine, body } of collectFunctionNodes({ sourceFile: tree, compiler: input.compiler })) {
-			const tokens = normalizeFunctionTokens({ node: body, compiler: input.compiler });
+			// A body that only calls another function with its own fixed values has
+			// nothing left to share, so two of them match only when the values match too.
+			const keepLiterals = isSingleCallBody({ body, compiler: input.compiler });
+			const tokens = normalizeFunctionTokens({ node: body, compiler: input.compiler, keepLiterals });
 
 			// A one-line forward to a `this`-held collaborator is the shape the
 			// composition-over-inheritance rule mandates — never a duplicate

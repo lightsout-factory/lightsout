@@ -83,6 +83,11 @@ const hookWrapper = ({ name, hook, field }: { name: string; hook: string; field:
 };
 `;
 
+/** A function that does nothing but hand its own fixed text to one shared function. */
+const sectionWrapper = ({ name, heading, rule }: { name: string; heading: string; rule: string }) => `export const ${name} = ({ items }: { items: string[] }) =>
+	listSection({ heading: '${heading}', items: items.map((item) => \`- \${item}\`), rules: ['${rule}'] });
+`;
+
 /** The same body on lines 1–6 again, under a third set of names. */
 const formatGrossSource = `export const formatGross = ({ base, levy }: { base: number; levy: number }) => {
 	const whole = base + levy;
@@ -175,6 +180,32 @@ describe('duplicate-function-body check', () => {
 		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: { minBodyTokens: 5 } });
 
 		expect(findings.map(({ siteKey }) => siteKey)).toStrictEqual(['duplicate-function-body:src/alpha/AlphaButton.ts|src/beta/BetaButton.ts']);
+	});
+
+	test('two functions that only call the same function with their own fixed values are not duplicates, since the shared code is already in one place', async () => {
+		const input = setupSyntaxTreeInput({
+			sources: [
+				['src/brief/renameSection.ts', sectionWrapper({ name: 'renameSection', heading: 'Rename-only phase', rule: 'Apply exactly these renames.' })],
+				['src/brief/acceptanceSection.ts', sectionWrapper({ name: 'acceptanceSection', heading: 'Acceptance tests', rule: 'Every one must pass.' })],
+			],
+		});
+
+		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: { minBodyTokens: 5 } });
+
+		expect(findings).toStrictEqual([]);
+	});
+
+	test('two functions that call the same function with the same fixed values are duplicates, whatever they are named', async () => {
+		const input = setupSyntaxTreeInput({
+			sources: [
+				['src/brief/renameSection.ts', sectionWrapper({ name: 'renameSection', heading: 'Rename-only phase', rule: 'Apply exactly these renames.' })],
+				['src/brief/movesSection.ts', sectionWrapper({ name: 'movesSection', heading: 'Rename-only phase', rule: 'Apply exactly these renames.' })],
+			],
+		});
+
+		const findings = await check.run({ inputs: { 'syntax-tree': input }, options: { minBodyTokens: 5 } });
+
+		expect(findings.map(({ siteKey }) => siteKey)).toStrictEqual(['duplicate-function-body:src/brief/movesSection.ts|src/brief/renameSection.ts']);
 	});
 
 	test('two duplicated bodies across the same pair of files are one finding naming both, since the identity is the paths', async () => {
