@@ -4,6 +4,8 @@ import { buildRawFinding } from '#common/findings/buildRawFinding.ts';
 import { getExportName } from '#common/naming/getExportName.ts';
 import { getBaseName } from '#common/paths/getBaseName.ts';
 import { getDirectory } from '#common/paths/getDirectory.ts';
+import { isIndexFile } from '#common/paths/isIndexFile.ts';
+import { findEarlyFolders } from './findEarlyFolders.ts';
 
 /** `types/` and `constants/` at the top of a `common/` hold files only, so they have no folder to group into. */
 const isKindFolder = ({ directory }: { directory: string }) => {
@@ -35,7 +37,7 @@ export const check: StandardsCheckModule = {
 			}
 		}
 
-		return [...countPerDirectory]
+		const oversized = [...countPerDirectory]
 			.filter(([directory, count]) => count > cap && !isKindFolder({ directory }))
 			.map(([directory, count]) =>
 				buildRawFinding({
@@ -46,5 +48,8 @@ export const check: StandardsCheckModule = {
 					measure: count,
 				}),
 			);
+
+		// The other direction of the same cap: no subject folder before there are too many files for one.
+		return [...oversized, ...findEarlyFolders({ files: files.filter((path) => !testPaths.has(path) && !isIndexFile({ path })), cap })];
 	},
 };

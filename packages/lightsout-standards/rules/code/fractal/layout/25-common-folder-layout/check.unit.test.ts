@@ -6,12 +6,8 @@ const functionText = 'export const formatRate = ({ rate }: { rate: number }): st
 const typeText = ['export interface Rate {', '\tvalue: number;', '}'].join('\n');
 const constantText = 'export const rateLimits = { min: 0, max: 1 } as const;';
 
-const runCheck = async ({ contents, tests = [], cap = 20 }: { contents: Array<[string, string]>; tests?: string[]; cap?: number }) =>
-	check.run({ inputs: { 'file-text': setupFileTextInput({ contents, tests }) }, options: { cap } });
-
-/** `count` functions sitting directly in `folder`, named so no two collide. */
-const setupFunctions = ({ folder, count }: { folder: string; count: number }): Array<[string, string]> =>
-	Array.from({ length: count }, (_, index) => [`${folder}/formatRate${index}.ts`, functionText]);
+const runCheck = async ({ contents, tests = [] }: { contents: Array<[string, string]>; tests?: string[] }) =>
+	check.run({ inputs: { 'file-text': setupFileTextInput({ contents, tests }) }, options: {} });
 
 describe('common-folder-layout check', () => {
 	test('asks for file text, since the folder a shared file goes in is decided by what it exports', () => {
@@ -109,61 +105,6 @@ describe('common-folder-layout check', () => {
 		]);
 	});
 
-	test('reports a folder in a common/ that holds no more files than the cap, and leaves a banned name to the folder-name rule', async () => {
-		const findings = await runCheck({
-			contents: [
-				['src/common/utils/formatRate.ts', functionText],
-				['src/common/formatting/padCell.ts', functionText],
-				['src/common/formatting/trimCell.ts', functionText],
-				['src/common/readRate.ts', functionText],
-				['src/common/types/Rate.ts', typeText],
-			],
-			cap: 4,
-		});
-
-		expect(findings).toStrictEqual([
-			{
-				siteKey: 'common-folder-layout:src/common/formatting',
-				files: [{ path: 'src/common/formatting' }],
-				detail: "folder 'formatting' groups files in a common/ that holds 3 (cap 4)",
-				guidance: 'Move its files directly into `common/`. A `common/` is grouped by subject only once it holds more files than the cap.',
-			},
-		]);
-	});
-
-	test('accepts subject folders once the common/ holds more files than the cap', async () => {
-		const findings = await runCheck({
-			contents: [...setupFunctions({ folder: 'src/common/formatting', count: 3 }), ...setupFunctions({ folder: 'src/common/parsing', count: 2 })],
-			cap: 4,
-		});
-
-		expect(findings).toStrictEqual([]);
-	});
-
-	test('accepts a module folder in a small common/, and counts it as the one function it is', async () => {
-		const findings = await runCheck({
-			contents: [
-				['src/common/formatRate/formatRate.ts', functionText],
-				['src/common/formatRate/roundRate.ts', functionText],
-				['src/common/formatRate/padRate.ts', functionText],
-				['src/common/formatting/padCell.ts', functionText],
-			],
-			cap: 2,
-		});
-
-		// one module folder plus one file in formatting/ is two, which is not past the cap
-		expect(findings.map((finding) => finding.siteKey)).toStrictEqual(['common-folder-layout:src/common/formatting']);
-	});
-
-	test('judges each common/ on its own count', async () => {
-		const findings = await runCheck({
-			contents: [...setupFunctions({ folder: 'src/common/formatting', count: 5 }), ['src/billing/common/formatting/padCell.ts', functionText]],
-			cap: 4,
-		});
-
-		expect(findings.map((finding) => finding.siteKey)).toStrictEqual(['common-folder-layout:src/billing/common/formatting']);
-	});
-
 	test('leaves alone files that sit nowhere near a common/ folder', async () => {
 		const findings = await runCheck({
 			contents: [
@@ -189,6 +130,6 @@ describe('common-folder-layout check', () => {
 	});
 
 	test('reports nothing when its input is missing rather than refusing', async () => {
-		expect(await check.run({ inputs: {}, options: { cap: 20 } })).toStrictEqual([]);
+		expect(await check.run({ inputs: {}, options: {} })).toStrictEqual([]);
 	});
 });

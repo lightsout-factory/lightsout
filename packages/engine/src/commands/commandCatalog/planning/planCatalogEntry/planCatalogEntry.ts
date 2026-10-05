@@ -1,4 +1,4 @@
-import { planSteps } from '#src/commands/commandCatalog/planCatalogEntry/planSteps.ts';
+import { planSteps } from '#src/commands/commandCatalog/planning/planCatalogEntry/planSteps.ts';
 import type { CommandCatalogEntry } from '#src/contracts/commands/CommandCatalogEntry.ts';
 import { CommandGroup } from '#src/contracts/commands/CommandGroup.ts';
 import { CommandRecordKind } from '#src/contracts/commands/CommandRecordKind.ts';

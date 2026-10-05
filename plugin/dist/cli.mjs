@@ -121439,43 +121439,6 @@ var CommandRecordKind = {
   Nothing: "nothing"
 };
 
-// src/commands/commandCatalog/autoPlanCatalogEntry.ts
-var autoPlanCatalogEntry = {
-  id: "auto-plan",
-  slash: "/auto-plan",
-  group: CommandGroup.Build,
-  summary: "Plan a ticket alone \u2014 self-answers every question below a written escalation bar, shows you one proposal, and rolls onward per the `auto-plan` config block.",
-  whenToUse: 'Reach for it when the ticket is shaped enough that you would answer most of the interview with "you decide". It stops for the questions two reasonable engineers would answer differently, and for nothing else; the `auto-plan` config block says whether approval also starts the build.',
-  invocations: [],
-  flags: [],
-  steps: [],
-  records: CommandRecordKind.Plans,
-  related: ["brainstorm", "plan", "implement", "resume", "stop", "ship", "implement-direct", "queue", "work-order", "ticket-state", "self-check"]
-};
-
-// src/commands/commandCatalog/brainstormCatalogEntry.ts
-var brainstormCatalogEntry = {
-  id: "brainstorm",
-  slash: "/brainstorm",
-  cli: "lightsout brainstorm",
-  group: CommandGroup.Build,
-  summary: "Shape a vague idea into a buildable direction through dialogue \u2014 checks whether it is one idea or several, offers the competing approaches worth building, with trade-offs and a recommendation, and converges on a design stated in plain words.",
-  whenToUse: "Reach for it when the idea is still a sentence and you are not sure it is one idea or three. It decides its own outcome \u2014 ready to implement, or ready to auto-plan \u2014 and publishes the design write-up and the settled decisions to the ticket.",
-  invocations: [{ id: "brainstorm-publish", positional: "publish" }],
-  flags: [
-    {
-      name: "name",
-      value: "<name>",
-      meaning: "The brainstorm\u2019s plan, under .lightsout/work-orders/<work-order-name>/plans/ \u2014 a plan address <work-order-name>/<NNN-slug>.",
-      required: true
-    },
-    { name: "cwd", value: "<path>", meaning: "Repository the brainstorm workspace lives in.", fallback: "The process working directory.", required: false }
-  ],
-  steps: [],
-  records: CommandRecordKind.Plans,
-  related: ["auto-plan", "plan", "implement", "resume", "stop", "ship", "implement-direct", "queue", "work-order", "ticket-state", "self-check"]
-};
-
 // src/commands/commandCatalog/doctorCatalogEntry.ts
 var doctorCatalogEntry = {
   id: "doctor",
@@ -121739,7 +121702,44 @@ var improveCatalogEntry = {
   related: ["status", "doctor", "friction", "voice", "report"]
 };
 
-// src/commands/commandCatalog/planCatalogEntry/planSteps.ts
+// src/commands/commandCatalog/planning/autoPlanCatalogEntry.ts
+var autoPlanCatalogEntry = {
+  id: "auto-plan",
+  slash: "/auto-plan",
+  group: CommandGroup.Build,
+  summary: "Plan a ticket alone \u2014 self-answers every question below a written escalation bar, shows you one proposal, and rolls onward per the `auto-plan` config block.",
+  whenToUse: 'Reach for it when the ticket is shaped enough that you would answer most of the interview with "you decide". It stops for the questions two reasonable engineers would answer differently, and for nothing else; the `auto-plan` config block says whether approval also starts the build.',
+  invocations: [],
+  flags: [],
+  steps: [],
+  records: CommandRecordKind.Plans,
+  related: ["brainstorm", "plan", "implement", "resume", "stop", "ship", "implement-direct", "queue", "work-order", "ticket-state", "self-check"]
+};
+
+// src/commands/commandCatalog/planning/brainstormCatalogEntry.ts
+var brainstormCatalogEntry = {
+  id: "brainstorm",
+  slash: "/brainstorm",
+  cli: "lightsout brainstorm",
+  group: CommandGroup.Build,
+  summary: "Shape a vague idea into a buildable direction through dialogue \u2014 checks whether it is one idea or several, offers the competing approaches worth building, with trade-offs and a recommendation, and converges on a design stated in plain words.",
+  whenToUse: "Reach for it when the idea is still a sentence and you are not sure it is one idea or three. It decides its own outcome \u2014 ready to implement, or ready to auto-plan \u2014 and publishes the design write-up and the settled decisions to the ticket.",
+  invocations: [{ id: "brainstorm-publish", positional: "publish" }],
+  flags: [
+    {
+      name: "name",
+      value: "<name>",
+      meaning: "The brainstorm\u2019s plan, under .lightsout/work-orders/<work-order-name>/plans/ \u2014 a plan address <work-order-name>/<NNN-slug>.",
+      required: true
+    },
+    { name: "cwd", value: "<path>", meaning: "Repository the brainstorm workspace lives in.", fallback: "The process working directory.", required: false }
+  ],
+  steps: [],
+  records: CommandRecordKind.Plans,
+  related: ["auto-plan", "plan", "implement", "resume", "stop", "ship", "implement-direct", "queue", "work-order", "ticket-state", "self-check"]
+};
+
+// src/commands/commandCatalog/planning/planCatalogEntry/planSteps.ts
 var planSteps = [
   {
     title: "CREATE THE PLAN WORKSPACE",
@@ -121836,7 +121836,7 @@ var planSteps = [
   }
 ];
 
-// src/commands/commandCatalog/planCatalogEntry/planCatalogEntry.ts
+// src/commands/commandCatalog/planning/planCatalogEntry/planCatalogEntry.ts
 var planCatalogEntry = {
   id: "plan",
   slash: "/plan",
@@ -122212,7 +122212,7 @@ var shipCatalogEntry = {
   related: ["auto-plan", "brainstorm", "plan", "implement", "resume", "stop", "implement-direct", "queue", "work-order", "ticket-state", "self-check"]
 };
 
-// src/commands/commandCatalog/standardsCheckCatalogEntry.ts
+// src/commands/commandCatalog/standards/standardsCheckCatalogEntry.ts
 var standardsCheckCatalogEntry = {
   id: "standards-check",
   cli: "lightsout standards-check",
@@ -122234,7 +122234,7 @@ var standardsCheckCatalogEntry = {
   related: ["standards-validate", "standards-health", "refactor", "test-coverage-to-threshold"]
 };
 
-// src/commands/commandCatalog/standardsHealthCatalogEntry.ts
+// src/commands/commandCatalog/standards/standardsHealthCatalogEntry.ts
 var standardsHealthCatalogEntry = {
   id: "standards-health",
   cli: "lightsout standards-health",
@@ -122248,7 +122248,7 @@ var standardsHealthCatalogEntry = {
   related: ["standards-check", "standards-validate"]
 };
 
-// src/commands/commandCatalog/standardsValidateCatalogEntry.ts
+// src/commands/commandCatalog/standards/standardsValidateCatalogEntry.ts
 var standardsValidateCatalogEntry = {
   id: "standards-validate",
   cli: "lightsout standards-validate",

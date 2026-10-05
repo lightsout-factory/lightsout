@@ -191,9 +191,7 @@
         {
           "name": "lightsout/common-folder-layout",
           "severity": "advisory",
-          "options": {
-            "cap": 20
-          }
+          "options": {}
         },
         {
           "name": "lightsout/dead-export",
@@ -313,7 +311,7 @@
         "deterministic": 21,
         "agent": 5,
         "topics": 5,
-        "tokens": 3606
+        "tokens": 3613
       }
     },
     {
@@ -409,9 +407,7 @@
         {
           "name": "lightsout/common-folder-layout",
           "severity": "advisory",
-          "options": {
-            "cap": 20
-          }
+          "options": {}
         },
         {
           "name": "lightsout/constant-casing",
@@ -626,7 +622,7 @@
         "deterministic": 33,
         "agent": 16,
         "topics": 10,
-        "tokens": 7859
+        "tokens": 7866
       }
     },
     {
@@ -1041,14 +1037,12 @@
       "deterministic": true,
       "agent": false,
       "defaultSeverity": "advisory",
-      "defaultOptions": {
-        "cap": 20
-      },
+      "defaultOptions": {},
       "fixtureCounts": {
         "pass": 4,
         "fail": 4
       },
-      "prose": "## Common Folder Layout\n\nInside `common/`:\n\n- A function or class sits directly in `common/`.\n- A type goes in `common/types/`, a constant in `common/constants/`. A value not written as a function or class is a constant, one built by a call included.\n- Make no other folder until `common/` holds more than 20 files. Then group its functions into subject folders, such as `formatting/`.\n\nThen where a shared file goes is never a choice, and a reader knows where to look.",
+      "prose": "## Common Folder Layout\n\nInside `common/`:\n\n- A function or class sits directly in `common/`.\n- A type goes in `common/types/`, a constant in `common/constants/`. A value not written as a function or class is a constant, one built by a call included.\n\nThen where a shared file goes is never a choice, and a reader knows where to look.",
       "fixtures": [
         {
           "side": "pass",
@@ -1077,7 +1071,7 @@
         },
         {
           "side": "fail",
-          "path": "src/billing/common/formatting/formatRate.ts",
+          "path": "src/billing/common/formatRate.ts",
           "text": "import type { Rate } from '../Rate.ts';\n\n// Incorrect: common/ holds three files, so it has no folder but types/ and\n// constants/. A function sits directly in common/.\nexport const formatRate = ({ rate }: { rate: Rate }): string => `${(rate.value * 100).toFixed(1)}%`;\n"
         },
         {
@@ -1094,8 +1088,8 @@
       "example": {
         "kind": "repo",
         "focus": {
-          "fail": "src/billing/common/formatting/formatRate.ts",
-          "pass": "src/billing/common/formatRate.ts"
+          "fail": "src/billing/common/Rate.ts",
+          "pass": "src/billing/common/types/Rate.ts"
         }
       }
     },
@@ -1651,9 +1645,9 @@
       },
       "fixtureCounts": {
         "pass": 4,
-        "fail": 21
+        "fail": 22
       },
-      "prose": "## Folder Size\n\nWhen a folder holds more than 20 files, not counting tests, group related files into subject folders named for what they share.\n\n- A module folder counts as one file.\n- `types/` and `constants/` are exempt: they hold files only.\n\nA long flat folder reads like a listing instead of a description of the product.",
+      "prose": "## Folder Size\n\nA folder holds at most 20 files, not counting tests. This is true of every folder: a subject folder, a module folder and a `common/`.\n\n- Over 20: group related files into subject folders named for what they share.\n- 20 or fewer: make no subject folder inside a module folder or a `common/`.\n- A module folder counts as one file.\n- `types/` and `constants/` are exempt: they hold files only.\n\nA long flat folder reads like a listing instead of a description of the product.",
       "fixtures": [
         {
           "side": "pass",
@@ -1674,6 +1668,11 @@
           "side": "pass",
           "path": "src/narrow/narrow2.ts",
           "text": "export const narrow2 = 2;\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/billing/common/formatting/formatRate.ts",
+          "text": "export const formatRate = ({ rate }: { rate: number }): string => `${rate}`;\n"
         },
         {
           "side": "fail",
@@ -1784,7 +1783,7 @@
       "example": {
         "kind": "repo",
         "focus": {
-          "fail": "src/wide/wide0.ts",
+          "fail": "src/billing/common/formatting/formatRate.ts",
           "pass": "package.json"
         }
       }

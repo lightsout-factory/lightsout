@@ -70,16 +70,14 @@ describe('listStandardsRules file-placement rules', () => {
 		});
 	});
 
-	test('the one number a repo can tune among the file-placement rules is the size at which a common/ is grouped', async () => {
+	test('no file-placement rule carries a number a repo can tune', async () => {
 		const rules = await listDefaults();
 		const tunable = rules.filter((rule) => durablePathRuleNames.includes(rule.rule) && Object.keys(rule.options).length > 0);
 
-		// every other threshold in this group is a closed list of names from a doc,
+		// every threshold in this group is a closed list of names from a doc,
 		// never a count — a knob there would be a rule that can be quietly widened
-		// until it stops firing. This one mirrors the folder size cap, which is a
-		// count a repo already tunes
-		expect(tunable.map((rule) => ({ rule: rule.rule, options: rule.options }))).toStrictEqual([
-			{ rule: 'lightsout/common-folder-layout', options: { cap: 20 } },
-		]);
+		// until it stops firing. The one count, the folder size cap, belongs to the
+		// folder size rule
+		expect(tunable.map((rule) => ({ rule: rule.rule, options: rule.options }))).toStrictEqual([]);
 	});
 });
