@@ -210,6 +210,15 @@ describe('RunState', () => {
 		expect(new RunState({ cwd, config: { ...config, timeouts: { 'agent-minutes': 5 } }, manifest: manifestOf() }).agentTimeoutMs).toBe(5 * 60_000);
 	});
 
+	test('the parked message names the command that resumes a run of its pipeline', () => {
+		const { run } = setupRunState();
+		const { runId } = run.current();
+
+		expect(run.parkMessage()).toBe(
+			`run parked: harness rate limited or overloaded — resume with \`lightsout refactor --run ${runId}\` when the window resets.`,
+		);
+	});
+
 	test('recordUsage leaves a ledger line naming the step and the model and effort in force', async () => {
 		const { agentsLog, run } = setupRunState({ overrides: { model: 'stub-model-1', effort: 'high' } });
 

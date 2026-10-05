@@ -1,8 +1,8 @@
+import { attachPreparedFiles } from '#src/common/attachmentManifest/attachPreparedFiles.ts';
 import { workOrderNameOf } from '#src/common/planAddress/workOrderNameOf.ts';
 import { sha256 } from '#src/common/sha256.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { durablePlanFiles } from '#src/plan/publish/durablePlanFiles.ts';
-import { attachDurableFiles } from '#src/plan/publish/publishPlan/attachDurableFiles.ts';
 import { prepareAttachments } from '#src/plan/publish/publishPlan/prepareAttachments.ts';
 import { reportStaleAttachments } from '#src/plan/publish/publishPlan/reportStaleAttachments.ts';
 import { readPlanWorkOrderRef } from '#src/plan/readPlanWorkOrderRef.ts';
@@ -88,7 +88,7 @@ export const publishPlan = async ({ cwd, name, config, env, onProgress, titlePre
 		return { ticketRef, published: [], stale: [], error: `there is no ${ticketRef} on the configured ticket tracker` };
 	}
 
-	const { published, error } = await attachDurableFiles({
+	const { published, error } = await attachPreparedFiles({
 		settings,
 		ticketId: ticket.id,
 		ticketRef,

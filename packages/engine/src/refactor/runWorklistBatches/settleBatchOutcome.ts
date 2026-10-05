@@ -1,9 +1,8 @@
 import { maxConsecutiveDeclines } from '#src/common/constants/maxConsecutiveDeclines.ts';
-import { formatResumeCommand } from '#src/common/runs/formatResumeCommand.ts';
+import { recordPassedBatch } from '#src/common/runs/recordPassedBatch.ts';
 import { BatchOutcome } from '#src/contracts/refactor/BatchOutcome.ts';
 import { BatchReport } from '#src/contracts/refactor/BatchReport.ts';
 import type { RefactorBatch } from '#src/contracts/refactor/RefactorBatch.ts';
-import { PipelineKind } from '#src/contracts/run/PipelineKind.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import type { StepRecord } from '#src/contracts/run/StepRecord.ts';
 import { BatchStopKind } from '#src/refactor/common/constants/BatchStopKind.ts';
@@ -33,10 +32,7 @@ interface BatchSettlement {
  */
 export const settleBatchOutcome = async ({ run, batch, record, outcome, declineStreak }: Params): Promise<BatchSettlement> => {
 	if (outcome.kind === BatchStopKind.Parked) {
-		const resume = formatResumeCommand({ pipeline: PipelineKind.Refactor, runId: run.current().runId });
-		const error = `run parked: harness rate limited or overloaded — resume with \`${resume}\` when the window resets.`;
-
-		return { result: await run.stop({ record, status: RunStatus.PausedRateLimit, error }), declineStreak };
+		return { result: await run.stop({ record, status: RunStatus.PausedRateLimit, error: run.parkMessage() }), declineStreak };
 	}
 
 	if (outcome.kind === BatchStopKind.Failed || outcome.kind === BatchStopKind.Escalated) {
@@ -47,10 +43,7 @@ export const settleBatchOutcome = async ({ run, batch, record, outcome, declineS
 
 	const report = BatchReport.parse(outcome.report);
 
-	await run.setStep({
-		record: { ...record, status: RunStatus.Passed, report, changedFiles: outcome.changedFiles },
-		patch: { changedFiles: [...new Set([...run.current().changedFiles, ...outcome.changedFiles])] },
-	});
+	await recordPassedBatch({ run, record, report, changedFiles: outcome.changedFiles });
 
 	if (report.outcome !== BatchOutcome.Declined) {
 		run.progress(`${batch.id}: resolved`);

@@ -3,7 +3,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { getStandardsPackBundle } from '../packages/engine/src/views/getStandardsPackBundle/getStandardsPackBundle.ts';
 import { invokedDirectly } from './invokedDirectly.mjs';
-import { messageOf } from './messageOf.mjs';
+import { runScript } from './runScript.mjs';
 
 /**
  * Writes `assets/default-pack.json`, the authored built-in library with its
@@ -45,39 +45,32 @@ export const buildDefaultPackView = async () => {
 const main = async () => {
 	const checking = process.argv.includes('--check');
 
-	try {
-		const json = await buildDefaultPackView();
+	const json = await buildDefaultPackView();
 
-		if (!checking) {
-			writeFileSync(outputPath, json);
-			console.log(`wrote assets/default-pack.json — ${(json.length / 1024).toFixed(0)} KB`);
+	if (!checking) {
+		writeFileSync(outputPath, json);
+		console.log(`wrote assets/default-pack.json — ${(json.length / 1024).toFixed(0)} KB`);
 
-			return;
-		}
-
-		const onDisk = readFileSync(outputPath, 'utf8');
-
-		if (onDisk === json) {
-			console.log('assets/default-pack.json matches the built-in library and its packs in packages/lightsout-standards/');
-
-			return;
-		}
-
-		console.error('');
-		console.error('  assets/default-pack.json no longer matches the built-in library and its packs in packages/lightsout-standards/.');
-		console.error('  It is what the site and every viewer off this monorepo show for the built-in library and its packs.');
-		console.error('');
-		console.error('    pnpm build:default-pack && git add assets/default-pack.json');
-		console.error('');
-		process.exitCode = 1;
-	} catch (error) {
-		console.error('');
-		console.error(`  ${messageOf({ error })}`);
-		console.error('');
-		process.exitCode = 1;
+		return;
 	}
+
+	const onDisk = readFileSync(outputPath, 'utf8');
+
+	if (onDisk === json) {
+		console.log('assets/default-pack.json matches the built-in library and its packs in packages/lightsout-standards/');
+
+		return;
+	}
+
+	console.error('');
+	console.error('  assets/default-pack.json no longer matches the built-in library and its packs in packages/lightsout-standards/.');
+	console.error('  It is what the site and every viewer off this monorepo show for the built-in library and its packs.');
+	console.error('');
+	console.error('    pnpm build:default-pack && git add assets/default-pack.json');
+	console.error('');
+	process.exitCode = 1;
 };
 
 if (invokedDirectly({ moduleUrl: import.meta.url })) {
-	await main();
+	await runScript({ run: main });
 }

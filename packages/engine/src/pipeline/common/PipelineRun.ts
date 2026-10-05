@@ -2,7 +2,6 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { formatCost, formatTokenCount } from '@lightsout/shared';
 import { createEventFileSink } from '#src/common/createEventFileSink.ts';
-import { formatResumeCommand } from '#src/common/runs/formatResumeCommand.ts';
 import { RunState } from '#src/common/runs/RunState.ts';
 import { resolveRunDir } from '#src/common/runs/resolveRunDir.ts';
 import { buildSelfCheckCommand } from '#src/common/selfCheck/buildSelfCheckCommand.ts';
@@ -12,7 +11,6 @@ import { ActivityLevelKind } from '#src/contracts/activity/ActivityLevelKind.ts'
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { Permissions } from '#src/contracts/Permissions.ts';
 import type { AgentUsage } from '#src/contracts/run/AgentUsage.ts';
-import { PipelineKind } from '#src/contracts/run/PipelineKind.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import type { StepRecord } from '#src/contracts/run/StepRecord.ts';
@@ -109,9 +107,7 @@ export class PipelineRun {
 	}
 
 	parkMessage(): string {
-		const { pipeline = PipelineKind.Implement, runId } = this.current();
-
-		return `run parked: harness rate limited or overloaded — resume with \`${formatResumeCommand({ pipeline, runId })}\` when the window resets.`;
+		return this.runState.parkMessage();
 	}
 
 	async setStep({ record, patch }: { record: StepRecord; patch?: Partial<RunManifest> }): Promise<void> {

@@ -77,6 +77,8 @@ const cwd = join(__dirname, '..', '..', '..', '..');
  * `file-directly-in-common` became `common-folder-layout` and
  * `shared-code-placement` became `file-placement`, each now asking for more
  * than its old name said.
+ *
+ * On 2026-10-05 `single-return` was retired with the rule it named.
  */
 const durableRuleIds = [
 	'prefer-functions',
@@ -84,7 +86,6 @@ const durableRuleIds = [
 	'no-any',
 	'class-inheritance',
 	'explicit-return-type',
-	'single-return',
 	'single-use-scalar',
 	'named-string-values',
 	'dead-export',
