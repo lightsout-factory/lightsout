@@ -8,7 +8,7 @@ import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import type { StepRecord } from '#src/contracts/run/StepRecord.ts';
 import { ShipStatus } from '#src/contracts/ship/ShipStatus.ts';
 import { runDirFor } from '#tests/helpers/runDirFor.ts';
-import { runningRunManifestOf } from '#tests/helpers/runningRunManifestOf.ts';
+import { runProgressManifestOf } from '#tests/helpers/runProgressManifestOf.ts';
 import { seedWorkOrderRecord } from '#tests/helpers/seedWorkOrderRecord.ts';
 
 /** Beyond any OS pid range — the live-process probe reports it dead. */
@@ -95,7 +95,7 @@ describe('watchRunProgress', () => {
 	test('a run that has already finished paints exactly one frame', async () => {
 		const watch = setupWatch();
 
-		watch.write({ manifest: runningRunManifestOf({ runId: 'run-done', status: RunStatus.Passed, steps: [stepOf({ status: RunStatus.Passed })] }) });
+		watch.write({ manifest: runProgressManifestOf({ runId: 'run-done', status: RunStatus.Passed, steps: [stepOf({ status: RunStatus.Passed })] }) });
 
 		await watchRunProgress({ cwd: watch.cwd, runId: 'run-done', ...timings });
 
@@ -106,12 +106,12 @@ describe('watchRunProgress', () => {
 		const watch = setupWatch({
 			onFrame: (frame) => {
 				if (frame === 2) {
-					watch.write({ manifest: runningRunManifestOf({ runId: 'run-live', status: RunStatus.Passed, steps: [stepOf({ status: RunStatus.Passed })] }) });
+					watch.write({ manifest: runProgressManifestOf({ runId: 'run-live', status: RunStatus.Passed, steps: [stepOf({ status: RunStatus.Passed })] }) });
 				}
 			},
 		});
 
-		watch.write({ manifest: runningRunManifestOf({ runId: 'run-live' }) });
+		watch.write({ manifest: runProgressManifestOf({ runId: 'run-live', steps: [stepOf()] }) });
 		watch.lock({ runId: 'run-live', pid: process.pid });
 
 		await watchRunProgress({ cwd: watch.cwd, runId: 'run-live', ...timings });
@@ -130,7 +130,7 @@ describe('watchRunProgress', () => {
 	])('$label is a last frame — the run is stopped, whatever it is called', async ({ status }) => {
 		const watch = setupWatch();
 
-		watch.write({ manifest: runningRunManifestOf({ runId: 'run-parked', status }) });
+		watch.write({ manifest: runProgressManifestOf({ runId: 'run-parked', status, steps: [stepOf()] }) });
 		watch.lock({ runId: 'run-parked', pid: process.pid });
 
 		await watchRunProgress({ cwd: watch.cwd, runId: 'run-parked', ...timings });
@@ -148,7 +148,7 @@ describe('watchRunProgress', () => {
 		});
 
 		watch.write({
-			manifest: runningRunManifestOf({
+			manifest: runProgressManifestOf({
 				runId: 'run-shipping',
 				status: RunStatus.Passed,
 				willShip: true,
@@ -172,7 +172,7 @@ describe('watchRunProgress', () => {
 		const watch = setupWatch();
 
 		watch.write({
-			manifest: runningRunManifestOf({
+			manifest: runProgressManifestOf({
 				runId: 'run-waiting',
 				status: RunStatus.Passed,
 				willShip: true,
@@ -190,7 +190,7 @@ describe('watchRunProgress', () => {
 	test('a run that will not ship gets no settle and no extra frame', async () => {
 		const watch = setupWatch();
 
-		watch.write({ manifest: runningRunManifestOf({ runId: 'run-plain', status: RunStatus.Passed, steps: [stepOf({ status: RunStatus.Passed })] }) });
+		watch.write({ manifest: runProgressManifestOf({ runId: 'run-plain', status: RunStatus.Passed, steps: [stepOf({ status: RunStatus.Passed })] }) });
 
 		await watchRunProgress({ cwd: watch.cwd, runId: 'run-plain', ...timings });
 
@@ -200,7 +200,7 @@ describe('watchRunProgress', () => {
 	test('a stopped run ends the watch after its first frame', async () => {
 		const watch = setupWatch();
 
-		watch.write({ manifest: runningRunManifestOf({ runId: 'stopped-run' }) });
+		watch.write({ manifest: runProgressManifestOf({ runId: 'stopped-run', steps: [stepOf()] }) });
 		writeOwner({ cwd: watch.cwd, runId: 'stopped-run', pid: deadPid });
 
 		await watchRunProgress({ cwd: watch.cwd, runId: 'stopped-run', ...familyTimings });

@@ -8,7 +8,7 @@ import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import type { StepRecord } from '#src/contracts/run/StepRecord.ts';
 import { ShipStatus } from '#src/contracts/ship/ShipStatus.ts';
 import { runDirFor } from '#tests/helpers/runDirFor.ts';
-import { runningRunManifestOf } from '#tests/helpers/runningRunManifestOf.ts';
+import { runProgressManifestOf } from '#tests/helpers/runProgressManifestOf.ts';
 import { seedWorkOrderRecord } from '#tests/helpers/seedWorkOrderRecord.ts';
 
 const stepOf = (overrides: Partial<StepRecord> = {}): StepRecord => ({
@@ -90,10 +90,10 @@ const secondPhaseId = 'phase002-child';
 const familyTags = ['coordrun', 'phase001', 'phase002'];
 
 const coordinatorOf = ({ status = RunStatus.Running, steps, updatedAt, ...overrides }: Partial<RunManifest> & { steps: StepRecord[]; updatedAt: string }) =>
-	runningRunManifestOf({ runId: familyRootId, pipeline: 'phases', plan: 'plans/demo/overview.md', status, steps, updatedAt, ...overrides });
+	runProgressManifestOf({ runId: familyRootId, pipeline: 'phases', plan: 'plans/demo/overview.md', status, steps, updatedAt, ...overrides });
 
 const phaseChildOf = ({ runId, plan, status, updatedAt }: { runId: string; plan: string; status: RunStatus; updatedAt: string }) =>
-	runningRunManifestOf({ runId, parentRunId: familyRootId, plan, status, updatedAt, steps: [stepOf({ status })] });
+	runProgressManifestOf({ runId, parentRunId: familyRootId, plan, status, updatedAt, steps: [stepOf({ status })] });
 
 describe('watchRunProgress', () => {
 	test('every frame paints the family screen and the watch follows the root across phases', async () => {
