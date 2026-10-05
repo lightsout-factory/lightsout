@@ -1,8 +1,8 @@
 import type { RawStandardsFinding, StandardsCheckModule } from '@lightsout/standards-contracts';
-import { readFileTexts } from '#common/checkInput/readFileTexts.ts';
+import { readFileTexts } from '#common/checkInput/readFileTexts/readFileTexts.ts';
 import { ImportTargetKind } from '#common/constants/ImportTargetKind.ts';
 import { buildRawFinding } from '#common/findings/buildRawFinding.ts';
-import { findPathAliases } from '#common/imports/findPathAliases.ts';
+import { findPathAliases } from '#common/imports/findPathAliases/findPathAliases.ts';
 import { resolveImport } from '#common/imports/resolveImport.ts';
 import { isUnderSrc } from '#common/paths/isUnderSrc.ts';
 

@@ -1,5 +1,5 @@
 import type ts from 'typescript';
-import type { FunctionNode } from '../types/FunctionNode.ts';
+import type { FunctionNode } from './FunctionNode.ts';
 import { getFunctionName } from './getFunctionName.ts';
 
 interface Params {

@@ -1,9 +1,9 @@
-import { readPackageEntries } from '../checkInput/readPackageEntries.ts';
-import { readFileExports } from '../parsing/readFileExports.ts';
-import { isIndexFile } from '../paths/isIndexFile.ts';
-import { isTestFile } from '../paths/isTestFile.ts';
-import type { UnconsumedExport } from '../types/UnconsumedExport.ts';
-import { isPackageEntry } from './isPackageEntry.ts';
+import { readPackageEntries } from '../../checkInput/readPackageEntries.ts';
+import { readFileExports } from '../../parsing/readFileExports.ts';
+import { isIndexFile } from '../../paths/isIndexFile.ts';
+import { isTestFile } from '../../paths/isTestFile.ts';
+import { isPackageEntry } from '../isPackageEntry.ts';
+import type { UnconsumedExport } from './UnconsumedExport.ts';
 
 /**
  * An index file counts only if it exports. An entry index that only

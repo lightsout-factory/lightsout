@@ -1,6 +1,6 @@
-import { getDirectory } from '../paths/getDirectory.ts';
-import { joinPath } from '../paths/joinPath.ts';
-import type { PathAliases } from '../types/PathAliases.ts';
+import { getDirectory } from '../../paths/getDirectory.ts';
+import { joinPath } from '../../paths/joinPath.ts';
+import type { PathAliases } from '../../types/PathAliases.ts';
 
 /**
  * A tsconfig is JSON with comments, so a JSON parser is not an option, and

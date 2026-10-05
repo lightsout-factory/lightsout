@@ -1,7 +1,6 @@
 // The advice half of the health report, split from buildStandardsHealth.unit.test.ts
-// when that file passed the test-file line cap. Its fixtures are its own: the
-// rule that forced the split says each half carries what it needs, and test
-// files are exempt from the duplication rules for exactly this reason.
+// when that file passed the test-file line cap. The rule fixture is shared with
+// the other halves; the rest are this half's own.
 import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -15,23 +14,8 @@ import type { AdvisoryOutcome } from '#src/contracts/standardsCheck/AdvisoryOutc
 import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFinding.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 import { buildStandardsHealth } from '#src/standardsCheck/buildStandardsHealth.ts';
+import { acmeStandardsRule } from '#tests/helpers/acmeStandardsRule.ts';
 import { runDirFor } from '#tests/helpers/runDirFor.ts';
-
-const rule = (overrides: Partial<LoadedStandardsRule> & { id: string }): LoadedStandardsRule => ({
-	name: `acme/${overrides.id}`,
-	library: 'acme',
-	set: 'code',
-	documentPath: 'code/architecture/folder-structure',
-	summary: 'a rule',
-	prose: 'the argument for the rule',
-	deterministic: false,
-	agent: overrides.deterministic !== true,
-	defaultSeverity: StandardsSeverity.Advisory,
-	defaultOptions: {},
-	requires: [],
-	fixturesPath: `/packages/acme/${overrides.id}/fixtures`,
-	...overrides,
-});
 
 /** One group whose pack brings in exactly `rules`, each at its rule.md default. */
 const groupOf = ({ rules }: { rules: LoadedStandardsRule[] }): StandardsGroup => ({
@@ -157,7 +141,7 @@ describe('buildStandardsHealth advice counting', () => {
 
 		const health = await buildStandardsHealth({
 			cwd,
-			groups: [groupOf({ rules: [rule({ id: 'multi-export', deterministic: true }), rule({ id: 'object-args' })] })],
+			groups: [groupOf({ rules: [acmeStandardsRule({ id: 'multi-export', deterministic: true }), acmeStandardsRule({ id: 'object-args' })] })],
 		});
 
 		expect(rowFor({ rules: health.rules, id: 'object-args' })).toEqual(
@@ -181,7 +165,7 @@ describe('buildStandardsHealth advice counting', () => {
 			},
 		});
 
-		const health = await buildStandardsHealth({ cwd, groups: [groupOf({ rules: [rule({ id: 'object-args' })] })] });
+		const health = await buildStandardsHealth({ cwd, groups: [groupOf({ rules: [acmeStandardsRule({ id: 'object-args' })] })] });
 
 		// counting it as applied would credit the rule with advice nobody acted
 		// on; counting it as declined would blame it for a rejection nobody made
@@ -201,7 +185,7 @@ describe('buildStandardsHealth advice counting', () => {
 			},
 		});
 
-		const health = await buildStandardsHealth({ cwd, groups: [groupOf({ rules: [rule({ id: 'object-args' })] })] });
+		const health = await buildStandardsHealth({ cwd, groups: [groupOf({ rules: [acmeStandardsRule({ id: 'object-args' })] })] });
 
 		expect(rowFor({ rules: health.rules, id: 'object-args' })).toEqual(expect.objectContaining({ adviceApplied: 0, adviceDeclined: 1, reasons: [] }));
 	});

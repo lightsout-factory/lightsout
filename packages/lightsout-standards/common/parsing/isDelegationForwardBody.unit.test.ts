@@ -1,6 +1,6 @@
 import { describe, expect, test } from '@jest/globals';
 import ts from 'typescript';
-import { collectFunctionNodes } from './collectFunctionNodes.ts';
+import { collectFunctionNodes } from './collectFunctionNodes/collectFunctionNodes.ts';
 import { isDelegationForwardBody } from './isDelegationForwardBody.ts';
 
 const setupBodies = ({ source }: { source: string }) => {

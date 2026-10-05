@@ -1,5 +1,5 @@
 import type { ImportGraphInput, RawStandardsFinding, StandardsCheckModule } from '@lightsout/standards-contracts';
-import { readFileTexts } from '#common/checkInput/readFileTexts.ts';
+import { readFileTexts } from '#common/checkInput/readFileTexts/readFileTexts.ts';
 import { readPackageEntries } from '#common/checkInput/readPackageEntries.ts';
 import { buildRawFinding } from '#common/findings/buildRawFinding.ts';
 import { isPackageEntry } from '#common/modules/isPackageEntry.ts';

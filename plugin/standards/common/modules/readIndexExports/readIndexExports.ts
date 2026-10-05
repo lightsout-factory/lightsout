@@ -1,6 +1,6 @@
-import { findPathAliases } from '../imports/findPathAliases.ts';
-import { resolveImport } from '../imports/resolveImport.ts';
-import type { IndexExport } from '../types/IndexExport.ts';
+import { findPathAliases } from '../../imports/findPathAliases/findPathAliases.ts';
+import { resolveImport } from '../../imports/resolveImport.ts';
+import type { IndexExport } from './IndexExport.ts';
 
 // Anchored at a line start and allowed to run across lines, because a formatter
 // wraps a long list of names over many lines.

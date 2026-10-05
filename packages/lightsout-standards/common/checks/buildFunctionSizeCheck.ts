@@ -1,7 +1,7 @@
 import type { RawStandardsFinding, StandardsCheckModule, SyntaxTreeInput } from '@lightsout/standards-contracts';
 import type ts from 'typescript';
 import { buildRawFinding } from '../findings/buildRawFinding.ts';
-import { collectFunctionNodes } from '../parsing/collectFunctionNodes.ts';
+import { collectFunctionNodes } from '../parsing/collectFunctionNodes/collectFunctionNodes.ts';
 import type { FunctionSizeCap } from '../types/FunctionSizeCap.ts';
 
 interface Oversized extends FunctionSizeCap {
