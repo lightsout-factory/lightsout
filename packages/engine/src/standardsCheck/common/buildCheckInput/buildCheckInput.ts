@@ -58,7 +58,7 @@ export const buildCheckInput = async ({
 			return buildTestFileInput({ cwd, tests, cache });
 
 		case StandardsInputKind.CloneSpans:
-			return buildCloneSpansInput({ cwd, source, options, cache, compiler });
+			return buildCloneSpansInput({ cwd, source, options, cache });
 
 		case StandardsInputKind.SyntaxTree:
 		case StandardsInputKind.TypeChecker:

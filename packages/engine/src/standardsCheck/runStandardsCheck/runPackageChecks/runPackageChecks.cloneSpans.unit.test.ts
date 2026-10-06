@@ -26,9 +26,9 @@ const groupOf = ({ rules, states }: { rules: LoadedStandardsRule[]; states: Map<
 
 /**
  * A repo holding the given sources, checked by one duplicate-block rule that
- * records the input the run handed it. `typescript` is what decides whether the
- * run can parse the repo: without one, the delegation blanking is skipped
- * rather than guessed.
+ * records the input the run handed it, and that would also read syntax trees
+ * when there are any. `typescript` is what decides whether the run can parse
+ * the repo.
  */
 const setupDuplicationRun = ({ sources, typescript = false }: { sources: Record<string, string>; typescript?: boolean }) => {
 	const cwd = mkdtempSync(join(tmpdir(), 'lightsout-package-checks-duplication-'));
@@ -61,6 +61,7 @@ const setupDuplicationRun = ({ sources, typescript = false }: { sources: Record<
 		requires: [],
 		fixturesPath: '/packages/acme/duplicate-code-block/fixtures',
 		inputKinds: [StandardsInputKind.CloneSpans],
+		optionalInputKinds: [StandardsInputKind.SyntaxTree],
 		run,
 	};
 	const states = new Map<string, ResolvedRuleState>([
@@ -175,29 +176,32 @@ describe('runPackageChecks', () => {
 		expect(input.spans).toStrictEqual([]);
 	});
 
-	test('blanks the composition remedy out of the detection when the repo has a typescript to parse with', async () => {
+	test('hands every span the detector found, and the optional syntax trees, when the repo has a typescript to parse with', async () => {
 		const { cwd, handed, groups } = setupDuplicationRun({ sources: delegatingSources, typescript: true });
 
 		await runPackageChecks({ cwd, groups });
 
 		const input = cloneSpansInput({ handed });
 
-		// two classes holding the same collaborator repeat the forwarding shape BY
-		// DESIGN — the standards mandate it in place of `extends`, so reporting it
-		// would hand a refactor agent the remedy as the disease
-		expect(input.spans).toStrictEqual([]);
+		// which copies are acceptable is the check's to judge: the engine filters nothing
+		expect({ sites: sitesOf({ input }), trees: handed[0]?.['syntax-tree']?.trees.size }).toStrictEqual({
+			sites: ['src/PipelineRun.ts', 'src/RefactorRun.ts'],
+			trees: 2,
+		});
 	});
 
-	test('leaves the composition remedy in the detection rather than guessing at it when the repo has no typescript', async () => {
+	test('still runs a check whose syntax trees are optional when the repo has no typescript, handing it no trees', async () => {
 		const { cwd, handed, groups } = setupDuplicationRun({ sources: delegatingSources });
 
-		await runPackageChecks({ cwd, groups });
+		const { notes } = await runPackageChecks({ cwd, groups });
 
 		const input = cloneSpansInput({ handed });
 
-		// the blanking needs a parsed tree; without one the run reports what the
-		// tokens say rather than pretending to know the shape
-		expect(sitesOf({ input })).toStrictEqual(['src/PipelineRun.ts', 'src/RefactorRun.ts']);
+		expect({ sites: sitesOf({ input }), trees: handed[0]?.['syntax-tree'], skipped: notes.some((note) => note.includes('skipped')) }).toStrictEqual({
+			sites: ['src/PipelineRun.ts', 'src/RefactorRun.ts'],
+			trees: undefined,
+			skipped: false,
+		});
 	});
 
 	test('builds a separate clone detection for each rule from its own minTokens option', async () => {

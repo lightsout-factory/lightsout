@@ -28,6 +28,8 @@ export interface LoadedStandardsRule {
 	requires: string[];
 	/** Every input kind the deterministic check declared; present iff deterministic. */
 	inputKinds?: StandardsInputKind[];
+	/** The kinds the check uses when the engine can build them; absent when it declares none. */
+	optionalInputKinds?: StandardsInputKind[];
 	/** The validated deterministic check, present iff deterministic. */
 	run?: StandardsCheckFunction;
 	/** How rule.md says its examples are shaped; absent when it declares none, and a page reads the shape off the files. */

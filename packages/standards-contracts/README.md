@@ -5,11 +5,14 @@ from here and needs nothing else lightsout knows.
 
 ## What is in it
 
-- `StandardsCheckModule` — what a `check.ts` must export.
+- `StandardsCheckModule` — what a `check.ts` must export: `inputKinds`, the inputs
+  it cannot run without; optionally `optionalInputKinds`, inputs it uses when the
+  engine can build them (a syntax tree needs the repo's TypeScript) and does
+  without otherwise; and `run`.
 - `StandardsCheckRun` — the function signature a check provides.
 - `RawStandardsFinding` — what a check emits. The engine adds the rule id and the
   severity itself, because a check that could name them could also name them wrong.
-- `StandardsCheckInput` and the six input kinds — what a check may ask to be
+- `StandardsCheckInput` and the seven input kinds — what a check may ask to be
   given. A check never opens a file; it is handed what it asked for.
 - `StandardsLibraryRoot` — the shape of `lightsout-standards.json`.
 - `StandardsSet` — the two document trees, `code` and `tests`.

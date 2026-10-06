@@ -13,6 +13,7 @@ import { buildCheckInputs } from '#src/standardsCheck/common/buildCheckInputs.ts
 import { typescriptInputKinds } from '#src/standardsCheck/common/constants/typescriptInputKinds.ts';
 import { findFileStandardsGroup } from '#src/standardsCheck/common/findFileStandardsGroup.ts';
 import { runRuleCheck } from '#src/standardsCheck/common/runRuleCheck.ts';
+import { selectInputKinds } from '#src/standardsCheck/common/selectInputKinds.ts';
 import { findFoldersWithoutAliasSource } from '#src/standardsCheck/runStandardsCheck/runPackageChecks/findFoldersWithoutAliasSource.ts';
 
 interface Grader {
@@ -26,6 +27,7 @@ interface LiveRule {
 	/** The full `<library>/<rule-id>` name every finding carries. */
 	name: string;
 	inputKinds: StandardsInputKind[];
+	optionalInputKinds?: StandardsInputKind[];
 	run: StandardsCheckFunction;
 	options: Record<string, number>;
 	/** Each group running the rule at these options, with the severity it grades at. */
@@ -45,7 +47,15 @@ const selectLiveRules = ({ groups }: { groups: StandardsGroup[] }) => {
 			}
 
 			const key = canonicalJson({ value: [rule.name, state.options] });
-			const entry = live.get(key) ?? { id: rule.id, name: rule.name, inputKinds: rule.inputKinds, run: rule.run, options: state.options, graders: [] };
+			const entry = live.get(key) ?? {
+				id: rule.id,
+				name: rule.name,
+				inputKinds: rule.inputKinds,
+				...(rule.optionalInputKinds === undefined ? {} : { optionalInputKinds: rule.optionalInputKinds }),
+				run: rule.run,
+				options: state.options,
+				graders: [],
+			};
 
 			entry.graders.push({ group, severity: state.severity });
 			live.set(key, entry);
@@ -115,7 +125,8 @@ const runLiveRules = async ({
 			continue;
 		}
 
-		const inputs = await buildCheckInputs({ kinds: rule.inputKinds, inputFor: ({ kind }) => inputFor({ kind, options: rule.options }) });
+		const kinds = selectInputKinds({ inputKinds: rule.inputKinds, optionalInputKinds: rule.optionalInputKinds, hasTypescript: compiler !== undefined });
+		const inputs = await buildCheckInputs({ kinds, inputFor: ({ kind }) => inputFor({ kind, options: rule.options }) });
 		const raw = await runRuleCheck({ rule, run: rule.run, inputs, options: rule.options });
 
 		findings.push(...gradeFindings({ rule, raw, groupOfFile }));

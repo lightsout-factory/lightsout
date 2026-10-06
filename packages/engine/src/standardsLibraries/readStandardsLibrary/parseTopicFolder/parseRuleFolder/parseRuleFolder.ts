@@ -152,6 +152,7 @@ export const parseRuleFolder = async ({ folderPath, set, documentPath, library, 
 			requires: declaration.requires,
 			...(declaration.example === undefined ? {} : { example: declaration.example }),
 			...(check === undefined ? {} : { inputKinds: check.inputKinds, run: check.run }),
+			...(check?.optionalInputKinds === undefined ? {} : { optionalInputKinds: check.optionalInputKinds }),
 			fixturesPath,
 		};
 	}

@@ -2,7 +2,6 @@ import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
-import { resolveConsumerTypescript } from '#src/common/workspace/resolveConsumerTypescript.ts';
 import { buildCloneSpansInput } from '#src/standardsCheck/common/buildCheckInput/buildCloneSpansInput/buildCloneSpansInput.ts';
 
 // Well past the detector's floor (50 tokens / 5 lines) so the duplicated span
@@ -172,10 +171,9 @@ describe('buildCloneSpansInput', () => {
 	});
 });
 
-// The composition remedy's shape: an assigning constructor and chunky one-line
-// forwards to the held collaborator. Two classes holding the same collaborator
-// share all of it by design, and together the members clear the detector's
-// floor (50 tokens over 5 lines).
+// An assigning constructor and chunky one-line forwards to a held
+// collaborator: together the members clear the detector's floor (50 tokens
+// over 5 lines), so the detector reports the copy like any other.
 const delegatingClass = ({ name }: { name: string }) => `export class ${name} {
 	private readonly runState: RunState;
 
@@ -203,23 +201,8 @@ const setupDelegatingRepo = () => {
 	return { cwd };
 };
 
-describe('buildCloneSpansInput delegation blanking', () => {
-	test('two classes sharing only the composition remedy produce no span when a compiler is present', async () => {
-		const { cwd } = setupDelegatingRepo();
-		const compiler = resolveConsumerTypescript({ cwd: process.cwd() });
-
-		const input = await buildCloneSpansInput({
-			cwd,
-			source: ['src/RefactorRun.ts', 'src/PipelineRun.ts'],
-			options: { minTokens: 50 },
-			cache: new Map(),
-			compiler,
-		});
-
-		expect(input.spans).toStrictEqual([]);
-	});
-
-	test('without a compiler the blanking is skipped rather than guessed, so the spans come back', async () => {
+describe('buildCloneSpansInput leaves acceptable copies to the check', () => {
+	test('two classes sharing only members that forward to a collaborator still produce a span — whether that copy is acceptable is for the check to judge', async () => {
 		const { cwd } = setupDelegatingRepo();
 
 		const input = await buildCloneSpansInput({ cwd, source: ['src/RefactorRun.ts', 'src/PipelineRun.ts'], options: { minTokens: 50 }, cache: new Map() });
