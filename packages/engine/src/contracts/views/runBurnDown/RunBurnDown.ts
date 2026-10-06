@@ -12,8 +12,6 @@ export const RunBurnDown = z.object({
 	batchesDeclined: z.number().optional(),
 	/** Refactor only: one row per batch, in work-list order. */
 	batches: z.array(RunBurnDownBatch),
-	/** Refactor only: findings from the size and crowding rules, before to after. */
-	overCap: z.object({ before: z.number(), after: z.number() }).optional(),
 	/** Coverage only: per-file statements pct, before to after, worst first. */
 	files: z.array(z.object({ path: z.string(), beforePct: z.number(), afterPct: z.number() })).optional(),
 });

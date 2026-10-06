@@ -1,44 +1,8 @@
 import type { RefactorBatch } from '#src/contracts/refactor/RefactorBatch.ts';
 import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFinding.ts';
 
-/**
- * Mechanical fixes come before judgment-heavier duplication work, so a run's
- * early batches are its safest. The list names the built-in library's rules by
- * full name; every other rule sorts last rather than erroring.
- *
- * The names are written out rather than read from libraries: batching order is
- * engine pacing policy, not a fact a library should have to restate.
- */
-const rulePriority: string[] = [
-	'lightsout/banned-folder-name',
-	'lightsout/common-folder-layout',
-	'lightsout/index-files',
-	'lightsout/test-beside-subject',
-	'lightsout/test-support-in-src',
-	'lightsout/multi-export',
-	'lightsout/filename-mismatch',
-	'lightsout/test-mock-prefix',
-	'lightsout/test-mock-untyped',
-	'lightsout/no-test-state-in-hooks',
-	'lightsout/test-manual-mock-cleanup',
-	'lightsout/index-file-contents',
-	'lightsout/dead-export',
-	'lightsout/file-size',
-	'lightsout/function-size',
-	'lightsout/folder-size',
-	'lightsout/duplicate-function-body',
-	'lightsout/duplicate-code-block',
-	'lightsout/duplicate-export-name',
-];
-
 /** Keeps one agent job readable. */
 const maxBatchFindings = 12;
-
-const priorityOf = ({ rule }: { rule: string }) => {
-	const index = rulePriority.indexOf(rule);
-
-	return index === -1 ? rulePriority.length : index;
-};
 
 interface Params {
 	/** Blocking-severity check results — the work. */
@@ -47,10 +11,22 @@ interface Params {
 	advisories: StandardsFinding[];
 	/** Monorepo package parent dir, for the grouping folder. */
 	packagesDir: string;
+	/**
+	 * Every selected rule's full name, in the order its pack lists it. Batches
+	 * follow it, so a library orders its own fixes by ordering its pack; a rule
+	 * not listed sorts after every listed one.
+	 */
+	ruleOrder: string[];
 }
 
 /** One batch is one rule in one area of the repo, so each is a single coherent agent job. */
-export const batchFindings = ({ blocking, advisories, packagesDir }: Params): RefactorBatch[] => {
+export const batchFindings = ({ blocking, advisories, packagesDir, ruleOrder }: Params): RefactorBatch[] => {
+	const priorityOf = ({ rule }: { rule: string }) => {
+		const index = ruleOrder.indexOf(rule);
+
+		return index === -1 ? ruleOrder.length : index;
+	};
+
 	const areaOf = ({ path }: { path: string }) => {
 		const segments = path.split('/');
 

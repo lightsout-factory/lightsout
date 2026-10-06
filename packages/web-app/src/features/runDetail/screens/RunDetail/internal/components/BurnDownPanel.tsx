@@ -55,11 +55,6 @@ const RefactorSites = ({ burnDown }: { burnDown: RunBurnDown }) => (
 		<p className="text-sm">
 			{burnDown.before} → {burnDown.after} sites · {burnDown.batchesResolved ?? 0} resolved · {burnDown.batchesDeclined ?? 0} declined
 		</p>
-		{burnDown.overCap === undefined ? null : (
-			<p className="text-muted-foreground text-sm">
-				files over cap: {burnDown.overCap.before} → {burnDown.overCap.after}
-			</p>
-		)}
 		<ul className="flex flex-col gap-2">
 			{burnDown.batches.map((batch) => (
 				<BatchRow key={batch.id} batch={batch} />

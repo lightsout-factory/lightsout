@@ -37,7 +37,7 @@ export const runStandardsCheck = async ({
 	writeBaseline = false,
 	persist = true,
 	onProgress,
-}: Params): Promise<{ findings: StandardsFinding[]; notes: string[] }> => {
+}: Params): Promise<{ findings: StandardsFinding[]; notes: string[]; ruleOrder: string[] }> => {
 	const groups = await resolveStandardsGroups({ cwd, config });
 	const checked = await runPackageChecks({
 		cwd,
@@ -63,5 +63,9 @@ export const runStandardsCheck = async ({
 		await writeStandardsSnapshot({ cwd, snapshot: { at: new Date().toISOString(), path: path ?? '.', findings, notes } });
 	}
 
-	return { findings: baseline.reported, notes };
+	// Each rule once, in the order its pack lists it: a pack's included packs,
+	// then its topics, each in the topic's own rule order.
+	const ruleOrder = [...new Set(groups.flatMap((group) => group.pack.rules.map(({ rule }) => rule.name)))];
+
+	return { findings: baseline.reported, notes, ruleOrder };
 };

@@ -19,7 +19,7 @@ interface Params {
  * run, so it is never recomputed mid-run.
  */
 export const buildWorklist = async ({ cwd, config, path, all = false }: Params): Promise<RefactorWorklist> => {
-	const { findings } = await runStandardsCheck({ cwd, config, path, all, persist: false });
+	const { findings, ruleOrder } = await runStandardsCheck({ cwd, config, path, all, persist: false });
 
 	return {
 		at: new Date().toISOString(),
@@ -31,6 +31,7 @@ export const buildWorklist = async ({ cwd, config, path, all = false }: Params):
 			// reach the agent can never be judged, only reported to a human.
 			advisories: findings.filter((finding) => finding.severity === StandardsSeverity.Advisory),
 			packagesDir: config['packages-dir'] ?? defaultPackagesDir,
+			ruleOrder,
 		}),
 	};
 };

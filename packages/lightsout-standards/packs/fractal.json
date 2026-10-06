@@ -3,10 +3,10 @@
 	"include": {
 		"topics": [
 			"lightsout/code/fractal/layout",
-			"lightsout/code/fractal/size",
-			"lightsout/code/fractal/duplication",
 			"lightsout/code/fractal/imports",
-			"lightsout/tests/fractal"
+			"lightsout/tests/fractal",
+			"lightsout/code/fractal/size",
+			"lightsout/code/fractal/duplication"
 		]
 	}
 }

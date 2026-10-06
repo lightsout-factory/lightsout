@@ -311,6 +311,63 @@ test("a repo's own standards pack supplies the rules, and the bundled defaults d
 	]);
 });
 
+/** A repo whose own pack lists its two topics against path order, each topic holding one rule. */
+const setupOrderedPackRepo = () => {
+	const packPath = mkdtempSync(join(tmpdir(), 'lightsout-ordered-standards-'));
+	const rule = '---\nsummary: a rule\nchecks: agent\n---\n\nA rule.\n';
+
+	writeTree({
+		dir: packPath,
+		files: {
+			'lightsout-standards.json': '{ "name": "acme", "formatVersion": 2 }\n',
+			'rules/code/alpha/topic.md': '# Alpha\n',
+			'rules/code/alpha/05-alpha-rule/rule.md': rule,
+			'rules/code/zeta/topic.md': '# Zeta\n',
+			'rules/code/zeta/05-zeta-first/rule.md': rule,
+			'rules/code/zeta/10-zeta-second/rule.md': rule,
+			'packs/house.json': JSON.stringify({ description: 'the house pack', include: { topics: ['acme/code/zeta', 'acme/code/alpha'] } }),
+		},
+	});
+
+	const dir = mkdtempSync(join(tmpdir(), 'lightsout-standards-ordered-'));
+
+	writeTree({
+		dir,
+		files: {
+			'src/alpha.ts': 'export const alpha = 1;\n',
+			'lightsout.config.json': JSON.stringify({
+				gates: { check: 'true', test: 'true', 'test-coverage': false },
+				'standards-libraries': { acme: packPath },
+				'standards-pack': 'acme/house',
+			}),
+		},
+	});
+
+	return dir;
+};
+
+test('the rule order follows the pack: its topics in listed order, each topic in its own rule order', async () => {
+	const dir = setupOrderedPackRepo();
+
+	const { ruleOrder } = await runStandardsCheck({ cwd: dir, config: await readOptionalConfig({ cwd: dir }), persist: false });
+
+	// zeta is listed first although alpha sorts first by path; inside zeta, the numbered folders decide
+	expect(ruleOrder).toStrictEqual(['acme/zeta-first', 'acme/zeta-second', 'acme/alpha-rule']);
+});
+
+test('the built-in standards pack lists its duplication rules last, so a refactor of a repo on it runs its mechanical fixes first', async () => {
+	const dir = setupCheckRepo();
+
+	const { ruleOrder } = await runStandardsCheck({ cwd: dir, config: await readOptionalConfig({ cwd: dir }), persist: false });
+
+	expect(ruleOrder.slice(-4)).toStrictEqual([
+		'lightsout/dead-export',
+		'lightsout/duplicate-function-body',
+		'lightsout/duplicate-code-block',
+		'lightsout/duplicate-export-name',
+	]);
+});
+
 /** A repo on the house pack whose source spans a nested folder, so a scope has something to bite on. */
 const setupScopedRepo = () => {
 	const dir = mkdtempSync(join(tmpdir(), 'lightsout-standards-scope-'));
