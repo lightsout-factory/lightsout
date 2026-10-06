@@ -131,9 +131,11 @@ describe('resolveStandards', () => {
 		const resolved = await resolveStandards({ cwd, config });
 
 		// the declared pack replaces the bundled default rather than stacking under it
-		expect(resolved.standards).toBe("<!-- house: code/house-style -->\n# house code\n\nHow this house writes code.\n\nindent with tabs — the rule's prose.");
+		expect(resolved.standards).toBe(
+			"<!-- house: code/house-style -->\n# house code\n\nHow this house writes code.\n\nRule: house/house-tabs\n\nindent with tabs — the rule's prose.",
+		);
 		expect(resolved.testStandards).toBe(
-			"<!-- house: tests/house-tests -->\n# house tests\n\nHow this house writes tests.\n\none behaviour per test — the rule's prose.",
+			"<!-- house: tests/house-tests -->\n# house tests\n\nHow this house writes tests.\n\nRule: house/house-one-assert\n\none behaviour per test — the rule's prose.",
 		);
 	});
 
@@ -160,7 +162,7 @@ describe('resolveStandards', () => {
 		expect(resolved.standards ?? '').toContain('<!-- lint: code/lint-style -->');
 		// the tests set is the one library that carries it, with no separator left where the other would have gone
 		expect(resolved.testStandards).toBe(
-			"<!-- house: tests/house-tests -->\n# house tests\n\nHow this house writes tests.\n\none behaviour per test — the rule's prose.",
+			"<!-- house: tests/house-tests -->\n# house tests\n\nHow this house writes tests.\n\nRule: house/house-one-assert\n\none behaviour per test — the rule's prose.",
 		);
 	});
 

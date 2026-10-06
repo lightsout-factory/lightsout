@@ -46,14 +46,14 @@ interface Params {
  * park spends no round: the resume re-invokes that same one.
  */
 export const runCleanupRound = async ({ context, state, findings, advisories }: Params): Promise<PipelineResult | undefined> => {
-	const { run, gitPrefix, planContent, overviewContent, standards, before, budget } = context;
+	const { run, gitPrefix, planContent, overviewContent, standards, testStandards, before, budget } = context;
 	const round = state.roundsUsed + 1;
 	const record = buildCleanupRecord({ context, state });
 
 	await run.setStep({ record });
 	run.progress(`step refactor — round ${round}/${budget}`);
 
-	const executed = await runExecutorPass({ run, gitPrefix, planContent, overviewContent, standards, record, findings, advisories, before });
+	const executed = await runExecutorPass({ run, gitPrefix, planContent, overviewContent, standards, testStandards, record, findings, advisories, before });
 
 	if ('parked' in executed) {
 		return executed.parked;

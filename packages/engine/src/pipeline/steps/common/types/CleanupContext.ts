@@ -8,6 +8,7 @@ export interface CleanupContext {
 	planContent: string;
 	overviewContent?: string;
 	standards?: string;
+	testStandards?: string;
 	groups: StandardsGroup[];
 	/** The pre-edit baseline's findings, or undefined when the run has none. */
 	baseline: StandardsFinding[] | undefined;

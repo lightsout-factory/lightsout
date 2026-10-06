@@ -20,6 +20,7 @@ interface Params {
 	planContent: string;
 	overviewContent?: string;
 	standards?: string;
+	testStandards?: string;
 	/** Already carrying the step's cleanup record in its `report` slot — this pass forwards it rather than writing over it. */
 	record: StepRecord;
 	findings: StandardsFinding[];
@@ -52,6 +53,7 @@ export const runExecutorPass = async ({
 	planContent,
 	overviewContent,
 	standards,
+	testStandards,
 	record,
 	findings,
 	advisories,
@@ -64,6 +66,7 @@ export const runExecutorPass = async ({
 			overviewContent,
 			changedFiles: standardsScopeFiles({ run }),
 			standards,
+			testStandards,
 			findings,
 			advisories,
 			selfCheckCommand: buildSelfCheckCommand({ cwd: run.cwd, runId: run.current().runId }).command,

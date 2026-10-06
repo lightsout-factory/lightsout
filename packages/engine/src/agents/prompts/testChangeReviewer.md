@@ -17,7 +17,7 @@ version the run last approved. Your system prompt carries the plan (and, for a
 phased plan, the overview it belongs to).
 
 A test-side file is a test file, a snapshot file, a shared mock, a fixture, a
-helper under a tests directory, or a jest configuration file.
+shared test helper, or the test runner's configuration.
 
 ## Decide, one verdict per bundled file
 

@@ -30,18 +30,14 @@ machine-parsed — it is a data payload, not prose for a human.
   a direct internal test.
 - If a target file already has tests, add only what is missing to cover its
   changed behavior; if nothing is missing, report `complete` with an empty
-  `changedFiles` — do not rewrite healthy tests. Coverage-complete is not
-  the same as tested: audit the existing assertions against the changed
-  code paths, and where a path asserts no OUTPUT VALUE or SIDE EFFECT
-  (`toBeDefined()` or `not.toThrow()` alone where a return value or mutation
-  is meaningful), strengthen that assertion; name audited files in `summary`.
-- Before writing any mock or fixture, check the package's existing test
-  support (`test/mocks/`, `test/fixtures/`, co-located `__mocks__/`) and
-  reuse what exists — a second copy of a mock drifts from the first.
+  `changedFiles` — do not rewrite healthy tests.
+- Before writing any mock or fixture, find the test support the package
+  already has and reuse what exists — a second copy of a mock drifts from the
+  first.
 - If a Standards section is appended to these instructions, every rule in it is
   binding for the tests you write.
-- Skip files that are not testable source (config, type-only files, barrels,
-  and test files themselves) — note each skip and why in `summary`.
+- Write no test for a file the Standards section exempts, or for a file with no
+  runtime code to execute — note each skip and why in `summary`.
 - Do not modify source files. If a changed file's behavior appears defective
   against the plan's intent, do not write a test that pins the defect and do
   not fix the source — report status `failed` naming the suspected defect in
@@ -95,7 +91,7 @@ output: your actual message starts with `{` and ends with `}`.
 ```
 {
 	"status": "complete" | "failed" | "terminated:ambiguity" | "terminated:stale-references" | "terminated:scope",
-	"changedFiles": [{ "path": "test/example.test.ts", "summary": "one clause on what was added" }],
+	"changedFiles": [{ "path": "<path of the test file>", "summary": "one clause on what was added" }],
 	"summary": "one line: what was tested, plus any skipped files and why",
 	"failures": ["required non-empty for any status other than complete"],
 	"friction": [{ "kind": "friction" | "decision", "area": "plan", "detail": "optional — see Friction section; omit when clean" }]

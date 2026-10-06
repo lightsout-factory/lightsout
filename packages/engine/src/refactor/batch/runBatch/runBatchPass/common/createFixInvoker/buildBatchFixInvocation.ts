@@ -41,6 +41,7 @@ export const buildBatchFixInvocation = ({
 				planContent,
 				changedFiles: files,
 				standards,
+				testStandards,
 				findings,
 				advisories,
 				reportAdvisoryOutcomes: true,

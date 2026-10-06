@@ -25,10 +25,19 @@ interface Params {
 	planContent: string;
 	overviewContent?: string;
 	standards?: string;
+	testStandards?: string;
 }
 
 /** A resume reuses the recorded initial review rather than buying a second one: it describes code the resume has not changed. */
-const buildCleanupContext = async ({ run, gitPrefix, planContent, overviewContent, standards, prior }: Params & { prior: RefactorStepReport | undefined }) => {
+const buildCleanupContext = async ({
+	run,
+	gitPrefix,
+	planContent,
+	overviewContent,
+	standards,
+	testStandards,
+	prior,
+}: Params & { prior: RefactorStepReport | undefined }) => {
 	// The scope as it stands now, which may have widened since the run began; empty covers every package.
 	const scoped = run.current().packages;
 	const groups = await resolveStandardsGroups({ cwd: run.cwd, config: run.config, packages: scoped.length > 0 ? scoped : undefined });
@@ -40,6 +49,7 @@ const buildCleanupContext = async ({ run, gitPrefix, planContent, overviewConten
 		planContent,
 		overviewContent,
 		standards,
+		testStandards,
 		groups,
 		baseline: baseline?.findings,
 		budget: run.config.implement?.refactor?.['max-rounds'] ?? defaultRefactorMaxRounds,
@@ -107,11 +117,11 @@ const finishCleanup = async ({ context, state }: { context: CleanupContext; stat
  * pre-existing debt, uncertain provenance and reviewer opinions are recorded, never turned into
  * work. Nothing here stops the run: only a rate limit parks it.
  */
-export const refactorStep = ({ run, gitPrefix, planContent, overviewContent, standards }: Params): PipelineStep['run'] => {
+export const refactorStep = ({ run, gitPrefix, planContent, overviewContent, standards, testStandards }: Params): PipelineStep['run'] => {
 	return async () => {
 		const record = run.nextRecord({ id: 'refactor' });
 		const prior = readPriorCleanup({ run });
-		const context = await buildCleanupContext({ run, gitPrefix, planContent, overviewContent, standards, prior });
+		const context = await buildCleanupContext({ run, gitPrefix, planContent, overviewContent, standards, testStandards, prior });
 		const state: CleanupState = {
 			record,
 			roundsUsed: prior?.roundsUsed ?? 0,

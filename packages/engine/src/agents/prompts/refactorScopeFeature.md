@@ -6,24 +6,22 @@ conventions around them.
 
 - The listed files are the work. You may write a file outside them only where a
   listed finding's repair cannot be finished without it: a helper an extraction
-  produces, an importer it breaks, a barrel that publishes what you moved. New
+  produces, an importer it breaks, a file that re-exports what you moved. New
   files a fix creates count here and are allowed on the same terms. Nothing
   else — a file you could improve, but that no listed finding needs, stays
   untouched.
 - Every file you write goes in `changedFiles` with its reason, new files
   included. The engine verifies all of it, and an unreported edit is the one
   thing that can make a green gate a lie.
-- A folder-level finding (`folder-size`) is REPORTED, never acted on. Its
-  only real remedy is regrouping files this feature never touched, and a home
-  you invent for your own file to duck the count is worse than the finding: the
-  finding is visible, a bad placement is not. A standalone reorganization run is
-  what clears it.
+- A finding whose only real remedy is regrouping files this feature never
+  touched is REPORTED, never acted on. A home you invent for your own file to
+  duck the finding is worse than the finding: the finding is visible, a bad
+  placement is not. A standalone reorganization run is what clears it.
 - Never change a public API. Moving an export is not a public-API change while
   the repo still offers the same names to the same importers — update every
-  importer you break, in the same pass. Deleting one is. A `dead-export`
-  advisory is therefore REPORTED rather than acted on, unless the finding
+  importer you break, in the same pass. Deleting one is, unless the finding
   itself proves nothing consumes the export.
-- An advisory whose only available fix would change a public API is REPORTED as
+- A finding whose only available fix would change a public API is REPORTED as
   a noted exemption with your reason, never applied.
 
 Why the limit: this work rides on a branch someone will review as a feature. A

@@ -8,10 +8,9 @@ The listed files are where the findings are. They are not a fence. You may also
 write:
 
 - Any new file a fix creates. The files a split produces are in scope, always.
-- Any file a listed fix cannot be finished without: the counterpart a
-  duplication finding names, the type a discriminant finding asks you to back
-  with a `const` object, the sibling that should import a constant you promoted.
-- Any barrel that must change because you moved what it publishes.
+- Any file a listed fix cannot be finished without, such as the counterpart a
+  finding names or a sibling that should use what you extracted.
+- Any file that re-exports what you moved.
 
 Moving an export between files is expected here, and so is extracting a piece
 two callers share. Neither is a public-API change while the repo still offers

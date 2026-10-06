@@ -69,6 +69,34 @@ test('standards gate: findings feed the refactor prompt; a fixing pass clears th
 	);
 });
 
+test('standards gate: the cleanup executor carries the test standards beside the code standards, since a finding may sit on a test file', async () => {
+	const dir = setupConsumerRepo();
+	const systemPrompts: string[] = [];
+	const driver = attributionDriver({
+		dir,
+		testFile: 'test/messy.test.js',
+		refactorPrompts: [],
+		refactorSystemPrompts: systemPrompts,
+		implement: () => {
+			writeSource({ dir, path: 'src/messy.js', source: 'export const first = () => 1;\nexport const second = () => 2;\n' });
+
+			return ['src/messy.js'];
+		},
+	});
+
+	await runImplementPipeline({
+		cwd: dir,
+		driver,
+		config: await readConfig({ cwd: dir }),
+		loadedConfig: { config: await readConfig({ cwd: dir }) },
+		planPath: 'plan.md',
+	});
+
+	expect(systemPrompts.length).toBeGreaterThan(0);
+	expect(systemPrompts[0]).toContain('# Standards\n\nThese rules are binding on every edit you make.');
+	expect(systemPrompts[0]).toContain('# Test standards\n\nThese rules are binding on every test file you edit.');
+});
+
 test('the pack the config names reaches the implement prompt; false switches standards off explicitly', async () => {
 	const run = async ({ config }: { config: Record<string, unknown> }) => {
 		const dir = setupConsumerRepo({ config });

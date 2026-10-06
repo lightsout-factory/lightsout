@@ -164,10 +164,11 @@ describe('buildStandardsDocuments', () => {
 		expect(split).toStrictEqual(single);
 		expect(single).toStrictEqual({
 			code: [
-				'<!-- lightsout: code/fractal/modules -->\n# Modules\n\nBackground for Modules.\n\n## Graduation\n\nA concept earns its folder.',
-				'<!-- lightsout: code/style/patterns -->\n# Patterns\n\nBackground for Patterns.\n\n## Functions\n\nUse arrow functions.\n\n## Classes\n\nDefault to functions.',
+				'<!-- lightsout: code/fractal/modules -->\n# Modules\n\nBackground for Modules.\n\nRule: lightsout/graduation\n\n## Graduation\n\nA concept earns its folder.',
+				'<!-- lightsout: code/style/patterns -->\n# Patterns\n\nBackground for Patterns.\n\nRule: lightsout/functions\n\n## Functions\n\nUse arrow functions.\n\nRule: lightsout/classes\n\n## Classes\n\nDefault to functions.',
 			].join('\n\n'),
-			tests: '<!-- lightsout: tests/code-style -->\n# Test Style\n\nBackground for Test Style.\n\n## Mock Prefix\n\nMocks carry a mock prefix.',
+			tests:
+				'<!-- lightsout: tests/code-style -->\n# Test Style\n\nBackground for Test Style.\n\nRule: lightsout/mock-prefix\n\n## Mock Prefix\n\nMocks carry a mock prefix.',
 		});
 	});
 
@@ -181,19 +182,23 @@ describe('buildStandardsDocuments', () => {
 			'<!-- lightsout: code/fractal/modules -->',
 			'### Modules',
 			'Background for Modules.',
+			'Rule: lightsout/graduation',
 			'#### Graduation',
 			'A concept earns its folder.',
 			'<!-- lightsout: code/style/patterns -->',
 			'### Patterns',
 			'Background for Patterns.',
+			'Rule: lightsout/functions',
 			'#### Functions',
 			'Use arrow functions.',
+			'Rule: lightsout/classes',
 			'#### Classes',
 			'Default to functions.',
 			'## Applies to: web-app',
 			'<!-- lightsout: code/frameworks/react -->',
 			'### React',
 			'Background for React.',
+			'Rule: lightsout/hooks-at-top',
 			'#### Hooks At Top',
 			'Call hooks at the top level.',
 		]);
@@ -209,13 +214,16 @@ describe('buildStandardsDocuments', () => {
 			'<!-- lightsout: code/fractal/modules -->',
 			'### Modules',
 			'Background for Modules.',
+			'Rule: lightsout/graduation',
 			'#### Graduation',
 			'A concept earns its folder.',
 			'<!-- lightsout: code/style/patterns -->',
 			'### Patterns',
 			'Background for Patterns.',
+			'Rule: lightsout/functions',
 			'#### Functions',
 			'Use arrow functions.',
+			'Rule: lightsout/classes',
 			'Applies only to: repo root (outside packages), engine',
 			'#### Classes',
 			'Default to functions.',
@@ -223,6 +231,7 @@ describe('buildStandardsDocuments', () => {
 			'<!-- lightsout: code/frameworks/react -->',
 			'### React',
 			'Background for React.',
+			'Rule: lightsout/hooks-at-top',
 			'#### Hooks At Top',
 			'Call hooks at the top level.',
 		]);
@@ -238,6 +247,7 @@ describe('buildStandardsDocuments', () => {
 			'<!-- lightsout: code/docs -->',
 			'### Docs',
 			'Background for Docs.',
+			'Rule: lightsout/doc-layout',
 			'#### Doc Layout',
 			'Write the doc like this:',
 			'````md',
@@ -265,7 +275,8 @@ describe('buildStandardsDocuments', () => {
 		const { code, tests } = buildStandardsDocuments({ groups });
 
 		expect({ tests, codeOpensWithHeading: (code ?? '').startsWith('## Applies to: ') }).toStrictEqual({
-			tests: '<!-- lightsout: tests/code-style -->\n# Test Style\n\nBackground for Test Style.\n\n## Mock Prefix\n\nMocks carry a mock prefix.',
+			tests:
+				'<!-- lightsout: tests/code-style -->\n# Test Style\n\nBackground for Test Style.\n\nRule: lightsout/mock-prefix\n\n## Mock Prefix\n\nMocks carry a mock prefix.',
 			codeOpensWithHeading: true,
 		});
 	});

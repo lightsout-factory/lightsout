@@ -116,6 +116,7 @@ export const buildSteps = ({ run, gitPrefix, planContent, overviewContent, stand
 			planContent,
 			overviewContent,
 			standards,
+			testStandards,
 			skipRefactor: leaveOutRefactor,
 			acceptanceTests,
 			planBuildMode,

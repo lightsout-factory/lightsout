@@ -276,7 +276,7 @@ either, since a move adds no behaviour a new test could state. -->
 
 | Criterion | Test file | Test name | Gate |
 |-----------|-----------|-----------|------|
-| <one-line acceptance criterion> | `<packagesDir>/<name>/src/path/to/file.unit.test.ts` | <exact test name> | test |
+| <one-line acceptance criterion> | `<path of the test file>` | <exact test name> | test |
 
 ## Prose Files
 
