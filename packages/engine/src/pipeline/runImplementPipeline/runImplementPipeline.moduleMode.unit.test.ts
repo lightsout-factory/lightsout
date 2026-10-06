@@ -31,12 +31,12 @@ const sources = {
 
 /**
  * The files the write-tests fan-out handed to writers, read off the prompts'
- * subject lists. Taken from the prompts rather than counted per invocation,
- * because how many writers the subjects were grouped into is not what these
+ * file lists. Taken from the prompts rather than counted per invocation,
+ * because how many writers the files were grouped into is not what these
  * tests are about — which files earned one is.
  */
-const subjectsOf = ({ prompts }: { prompts: string[] }) =>
-	prompts.flatMap((prompt) => [...(prompt.split('# Changed internals')[0] ?? '').matchAll(/^- (\S+)$/gm)].map(([, file]) => file)).sort();
+const assignedFilesOf = ({ prompts }: { prompts: string[] }) =>
+	prompts.flatMap((prompt) => [...(prompt.split('The engine will verify')[0] ?? '').matchAll(/^- (\S+)$/gm)].map(([, file]) => file)).sort();
 
 /**
  * A consumer repo whose coverage gate is a no-op command over a summary this
@@ -121,7 +121,7 @@ describe('runImplementPipeline', () => {
 
 		expectDefined(skipped);
 		// no writer was asked for a test of a file this repo's Jest cannot load
-		expect(subjectsOf({ prompts: writerPrompts })).toStrictEqual(['src/add.ts']);
+		expect(assignedFilesOf({ prompts: writerPrompts })).toStrictEqual(['src/add.ts']);
 		// and the skip is narrated with the condition, not an unconditional claim
 		expect(skipped).toContain(awaitingFile);
 		expect(skipped).toContain('Jest loads as CommonJS');
@@ -138,7 +138,7 @@ describe('runImplementPipeline', () => {
 		const result = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md', onProgress });
 
 		// the module-scope await no longer costs the file its writer
-		expect(subjectsOf({ prompts: writerPrompts })).toStrictEqual(['src/add.ts', 'src/boot.ts']);
+		expect(assignedFilesOf({ prompts: writerPrompts })).toStrictEqual(['src/add.ts', 'src/boot.ts']);
 		// nothing was narrated as uncoverable, because nothing was
 		expect(progress.some((line) => line.includes('no unit test could move their coverage'))).toBe(false);
 		// and the gate moved with the writer selection: the file is held to the

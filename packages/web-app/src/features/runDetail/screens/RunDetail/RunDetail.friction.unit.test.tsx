@@ -91,12 +91,4 @@ describe('RunDetail friction and changed files', () => {
 
 		expect(heading).toBeInTheDocument();
 	});
-
-	test('calls out the files no public surface reaches, since no test covers them', () => {
-		setupFriction({ tab: 'Files', overrides: { changedFiles: ['packages/engine/src/a.ts'], unreachableChangedFiles: ['packages/engine/src/a.ts'] } });
-
-		const warning = screen.getByText(/no public surface reaches them/);
-
-		expect(warning).toBeInTheDocument();
-	});
 });

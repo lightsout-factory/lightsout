@@ -55,7 +55,7 @@ const setupCoverageRun = async ({ override }: { override: 'off' | string[] }) =>
 	const run = {
 		cwd: dir,
 		config: await readConfig({ cwd: dir }),
-		current: () => ({ runId, changedFiles: [changed], packages: [], currentStep: 'verify-tests', unreachableChangedFiles: [] }),
+		current: () => ({ runId, changedFiles: [changed], packages: [], currentStep: 'verify-tests' }),
 		progress: () => {},
 	};
 
@@ -139,7 +139,7 @@ const setupScopedTimeoutRun = async () => {
 	const run = {
 		cwd: dir,
 		config: await readConfig({ cwd: dir }),
-		current: () => ({ runId, changedFiles: [], packages: ['api', 'web'], currentStep: 'verify-implement', unreachableChangedFiles: [] }),
+		current: () => ({ runId, changedFiles: [], packages: ['api', 'web'], currentStep: 'verify-implement' }),
 		progress: () => {},
 	};
 

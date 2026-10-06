@@ -223,8 +223,7 @@ describe('buildBatchFixInvocation — via runRefactorPipeline', () => {
 		// a refactor batch has no upward subject resolution — the batch's finding
 		// files are handed over as the surfaces to test through AND the files that
 		// must execute, so the writer's assignment is self-consistent
-		expect(fixPrompt).toContain('# Test subjects — write tests through these public surfaces\n\n- src/multi.ts');
-		expect(fixPrompt).toContain('# Changed internals that must execute under those tests\n\n- src/multi.ts');
+		expect(fixPrompt).toContain('# Changed files your tests must execute\n\n- src/multi.ts');
 	});
 
 	test('routes a non-coverage red back to the refactor executor', async () => {

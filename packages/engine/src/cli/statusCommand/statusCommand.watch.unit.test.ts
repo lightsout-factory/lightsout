@@ -33,10 +33,8 @@ const manifestOf = ({ runId, ...overrides }: { runId: string } & Partial<RunMani
 	commits: [],
 	packages: [],
 	baselineDirtyFiles: [],
-	testSubjects: [],
 	acceptanceTests: [],
 	approvedTests: [],
-	unreachableChangedFiles: [],
 	coverageExcludedChangedFiles: [],
 	...overrides,
 });

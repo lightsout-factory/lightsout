@@ -1,4 +1,3 @@
-import { TriangleAlert } from 'lucide-react';
 import { Card } from '#src/appUI/panels/Card.tsx';
 import { groupBy } from '#src/features/runDetail/screens/RunDetail/internal/components/common/utils/groupBy.ts';
 
@@ -7,11 +6,9 @@ const toFolder = ({ path }: { path: string }) => path.split('/').slice(0, 2).joi
 
 interface Props {
 	files: string[];
-	/** Changed, but no public surface reaches them — the warning `renderResult` shows too. */
-	unreachable: string[];
 }
 
-export const ChangedFilesPanel = ({ files, unreachable }: Props) => (
+export const ChangedFilesPanel = ({ files }: Props) => (
 	<Card title={`Changed files · ${files.length}`}>
 		{files.length === 0 ? (
 			<p className="text-muted-foreground text-sm">This run changed nothing.</p>
@@ -27,19 +24,6 @@ export const ChangedFilesPanel = ({ files, unreachable }: Props) => (
 						</ul>
 					</div>
 				))}
-			</div>
-		)}
-		{unreachable.length === 0 ? null : (
-			<div className="mt-4 flex flex-col gap-1 rounded-md border border-status-running-border bg-status-running-light px-3 py-2">
-				<span className="flex items-center gap-1.5 font-medium text-status-running text-xs">
-					<TriangleAlert className="size-3.5" />
-					unreachable — changed, but no public surface reaches them, so no test covers them
-				</span>
-				<ul className="flex flex-col gap-0.5 font-mono text-muted-foreground-strong text-xs">
-					{unreachable.map((path) => (
-						<li key={path}>{path}</li>
-					))}
-				</ul>
 			</div>
 		)}
 	</Card>

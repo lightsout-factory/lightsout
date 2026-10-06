@@ -81,35 +81,27 @@ test('write-tests fan-out: files that import each other share ONE writer; unrela
 	const grouped = writerPrompts.find((prompt) => prompt.includes('src/feature.ts'));
 	const solo = writerPrompts.find((prompt) => prompt.includes('src/other.ts'));
 
-	// boundary and its internal share one writer
-	expect(grouped?.includes('src/helper.ts')).toBeTruthy();
-	// the assignment names its subjects and the changed files that must execute
-	expect(grouped?.includes('# Test subjects — write tests through these public surfaces')).toBeTruthy();
-	expect(grouped?.includes('# Changed internals that must execute under those tests')).toBeTruthy();
+	// the caller and the file it imports share one writer, listed together
+	expect(grouped?.includes('# Changed files your tests must execute\n\n- src/feature.ts\n- src/helper.ts')).toBeTruthy();
 	// unrelated file gets its own writer
 	expectDefined(solo);
 	expect(solo.includes('src/feature.ts')).toBeFalsy();
 	expect(solo.includes('src/helper.ts')).toBeFalsy();
-	// every assignment carries the binding subject rule
-	expect(solo.includes('Never create a test file for any file outside the subjects list')).toBeTruthy();
 	// grouping narrated — got:\n${progress.join('\n')}
-	expect(progress.some((line) => line.includes('2 group(s): 3 subject(s) covering 3 changed file(s)'))).toBeTruthy();
+	expect(progress.some((line) => line.includes('2 group(s) covering 3 changed file(s)'))).toBeTruthy();
 });
 
-test('write-tests fan-out: two internals sharing an UNCHANGED public subject group into one writer, with the subject leading the assignment', async () => {
+test('write-tests fan-out: two changed files imported by one UNCHANGED caller share one writer, and the caller is not assigned', async () => {
 	const dir = setupConsumerRepo({ config: reachabilityRulesOff });
 
 	linkTypescript({ dir });
 
-	// The module pre-exists the run: pub.ts is its public file and imports both
-	// internals — the run will change ONLY the internals.
-	mkdirSync(join(dir, 'src/mod/internal'), { recursive: true });
-	writeFileSync(
-		join(dir, 'src/mod/pub.ts'),
-		"import { a } from './internal/a';\nimport { b } from './internal/b';\n\nexport const pub = (): number => a() + b();\n",
-	);
-	writeFileSync(join(dir, 'src/mod/internal/a.ts'), 'export const a = (): number => 1;\n');
-	writeFileSync(join(dir, 'src/mod/internal/b.ts'), 'export const b = (): number => 2;\n');
+	// The module pre-exists the run: pub.ts calls both parts — the run will
+	// change ONLY the parts.
+	mkdirSync(join(dir, 'src/mod/parts'), { recursive: true });
+	writeFileSync(join(dir, 'src/mod/pub.ts'), "import { a } from './parts/a';\nimport { b } from './parts/b';\n\nexport const pub = (): number => a() + b();\n");
+	writeFileSync(join(dir, 'src/mod/parts/a.ts'), 'export const a = (): number => 1;\n');
+	writeFileSync(join(dir, 'src/mod/parts/b.ts'), 'export const b = (): number => 2;\n');
 	execSync('git add -A && git -c user.name=t -c user.email=t@t commit -qm module', { cwd: dir });
 
 	const writerPrompts: string[] = [];
@@ -139,15 +131,15 @@ test('write-tests fan-out: two internals sharing an UNCHANGED public subject gro
 					return { text: report(), exitCode: 0 };
 				}
 
-				// Implement: both internals change; pub.ts does not.
-				writeFileSync(join(dir, 'src/mod/internal/a.ts'), 'export const a = (): number => 10;\n');
-				writeFileSync(join(dir, 'src/mod/internal/b.ts'), 'export const b = (): number => 20;\n');
+				// Implement: both parts change; pub.ts does not.
+				writeFileSync(join(dir, 'src/mod/parts/a.ts'), 'export const a = (): number => 10;\n');
+				writeFileSync(join(dir, 'src/mod/parts/b.ts'), 'export const b = (): number => 20;\n');
 
 				return {
 					text: report({
 						changedFiles: [
-							{ path: 'src/mod/internal/a.ts', summary: 'internal' },
-							{ path: 'src/mod/internal/b.ts', summary: 'internal' },
+							{ path: 'src/mod/parts/a.ts', summary: 'part' },
+							{ path: 'src/mod/parts/b.ts', summary: 'part' },
 						],
 					}),
 					exitCode: 0,
@@ -167,18 +159,83 @@ test('write-tests fan-out: two internals sharing an UNCHANGED public subject gro
 	});
 
 	expect(result.ok).toBe(true);
-	// no import edge joins a.ts and b.ts — the shared subject alone makes them one writer
+	// no import edge joins a.ts and b.ts — the caller they share alone makes them
+	// one writer, so two writers never edit the caller's tests at once
 	expect(writerPrompts.length).toBe(1);
-	// the unchanged public file is the subject; the changed internals ride the must-execute list
-	expect(
-		writerPrompts[0]?.includes(
-			'# Test subjects — write tests through these public surfaces\n\n- src/mod/pub.ts\n\n# Changed internals that must execute under those tests\n\n- src/mod/internal/a.ts\n- src/mod/internal/b.ts',
-		),
-	).toBeTruthy();
-	// the unchanged subject is what the run records for fix re-invocations
-	expect(result.manifest.testSubjects).toStrictEqual(['src/mod/pub.ts']);
-	// the counts narrate subjects and changed files separately — got:\n${progress.join('\n')}
-	expect(progress.some((line) => line.includes('1 group(s): 1 subject(s) covering 2 changed file(s)'))).toBeTruthy();
+	// only the changed files are assigned; which file a test goes through is the standards' call
+	expect(writerPrompts[0]?.includes('# Changed files your tests must execute\n\n- src/mod/parts/a.ts\n- src/mod/parts/b.ts\n\n')).toBeTruthy();
+	expect(writerPrompts[0]?.includes('src/mod/pub.ts')).toBeFalsy();
+	// got:\n${progress.join('\n')}
+	expect(progress.some((line) => line.includes('1 group(s) covering 2 changed file(s)'))).toBeTruthy();
+});
+
+test('write-tests fan-out: an importer with no runtime code of its own joins nothing — a re-exporting entry keeps its files on separate writers', async () => {
+	const dir = setupConsumerRepo({ config: reachabilityRulesOff });
+
+	linkTypescript({ dir });
+
+	// The entry only re-exports: no test executes code through it, so it is no
+	// shared caller, and the two files it publishes stay independent.
+	mkdirSync(join(dir, 'src/lib'), { recursive: true });
+	writeFileSync(join(dir, 'src/lib/index.ts'), "export { a } from './a';\nexport { b } from './b';\n");
+	writeFileSync(join(dir, 'src/lib/a.ts'), 'export const a = (): number => 1;\n');
+	writeFileSync(join(dir, 'src/lib/b.ts'), 'export const b = (): number => 2;\n');
+	execSync('git add -A && git -c user.name=t -c user.email=t@t commit -qm lib', { cwd: dir });
+
+	const writerPrompts: string[] = [];
+
+	const driver: Driver = {
+		name: 'stub',
+		invoke: withTestChangeReview({
+			invoke: async ({ prompt }) => {
+				const role = roleOf(prompt);
+
+				if (role === 'standards-review') {
+					return { text: reviewReport(), exitCode: 0 };
+				}
+
+				if (role === 'write-tests') {
+					writerPrompts.push(prompt);
+
+					const testFile = `test/writer-${writerPrompts.length}.test.js`;
+
+					mkdirSync(join(dir, 'test'), { recursive: true });
+					writeFileSync(join(dir, testFile), '// stub\n');
+
+					return { text: report({ changedFiles: [{ path: testFile, summary: 'tests' }] }), exitCode: 0 };
+				}
+
+				if (role === 'refactor') {
+					return { text: report(), exitCode: 0 };
+				}
+
+				// Implement: both re-exported files change; the entry does not.
+				writeFileSync(join(dir, 'src/lib/a.ts'), 'export const a = (): number => 10;\n');
+				writeFileSync(join(dir, 'src/lib/b.ts'), 'export const b = (): number => 20;\n');
+
+				return {
+					text: report({
+						changedFiles: [
+							{ path: 'src/lib/a.ts', summary: 'part' },
+							{ path: 'src/lib/b.ts', summary: 'part' },
+						],
+					}),
+					exitCode: 0,
+				};
+			},
+		}),
+	};
+
+	const result = await runImplementPipeline({
+		cwd: dir,
+		driver,
+		config: await readConfig({ cwd: dir }),
+		loadedConfig: { config: await readConfig({ cwd: dir }) },
+		planPath: 'plan.md',
+	});
+
+	expect(result.ok).toBe(true);
+	expect(writerPrompts.length).toBe(2);
 });
 
 // An import component larger than the writer cap would hand one agent a

@@ -35,10 +35,8 @@ const manifestWith = ({ pipeline, config }: { pipeline?: PipelineKind; config: L
 	commits: [],
 	packages: [],
 	baselineDirtyFiles: [],
-	testSubjects: [],
 	acceptanceTests: [],
 	approvedTests: [],
-	unreachableChangedFiles: [],
 	coverageExcludedChangedFiles: [],
 });
 

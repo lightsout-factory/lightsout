@@ -61,10 +61,8 @@ const setupResult = ({
 		commits: [],
 		packages: [],
 		baselineDirtyFiles: [],
-		testSubjects: [],
 		acceptanceTests: [],
 		approvedTests: [],
-		unreachableChangedFiles: [],
 		coverageExcludedChangedFiles: [],
 		...manifest,
 	};
@@ -223,22 +221,6 @@ test("renderResult: returns the report card as lines, prints nothing, and leaves
 	expect(logged).toStrictEqual([]);
 	expect(errors).toStrictEqual([]);
 	expect(lines.filter((line) => line.includes('gate check failed'))).toStrictEqual([]);
-});
-
-test('renderResult: files that finished the run unreachable surface as a named warning line', async () => {
-	const { result, cwd } = setupResult({ manifest: { unreachableChangedFiles: ['src/orphan.ts', 'src/other.ts'] } });
-
-	const lines = await renderResult({ result, cwd });
-
-	expect(labelLines({ lines })).toStrictEqual([
-		'run       run-1234 · PASSED',
-		'plan      feature.md',
-		'wall      3s',
-		'gates     0s',
-		'gates     0 commands',
-		'warning   unreachable-changed-files: src/orphan.ts, src/other.ts — changed, but no public surface reaches them; no tests cover them',
-		'evidence  .lightsout/runs/run-1234-abcd/',
-	]);
 });
 
 /** One deterministic standards finding. Only the site key varies: the cleanup line counts findings, it never reads them. */

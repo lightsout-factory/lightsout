@@ -44,7 +44,7 @@ export const RunDetailBody = ({ view, onOpenPlan }: Props) => {
 					{
 						value: RunDetailTab.Files,
 						label: 'Files',
-						content: <ChangedFilesPanel files={view.changedFiles} unreachable={view.unreachableChangedFiles} />,
+						content: <ChangedFilesPanel files={view.changedFiles} />,
 					},
 					{ value: RunDetailTab.Friction, label: 'Friction', content: <FrictionPanel records={view.friction} /> },
 				]}

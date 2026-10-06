@@ -33,10 +33,10 @@ const seededFriction = [
 
 /**
  * A resumed run carrying the evidence the report card's conditional lines read:
- * a recorded package scope and where it came from, changed files no public
- * surface reaches, the friction its agents reported, and a report that failed
- * its contract and cost a re-emit. The resumed pipeline stops at its own plan
- * read, so none of it is overwritten before the summary renders.
+ * a recorded package scope and where it came from, the friction its agents
+ * reported, and a report that failed its contract and cost a re-emit. The
+ * resumed pipeline stops at its own plan read, so none of it is overwritten
+ * before the summary renders.
  */
 const setupResumeEvidence = () =>
 	setupResume({
@@ -45,7 +45,6 @@ const setupResumeEvidence = () =>
 			pipeline: 'implement',
 			packages: ['api', 'web'],
 			packagesSource: 'flag',
-			unreachableChangedFiles: ['src/orphan.ts', 'src/stray.ts'],
 		}),
 		evidence: { friction: seededFriction, rejectedReports: ['rejected-implement-1.json', 'implement-1.json'] },
 	});
@@ -167,16 +166,6 @@ describe('resumeCommand run summary', () => {
 
 		// a scope a reader cannot trace back to a flag, front matter or the plan paths is a scope they cannot argue with
 		expect(logged).toContain('scope     api · web (flag)');
-	});
-
-	test('changed files no public surface reaches are reported as a warning, never left silent', async () => {
-		const { context, logged } = setupResumeEvidence();
-
-		await expect(resumeCommand(context)).rejects.toThrow(/process\.exit/);
-
-		expect(logged).toContain(
-			'warning   unreachable-changed-files: src/orphan.ts, src/stray.ts — changed, but no public surface reaches them; no tests cover them',
-		);
 	});
 
 	test('friction is totalled and broken down by area, counting only what this run reported', async () => {

@@ -120,35 +120,25 @@ test('RunManifest: the config snapshot and the usage aggregate are optional and 
 	expect(RunManifest.safeParse({ ...base, harness: 'codex' }).success).toBe(true);
 });
 
-test('RunManifest: the write-tests skip records default to empty arrays and round-trip when recorded', () => {
+test('RunManifest: the write-tests skip record defaults to an empty array and round-trips when recorded', () => {
 	const defaulted = RunManifest.parse({ ...base, harness: 'codex' });
-	const recorded = RunManifest.parse({
-		...base,
-		harness: 'codex',
-		testSubjects: ['packages/app/src/feature/index.ts'],
-		unreachableChangedFiles: ['packages/app/src/feature/common/orphan.ts'],
-		coverageExcludedChangedFiles: ['packages/app/src/rules/fixtures/sample.ts'],
-	});
+	const recorded = RunManifest.parse({ ...base, harness: 'codex', coverageExcludedChangedFiles: ['packages/app/src/rules/fixtures/sample.ts'] });
 
-	// a manifest written before the write-tests step resolved subjects reads back
-	// with none resolved and nothing skipped — pre-feature runs stay parseable
-	expect(defaulted.testSubjects).toStrictEqual([]);
-	expect(defaulted.unreachableChangedFiles).toStrictEqual([]);
+	// a manifest written before the write-tests step recorded skips reads back
+	// with nothing skipped — pre-feature runs stay parseable
 	expect(defaulted.coverageExcludedChangedFiles).toStrictEqual([]);
-	// the resolved subjects are what verify fix re-invocations hand back to
-	// writers — they must survive the write/read cycle intact
-	expect(recorded.testSubjects).toStrictEqual(['packages/app/src/feature/index.ts']);
-	// the skipped files are re-checked at run end — losing them would silence the
-	// unreachable-changed-files warning
-	expect(recorded.unreachableChangedFiles).toStrictEqual(['packages/app/src/feature/common/orphan.ts']);
-	// the coverage-excluded set is subtracted from the mustExecute list a verify
-	// fix re-invocation hands a writer — losing it asks for an impossible test
+	// the coverage-excluded set is subtracted from the file list a verify fix
+	// re-invocation hands a writer — losing it asks for an impossible test
 	expect(recorded.coverageExcludedChangedFiles).toStrictEqual(['packages/app/src/rules/fixtures/sample.ts']);
-	// all three are still string arrays at the read boundary — a non-string entry
-	// is a corrupt manifest, not a subject
-	expect(RunManifest.safeParse({ ...base, harness: 'codex', testSubjects: [3] }).success).toBe(false);
-	expect(RunManifest.safeParse({ ...base, harness: 'codex', unreachableChangedFiles: [3] }).success).toBe(false);
+	// still a string array at the read boundary — a non-string entry is a corrupt manifest
 	expect(RunManifest.safeParse({ ...base, harness: 'codex', coverageExcludedChangedFiles: [3] }).success).toBe(false);
+});
+
+test('RunManifest: a manifest written while the engine still recorded test subjects reads back without them', () => {
+	const parsed = RunManifest.parse({ ...base, harness: 'codex', testSubjects: ['src/feature/index.ts'], unreachableChangedFiles: ['src/feature/orphan.ts'] });
+
+	expect('testSubjects' in parsed).toBe(false);
+	expect('unreachableChangedFiles' in parsed).toBe(false);
 });
 
 test('RunManifest: the acceptance mapping defaults to an empty list and round-trips whole', () => {

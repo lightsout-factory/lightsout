@@ -53,8 +53,7 @@ export const createCoverageInvoker = ({
 			step: batch.id,
 			invocation: buildUnitTestWriterInvocation({
 				planContent: standaloneBanner,
-				subjects: batch.members,
-				mustExecute: batch.members,
+				files: batch.members,
 				standards: testStandards,
 				errorContext,
 			}),

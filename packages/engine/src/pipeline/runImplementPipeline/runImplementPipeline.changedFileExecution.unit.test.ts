@@ -154,22 +154,6 @@ describe('runImplementPipeline', () => {
 		expect(result.manifest.steps.find((step) => step.id === 'verify-tests')?.attempts).toBe(2);
 	});
 
-	test('a changed file recorded as unreachable is exempt — its missing coverage never fails the gate', async () => {
-		const { dir, driver, config } = await setupExecutionRun({
-			sources: {
-				'src/feature/feature.ts': 'export const feature = (): number => 1;\n',
-				'src/feature/internal/orphan.ts': 'export const orphan = (): number => 2;\n',
-			},
-			// the orphan is absent from the summary entirely — a violation if the check saw it
-			statements: { 'src/feature/feature.ts': { covered: 3, total: 3 } },
-		});
-
-		const result = await runImplementPipeline({ cwd: dir, driver, config, loadedConfig: { config }, planPath: 'plan.md' });
-
-		expect(result.ok).toBe(true);
-		expect(result.manifest.unreachableChangedFiles).toStrictEqual(['src/feature/internal/orphan.ts']);
-	});
-
 	test('a run whose changed files the repo never collects coverage from reaches a passing verdict', async () => {
 		const { dir, driver, config } = await setupExecutionRun({
 			// a .tsx the positives never name, so no report can ever list it
@@ -197,7 +181,7 @@ describe('runImplementPipeline', () => {
 	// which changed files must execute. Left unfiltered, it demands a test for a
 	// file the gate then exempts — the writer-versus-gate disagreement one step
 	// further along than the write-tests fan-out.
-	test('verify-tests fix: the must-execute list hands back the collected file and drops the coverage-excluded one', async () => {
+	test('verify-tests fix: the file list hands back the collected file and drops the coverage-excluded one', async () => {
 		const { dir, driver, config, writerPrompts } = await setupExecutionRun({
 			sources: {
 				'src/feature.ts': 'export const feature = (): number => 1;\n',
@@ -216,12 +200,11 @@ describe('runImplementPipeline', () => {
 		expect(result.ok).toBe(true);
 		expectDefined(fixPrompt);
 		// the collected file is exactly what the retry has to reach...
-		expect(fixPrompt.includes('# Changed internals that must execute under those tests\n\n- src/feature.ts')).toBeTruthy();
+		expect(fixPrompt.includes('# Changed files your tests must execute\n\n- src/feature.ts')).toBeTruthy();
 		// ...and the excluded file is out of the assignment entirely
 		expect(fixPrompt.includes('src/App.tsx')).toBeFalsy();
-		// it is recorded under its own name, never as an orphan
+		// it is recorded under its own name
 		expect(result.manifest.coverageExcludedChangedFiles).toStrictEqual(['src/App.tsx']);
-		expect(result.manifest.unreachableChangedFiles).toStrictEqual([]);
 	});
 });
 

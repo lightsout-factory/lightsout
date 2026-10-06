@@ -107,5 +107,5 @@ export const checkChangedFilesExecuted = async ({ cwd, config, changedFiles, com
 		return undefined;
 	}
 
-	return `changed-file-execution: ${unexecuted.length} changed file(s) never executed under the tests: ${unexecuted.join(', ')} — cover each through its public subject's tests; a file no test can reach through a public surface is a wiring defect to fix in source.`;
+	return `changed-file-execution: ${unexecuted.length} changed file(s) never executed under the tests: ${unexecuted.join(', ')} — write tests that execute each.`;
 };

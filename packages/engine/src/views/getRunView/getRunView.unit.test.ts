@@ -166,7 +166,7 @@ test('an id no run answers to rejects as a mistaken id, not a missing file', asy
 	expect(error).toBeInstanceOf(RunNotFoundError);
 });
 
-test('a run reports the files it changed and the ones nothing public reached', async () => {
+test('a run reports the files it changed', async () => {
 	const cwd = await freshCwd();
 
 	await seedRunDir({
@@ -174,7 +174,6 @@ test('a run reports the files it changed and the ones nothing public reached', a
 		manifest: {
 			runId: 'run-files',
 			changedFiles: ['src/a.ts', 'src/b.ts'],
-			unreachableChangedFiles: ['src/b.ts'],
 			usage: { ...usage, invocations: 3 },
 		},
 	});
@@ -182,7 +181,6 @@ test('a run reports the files it changed and the ones nothing public reached', a
 	const view = await getRunView({ cwd, runId: 'run-files' });
 
 	expect(view.changedFiles).toStrictEqual(['src/a.ts', 'src/b.ts']);
-	expect(view.unreachableChangedFiles).toStrictEqual(['src/b.ts']);
 	expect(view.usage?.invocations).toBe(3);
 	// the share of input the model read from cache, out of everything readable
 	expect(view.cacheReadShare).toBe(880 / 1000);

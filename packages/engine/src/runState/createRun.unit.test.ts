@@ -42,14 +42,12 @@ describe('createRun', () => {
 		expect(manifest.packages).toStrictEqual([]);
 	});
 
-	test('opens the test-subject bookkeeping empty before any write-tests step runs', async () => {
+	test('opens the acceptance-test mapping empty before the ledger step runs', async () => {
 		const { cwd } = setupRepo();
 
 		const manifest = await createRun({ cwd, plan: 'plan.md', driver: 'stub' });
 
-		// asserted on the return value, not a read-back — the schema defaults would mask a missing write
-		expect(manifest.testSubjects).toStrictEqual([]);
-		expect(manifest.unreachableChangedFiles).toStrictEqual([]);
+		// asserted on the return value, not a read-back — the schema defaults would mask a missing write;
 		// nothing is mapped until the ledger step writes the plan's acceptance tests
 		expect(manifest.acceptanceTests).toStrictEqual([]);
 	});

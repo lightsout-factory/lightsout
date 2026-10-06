@@ -369,7 +369,6 @@ test('write-tests fan-out: a file the repo’s coverage configuration does not c
 
 	// the skip is narrated with the reason that actually applies — got:\n${progress.join('\n')}
 	expect(skipped?.includes('src/App.tsx')).toBeTruthy();
-	// and recorded apart from the orphan set, which means something else entirely
+	// and recorded, so a verify fix never asks a writer to execute it
 	expect(result.manifest.coverageExcludedChangedFiles).toStrictEqual(['src/App.tsx']);
-	expect(result.manifest.unreachableChangedFiles).toStrictEqual([]);
 });

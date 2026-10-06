@@ -35,7 +35,7 @@ export const buildBatchFixInvocation = ({
 	// A fix retry is the same agent still working the same advisory list, so it
 	// still accounts for each advisory.
 	return coverageRed
-		? buildUnitTestWriterInvocation({ planContent, subjects: files, mustExecute: files, standards: testStandards, errorContext })
+		? buildUnitTestWriterInvocation({ planContent, files, standards: testStandards, errorContext })
 		: buildRefactorExecutorInvocation({
 				scope: RefactorScope.Standalone,
 				planContent,

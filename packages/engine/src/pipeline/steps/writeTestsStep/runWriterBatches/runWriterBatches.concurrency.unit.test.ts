@@ -13,11 +13,11 @@ import { runWriterBatches } from '#src/pipeline/steps/writeTestsStep/runWriterBa
 /** A complete WorkReport — this suite never varies its contents. */
 const workReport = (): WorkReport => ({ status: WorkReportStatus.Complete, changedFiles: [], summary: 'stub', failures: [] });
 
-/** One group per distinct subject file, so no group ever blocks another and only the writer ceiling can hold one back. */
+/** One group per distinct held file, so no group ever blocks another and only the writer ceiling can hold one back. */
 const groupsOf = (count: number): TestTargetGroup[] =>
 	Array.from({ length: count }, (_, index) => ({
-		subjects: [`src/file${index}.ts`],
-		mustExecute: [`src/file${index}.ts`],
+		files: [`src/file${index}.ts`],
+		held: [`src/file${index}.ts`],
 	}));
 
 /**

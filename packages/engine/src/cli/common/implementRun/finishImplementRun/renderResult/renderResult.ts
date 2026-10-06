@@ -132,15 +132,6 @@ const renderDetailLines = ({ manifest, summary, ok }: { manifest: RunManifest; s
 		lines.push(label({ name: 'commit', value: commits }));
 	}
 
-	if (manifest.unreachableChangedFiles.length > 0) {
-		lines.push(
-			label({
-				name: 'warning',
-				value: `unreachable-changed-files: ${manifest.unreachableChangedFiles.join(', ')} — changed, but no public surface reaches them; no tests cover them`,
-			}),
-		);
-	}
-
 	const configChange = describeConfigChange({ manifest });
 
 	if (configChange !== undefined) {

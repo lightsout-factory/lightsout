@@ -33,10 +33,8 @@ const manifestWith = ({ pipeline }: { pipeline?: PipelineKind }): RunManifest =>
 	commits: [],
 	packages: [],
 	baselineDirtyFiles: [],
-	testSubjects: [],
 	acceptanceTests: [],
 	approvedTests: [],
-	unreachableChangedFiles: [],
 	coverageExcludedChangedFiles: [],
 });
 

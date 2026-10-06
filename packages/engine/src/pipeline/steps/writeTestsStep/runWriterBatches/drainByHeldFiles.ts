@@ -10,27 +10,27 @@ interface Params {
 	collectWarm: () => Promise<void>;
 }
 
-// The subject files writers currently hold. Two writers must never hold one
-// file: they would edit the same test on disk.
-const createSubjectReservations = () => {
+// The files writers currently hold. Two writers must never hold one file:
+// they could edit the same test on disk.
+const createHeldFileReservations = () => {
 	const held = new Set<string>();
 
 	return {
-		isFree: ({ group }: { group: TestTargetGroup }) => group.subjects.every((subject) => !held.has(subject)),
+		isFree: ({ group }: { group: TestTargetGroup }) => group.held.every((file) => !held.has(file)),
 		reserve: ({ group }: { group: TestTargetGroup }) => {
-			for (const subject of group.subjects) {
-				held.add(subject);
+			for (const file of group.held) {
+				held.add(file);
 			}
 		},
 		release: ({ group }: { group: TestTargetGroup }) => {
-			for (const subject of group.subjects) {
-				held.delete(subject);
+			for (const file of group.held) {
+				held.delete(file);
 			}
 		},
 	};
 };
 
-const takeEligible = ({ waiting, reservations }: { waiting: TestTargetGroup[]; reservations: ReturnType<typeof createSubjectReservations> }) => {
+const takeEligible = ({ waiting, reservations }: { waiting: TestTargetGroup[]; reservations: ReturnType<typeof createHeldFileReservations> }) => {
 	const group = waiting.find((candidate) => reservations.isFree({ group: candidate }));
 
 	if (group) {
@@ -41,7 +41,7 @@ const takeEligible = ({ waiting, reservations }: { waiting: TestTargetGroup[]; r
 };
 
 /**
- * Subject collision is the only exclusion that matters, so an assignment
+ * A held-file collision is the only exclusion that matters, so an assignment
  * blocked on a held file is passed over rather than left holding a slot. On
  * every settle the reservation is released and the result folded in before the
  * next scan: the park flag is set while folding in, so scanning first would
@@ -50,8 +50,8 @@ const takeEligible = ({ waiting, reservations }: { waiting: TestTargetGroup[]; r
  *
  * @param groups - the assignments the warm-up writer did not claim, in the fan-out's queue order
  */
-export const drainBySubjects = async ({ groups, spawnWriter, aggregate, warm, collectWarm }: Params): Promise<void> => {
-	const reservations = createSubjectReservations();
+export const drainByHeldFiles = async ({ groups, spawnWriter, aggregate, warm, collectWarm }: Params): Promise<void> => {
+	const reservations = createHeldFileReservations();
 	const waiting = [...groups];
 	const running = new Map<number, Promise<void>>();
 	let nextTicket = 0;

@@ -37,10 +37,8 @@ const buildManifest = ({ pipeline, steps = [] }: { pipeline: PipelineKind; steps
 	commits: [],
 	packages: [],
 	baselineDirtyFiles: [],
-	testSubjects: [],
 	acceptanceTests: [],
 	approvedTests: [],
-	unreachableChangedFiles: [],
 	coverageExcludedChangedFiles: [],
 });
 

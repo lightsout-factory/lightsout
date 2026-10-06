@@ -1,6 +1,10 @@
 export interface TestTargetGroup {
-	/** Repo-relative public subject files — the only files a test file may target. May include unchanged files. */
-	subjects: string[];
 	/** Repo-relative changed files that must execute under the group's tests. */
-	mustExecute: string[];
+	files: string[];
+	/**
+	 * The group's files plus every file that imports one directly with runtime
+	 * code of its own. Two writers never hold one file at once: they could edit
+	 * the same test on disk.
+	 */
+	held: string[];
 }

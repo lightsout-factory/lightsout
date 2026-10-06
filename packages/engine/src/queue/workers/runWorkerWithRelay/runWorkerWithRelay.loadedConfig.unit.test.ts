@@ -122,10 +122,8 @@ const setupWorker = ({ worker, record }: { worker: QueueWorker; record: WorkOrde
 			commits: [],
 			packages: [],
 			baselineDirtyFiles: [],
-			testSubjects: [],
 			acceptanceTests: [],
 			approvedTests: [],
-			unreachableChangedFiles: [],
 			coverageExcludedChangedFiles: [],
 		},
 	});

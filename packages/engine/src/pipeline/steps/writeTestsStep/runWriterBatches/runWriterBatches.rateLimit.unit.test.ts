@@ -67,11 +67,11 @@ const setupWriterRun = ({ respond }: { respond: (params: { file: string; onFirst
 	return { run: run as unknown as PipelineRun, log };
 };
 
-/** One group per distinct subject file, so no group ever blocks another and every one competes for a slot. */
+/** One group per distinct held file, so no group ever blocks another and every one competes for a slot. */
 const groupsOf = (count: number): TestTargetGroup[] =>
 	Array.from({ length: count }, (_, index) => ({
-		subjects: [`src/file${index}.ts`],
-		mustExecute: [`src/file${index}.ts`],
+		files: [`src/file${index}.ts`],
+		held: [`src/file${index}.ts`],
 	}));
 
 test('runWriterBatches: a rate limit in a released batch parks the run and the warm report is still collected', async () => {
@@ -168,7 +168,7 @@ test('runWriterBatches: a rate limit inside one open slot stops the groups still
 	expect(reports.length).toBe(9);
 });
 
-test('runWriterBatches: a warm spawn that rate-limits after streaming leaves the group sharing its subjects unspawned while an independent group finishes', async () => {
+test('runWriterBatches: a warm spawn that rate-limits after streaming leaves the group sharing its held files unspawned while an independent group finishes', async () => {
 	const { run, log } = setupWriterRun({
 		respond: async ({ onFirstEvent }) => {
 			if (onFirstEvent) {
@@ -183,25 +183,25 @@ test('runWriterBatches: a warm spawn that rate-limits after streaming leaves the
 	});
 	// The warm spawn holds `src/shared.ts` while it runs, so the group that also
 	// lists that file can never spawn beside it — and once the warm spawn's rate
-	// limit parks the run, it never spawns at all. The group sharing no subject
+	// limit parks the run, it never spawns at all. The group sharing no held file
 	// with it has nothing to wait for and runs to completion.
 	const groups: TestTargetGroup[] = [
-		{ subjects: ['src/a1.ts', 'src/shared.ts'], mustExecute: ['src/shared.ts'] },
-		{ subjects: ['src/a2.ts', 'src/shared.ts'], mustExecute: ['src/shared.ts'] },
-		{ subjects: ['src/b.ts'], mustExecute: ['src/b.ts'] },
+		{ files: ['src/a1.ts'], held: ['src/a1.ts', 'src/shared.ts'] },
+		{ files: ['src/a2.ts'], held: ['src/a2.ts', 'src/shared.ts'] },
+		{ files: ['src/b.ts'], held: ['src/b.ts'] },
 	];
 
 	const { reports, parked } = await runWriterBatches({ run, groups, planContent: '# Plan' });
 
 	expect(parked).toBe(true);
-	// the group holding a subject the rate-limited warm writer held is never spawned
+	// the group holding a file the rate-limited warm writer held is never spawned
 	expect(log.includes('start:src/a2.ts')).toBeFalsy();
-	// the group sharing no subject ran and its report survives the park
+	// the group sharing no held file ran and its report survives the park
 	expect(log.includes('start:src/b.ts')).toBeTruthy();
 	expect(reports.length).toBe(1);
 });
 
-test('runWriterBatches: a warm spawn that fails without rate-limiting frees its subjects for the group waiting on them', async () => {
+test('runWriterBatches: a warm spawn that fails without rate-limiting frees its held files for the group waiting on them', async () => {
 	const { run, log } = setupWriterRun({
 		respond: async ({ onFirstEvent }) => {
 			if (onFirstEvent) {
@@ -215,19 +215,19 @@ test('runWriterBatches: a warm spawn that fails without rate-limiting frees its 
 		},
 	});
 	// Only a rate limit stops new launches. A plain failure is recorded, and the
-	// subjects the failed writer held are released for the group waiting on them.
+	// files the failed writer held are released for the group waiting on them.
 	const groups: TestTargetGroup[] = [
-		{ subjects: ['src/a1.ts', 'src/shared.ts'], mustExecute: ['src/shared.ts'] },
-		{ subjects: ['src/a2.ts', 'src/shared.ts'], mustExecute: ['src/shared.ts'] },
+		{ files: ['src/a1.ts'], held: ['src/a1.ts', 'src/shared.ts'] },
+		{ files: ['src/a2.ts'], held: ['src/a2.ts', 'src/shared.ts'] },
 	];
 
 	const { reports, failures, parked } = await runWriterBatches({ run, groups, planContent: '# Plan' });
 
 	// a plain failure never parks the run
 	expect(parked).toBe(false);
-	// the group waiting on the shared subject spawned, and only after it was freed
+	// the group waiting on the shared file spawned, and only after it was freed
 	expect(log.indexOf('start:src/a2.ts')).toBeGreaterThan(log.indexOf('end:src/a1.ts'));
 	// the failed warm spawn contributed no report, only a failure
 	expect(reports.length).toBe(1);
-	expect(failures).toStrictEqual(['src/a1.ts, src/shared.ts: driver exploded']);
+	expect(failures).toStrictEqual(['src/a1.ts: driver exploded']);
 });

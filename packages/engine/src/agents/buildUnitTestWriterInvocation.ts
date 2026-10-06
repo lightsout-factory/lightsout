@@ -6,10 +6,8 @@ import type { AcceptanceTestRecord } from '#src/contracts/run/AcceptanceTestReco
 
 interface Params {
 	planContent: string;
-	/** Public surfaces to test through — the only files a test file may target. May include unchanged files. */
-	subjects: string[];
-	/** Changed files that must execute under the tests (may overlap subjects when a changed file is itself public). */
-	mustExecute: string[];
+	/** Changed files that must execute under the tests. */
+	files: string[];
 	/** Optional consumer test standards content, inlined verbatim. */
 	standards?: string;
 	/** Verification-gate output from a failed attempt, for fix re-invocations. */
@@ -25,8 +23,7 @@ interface Params {
  */
 export const buildUnitTestWriterInvocation = ({
 	planContent,
-	subjects,
-	mustExecute,
+	files,
 	standards,
 	errorContext,
 	acceptanceTests,
@@ -40,16 +37,9 @@ export const buildUnitTestWriterInvocation = ({
 		roleSections.push(`# Standards\n\nThese rules are binding for the tests you write:\n\n${standards}`);
 	}
 
-	const bullets = ({ files }: { files: string[] }) => files.map((file) => `- ${file}`).join('\n');
 	const sections = [
-		`# Test subjects — write tests through these public surfaces\n\n${bullets({ files: subjects })}`,
-		`# Changed internals that must execute under those tests\n\n${bullets({ files: mustExecute })}`,
-		[
-			'Rules for this assignment:',
-			"- Never create a test file for any file outside the subjects list — an internal file's coverage is earned through the public surface that owns it, never through a dedicated test.",
-			"- A subject listed here may be unchanged: it is listed because a changed internal is reached through it. Test the subject's observable behavior so the changed internals execute.",
-			'- The engine will verify, from the coverage report, that every changed file listed above executed under the tests — a changed file that never runs fails the verification gate.',
-		].join('\n'),
+		`# Changed files your tests must execute\n\n${files.map((file) => `- ${file}`).join('\n')}`,
+		'The engine will verify, from the coverage report, that every file listed above executed under the tests — a listed file that never runs fails the verification gate.',
 	];
 
 	const acceptance = acceptanceTestsSection({ acceptanceTests });

@@ -53,7 +53,7 @@ const setupAcceptanceRun = async ({ schedule, tests }: { schedule: string[]; tes
 	const run = {
 		cwd: dir,
 		config: await readConfig({ cwd: dir }),
-		current: () => ({ runId, changedFiles: [changed], packages: [], currentStep: 'verify-tests', unreachableChangedFiles: [] }),
+		current: () => ({ runId, changedFiles: [changed], packages: [], currentStep: 'verify-tests' }),
 		progress: () => {},
 	};
 

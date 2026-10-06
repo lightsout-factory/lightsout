@@ -1,20 +1,15 @@
 import { commitRunWork } from '#src/commit/commitRunWork/commitRunWork.ts';
-import { defaultPackagesDir } from '#src/common/constants/defaultPackagesDir.ts';
 import { readGitChangedFiles } from '#src/common/git/readGitChangedFiles.ts';
 import { readGitPrefix } from '#src/common/git/readGitPrefix.ts';
-import { excludedSourcePaths } from '#src/common/sourceFiles/excludedSourcePaths.ts';
-import { listSourceFiles } from '#src/common/sourceFiles/listSourceFiles.ts';
 import type { ActivityLevel } from '#src/common/types/ActivityLevel.ts';
 import type { Driver } from '#src/common/types/Driver.ts';
 import type { LoadedConfig } from '#src/common/types/LoadedConfig.ts';
-import { resolveConsumerTypescript } from '#src/common/workspace/resolveConsumerTypescript.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { PipelineKind } from '#src/contracts/run/PipelineKind.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import { removeApprovedTests } from '#src/pipeline/approvedTests/removeApprovedTests.ts';
 import { PipelineRun } from '#src/pipeline/common/PipelineRun.ts';
-import { resolveTestSubjects } from '#src/pipeline/common/resolveTestSubjects.ts';
 import type { PipelineResult } from '#src/pipeline/PipelineResult.ts';
 import { prepareRun } from '#src/pipeline/runImplementPipeline/prepareRun/prepareRun.ts';
 import { runSteps } from '#src/pipeline/runImplementPipeline/runSteps.ts';
@@ -23,30 +18,6 @@ import { createRun } from '#src/runState/createRun.ts';
 import { withRunLock } from '#src/runState/lock/withRunLock/withRunLock.ts';
 import { writeRunOwner } from '#src/runState/owner/writeRunOwner.ts';
 
-// Later steps may have connected a file write-tests skipped to a public surface,
-// so each is re-resolved; anything still orphaned stays under a named warning.
-const recheckUnreachable = async ({ run }: { run: PipelineRun }) => {
-	const recorded = run.current().unreachableChangedFiles;
-
-	if (recorded.length === 0) {
-		return;
-	}
-
-	const packagesDir = run.config['packages-dir'] ?? defaultPackagesDir;
-	const compiler = resolveConsumerTypescript({ cwd: run.cwd, packagesDir });
-	const universe = (await listSourceFiles({ cwd: run.cwd, exclude: excludedSourcePaths({ config: run.config }) })).files;
-	const targets = recorded.filter((file) => universe.includes(file));
-	const { orphans } = await resolveTestSubjects({ cwd: run.cwd, targets, universe, packagesDir, compiler });
-
-	await run.update({ patch: { unreachableChangedFiles: orphans } });
-
-	if (orphans.length > 0) {
-		run.progress(
-			`warning unreachable-changed-files: ${orphans.length} changed file(s) finished the run with no public surface reaching them: ${orphans.join(', ')} — they sit in an internal/ folder that no public file imports, so import them from one (or delete them) in follow-up work; no tests cover them.`,
-		);
-	}
-};
-
 /**
  * The commit runs before the approved copies are removed, because they are the
  * baseline a resume diffs against and a refused commit must leave them on disk,
@@ -54,8 +25,6 @@ const recheckUnreachable = async ({ run }: { run: PipelineRun }) => {
  * failed by the commit.
  */
 const finishRun = async ({ run, resumed, keepGenerated }: { run: PipelineRun; resumed: boolean; keepGenerated: boolean }): Promise<PipelineResult> => {
-	await recheckUnreachable({ run });
-
 	const uncommitted = await commitRunWork({ run, driver: run.driver, resumed, keepGenerated });
 	let result: PipelineResult;
 

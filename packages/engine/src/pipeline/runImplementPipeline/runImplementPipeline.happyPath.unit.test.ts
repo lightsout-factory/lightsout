@@ -166,7 +166,7 @@ test('happy path: git truth, per-file writers, refactor loop, coverage/format wi
 	// Writer fan-out announced. The ceiling is spelled out rather than
 	// interpolated from the constant: a line built from the same constant the
 	// assertion reads says the same thing whatever the number is.
-	expect(progress.some((line) => line.includes('4 group(s): 4 subject(s) covering 4 changed file(s), up to 10 writers in parallel'))).toBeTruthy();
+	expect(progress.some((line) => line.includes('4 group(s) covering 4 changed file(s), up to 10 writers in parallel'))).toBeTruthy();
 	// cleanup's ending is announced, with the reason it ended
 	expect(progress.some((line) => line.includes('step refactor passed — cleanup ended: clean'))).toBeTruthy();
 });

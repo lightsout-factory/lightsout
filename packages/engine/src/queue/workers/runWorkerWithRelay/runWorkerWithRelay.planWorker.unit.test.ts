@@ -119,10 +119,8 @@ const manifestOf = (status: RunStatus): RunManifest => ({
 	commits: [],
 	packages: [],
 	baselineDirtyFiles: [],
-	testSubjects: [],
 	acceptanceTests: [],
 	approvedTests: [],
-	unreachableChangedFiles: [],
 	coverageExcludedChangedFiles: [],
 });
 

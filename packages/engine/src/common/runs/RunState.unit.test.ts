@@ -27,10 +27,8 @@ const manifestOf = ({ usage }: { usage?: RunUsage } = {}): RunManifest => ({
 	commits: [],
 	packages: [],
 	baselineDirtyFiles: [],
-	testSubjects: [],
 	acceptanceTests: [],
 	approvedTests: [],
-	unreachableChangedFiles: [],
 	coverageExcludedChangedFiles: [],
 });
 

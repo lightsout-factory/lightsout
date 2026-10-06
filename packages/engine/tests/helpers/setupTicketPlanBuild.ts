@@ -112,10 +112,8 @@ const manifestOf = ({ status, plan, pipeline }: { status: RunStatus; plan: strin
 	commits: [],
 	packages: [],
 	baselineDirtyFiles: [],
-	testSubjects: [],
 	acceptanceTests: [],
 	approvedTests: [],
-	unreachableChangedFiles: [],
 	coverageExcludedChangedFiles: [],
 });
 

@@ -4,7 +4,7 @@ import { buildUnitTestWriterInvocation } from '#src/agents/buildUnitTestWriterIn
 
 const planContent = '# Plan: add the widget flag\n\nPLAN-SENTINEL';
 const standards = '## Tabs only\n\nSTANDARDS-SENTINEL';
-const soloParams = { planContent, subjects: ['src/widget.ts'], mustExecute: ['src/widget.ts'] };
+const soloParams = { planContent, files: ['src/widget.ts'] };
 
 test('buildUnitTestWriterInvocation: the system prompt carries the role, the plan, and the standards as labelled sections', () => {
 	const { systemPrompt } = buildUnitTestWriterInvocation({ ...soloParams, standards });
@@ -28,8 +28,7 @@ test('buildUnitTestWriterInvocation: the system prompt is byte-identical across 
 	const first = buildUnitTestWriterInvocation({ ...soloParams, standards });
 	const second = buildUnitTestWriterInvocation({
 		planContent,
-		subjects: ['src/other.ts'],
-		mustExecute: ['src/other.ts', 'src/internal.ts'],
+		files: ['src/other.ts', 'src/internal.ts'],
 		standards,
 	});
 	const fix = buildUnitTestWriterInvocation({ ...soloParams, standards, errorContext: 'test-unit failed' });
@@ -40,24 +39,15 @@ test('buildUnitTestWriterInvocation: the system prompt is byte-identical across 
 	expect(first.systemPrompt).toBe(fix.systemPrompt);
 });
 
-test('buildUnitTestWriterInvocation: the user prompt carries the two lists, the binding assignment rules, and the report reminder', () => {
-	const { prompt } = buildUnitTestWriterInvocation({
-		planContent,
-		subjects: ['src/widget/index.ts'],
-		mustExecute: ['src/widget/helper.ts', 'src/widget/widget.ts'],
-		standards,
-	});
+test('buildUnitTestWriterInvocation: the user prompt carries the file list, the executed check, and the report reminder', () => {
+	const { prompt } = buildUnitTestWriterInvocation({ planContent, files: ['src/widget/helper.ts', 'src/widget/widget.ts'], standards });
 
-	// the role marker the engine classifies on leads the prompt
-	expect(prompt.startsWith('# Test subjects — write tests through these public surfaces\n\n- src/widget/index.ts')).toBeTruthy();
-	// every must-execute file gets its own bullet under its own section
-	expect(prompt.includes('# Changed internals that must execute under those tests\n\n- src/widget/helper.ts\n- src/widget/widget.ts')).toBeTruthy();
-	// the assignment rules are always present: no test file outside the subjects list…
-	expect(prompt.includes('Never create a test file for any file outside the subjects list')).toBeTruthy();
-	// …an unchanged subject is still the path to its changed internals…
-	expect(prompt.includes('A subject listed here may be unchanged')).toBeTruthy();
-	// …and the engine's executed check is announced
-	expect(prompt.includes('The engine will verify, from the coverage report, that every changed file listed above executed under the tests')).toBeTruthy();
+	// the role marker the engine classifies on leads the prompt, one bullet per file
+	expect(prompt.startsWith('# Changed files your tests must execute\n\n- src/widget/helper.ts\n- src/widget/widget.ts')).toBeTruthy();
+	// the engine's executed check is announced
+	expect(prompt.includes('The engine will verify, from the coverage report, that every file listed above executed under the tests')).toBeTruthy();
+	// where a test goes is the standards' call: the engine names no file to test through
+	expect(prompt.includes('subject')).toBeFalsy();
 	// the report-contract reminder closes the prompt
 	expect(prompt.includes('one JSON report object')).toBeTruthy();
 });
@@ -107,19 +97,13 @@ test('buildUnitTestWriterInvocation: empty optional inputs emit no section rathe
 	expect(prompt.includes('# Verification failure')).toBeFalsy();
 });
 
-test('buildUnitTestWriterInvocation: a solo assignment user prompt is the two lists, the rules, and the report reminder alone', () => {
+test('buildUnitTestWriterInvocation: a solo assignment user prompt is the file list, the executed check, and the report reminder alone', () => {
 	const { prompt } = buildUnitTestWriterInvocation({ ...soloParams, standards });
 
 	expect(prompt).toBe(
 		[
-			'# Test subjects — write tests through these public surfaces\n\n- src/widget.ts',
-			'# Changed internals that must execute under those tests\n\n- src/widget.ts',
-			[
-				'Rules for this assignment:',
-				"- Never create a test file for any file outside the subjects list — an internal file's coverage is earned through the public surface that owns it, never through a dedicated test.",
-				"- A subject listed here may be unchanged: it is listed because a changed internal is reached through it. Test the subject's observable behavior so the changed internals execute.",
-				'- The engine will verify, from the coverage report, that every changed file listed above executed under the tests — a changed file that never runs fails the verification gate.',
-			].join('\n'),
+			'# Changed files your tests must execute\n\n- src/widget.ts',
+			'The engine will verify, from the coverage report, that every file listed above executed under the tests — a listed file that never runs fails the verification gate.',
 			'Remember: your entire final message must be exactly one JSON report object — nothing else.',
 		].join('\n\n'),
 	);
@@ -128,22 +112,21 @@ test('buildUnitTestWriterInvocation: a solo assignment user prompt is the two li
 test('buildUnitTestWriterInvocation: the report reminder closes the user prompt, after the verification failure', () => {
 	const { prompt } = buildUnitTestWriterInvocation({ ...soloParams, errorContext: 'GATE-SENTINEL' });
 
-	// the subject list still leads a fix re-invocation
-	expect(prompt.startsWith('# Test subjects — write tests through these public surfaces')).toBeTruthy();
+	// the file list still leads a fix re-invocation
+	expect(prompt.startsWith('# Changed files your tests must execute')).toBeTruthy();
 	// the gate output follows the assignment
 	expect(prompt.indexOf('# Verification failure') > prompt.indexOf('- src/widget.ts')).toBeTruthy();
 	// the report-contract reminder closes the prompt
 	expect(prompt.endsWith('Remember: your entire final message must be exactly one JSON report object — nothing else.')).toBeTruthy();
 });
 
-test('buildUnitTestWriterInvocation: empty lists emit their headers with no bullets', () => {
-	const { prompt } = buildUnitTestWriterInvocation({ planContent, subjects: [], mustExecute: [], standards });
+test('buildUnitTestWriterInvocation: an empty list emits its header with no bullets', () => {
+	const { prompt } = buildUnitTestWriterInvocation({ planContent, files: [], standards });
 
 	// the role marker the engine classifies on still leads the prompt
-	expect(prompt.startsWith('# Test subjects — write tests through these public surfaces')).toBeTruthy();
-	// no bullet is emitted for an empty list — the assignment rules keep their
-	// own bullets, so only the region above them is inspected
-	expect(prompt.slice(0, prompt.indexOf('Rules for this assignment:')).includes('\n- ')).toBeFalsy();
+	expect(prompt.startsWith('# Changed files your tests must execute')).toBeTruthy();
+	// no bullet is emitted for an empty list
+	expect(prompt.slice(0, prompt.indexOf('The engine will verify')).includes('\n- ')).toBeFalsy();
 });
 
 test('buildUnitTestWriterInvocation: the acceptance tests ride the user prompt, with the rules that bound editing one', () => {

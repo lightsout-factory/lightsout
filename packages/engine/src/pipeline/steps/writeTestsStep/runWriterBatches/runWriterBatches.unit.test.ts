@@ -66,11 +66,11 @@ const setupWriterRun = ({ respond }: { respond: (params: { file: string; onFirst
 	return { run: run as unknown as PipelineRun, log, prompts };
 };
 
-/** One group per distinct subject file, so no group ever blocks another and every one competes for a slot. */
+/** One group per distinct held file, so no group ever blocks another and every one competes for a slot. */
 const groupsOf = (count: number): TestTargetGroup[] =>
 	Array.from({ length: count }, (_, index) => ({
-		subjects: [`src/file${index}.ts`],
-		mustExecute: [`src/file${index}.ts`],
+		files: [`src/file${index}.ts`],
+		held: [`src/file${index}.ts`],
 	}));
 
 test('runWriterBatches: a freed slot takes the next group while a slow writer is still running', async () => {
@@ -153,7 +153,7 @@ test('runWriterBatches: a run whose plan carries no ledger briefs its writers wi
 	expect(prompts[0]?.includes('# Acceptance tests')).toBeFalsy();
 });
 
-test('runWriterBatches: two groups sharing a subject never overlap while a group sharing none runs beside them', async () => {
+test('runWriterBatches: two groups sharing a held file never overlap while a group sharing none runs beside them', async () => {
 	const { run, log } = setupWriterRun({
 		respond: async ({ file, onFirstEvent, log: events }) => {
 			if (onFirstEvent) {
@@ -168,22 +168,22 @@ test('runWriterBatches: two groups sharing a subject never overlap while a group
 	// Two assignments hold src/shared.ts between them, so no two writers may
 	// ever hold it at once; the third shares nothing and must not wait.
 	const groups: TestTargetGroup[] = [
-		{ subjects: ['src/a1.ts', 'src/shared.ts'], mustExecute: ['src/a1.ts'] },
-		{ subjects: ['src/a2.ts', 'src/shared.ts'], mustExecute: ['src/a2.ts'] },
-		{ subjects: ['src/b.ts'], mustExecute: ['src/b.ts'] },
+		{ files: ['src/a1.ts'], held: ['src/a1.ts', 'src/shared.ts'] },
+		{ files: ['src/a2.ts'], held: ['src/a2.ts', 'src/shared.ts'] },
+		{ files: ['src/b.ts'], held: ['src/b.ts'] },
 	];
 
 	const { reports, parked } = await runWriterBatches({ run, groups, planContent: '# Plan' });
 
 	expect(parked).toBe(false);
 	expect(reports.length).toBe(3);
-	// the subject is never held by two writers at once
+	// the shared file is never held by two writers at once
 	expect(log.indexOf('end:src/a1.ts')).toBeLessThan(log.indexOf('start:src/a2.ts'));
-	// the group sharing no subject starts while the first one is still running
+	// the group sharing no held file starts while the first one is still running
 	expect(log.indexOf('start:src/b.ts')).toBeLessThan(log.indexOf('end:src/a1.ts'));
 });
 
-test('runWriterBatches: chunks of one component with disjoint subjects run at the same time', async () => {
+test('runWriterBatches: chunks of one component with disjoint held files run at the same time', async () => {
 	const { run, log } = setupWriterRun({
 		respond: async ({ onFirstEvent }) => {
 			if (onFirstEvent) {
@@ -195,10 +195,10 @@ test('runWriterBatches: chunks of one component with disjoint subjects run at th
 		},
 	});
 	// The oversized-component case: one component split into two chunks, whose
-	// subject lists share nothing. Nothing excludes them from each other.
+	// held lists share nothing. Nothing excludes them from each other.
 	const groups: TestTargetGroup[] = [
-		{ subjects: ['src/chunk1.ts'], mustExecute: ['src/big/one.ts', 'src/big/two.ts'] },
-		{ subjects: ['src/chunk2.ts'], mustExecute: ['src/big/one.ts', 'src/big/two.ts'] },
+		{ files: ['src/chunk1.ts'], held: ['src/chunk1.ts'] },
+		{ files: ['src/chunk2.ts'], held: ['src/chunk2.ts'] },
 	];
 
 	const { reports, parked } = await runWriterBatches({ run, groups, planContent: '# Plan' });
@@ -225,10 +225,10 @@ test('runWriterBatches: a blocked group is passed over so a later independent gr
 	// Four groups, ten slots: the blocked group is queued ahead of the
 	// independent one, so a scheduler that stalls on it wastes a free slot.
 	const groups: TestTargetGroup[] = [
-		{ subjects: ['src/warm.ts'], mustExecute: ['src/warm.ts'] },
-		{ subjects: ['src/holder.ts', 'src/shared.ts'], mustExecute: ['src/holder.ts'] },
-		{ subjects: ['src/blocked.ts', 'src/shared.ts'], mustExecute: ['src/blocked.ts'] },
-		{ subjects: ['src/independent.ts'], mustExecute: ['src/independent.ts'] },
+		{ files: ['src/warm.ts'], held: ['src/warm.ts'] },
+		{ files: ['src/holder.ts'], held: ['src/holder.ts', 'src/shared.ts'] },
+		{ files: ['src/blocked.ts'], held: ['src/blocked.ts', 'src/shared.ts'] },
+		{ files: ['src/independent.ts'], held: ['src/independent.ts'] },
 	];
 
 	const { reports, parked } = await runWriterBatches({ run, groups, planContent: '# Plan' });
@@ -237,11 +237,11 @@ test('runWriterBatches: a blocked group is passed over so a later independent gr
 	expect(reports.length).toBe(4);
 	// the independent group takes the slot the blocked one could not use
 	expect(log.indexOf('start:src/independent.ts')).toBeLessThan(log.indexOf(`end:${slow}`));
-	// and the blocked group still waits for the subject it needs
+	// and the blocked group still waits for the file it needs
 	expect(log.indexOf('start:src/blocked.ts')).toBeGreaterThan(log.indexOf(`end:${slow}`));
 });
 
-test('runWriterBatches: a group blocked on a shared subject spawns once its blocker settles', async () => {
+test('runWriterBatches: a group blocked on a shared file spawns once its blocker settles', async () => {
 	const blocker = 'src/blocker.ts';
 	const { run, log } = setupWriterRun({
 		respond: async ({ file, onFirstEvent }) => {
@@ -257,21 +257,21 @@ test('runWriterBatches: a group blocked on a shared subject spawns once its bloc
 	// The waiting group has no other route to a slot: only the blocker's
 	// release can wake it.
 	const groups: TestTargetGroup[] = [
-		{ subjects: ['src/warm.ts'], mustExecute: ['src/warm.ts'] },
-		{ subjects: ['src/blocker.ts', 'src/shared.ts'], mustExecute: ['src/blocker.ts'] },
-		{ subjects: ['src/waiter.ts', 'src/shared.ts'], mustExecute: ['src/waiter.ts'] },
+		{ files: ['src/warm.ts'], held: ['src/warm.ts'] },
+		{ files: ['src/blocker.ts'], held: ['src/blocker.ts', 'src/shared.ts'] },
+		{ files: ['src/waiter.ts'], held: ['src/waiter.ts', 'src/shared.ts'] },
 	];
 
 	const { reports, parked } = await runWriterBatches({ run, groups, planContent: '# Plan' });
 
 	expect(parked).toBe(false);
-	// the released subject woke the waiting group, and it finished before the step returned
+	// the released file woke the waiting group, and it finished before the step returned
 	expect(reports.length).toBe(3);
 	expect(log.indexOf('end:src/blocker.ts')).toBeLessThan(log.indexOf('start:src/waiter.ts'));
 	expect(log.includes('end:src/waiter.ts')).toBeTruthy();
 });
 
-test("runWriterBatches: a group sharing the warm-up writer's subjects waits for the warm spawn to settle", async () => {
+test("runWriterBatches: a group sharing the warm-up writer's held files waits for the warm spawn to settle", async () => {
 	const { run, log } = setupWriterRun({
 		respond: async ({ file, onFirstEvent, log: events }) => {
 			if (onFirstEvent) {
@@ -283,13 +283,13 @@ test("runWriterBatches: a group sharing the warm-up writer's subjects waits for 
 			return answered(workReport());
 		},
 	});
-	// The warm writer streams and then stays live, so its subjects are held
+	// The warm writer streams and then stays live, so its files are held
 	// through the whole window the rest of the fan-out runs in.
 	const groups: TestTargetGroup[] = [
-		{ subjects: ['src/warm.ts', 'src/shared.ts'], mustExecute: ['src/warm.ts'] },
-		{ subjects: ['src/waiter.ts', 'src/shared.ts'], mustExecute: ['src/waiter.ts'] },
-		{ subjects: ['src/free1.ts'], mustExecute: ['src/free1.ts'] },
-		{ subjects: ['src/free2.ts'], mustExecute: ['src/free2.ts'] },
+		{ files: ['src/warm.ts'], held: ['src/warm.ts', 'src/shared.ts'] },
+		{ files: ['src/waiter.ts'], held: ['src/waiter.ts', 'src/shared.ts'] },
+		{ files: ['src/free1.ts'], held: ['src/free1.ts'] },
+		{ files: ['src/free2.ts'], held: ['src/free2.ts'] },
 	];
 
 	const { reports, parked } = await runWriterBatches({ run, groups, planContent: '# Plan' });
@@ -299,7 +299,7 @@ test("runWriterBatches: a group sharing the warm-up writer's subjects waits for 
 	// the groups sharing nothing with the warm writer spawn while it runs
 	expect(log.indexOf('start:src/free1.ts')).toBeLessThan(log.indexOf('end:src/warm.ts'));
 	expect(log.indexOf('start:src/free2.ts')).toBeLessThan(log.indexOf('end:src/warm.ts'));
-	// the group sharing one of its subjects waits for it to settle
+	// the group sharing one of its held files waits for it to settle
 	expect(log.indexOf('start:src/waiter.ts')).toBeGreaterThan(log.indexOf('end:src/warm.ts'));
 });
 
@@ -325,9 +325,9 @@ test('runWriterBatches: a writer that throws surfaces its error only once the wr
 	// The thrower dies while both of its siblings are mid-flight: the step may
 	// not reject while a harness process is still live.
 	const groups: TestTargetGroup[] = [
-		{ subjects: ['src/warm.ts'], mustExecute: ['src/warm.ts'] },
-		{ subjects: ['src/thrower.ts'], mustExecute: ['src/thrower.ts'] },
-		{ subjects: ['src/sibling.ts'], mustExecute: ['src/sibling.ts'] },
+		{ files: ['src/warm.ts'], held: ['src/warm.ts'] },
+		{ files: ['src/thrower.ts'], held: ['src/thrower.ts'] },
+		{ files: ['src/sibling.ts'], held: ['src/sibling.ts'] },
 	];
 
 	const settled = await runWriterBatches({ run, groups, planContent: '# Plan' }).then(
@@ -358,9 +358,9 @@ test('runWriterBatches: two writers that throw surface the error of the one that
 	// Two throwers with staggered deaths: the second must not overwrite the
 	// error the step is holding for the caller.
 	const groups: TestTargetGroup[] = [
-		{ subjects: ['src/warm.ts'], mustExecute: ['src/warm.ts'] },
-		{ subjects: ['src/early.ts'], mustExecute: ['src/early.ts'] },
-		{ subjects: ['src/late.ts'], mustExecute: ['src/late.ts'] },
+		{ files: ['src/warm.ts'], held: ['src/warm.ts'] },
+		{ files: ['src/early.ts'], held: ['src/early.ts'] },
+		{ files: ['src/late.ts'], held: ['src/late.ts'] },
 	];
 
 	const settled = await runWriterBatches({ run, groups, planContent: '# Plan' }).then(

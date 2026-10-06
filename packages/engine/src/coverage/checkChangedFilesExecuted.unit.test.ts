@@ -114,9 +114,7 @@ test('checkChangedFilesExecuted: executed files pass; zero-covered and unmeasure
 
 	const error = await checkChangedFilesExecuted({ cwd, config: rootConfig, changedFiles: ['src/ran.ts', 'src/cold.ts', 'src/absent.ts'], compiler: ts });
 
-	expect(error).toBe(
-		"changed-file-execution: 2 changed file(s) never executed under the tests: src/cold.ts, src/absent.ts — cover each through its public subject's tests; a file no test can reach through a public surface is a wiring defect to fix in source.",
-	);
+	expect(error).toBe('changed-file-execution: 2 changed file(s) never executed under the tests: src/cold.ts, src/absent.ts — write tests that execute each.');
 });
 
 test('checkChangedFilesExecuted: deleted, inert, test, and zero-total files are legitimately absent from coverage', async () => {
@@ -269,9 +267,7 @@ test('checkChangedFilesExecuted: a fixture file the config negates is exempt, wh
 
 	// the fixture is absent from the summary and exempt; the collected file is
 	// absent from the summary and is not — the teeth stay on
-	expect(error).toBe(
-		"changed-file-execution: 1 changed file(s) never executed under the tests: src/cold.ts — cover each through its public subject's tests; a file no test can reach through a public surface is a wiring defect to fix in source.",
-	);
+	expect(error).toBe('changed-file-execution: 1 changed file(s) never executed under the tests: src/cold.ts — write tests that execute each.');
 });
 
 // Run 00dd4d49: a pack-root fixtures/framework-owned/ tree — fixtures one level

@@ -21,6 +21,5 @@ export const buildRunView = ({ overrides = {} }: Params = {}): RunView => ({
 	rejectedReports: 0,
 	friction: [],
 	changedFiles: [],
-	unreachableChangedFiles: [],
 	...overrides,
 });

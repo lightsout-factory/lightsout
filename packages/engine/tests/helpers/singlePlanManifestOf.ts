@@ -15,10 +15,8 @@ export const singlePlanManifestOf = (overrides: Partial<RunManifest> = {}): RunM
 	commits: [],
 	packages: [],
 	baselineDirtyFiles: [],
-	testSubjects: [],
 	acceptanceTests: [],
 	approvedTests: [],
-	unreachableChangedFiles: [],
 	coverageExcludedChangedFiles: [],
 	...overrides,
 });

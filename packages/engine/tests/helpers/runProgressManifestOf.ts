@@ -15,10 +15,8 @@ export const runProgressManifestOf = (overrides: Partial<RunManifest> = {}): Run
 	commits: [],
 	packages: [],
 	baselineDirtyFiles: [],
-	testSubjects: [],
 	acceptanceTests: [],
 	approvedTests: [],
-	unreachableChangedFiles: [],
 	coverageExcludedChangedFiles: [],
 	...overrides,
 });
