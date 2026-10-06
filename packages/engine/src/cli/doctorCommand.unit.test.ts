@@ -105,13 +105,10 @@ test('doctorCommand: a healthy repo prints the cwd header, an icon line per chec
 	expect(logged.some((line) => /^✓ config {10}lightsout\.config\.json valid · harness claude-code$/.test(line))).toBeTruthy();
 	// the harness check reports the probed version, got: ${JSON.stringify(logged)}
 	expect(logged.some((line) => /^✓ harness {9}claude 9\.9\.9 \(Fake Claude\)/.test(line))).toBeTruthy();
-	// a note renders with the ℹ icon and carries no fix line, got:
-	// ${JSON.stringify(logged)}
-	expect(logged.some((line) => /^ℹ lint-rules {6}no linter config found/.test(line))).toBeTruthy();
 	// no check fails on a healthy repo
 	expect(logged.some((line) => line.startsWith('✗'))).toBeFalsy();
 	// zero-count statuses are dropped from the tally
-	expect(logged.at(-1) ?? '').toMatch(/^\n\d+ check\(s\) · \d+ pass · \d+ note$/);
+	expect(logged.at(-1) ?? '').toMatch(/^\n\d+ check\(s\) · \d+ pass$/);
 	expect(errors).toStrictEqual([]);
 	expect(exitCodes).toStrictEqual([0]);
 });

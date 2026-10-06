@@ -8,11 +8,7 @@ const passingProbe = async () => ({ exitCode: 0, stdout: '2.1.201 (Claude Code)\
 
 const byId = (checks: Awaited<ReturnType<typeof runDoctor>>) => new Map(checks.map((check) => [check.id, check]));
 
-/**
- * A package whose Jest config satisfies the mock-cleanup check and says nothing
- * about the engine's reporter — so the two package-iterating checks read the
- * same config and answer differently, which is what makes "beside" observable.
- */
+/** A package whose Jest config says nothing about the engine's reporter. */
 const setupRepoWithJestConfig = () => {
 	const dir = setupConsumerRepo({
 		git: false,
@@ -23,7 +19,7 @@ const setupRepoWithJestConfig = () => {
 
 	mkdirSync(join(dir, 'packages/web'), { recursive: true });
 	writeFileSync(join(dir, 'packages/web/package.json'), JSON.stringify({ name: '@acme/web', scripts: { check: 'x', 'test:unit': 'x' } }));
-	writeFileSync(join(dir, 'packages/web/jest.config.cjs'), 'module.exports = { clearMocks: true, restoreMocks: true };\n');
+	writeFileSync(join(dir, 'packages/web/jest.config.cjs'), 'module.exports = {};\n');
 
 	return { dir };
 };
@@ -43,7 +39,4 @@ test('runDoctor: includes the jest-reporter check', async () => {
 			fix: expect.stringContaining('reporters'),
 		}),
 	);
-	// it runs beside the mock check over the same resolved package dirs, and the
-	// two judge the same config independently
-	expect(checks.get('jest-mocks')?.status).toBe('pass');
 });
