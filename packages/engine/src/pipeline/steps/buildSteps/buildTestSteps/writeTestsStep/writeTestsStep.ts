@@ -1,6 +1,4 @@
 import { defaultPackagesDir } from '#src/common/constants/defaultPackagesDir.ts';
-import { excludedSourcePaths } from '#src/common/sourceFiles/excludedSourcePaths.ts';
-import { listSourceFiles } from '#src/common/sourceFiles/listSourceFiles.ts';
 import { resolveConsumerTypescript } from '#src/common/workspace/resolveConsumerTypescript.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import type { PipelineRun } from '#src/pipeline/common/PipelineRun.ts';
@@ -57,8 +55,7 @@ export const writeTestsStep = ({ run, gitPrefix, planContent, testStandards }: P
 		// the skip record a verify fix re-invocation reads back.
 		await run.setStep({ record, patch: { coverageExcludedChangedFiles: coverageExcluded } });
 
-		const universe = (await listSourceFiles({ cwd: run.cwd, exclude: excludedSourcePaths({ config: run.config }) })).files;
-		const groups = await groupTestTargets({ run, targets, universe, compiler });
+		const groups = await groupTestTargets({ run, targets, compiler });
 
 		run.progress(
 			`step write-tests — attempt ${record.attempts} · ${groups.length} group(s) covering ${targets.length} changed file(s), up to ${testWriterConcurrency} writers in parallel`,

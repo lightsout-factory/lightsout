@@ -6,11 +6,11 @@ import { createWarmSpawn } from '#src/pipeline/steps/common/createWarmSpawn.ts';
 import { createWriterAggregate } from '#src/pipeline/steps/common/createWriterAggregate.ts';
 import type { TestTargetGroup } from '#src/pipeline/steps/common/types/TestTargetGroup.ts';
 import type { WriterResult } from '#src/pipeline/steps/common/types/WriterResult.ts';
-import { drainByHeldFiles } from '#src/pipeline/steps/writeTestsStep/runWriterBatches/drainByHeldFiles.ts';
+import { drainWriterGroups } from '#src/pipeline/steps/writeTestsStep/runWriterBatches/drainWriterGroups.ts';
 
 interface Params {
 	run: PipelineRun;
-	/** One assignment per writer: the changed files its tests must execute. Groups holding a file in common never run at the same time. */
+	/** One assignment per writer: the changed files its tests must execute. No two groups share a file. */
 	groups: TestTargetGroup[];
 	planContent: string;
 	testStandards?: string;
@@ -56,7 +56,7 @@ export const runWriterBatches = async ({
 		await collectWarm();
 	}
 
-	await drainByHeldFiles({
+	await drainWriterGroups({
 		groups: warmGroup ? groups.slice(1) : groups,
 		spawnWriter,
 		aggregate,

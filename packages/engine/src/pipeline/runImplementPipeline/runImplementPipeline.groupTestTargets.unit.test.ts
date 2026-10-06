@@ -91,7 +91,7 @@ test('write-tests fan-out: files that import each other share ONE writer; unrela
 	expect(progress.some((line) => line.includes('2 group(s) covering 3 changed file(s)'))).toBeTruthy();
 });
 
-test('write-tests fan-out: two changed files imported by one UNCHANGED caller share one writer, and the caller is not assigned', async () => {
+test('write-tests fan-out: two changed files that only share an UNCHANGED caller stay on separate writers, and the caller is not assigned', async () => {
 	const dir = setupConsumerRepo({ config: reachabilityRulesOff });
 
 	linkTypescript({ dir });
@@ -159,83 +159,13 @@ test('write-tests fan-out: two changed files imported by one UNCHANGED caller sh
 	});
 
 	expect(result.ok).toBe(true);
-	// no import edge joins a.ts and b.ts — the caller they share alone makes them
-	// one writer, so two writers never edit the caller's tests at once
-	expect(writerPrompts.length).toBe(1);
-	// only the changed files are assigned; which file a test goes through is the standards' call
-	expect(writerPrompts[0]?.includes('# Changed files your tests must execute\n\n- src/mod/parts/a.ts\n- src/mod/parts/b.ts\n\n')).toBeTruthy();
-	expect(writerPrompts[0]?.includes('src/mod/pub.ts')).toBeFalsy();
-	// got:\n${progress.join('\n')}
-	expect(progress.some((line) => line.includes('1 group(s) covering 2 changed file(s)'))).toBeTruthy();
-});
-
-test('write-tests fan-out: an importer with no runtime code of its own joins nothing — a re-exporting entry keeps its files on separate writers', async () => {
-	const dir = setupConsumerRepo({ config: reachabilityRulesOff });
-
-	linkTypescript({ dir });
-
-	// The entry only re-exports: no test executes code through it, so it is no
-	// shared caller, and the two files it publishes stay independent.
-	mkdirSync(join(dir, 'src/lib'), { recursive: true });
-	writeFileSync(join(dir, 'src/lib/index.ts'), "export { a } from './a';\nexport { b } from './b';\n");
-	writeFileSync(join(dir, 'src/lib/a.ts'), 'export const a = (): number => 1;\n');
-	writeFileSync(join(dir, 'src/lib/b.ts'), 'export const b = (): number => 2;\n');
-	execSync('git add -A && git -c user.name=t -c user.email=t@t commit -qm lib', { cwd: dir });
-
-	const writerPrompts: string[] = [];
-
-	const driver: Driver = {
-		name: 'stub',
-		invoke: withTestChangeReview({
-			invoke: async ({ prompt }) => {
-				const role = roleOf(prompt);
-
-				if (role === 'standards-review') {
-					return { text: reviewReport(), exitCode: 0 };
-				}
-
-				if (role === 'write-tests') {
-					writerPrompts.push(prompt);
-
-					const testFile = `test/writer-${writerPrompts.length}.test.js`;
-
-					mkdirSync(join(dir, 'test'), { recursive: true });
-					writeFileSync(join(dir, testFile), '// stub\n');
-
-					return { text: report({ changedFiles: [{ path: testFile, summary: 'tests' }] }), exitCode: 0 };
-				}
-
-				if (role === 'refactor') {
-					return { text: report(), exitCode: 0 };
-				}
-
-				// Implement: both re-exported files change; the entry does not.
-				writeFileSync(join(dir, 'src/lib/a.ts'), 'export const a = (): number => 10;\n');
-				writeFileSync(join(dir, 'src/lib/b.ts'), 'export const b = (): number => 20;\n');
-
-				return {
-					text: report({
-						changedFiles: [
-							{ path: 'src/lib/a.ts', summary: 'part' },
-							{ path: 'src/lib/b.ts', summary: 'part' },
-						],
-					}),
-					exitCode: 0,
-				};
-			},
-		}),
-	};
-
-	const result = await runImplementPipeline({
-		cwd: dir,
-		driver,
-		config: await readConfig({ cwd: dir }),
-		loadedConfig: { config: await readConfig({ cwd: dir }) },
-		planPath: 'plan.md',
-	});
-
-	expect(result.ok).toBe(true);
+	// no import edge joins a.ts and b.ts, and an unchanged caller links nothing:
+	// a file that calls many would otherwise pull unrelated changes into one writer
 	expect(writerPrompts.length).toBe(2);
+	// only the changed files are assigned; which file a test goes through is the standards' call
+	expect(writerPrompts.some((prompt) => prompt.includes('src/mod/pub.ts'))).toBeFalsy();
+	// got:\n${progress.join('\n')}
+	expect(progress.some((line) => line.includes('2 group(s) covering 2 changed file(s)'))).toBeTruthy();
 });
 
 // An import component larger than the writer cap would hand one agent a

@@ -1,10 +1,4 @@
 export interface TestTargetGroup {
-	/** Repo-relative changed files that must execute under the group's tests. */
+	/** Repo-relative changed files that must execute under the group's tests. No other group holds any of them. */
 	files: string[];
-	/**
-	 * The group's files plus every file that imports one directly with runtime
-	 * code of its own. Two writers never hold one file at once: they could edit
-	 * the same test on disk.
-	 */
-	held: string[];
 }
