@@ -58,5 +58,8 @@ module.exports = createJestConfig({
 		// What this app owns is the `components` map, which the stubs call through.
 		'^react-markdown$': join(__dirname, 'tests', 'stubs', 'reactMarkdown.tsx'),
 		'^remark-gfm$': join(__dirname, 'tests', 'stubs', 'remarkGfm.ts'),
+		// The widget injects its own UI and calls FeedbackDrop's servers on mount,
+		// and every test rendering the root route would mount it.
+		'^@feedbackdropai/widget$': join(__dirname, 'tests', 'stubs', 'feedbackdropWidget.ts'),
 	},
 });
