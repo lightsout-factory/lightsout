@@ -5,7 +5,7 @@ import { StructuralCheck } from '#src/contracts/plan/grade/StructuralCheck.ts';
 import type { StructuralFinding } from '#src/contracts/plan/grade/StructuralFinding.ts';
 import { buildModeBulletLabels } from '#src/plan/common/constants/buildModeBulletLabels.ts';
 import { getCodeSpans } from '#src/plan/common/getCodeSpans.ts';
-import { getExportName } from '#src/plan/common/getExportName.ts';
+import { getFileStem } from '#src/plan/common/getFileStem.ts';
 import { getPhaseSetDefects } from '#src/plan/common/phases/getPhaseSetDefects.ts';
 import type { PhaseDefect } from '#src/plan/common/types/PhaseDefect.ts';
 import type { PhaseFile } from '#src/plan/common/types/PhaseFile.ts';
@@ -24,7 +24,7 @@ interface Params {
 const stamp = ({ defects }: { defects: PhaseDefect[] }): StructuralFinding[] =>
 	defects.map((defect) => ({ check: StructuralCheck.DeclarationConsistent, severity: FindingSeverity.Blocking, ...defect }));
 
-/** A declared name may appear as a backticked span or as the export name of a created path. */
+/** A declared name may appear as a backticked span or as the name of a file the phase creates. */
 const namesIn = ({ phase }: { phase: PhaseFile }) => {
 	const spans = new Set<string>();
 
@@ -34,7 +34,7 @@ const namesIn = ({ phase }: { phase: PhaseFile }) => {
 		}
 	}
 
-	return { spans, exports: new Set(phase.plan.createPaths.map((path) => getExportName({ path }))) };
+	return { spans, exports: new Set(phase.plan.createPaths.map((path) => getFileStem({ path }))) };
 };
 
 const numberDefects = ({

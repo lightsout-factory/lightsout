@@ -1,12 +1,13 @@
 import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { dirname, join } from 'node:path';
+import { dirname, join, parse } from 'node:path';
 import { expect, test } from '@jest/globals';
 import { buildActivityTree } from '#src/activity/buildActivityTree/buildActivityTree.ts';
 import { readActivityMarks } from '#src/activity/readActivityMarks.ts';
 import { planDedupCommand } from '#src/cli/plan/planCommand/planDedupCommand.ts';
 import type { Driver } from '#src/common/types/Driver.ts';
 import { captureCommandOutput } from '#tests/helpers/captureCommandOutput.ts';
+import { linkTypescript } from '#tests/helpers/linkTypescript.ts';
 import { minimalPlanBody } from '#tests/helpers/minimalPlanBody.ts';
 import { writeEmptyDecisions } from '#tests/helpers/writeEmptyDecisions.ts';
 
@@ -37,9 +38,11 @@ const setupDedup = ({ existing = [], creates = [], plan = true }: { existing?: s
 	const cwd = mkdtempSync(join(tmpdir(), 'lightsout-dedup-command-'));
 	const planDir = join(cwd, '.lightsout', 'work-orders', 'demo', 'plans');
 
+	linkTypescript({ dir: cwd });
+
 	for (const relative of existing) {
 		mkdirSync(dirname(join(cwd, relative)), { recursive: true });
-		writeFileSync(join(cwd, relative), 'export const x = 1;\n');
+		writeFileSync(join(cwd, relative), `export const ${parse(relative).name} = 1;\n`);
 	}
 
 	mkdirSync(planDir, { recursive: true });

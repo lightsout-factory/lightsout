@@ -1,7 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import { basename } from 'node:path';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
-import { getExportName } from '#src/plan/common/getExportName.ts';
+import { getFileStem } from '#src/plan/common/getFileStem.ts';
 import type { PriorArtCandidate } from '#src/plan/common/types/PriorArtCandidate.ts';
 import { buildExportCensus } from '#src/plan/evidence/buildExportCensus.ts';
 import { detectExportCollisions } from '#src/plan/evidence/detectExportCollisions/detectExportCollisions.ts';
@@ -54,11 +54,9 @@ export const detectPriorArtCandidates = async ({ cwd, planPaths, config }: Param
 		for (const createPath of plan.createPaths) {
 			plannedPaths.add(createPath);
 
-			const plannedSymbol = getExportName({ path: createPath });
-
-			if (plannedSymbol === 'index') {
-				continue;
-			}
+			// The file's name is the search term: what the plan says the file is
+			// for, matched against the names the repo's code already declares.
+			const plannedSymbol = getFileStem({ path: createPath });
 
 			planned.push({ plannedSymbol, plannedPath: createPath, phase: base });
 		}

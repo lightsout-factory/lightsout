@@ -15,6 +15,7 @@ import type { PlanFacts } from '#src/contracts/plan/facts/PlanFacts.ts';
 import { authorFocusedPhaseFiles } from '#src/plan/draft/focused/draftFocusedPhasedPlan/authorFocusedPhaseFiles/authorFocusedPhaseFiles.ts';
 import { expectDefined } from '#tests/helpers/expectDefined.ts';
 import { expectStatus } from '#tests/helpers/expectStatus.ts';
+import { linkTypescript } from '#tests/helpers/linkTypescript.ts';
 
 const decisions: DecisionsRecord = { planName: 'demo', decisions: [] };
 
@@ -159,6 +160,7 @@ const setupFocusedFanOut = ({ declarations, areas = [], entries = [], repoFiles 
 	const workspaceDir = join(cwd, '.lightsout', 'work-orders', 'demo', 'plans');
 
 	mkdirSync(workspaceDir, { recursive: true });
+	linkTypescript({ dir: cwd });
 
 	for (const [path, contents] of Object.entries(repoFiles)) {
 		mkdirSync(join(cwd, dirname(path)), { recursive: true });

@@ -57,31 +57,6 @@ describe('detectExportCollisions', () => {
 		expect(collisions).toEqual([]);
 	});
 
-	test('detectExportCollisions: the name index is never a planned symbol', () => {
-		const { census, symbols } = setupCensus({
-			buckets: [
-				{
-					key: 'index',
-					entries: [{ name: 'index', path: 'packages/engine/src/plan/index.ts' }],
-				},
-				{
-					key: 'build census export',
-					entries: [{ name: 'buildExportCensus', path: 'packages/engine/src/plan/evidence/buildExportCensus.ts' }],
-				},
-			],
-			symbols: ['index', 'buildExportCensus'],
-		});
-
-		const collisions = detectExportCollisions({ census, symbols });
-
-		expect(collisions).toEqual([
-			{
-				symbol: 'buildExportCensus',
-				collidesWith: [{ name: 'buildExportCensus', path: 'packages/engine/src/plan/evidence/buildExportCensus.ts' }],
-			},
-		]);
-	});
-
 	test('detectExportCollisions: a bucket holding both a casing pair and a synonym twin reports only the twin', () => {
 		const { census, symbols } = setupCensus({
 			buckets: [

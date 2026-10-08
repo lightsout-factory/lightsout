@@ -11,6 +11,7 @@ import { runPlanDedup } from '#src/plan/runPlanDedup/runPlanDedup.ts';
 import { createDedupJudgeDriver } from '#tests/helpers/createDedupJudgeDriver.ts';
 import { createUncalledDriver } from '#tests/helpers/createUncalledDriver.ts';
 import { expectStatus } from '#tests/helpers/expectStatus.ts';
+import { linkTypescript } from '#tests/helpers/linkTypescript.ts';
 import { minimalPlanBody } from '#tests/helpers/minimalPlanBody.ts';
 import { planWorkspaceFolder } from '#tests/helpers/planWorkspaceFolder.ts';
 import { seedDedupPlan } from '#tests/helpers/seedDedupPlan.ts';
@@ -119,6 +120,8 @@ const setupLinkedWorktreePlan = ({ verdicts = [] }: { verdicts?: unknown[] } = {
 	const name = 'p';
 	const { cwd } = setupBranchRepo();
 	const primary = realpathSync(cwd);
+
+	linkTypescript({ dir: primary });
 	const worktree = join(primary, '.worktrees', 'lo-150-planning-observability');
 
 	execSync(`git worktree add -q -b lo-150-planning-observability "${worktree}" main`, { cwd: primary, stdio: 'ignore' });
@@ -126,7 +129,7 @@ const setupLinkedWorktreePlan = ({ verdicts = [] }: { verdicts?: unknown[] } = {
 	// the export the plan's symbol collides with is the checkout's own source,
 	// which the worktree holds like any other checkout
 	mkdirSync(join(worktree, 'src'), { recursive: true });
-	writeFileSync(join(worktree, 'src', 'fetchUser.ts'), 'export const x = 1;\n');
+	writeFileSync(join(worktree, 'src', 'fetchUser.ts'), 'export const fetchUser = 1;\n');
 
 	const workspaceDir = planWorkspaceFolder({ cwd: primary, name: name });
 

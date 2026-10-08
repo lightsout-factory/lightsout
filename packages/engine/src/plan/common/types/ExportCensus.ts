@@ -1,2 +1,2 @@
-/** Keyed by `getNameKey`, so one lookup answers "is there an existing export that is this concept". */
+/** Keyed by `getNameKey`, so one lookup answers "does the repo already declare a name for this concept". */
 export type ExportCensus = Map<string, Array<{ name: string; path: string }>>;

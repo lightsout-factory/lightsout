@@ -1,12 +1,17 @@
 import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { dirname, join } from 'node:path';
+import { dirname, join, parse } from 'node:path';
 import { expect, test } from '@jest/globals';
 import { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { detectPriorArtCandidates } from '#src/plan/common/detection/detectPriorArtCandidates.ts';
+import { linkTypescript } from '#tests/helpers/linkTypescript.ts';
 import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
-/** A temp repo with the given existing source files and a plan whose Files-to-Create/Delete/Move sections list the given paths. */
+/**
+ * A temp repo with the given existing source files, each declaring one export
+ * named for its file so the census has a name to read, and a plan whose
+ * Files-to-Create/Delete/Move sections list the given paths.
+ */
 const setup = ({
 	existing,
 	creates,
@@ -20,11 +25,13 @@ const setup = ({
 }) => {
 	const cwd = mkdtempSync(join(tmpdir(), 'lightsout-dedup-detect-'));
 
+	linkTypescript({ dir: cwd });
+
 	for (const rel of existing) {
 		const abs = join(cwd, rel);
 
 		mkdirSync(dirname(abs), { recursive: true });
-		writeFileSync(abs, 'export const x = 1;\n');
+		writeFileSync(abs, `export const ${parse(rel).name} = 1;\n`);
 	}
 
 	const dir = join(cwd, '.lightsout', 'work-orders', 'p', 'plans');
@@ -98,8 +105,8 @@ test('detectPriorArtCandidates: a genuinely novel name yields no candidate', asy
 	expect(candidates).toStrictEqual([]);
 });
 
-test('detectPriorArtCandidates: collisions against a file the test-files globs match, or index.*, are excluded', async () => {
-	const { cwd, planPaths } = setup({ existing: ['src/tests/getUser.ts', 'src/index.ts'], creates: ['src/getUser.ts'] });
+test('detectPriorArtCandidates: collisions against a file the test-files globs match are excluded', async () => {
+	const { cwd, planPaths } = setup({ existing: ['src/tests/getUser.ts'], creates: ['src/getUser.ts'] });
 	const config = LightsoutConfig.parse({ 'test-files': testFileGlobs, gates: { check: 'true', test: 'true', 'test-coverage': false } });
 	const candidates = await detectPriorArtCandidates({ cwd, planPaths, config });
 
@@ -115,14 +122,6 @@ test('detectPriorArtCandidates: a plan path that cannot be read is skipped, not 
 	// the readable plan still contributes its planned symbols
 	expect(candidates.length).toBe(1);
 	expect(candidates[0]?.plannedSymbol).toBe('getUser');
-});
-
-test('detectPriorArtCandidates: a planned index.* file is never a planned symbol', async () => {
-	const { cwd, planPaths } = setup({ existing: ['src/fetchUser.ts'], creates: ['src/feature/index.ts', 'src/getUser.ts'] });
-	const candidates = await detectPriorArtCandidates({ cwd, planPaths });
-
-	// a barrel carries no symbol of its own
-	expect(candidates.map((candidate) => candidate.plannedSymbol)).toStrictEqual(['getUser']);
 });
 
 test('detectPriorArtCandidates: a planned path that already exists is not prior art against itself', async () => {
@@ -177,26 +176,25 @@ test('detectPriorArtCandidates: a from-conversion keeps its order, so a synonym 
 	expect(candidates[0]?.collidesWith.some((collision) => collision.path === 'src/loadRowsFromDisk.ts')).toBeTruthy();
 });
 
-test.each([{ existing: 'src/remove-stale-entry.ts' }, { existing: 'src/remove_stale_entry.ts' }])(
-	'detectPriorArtCandidates: $existing collides with a camelCase synonym twin',
-	async ({ existing }) => {
-		const { cwd, planPaths } = setup({ existing: [existing], creates: ['src/deleteStaleEntry.ts'] });
+test.each([{ planned: 'src/delete-stale-entry.ts' }, { planned: 'src/delete_stale_entry.ts' }])(
+	'detectPriorArtCandidates: a planned $planned still finds the camelCase synonym twin the repo declares',
+	async ({ planned }) => {
+		const { cwd, planPaths } = setup({ existing: ['src/removeStaleEntry.ts'], creates: [planned] });
 		const candidates = await detectPriorArtCandidates({ cwd, planPaths });
 
 		expect(candidates.length).toBe(1);
-		expect(candidates[0]?.collidesWith.some((collision) => collision.path === existing)).toBeTruthy();
+		expect(candidates[0]?.collidesWith.some((collision) => collision.path === 'src/removeStaleEntry.ts')).toBeTruthy();
 	},
 );
 
-test('detectPriorArtCandidates: inside a standards pack a tests/ document set is source, so a check under it is prior art', async () => {
-	const existing = ['standards/lightsout-standards.json', 'standards/tests/unit-testing/05-rule/scanRule.ts', 'standards/common/utils/scanRule.unit.test.ts'];
+test('detectPriorArtCandidates: a tests/ folder the repo’s test-files globs do not name is source, so a check under it is prior art', async () => {
+	const existing = ['standards/tests/unit-testing/05-rule/scanRule.ts', 'standards/common/utils/scanRule.unit.test.ts'];
 	const { cwd, planPaths } = setup({ existing, creates: ['src/scanRule.ts'] });
-	const candidates = await detectPriorArtCandidates({ cwd, planPaths });
+	const config = LightsoutConfig.parse({ gates: { check: 'true', test: 'true', 'test-coverage': false }, 'test-files': ['**/*.test.*'] });
+	const candidates = await detectPriorArtCandidates({ cwd, planPaths, config });
 
-	// the census is built from the pack roots the walk reported: under one,
-	// `tests/` names a document set and the checks in it are ordinary source —
-	// while the pack's own `.unit.test.ts` says what it is in its filename and
-	// stays out
+	// only the declared globs make a file a test: the check under tests/ is
+	// ordinary source, and the file the globs name stays out
 	expect(candidates.length).toBe(1);
 	expect(candidates[0]?.collidesWith).toStrictEqual([{ name: 'scanRule', path: 'standards/tests/unit-testing/05-rule/scanRule.ts' }]);
 });

@@ -1,10 +1,14 @@
+import { readFile } from 'node:fs/promises';
+import { join } from 'node:path';
+import { defaultPackagesDir } from '#src/common/constants/defaultPackagesDir.ts';
 import { excludedSourcePaths } from '#src/common/sourceFiles/excludedSourcePaths.ts';
 import { isTestFile } from '#src/common/sourceFiles/isTestFile.ts';
 import { listSourceFiles } from '#src/common/sourceFiles/listSourceFiles.ts';
+import { resolveConsumerTypescript } from '#src/common/workspace/resolveConsumerTypescript.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
-import { getExportName } from '#src/plan/common/getExportName.ts';
 import type { ExportCensus } from '#src/plan/common/types/ExportCensus.ts';
 import { getNameKey } from '#src/plan/evidence/common/getNameKey.ts';
+import { readDeclaredExports } from '#src/plan/evidence/readDeclaredExports.ts';
 
 interface Params {
 	cwd: string;
@@ -16,27 +20,37 @@ interface Params {
 }
 
 /**
- * One-export-per-file makes a source file's basename its symbol. Test files and
- * barrels are left out because neither can be prior art: a test states what the
- * code should do, and a barrel re-exports a name the census already holds.
+ * Every name the repo's source files declare and export, read from their
+ * syntax. Test files are left out because a test states what the code should
+ * do, so it is never prior art. A file that only re-exports declares nothing,
+ * so it adds nothing. Without the consumer's TypeScript there is nothing to
+ * read the code with, and the census is empty.
  */
 export const buildExportCensus = async ({ cwd, config, exclude = [], excludeFolders = [] }: Params): Promise<ExportCensus> => {
 	const excluded = new Set(exclude);
 	const isExcluded = (file: string) => excluded.has(file) || excludeFolders.some((folder) => file === folder || file.startsWith(`${folder}/`));
-	const { files } = await listSourceFiles({ cwd, exclude: excludedSourcePaths({ config }) });
-	const testFileGlobs = config?.['test-files'] ?? [];
+	const compiler = resolveConsumerTypescript({ cwd, packagesDir: config?.['packages-dir'] ?? defaultPackagesDir });
 	const buckets: ExportCensus = new Map();
 
-	for (const file of files) {
-		const name = getExportName({ path: file });
+	if (compiler === undefined) {
+		return buckets;
+	}
 
-		if (isTestFile({ path: file, testFileGlobs }) || name === 'index' || isExcluded(file)) {
+	const { files } = await listSourceFiles({ cwd, exclude: excludedSourcePaths({ config }) });
+	const testFileGlobs = config?.['test-files'] ?? [];
+
+	for (const file of files) {
+		if (isTestFile({ path: file, testFileGlobs }) || isExcluded(file)) {
 			continue;
 		}
 
-		const key = getNameKey({ name });
+		const content = await readFile(join(cwd, file), 'utf8').catch(() => undefined);
 
-		buckets.set(key, [...(buckets.get(key) ?? []), { name, path: file }]);
+		for (const name of content === undefined ? [] : readDeclaredExports({ path: file, content, compiler })) {
+			const key = getNameKey({ name });
+
+			buckets.set(key, [...(buckets.get(key) ?? []), { name, path: file }]);
+		}
 	}
 
 	return buckets;
