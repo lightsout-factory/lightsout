@@ -1,9 +1,11 @@
 import { describe, expect, test } from '@jest/globals';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { checkGenerateCommand } from '#src/doctor/runDoctor/checkGenerateCommand.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 /** A config listing whichever `generated` paths and `gates.generate` command the case names. */
 const setupConfig = ({ generated, generate }: { generated?: string[]; generate?: string } = {}): LightsoutConfig => ({
+	'test-files': testFileGlobs,
 	gates: { check: 'true', test: 'true', 'test-coverage': false, generate },
 	generated,
 });

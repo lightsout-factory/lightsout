@@ -147,6 +147,7 @@ export const readStandardsLibrary = async ({ packPath }: Params): Promise<Loaded
 		built: root.data.built,
 		description: root.data.description,
 		homepage: root.data.homepage,
+		fixtureTestFiles: root.data.fixtureTestFiles ?? [],
 		rootPath: packPath,
 		documents,
 		rules: requirements.rules,

@@ -8,6 +8,7 @@ import { ConfigNotFoundError } from '#src/views/ConfigNotFoundError.ts';
 import { getConfigView } from '#src/views/getConfigView/getConfigView.ts';
 import { freshCwd } from '#tests/helpers/freshCwd.ts';
 import { seedConfiguredCwd } from '#tests/helpers/seedConfiguredCwd.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 /** This repo's own root — the config the view is read against, so the assertions describe a real file rather than a fixture of one. */
 const repoRoot = join(__dirname, '..', '..', '..', '..', '..');
@@ -167,6 +168,7 @@ describe('getConfigView', () => {
 		expect(view.sections.map((section) => section.title)).toStrictEqual([
 			'Harness',
 			'Gates',
+			'Test files',
 			'Standards',
 			'Agent commands',
 			'Generated',
@@ -279,7 +281,7 @@ describe('getConfigView', () => {
 	});
 
 	test('a config the schema refuses names the key it refused, which is what the error boundary shows', async () => {
-		const { cwd } = await setupRawConfig({ raw: JSON.stringify({ gates: { check: 'pnpm check' } }) });
+		const { cwd } = await setupRawConfig({ raw: JSON.stringify({ 'test-files': testFileGlobs, gates: { check: 'pnpm check' } }) });
 
 		await expect(getConfigView({ cwd })).rejects.toThrow(/gates\.test/);
 	});

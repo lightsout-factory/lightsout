@@ -6,6 +6,7 @@ import type { StandardsGroup } from '#src/common/types/StandardsGroup.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 import { runPackageChecks } from '#src/standardsCheck/runStandardsCheck/runPackageChecks/runPackageChecks.ts';
 import { packageChecksFixtures } from '#tests/helpers/packageChecksFixtures.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 const { setupRepo, rule, recordingRun, groupOf, runChecks } = packageChecksFixtures;
 
@@ -112,7 +113,7 @@ describe('runPackageChecks', () => {
 		const calls: Array<{ inputs: StandardsCheckInputs; options: Record<string, number> }> = [];
 		const rules = [rule({ id: 'multi-export', inputKinds: [StandardsInputKind.FileText], run: recordingRun({ id: 'multi-export', calls }) })];
 
-		const { findings } = await runPackageChecks({ cwd, groups: [groupOf({ rules, states: new Map() })] });
+		const { findings } = await runPackageChecks({ cwd, testFileGlobs, groups: [groupOf({ rules, states: new Map() })] });
 
 		// severity is policy; with none resolved there is nothing to report at
 		expect(findings).toStrictEqual([]);
@@ -121,7 +122,7 @@ describe('runPackageChecks', () => {
 	test('runs each live rule with its resolved options, the config override merged over its defaults', async () => {
 		const { cwd, groups, calls } = setupConfiguredRun();
 
-		await runPackageChecks({ cwd, groups });
+		await runPackageChecks({ cwd, testFileGlobs, groups });
 
 		expect(calls).toStrictEqual({ 'folder-size': { cap: 2 }, 'file-size': { file: 250, tsxFile: 300 } });
 	});
@@ -129,7 +130,7 @@ describe('runPackageChecks', () => {
 	test("runPackageChecks: only rules in a group's pack at a reporting severity run", async () => {
 		const { cwd, groups, ran } = setupGroupRun();
 
-		const { findings } = await runPackageChecks({ cwd, groups });
+		const { findings } = await runPackageChecks({ cwd, testFileGlobs, groups });
 
 		expect({ ran, findings }).toStrictEqual({
 			ran: ['size'],
@@ -147,7 +148,7 @@ describe('runPackageChecks', () => {
 			['acme/size', { severity: StandardsSeverity.Advisory, options: {}, fromConfig: false, reachesAgents: true }],
 		]);
 
-		const { findings } = await runPackageChecks({ cwd, groups: [groupOf({ rules, states }), groupOf({ rules, states })] });
+		const { findings } = await runPackageChecks({ cwd, testFileGlobs, groups: [groupOf({ rules, states }), groupOf({ rules, states })] });
 
 		expect({ runs: calls.length, keys: findings.map((finding) => finding.siteKey) }).toStrictEqual({ runs: 1, keys: ['acme/size:file-text:one'] });
 	});
@@ -156,7 +157,7 @@ describe('runPackageChecks', () => {
 		const { cwd } = setupRepo();
 		const messages: string[] = [];
 
-		const result = await runPackageChecks({ cwd, groups: [], onProgress: (message) => messages.push(message) });
+		const result = await runPackageChecks({ cwd, testFileGlobs, groups: [], onProgress: (message) => messages.push(message) });
 
 		// only the file count is reported: no input kind was built, so no check ran
 		expect({ result, messages }).toStrictEqual({

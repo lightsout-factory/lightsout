@@ -32,6 +32,7 @@ const configFieldReaders: Record<string, (params: { config: LightsoutConfig }) =
 	'standards-libraries': ({ config }) => config['standards-libraries'],
 	'standards-rule-settings': ({ config }) => config['standards-rule-settings'],
 	'agent-commands': ({ config }) => config['agent-commands'],
+	'test-files': ({ config }) => config['test-files'],
 	generated: ({ config }) => config.generated,
 	vendored: ({ config }) => config.vendored,
 	'timeouts.agent-minutes': ({ config }) => config.timeouts?.['agent-minutes'] ?? defaultAgentTimeoutMinutes,
@@ -51,6 +52,7 @@ const configFieldReaders: Record<string, (params: { config: LightsoutConfig }) =
 const configSectionKeys: Array<{ title: string; keys: string[] }> = [
 	{ title: 'Harness', keys: ['harness', 'model', 'effort', 'permissions', 'commands'] },
 	{ title: 'Gates', keys: ['gates', 'package-gates', 'gate-overrides', 'packages-dir', 'coverage-summary-path', 'executor-file-limit'] },
+	{ title: 'Test files', keys: ['test-files'] },
 	{ title: 'Standards', keys: ['standards-pack', 'package-standards-packs', 'standards-libraries', 'standards-rule-settings'] },
 	{ title: 'Agent commands', keys: ['agent-commands'] },
 	{ title: 'Generated', keys: ['generated', 'vendored'] },

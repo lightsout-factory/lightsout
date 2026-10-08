@@ -17,6 +17,7 @@ describe('setupFileListInput', () => {
 			tests: [],
 			files: [],
 			referenceFiles: [],
+			referenceTests: [],
 			dependencies: new Map(),
 			standardsLibraries: [],
 		});

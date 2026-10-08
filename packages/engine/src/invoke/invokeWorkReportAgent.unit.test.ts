@@ -10,6 +10,7 @@ import { invokeWorkReportAgent } from '#src/invoke/invokeWorkReportAgent.ts';
 import { report } from '#tests/helpers/report.ts';
 import { runDirFor } from '#tests/helpers/runDirFor.ts';
 import { seedRunFolder } from '#tests/helpers/seedRunFolder.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 const runId = 'run-1';
 // The colon is what the evidence file names have to survive: a run directory is
@@ -17,7 +18,7 @@ const runId = 'run-1';
 const step = 'batch-01:root';
 const stubUsage: AgentUsage = { inputTokens: 10, outputTokens: 100, cacheReadTokens: 1_000, cacheCreationTokens: 5, costUsd: 0.5 };
 
-const baseConfig: LightsoutConfig = { gates: { check: 'true', test: 'true', 'test-coverage': 'true' } };
+const baseConfig: LightsoutConfig = { 'test-files': testFileGlobs, gates: { check: 'true', test: 'true', 'test-coverage': 'true' } };
 const fullAccessConfig: LightsoutConfig = { ...baseConfig, permissions: 'full-access' };
 
 /**

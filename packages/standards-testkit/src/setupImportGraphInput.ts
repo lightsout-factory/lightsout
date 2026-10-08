@@ -17,6 +17,8 @@ export const setupImportGraphInput = ({ edges = [], dependencies = [], ...overri
 		tests: [],
 		files: paths,
 		referenceFiles: [],
+		// Every test the input names is a test of the repo too, unless the caller says otherwise.
+		referenceTests: overrides.tests ?? [],
 		standardsLibraries: [],
 		edges,
 		dependencies: new Map(dependencies),

@@ -4,6 +4,7 @@ import type { RunWorkspace } from '#src/cli/common/types/RunWorkspace.ts';
 import { openDirectWorkspace } from '#src/cli/implementDirectCommand/openDirectWorkspace.ts';
 import type { CommandContext } from '#src/common/types/CommandContext.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // Mocked Imports
 // -------------------------
@@ -52,7 +53,7 @@ const worktreePath = resolve('/tmp/lightsout-direct-worktrees/lo-186-direct');
 const branch = 'lo-186-direct';
 const ticketPath = join('notes', 'ticket.md');
 const copiedTicketPath = join('.lightsout', 'inputs', 'ticket.md');
-const config: LightsoutConfig = { gates: { check: 'true', test: 'true', 'test-coverage': false } };
+const config: LightsoutConfig = { 'test-files': testFileGlobs, gates: { check: 'true', test: 'true', 'test-coverage': false } };
 
 /**
  * The command's own arguments, and what the mocked resolver, copier and git

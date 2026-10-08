@@ -10,6 +10,8 @@ interface Params {
 	packagesDir: string;
 	/** Already merged over `defaultWeightThresholds`. */
 	thresholds: { createdFiles: number; packages: number };
+	/** The repo's `test-files` globs: a test file is never counted. */
+	testFileGlobs: string[];
 }
 
 /** A path under no package is the repository root, which counts as one package like any other. */
@@ -23,8 +25,8 @@ const countPackages = ({ touched, packagesDir }: { touched: string[]; packagesDi
  * A file with nothing to mirror is always heavy, whatever its counts: a plan
  * following no existing pattern is exactly where a reader earns its cost.
  */
-export const computePlanWeight = ({ plan, phase, packagesDir, thresholds }: Params): PhaseWeight => {
-	const { created, touched } = getPlanTouchedPaths({ plan });
+export const computePlanWeight = ({ plan, phase, packagesDir, thresholds, testFileGlobs }: Params): PhaseWeight => {
+	const { created, touched } = getPlanTouchedPaths({ plan, testFileGlobs });
 	const packages = countPackages({ touched, packagesDir });
 	const reasons: string[] = [];
 

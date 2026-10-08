@@ -1,6 +1,7 @@
 import { describe, expect, test } from '@jest/globals';
 import { selectsNoStandards } from '#src/common/config/selectsNoStandards.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 interface StandardsCase {
 	label: string;
@@ -9,7 +10,7 @@ interface StandardsCase {
 }
 
 const setupConfig = ({ standards }: { standards: Partial<LightsoutConfig> | undefined }): { config: LightsoutConfig | undefined } => ({
-	config: standards === undefined ? undefined : { gates: { check: 'true', test: 'true', 'test-coverage': false }, ...standards },
+	config: standards === undefined ? undefined : { 'test-files': testFileGlobs, gates: { check: 'true', test: 'true', 'test-coverage': false }, ...standards },
 });
 
 describe('selectsNoStandards', () => {

@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import { expect, test } from '@jest/globals';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { resolveCoverageScopes } from '#src/coverage/common/resolveCoverageScopes.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 const summaryPath = 'coverage/coverage-summary.json';
 
@@ -47,13 +48,14 @@ const setupCustomPackagesDir = () => {
 };
 
 const scopedConfig = ({ testCoverage, packagesDir }: { testCoverage: string; packagesDir?: string }): LightsoutConfig => ({
+	'test-files': testFileGlobs,
 	gates: { check: 'true', test: 'true', 'test-coverage': false },
 	...(packagesDir === undefined ? {} : { 'packages-dir': packagesDir }),
 	'package-gates': { check: 'true {package}', test: 'true {package}', 'test-coverage': testCoverage },
 });
 
 test('resolveCoverageScopes: root mode yields the single root scope for a string command, and nothing for an opted-out gate', async () => {
-	const configured: LightsoutConfig = { gates: { check: 'true', test: 'true', 'test-coverage': 'npm run coverage' } };
+	const configured: LightsoutConfig = { 'test-files': testFileGlobs, gates: { check: 'true', test: 'true', 'test-coverage': 'npm run coverage' } };
 
 	expect(await resolveCoverageScopes({ cwd: '/nowhere', config: configured, summaryPath })).toStrictEqual([
 		{ scope: 'root', command: 'npm run coverage', summaryPath },
@@ -61,7 +63,7 @@ test('resolveCoverageScopes: root mode yields the single root scope for a string
 	// a foreign scope name never matches the root scope
 	expect(await resolveCoverageScopes({ cwd: '/nowhere', config: configured, summaryPath, scope: 'api' })).toStrictEqual([]);
 
-	const optedOut: LightsoutConfig = { gates: { check: 'true', test: 'true', 'test-coverage': false } };
+	const optedOut: LightsoutConfig = { 'test-files': testFileGlobs, gates: { check: 'true', test: 'true', 'test-coverage': false } };
 
 	expect(await resolveCoverageScopes({ cwd: '/nowhere', config: optedOut, summaryPath })).toStrictEqual([]);
 });
@@ -69,6 +71,7 @@ test('resolveCoverageScopes: root mode yields the single root scope for a string
 test('resolveCoverageScopes: monorepo mode lists every package with the template script, substitutes {package}, and narrows to a named scope', async () => {
 	const cwd = setupMonorepo();
 	const config: LightsoutConfig = {
+		'test-files': testFileGlobs,
 		gates: { check: 'true', test: 'true', 'test-coverage': false },
 		'package-gates': { check: 'true {package}', test: 'true {package}', 'test-coverage': 'pnpm --filter {package} run test:coverage' },
 	};

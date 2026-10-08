@@ -12,6 +12,7 @@ import { roleOf } from '#tests/helpers/roleOf.ts';
 import { setupConsumerRepo } from '#tests/helpers/setupConsumerRepo.ts';
 import { setupMonorepo } from '#tests/helpers/setupMonorepo.ts';
 import { strictProfile } from '#tests/helpers/strictProfile.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 import { writeSource } from '#tests/helpers/writeSource.ts';
 
 /** Two exported consts in one file — a compiler-free structure Finding (multi-export). */
@@ -89,6 +90,7 @@ const setupMixedRed = async () => {
 	writeFileSync(
 		join(dir, 'lightsout.config.json'),
 		JSON.stringify({
+			'test-files': testFileGlobs,
 			gates: { check: 'true', test: 'true', 'test-coverage': 'true' },
 			'package-gates': {
 				check: packageGateCommand({ pkg: '@acme/api', flag: checkFlag }),

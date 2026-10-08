@@ -102,6 +102,21 @@ export const LightsoutConfig = z
 		 */
 		vendored: z.array(z.string()).optional(),
 		/**
+		 * Globs, from the repo root, of every test-side file: the tests, and the
+		 * mocks, fixtures, helpers, snapshots and runner configuration that serve
+		 * them. The engine tells tests from source by this list alone — it holds
+		 * no convention of its own — so the test writer, the coverage gate, the
+		 * standards checks and the test-change reviewer all read it.
+		 */
+		'test-files': z
+			.array(z.string().min(1, { error: 'a test-files glob cannot be empty' }), {
+				error: (issue) =>
+					issue.input === undefined
+						? 'test-files is required: list the globs of this repo\'s test files, e.g. ["**/*.test.*", "**/__mocks__/**"] — copy them from your test runner\'s config'
+						: undefined,
+			})
+			.min(1, { error: 'test-files must list at least one glob' }),
+		/**
 		 * Default `coverage/coverage-summary.json`: repo-relative in
 		 * single-package repos, package-relative in monorepo mode. The JSON file,
 		 * not a printed table, is the tool-agnostic contract.

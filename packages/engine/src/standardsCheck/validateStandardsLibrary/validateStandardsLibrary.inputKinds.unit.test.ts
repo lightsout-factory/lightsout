@@ -118,7 +118,16 @@ const rule = (overrides: Partial<LoadedStandardsRule> & { id: string; fixturesPa
 });
 
 const validate = ({ rules, built }: { rules: LoadedStandardsRule[]; built?: true }) => {
-	const pack: LoadedStandardsLibrary = { name: 'acme', formatVersion: 2, built, rootPath: '/packages/acme', documents: [], rules, packs: [] };
+	const pack: LoadedStandardsLibrary = {
+		name: 'acme',
+		formatVersion: 2,
+		built,
+		fixtureTestFiles: [],
+		rootPath: '/packages/acme',
+		documents: [],
+		rules,
+		packs: [],
+	};
 
 	return validateStandardsLibrary({ library: pack, libraries: [pack] });
 };

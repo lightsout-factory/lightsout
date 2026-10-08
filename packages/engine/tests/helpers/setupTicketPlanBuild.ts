@@ -18,6 +18,7 @@ import type { QueueFailure } from '#src/queue/common/types/QueueFailure.ts';
 import { planWorkspaceFolder } from '#tests/helpers/planWorkspaceFolder.ts';
 import { runDirFor } from '#tests/helpers/runDirFor.ts';
 import { setupBranchRepo } from '#tests/helpers/setupBranchRepo.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 /** What a build of the ticket body was handed — the fields a case reads back off it. */
 interface DirectCall {
@@ -49,7 +50,7 @@ export interface TicketPlanBuildMocks {
 	restoreWorkOrderPlan: jest.Mock<(params: { cwd: string; address: string }) => Promise<{ restored: string[] } | { error: string }>>;
 }
 
-export const config: LightsoutConfig = { gates: { check: 'true', test: 'true', 'test-coverage': false } };
+export const config: LightsoutConfig = { 'test-files': testFileGlobs, gates: { check: 'true', test: 'true', 'test-coverage': false } };
 export const driver: Driver = { name: 'claude-code', invoke: () => Promise.resolve({ text: '', exitCode: 0 }) };
 
 /** The ticket folder's name, which is also the branch every plan below implements on. */

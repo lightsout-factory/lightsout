@@ -1,61 +1,34 @@
-import { expect, test } from '@jest/globals';
+import { describe, expect, test } from '@jest/globals';
 import { isTestFile } from '#src/common/sourceFiles/isTestFile.ts';
 
-test('isTestFile: a whole path segment named test(s), __tests__, __mocks__, or e2e marks the file as test code', () => {
-	expect(isTestFile({ path: 'tests/helpers/report.ts' })).toBe(true);
-	expect(isTestFile({ path: 'test/setup.ts' })).toBe(true);
-	expect(isTestFile({ path: 'packages/api/tests/fixtures/user.ts' })).toBe(true);
-	expect(isTestFile({ path: 'src/common/__tests__/add.ts' })).toBe(true);
-	expect(isTestFile({ path: 'src/common/__mocks__/fs.ts' })).toBe(true);
-	expect(isTestFile({ path: 'packages/web/e2e/login.ts' })).toBe(true);
-});
+describe('isTestFile', () => {
+	test('a file is a test exactly when one of the repo’s globs matches it', () => {
+		const testFileGlobs = ['**/*.test.*', 'packages/*/tests/**'];
 
-test('isTestFile: a .test. or .spec. infix marks the file wherever it lives', () => {
-	expect(isTestFile({ path: 'src/common/utils/packageOf.unit.test.ts' })).toBe(true);
-	expect(isTestFile({ path: 'src/app/App.spec.tsx' })).toBe(true);
-	expect(isTestFile({ path: 'scan.test.js' })).toBe(true);
-});
+		expect({
+			named: isTestFile({ path: 'packages/engine/src/run.unit.test.ts', testFileGlobs }),
+			helper: isTestFile({ path: 'packages/engine/tests/helpers/setupRepo.ts', testFileGlobs }),
+			source: isTestFile({ path: 'packages/engine/src/run.ts', testFileGlobs }),
+			// a tests/ folder the globs do not name is source, whatever it is called
+			libraryRule: isTestFile({ path: 'packages/lightsout-standards/rules/tests/fractal/rule.md', testFileGlobs }),
+		}).toStrictEqual({ named: true, helper: true, source: false, libraryRule: false });
+	});
 
-test('isTestFile: production paths that merely contain the words are not test code', () => {
-	// the segment match needs a boundary, not a substring
-	expect(isTestFile({ path: 'src/latest/index.ts' })).toBe(false);
-	expect(isTestFile({ path: 'src/contest/rules.ts' })).toBe(false);
-	expect(isTestFile({ path: 'src/protest.ts' })).toBe(false);
-	expect(isTestFile({ path: 'src/testing.ts' })).toBe(false);
-	expect(isTestFile({ path: 'src/utils/testHarness.ts' })).toBe(false);
-	expect(isTestFile({ path: 'src/e2ehelpers/run.ts' })).toBe(false);
-	expect(isTestFile({ path: 'src/common/utils/runCommand.ts' })).toBe(false);
-});
+	test('holds no convention of its own: with no globs, nothing is a test', () => {
+		expect(isTestFile({ path: 'src/run.unit.test.ts', testFileGlobs: [] })).toBe(false);
+	});
 
-test('isTestFile: inside a standards pack, a tests/ directory names a document set, not test code', () => {
-	const standardsLibraries = ['standards'];
+	test('a layout other test runners use is whatever the repo declares', () => {
+		const testFileGlobs = ['spec/**', '**/test_*.py'];
 
-	// the rules a pack states about how to write tests — its own implementation,
-	// which is ordinary source and must answer to the source rules like any other
-	expect(isTestFile({ path: 'standards/tests/unit-testing/40-test-mock-untyped/check.ts', standardsLibraries })).toBe(false);
-	// the very same path is test code when no package is declared above it
-	expect(isTestFile({ path: 'standards/tests/unit-testing/40-test-mock-untyped/check.ts' })).toBe(true);
-});
+		expect({
+			spec: isTestFile({ path: 'spec/models/user_spec.rb', testFileGlobs }),
+			python: isTestFile({ path: 'app/tests/test_models.py', testFileGlobs }),
+			jestNamed: isTestFile({ path: 'src/run.test.ts', testFileGlobs }),
+		}).toStrictEqual({ spec: true, python: true, jestNamed: false });
+	});
 
-test('isTestFile: a real test inside a standards pack is still test code, by its name', () => {
-	const standardsLibraries = ['standards'];
-
-	expect(isTestFile({ path: 'standards/tests/unit-testing/40-test-mock-untyped/check.unit.test.ts', standardsLibraries })).toBe(true);
-	expect(isTestFile({ path: 'standards/common/utils/scanTestLines.unit.test.ts', standardsLibraries })).toBe(true);
-});
-
-test('isTestFile: inside a standards pack, __tests__, __mocks__ and e2e still mark test code', () => {
-	const standardsLibraries = ['standards'];
-
-	// only `tests/` collides with a document set name — the others mean what they always mean
-	expect(isTestFile({ path: 'standards/common/__mocks__/fs.ts', standardsLibraries })).toBe(true);
-	expect(isTestFile({ path: 'standards/common/__tests__/add.ts', standardsLibraries })).toBe(true);
-	expect(isTestFile({ path: 'standards/e2e/login.ts', standardsLibraries })).toBe(true);
-});
-
-test('isTestFile: a pack root only covers paths beneath it, never one that merely starts with its name', () => {
-	const standardsLibraries = ['standards'];
-
-	// `standards-archive/` is a different folder, so its tests/ is a test directory
-	expect(isTestFile({ path: 'standards-archive/tests/unit-testing/check.ts', standardsLibraries })).toBe(true);
+	test('matches dot-folders too, so a test kept under one is not missed', () => {
+		expect(isTestFile({ path: '.storybook/preview.test.ts', testFileGlobs: ['**/*.test.*'] })).toBe(true);
+	});
 });

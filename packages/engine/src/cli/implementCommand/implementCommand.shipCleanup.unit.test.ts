@@ -13,6 +13,7 @@ import { captureCommandOutput } from '#tests/helpers/captureCommandOutput.ts';
 import { seedWorkOrderRecord } from '#tests/helpers/seedWorkOrderRecord.ts';
 import { setupBranchRepo } from '#tests/helpers/setupBranchRepo.ts';
 import { manifestOf } from '#tests/helpers/setupResume.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // Mocked Imports
 // -------------------------
@@ -94,7 +95,10 @@ const setupShippedTicketRun = async () => {
 
 	const treePath = await resolveWorktreePath({ cwd, branch: workOrderName });
 
-	writeFileSync(join(cwd, 'lightsout.config.json'), JSON.stringify({ gates: { check: 'true', test: 'true', 'test-coverage': false } }));
+	writeFileSync(
+		join(cwd, 'lightsout.config.json'),
+		JSON.stringify({ 'test-files': testFileGlobs, gates: { check: 'true', test: 'true', 'test-coverage': false } }),
+	);
 	mkdirSync(join(cwd, laterPlanFolder), { recursive: true });
 	writeFileSync(join(cwd, laterPlanFolder, 'plan.md'), planBody);
 	mkdirSync(join(cwd, earlierPlanFolder), { recursive: true });

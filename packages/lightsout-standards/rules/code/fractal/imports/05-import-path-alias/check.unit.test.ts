@@ -26,6 +26,7 @@ const setupFileTextInput = ({
 		tests: [],
 		files,
 		referenceFiles: [],
+		referenceTests: [],
 		contents: new Map(entries),
 		standardsLibraries: [],
 	};

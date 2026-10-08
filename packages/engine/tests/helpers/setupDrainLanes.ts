@@ -15,6 +15,7 @@ import { queueSettingsFixture } from '#tests/helpers/queueSettingsFixture.ts';
 import { queueTicketFixture } from '#tests/helpers/queueTicketFixture.ts';
 import { shipIntegrationFixture } from '#tests/helpers/shipIntegrationFixture.ts';
 import { shipSettingsFixture } from '#tests/helpers/shipSettingsFixture.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 import { trackerSettingsFixture } from '#tests/helpers/trackerSettingsFixture.ts';
 
 type RunnableTicket = ReturnType<typeof queueTicketFixture>;
@@ -28,7 +29,7 @@ type ScanParams = { attempted: Set<string> };
 type ReconcileParams = { tickets: NamedWorkOrder[] };
 type NameWaveParams = { tickets: RunnableTicket[] };
 
-const config: LightsoutConfig = { gates: { check: 'true', test: 'true', 'test-coverage': false } };
+const config: LightsoutConfig = { 'test-files': testFileGlobs, gates: { check: 'true', test: 'true', 'test-coverage': false } };
 
 /** A drain whose builders and merges the test resolves by hand, so it can assert a merge happened while a build was still open. */
 export const setupDrainLanes = ({

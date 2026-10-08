@@ -8,6 +8,7 @@ import type { WorkReport } from '#src/contracts/work/WorkReport.ts';
 import { WorkReportStatus } from '#src/contracts/work/WorkReportStatus.ts';
 import { runDirectWork } from '#src/direct/runDirectWork/runDirectWork.ts';
 import { setupConsumerRepo } from '#tests/helpers/setupConsumerRepo.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // Mocked Imports
 // -------------------------
@@ -40,7 +41,7 @@ const reportOf = (overrides: Partial<WorkReport> = {}): WorkReport => ({
 /** A consumer repo with the harness and the gates stubbed green. */
 const setupDirectRun = () => {
 	const cwd = setupConsumerRepo();
-	const config: LightsoutConfig = { gates: { check: 'true', test: 'true', 'test-coverage': false } };
+	const config: LightsoutConfig = { 'test-files': testFileGlobs, gates: { check: 'true', test: 'true', 'test-coverage': false } };
 
 	mockInvokeAgentWithContract.mockResolvedValue({ ok: true, report: reportOf() });
 	mockRunGates.mockResolvedValue({ error: undefined, failedFamilies: [], crashes: [], timeouts: [], coordination: undefined });

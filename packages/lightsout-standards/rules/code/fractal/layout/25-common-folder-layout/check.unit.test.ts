@@ -157,6 +157,7 @@ describe('common-folder-layout check', () => {
 				['src/common/index.ts', typeText],
 				['src/common/index.mjs', typeText],
 			],
+			tests: ['src/common/Rate.unit.test.ts'],
 		});
 
 		expect(findings).toStrictEqual([]);

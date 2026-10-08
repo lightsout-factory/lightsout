@@ -6,8 +6,9 @@ import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import type { StepRecord } from '#src/contracts/run/StepRecord.ts';
 import { seedCoverageResumeState } from '#src/coverage/runCoveragePipeline/common/seedCoverageResumeState.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
-const config: LightsoutConfig = { gates: { check: 'true', test: 'true', 'test-coverage': 'true' } };
+const config: LightsoutConfig = { 'test-files': testFileGlobs, gates: { check: 'true', test: 'true', 'test-coverage': 'true' } };
 
 const batchStep = ({
 	id,

@@ -6,6 +6,7 @@ import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutCo
 import { checkChangedFilesExecuted } from '#src/coverage/checkChangedFilesExecuted.ts';
 import type { PipelineRun } from '#src/pipeline/common/PipelineRun.ts';
 import { selectTestTargets } from '#src/pipeline/steps/buildSteps/buildTestSteps/writeTestsStep/selectTestTargets.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // Runtime require rather than a static import: the CJS TypeScript compiler
 // probes __filename at load, so it has to be required at runtime rather than
@@ -13,7 +14,7 @@ import { selectTestTargets } from '#src/pipeline/steps/buildSteps/buildTestSteps
 // `require` is already the local resolver — `import.meta` does not exist there.
 const ts = require('typescript') as typeof import('typescript');
 
-const config: LightsoutConfig = { gates: { check: 'true', test: 'true', 'test-coverage': 'npm run coverage' } };
+const config: LightsoutConfig = { 'test-files': testFileGlobs, gates: { check: 'true', test: 'true', 'test-coverage': 'npm run coverage' } };
 
 const files = ['src/awaiting.ts', 'src/plain.ts'];
 

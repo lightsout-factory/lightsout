@@ -1,5 +1,6 @@
 import { expect, test } from '@jest/globals';
 import { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // `standards-pack` and `package-standards-packs` share one selection schema: a
 // single pack address or a list of them. What this file owns is the list form;
@@ -11,8 +12,8 @@ const setupSelection = ({ selection }: { selection: unknown }) => {
 	const gates = { check: 'c', test: 't', 'test-coverage': false };
 
 	return {
-		repoConfig: { gates, 'standards-pack': selection },
-		packageConfig: { gates, 'package-standards-packs': { 'web-app': selection } },
+		repoConfig: { 'test-files': testFileGlobs, gates, 'standards-pack': selection },
+		packageConfig: { 'test-files': testFileGlobs, gates, 'package-standards-packs': { 'web-app': selection } },
 	};
 };
 

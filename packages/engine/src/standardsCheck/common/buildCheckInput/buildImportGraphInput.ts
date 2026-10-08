@@ -9,6 +9,8 @@ interface Params {
 	tests: string[];
 	files: string[];
 	referenceFiles: string[];
+	/** The test files among `referenceFiles`, by the repo's own `test-files` globs. */
+	referenceTests: string[];
 	/** Repo-relative standards pack roots, from the walk that listed the files. */
 	standardsLibraries: string[];
 	compiler: typeof ts;
@@ -27,6 +29,7 @@ export const buildImportGraphInput = async ({
 	tests,
 	files,
 	referenceFiles,
+	referenceTests,
 	standardsLibraries,
 	compiler,
 	packagesDir,
@@ -34,5 +37,5 @@ export const buildImportGraphInput = async ({
 	const edges = await collectImportEdges({ cwd, files: referenceFiles, compiler });
 	const dependencies = await readPackageDependencies({ cwd, packagesDir });
 
-	return { kind: StandardsInputKind.ImportGraph, cwd, source, tests, files, referenceFiles, standardsLibraries, edges, dependencies };
+	return { kind: StandardsInputKind.ImportGraph, cwd, source, tests, files, referenceFiles, referenceTests, standardsLibraries, edges, dependencies };
 };

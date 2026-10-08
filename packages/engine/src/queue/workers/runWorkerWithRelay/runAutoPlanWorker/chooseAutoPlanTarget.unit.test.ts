@@ -6,6 +6,7 @@ import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutCo
 import type { WorkOrderPlan } from '#src/contracts/workOrder/WorkOrderPlan.ts';
 import type { WorkOrderState } from '#src/contracts/workOrder/WorkOrderState.ts';
 import { chooseAutoPlanTarget } from '#src/queue/workers/runWorkerWithRelay/runAutoPlanWorker/chooseAutoPlanTarget.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // Mocked Imports
 // -------------------------
@@ -45,7 +46,7 @@ jest.mock('#src/workOrder/pullWorkOrderState.ts', () => ({ pullWorkOrderState: (
 
 const branch = 'lo-140-multi';
 
-const config: LightsoutConfig = { gates: { check: 'true', test: 'true', 'test-coverage': false } };
+const config: LightsoutConfig = { 'test-files': testFileGlobs, gates: { check: 'true', test: 'true', 'test-coverage': false } };
 
 const planWith = ({ id, progress, exclusion }: { id: string; progress: WorkOrderPlan['progress']; exclusion?: WorkOrderPlan['exclusion'] }): WorkOrderPlan => ({
 	id,

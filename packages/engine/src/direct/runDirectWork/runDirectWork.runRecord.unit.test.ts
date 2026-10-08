@@ -16,6 +16,7 @@ import { getRunOwnerPath } from '#src/runState/owner/common/getRunOwnerPath.ts';
 import { readRunOwner } from '#src/runState/owner/readRunOwner.ts';
 import { runDirFor } from '#tests/helpers/runDirFor.ts';
 import { setupConsumerRepo } from '#tests/helpers/setupConsumerRepo.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // Mocked Imports
 // -------------------------
@@ -48,7 +49,7 @@ const reportOf = (overrides: Partial<WorkReport> = {}): WorkReport => ({
 /** A consumer repo with the harness and the gates stubbed green. */
 const setupDirectRun = () => {
 	const cwd = setupConsumerRepo();
-	const config: LightsoutConfig = { gates: { check: 'true', test: 'true', 'test-coverage': false } };
+	const config: LightsoutConfig = { 'test-files': testFileGlobs, gates: { check: 'true', test: 'true', 'test-coverage': false } };
 
 	mockInvokeAgentWithContract.mockResolvedValue({ ok: true, report: reportOf() });
 	mockRunGates.mockResolvedValue({ error: undefined, failedFamilies: [], crashes: [], timeouts: [], coordination: undefined });
@@ -75,7 +76,7 @@ const setupDirectRun = () => {
  */
 const setupContinuedDirectRun = async () => {
 	const cwd = setupConsumerRepo();
-	const config: LightsoutConfig = { gates: { check: 'true', test: 'true', 'test-coverage': false } };
+	const config: LightsoutConfig = { 'test-files': testFileGlobs, gates: { check: 'true', test: 'true', 'test-coverage': false } };
 
 	mockInvokeAgentWithContract.mockResolvedValue({ ok: true, report: reportOf() });
 	mockRunGates.mockResolvedValue({ error: undefined, failedFamilies: [], crashes: [], timeouts: [], coordination: undefined });
@@ -112,7 +113,7 @@ const setupContinuedDirectRun = async () => {
  */
 const setupQueueWorkerDirectRun = () => {
 	const cwd = setupConsumerRepo();
-	const config: LightsoutConfig = { gates: { check: 'true', test: 'true', 'test-coverage': false } };
+	const config: LightsoutConfig = { 'test-files': testFileGlobs, gates: { check: 'true', test: 'true', 'test-coverage': false } };
 
 	mockInvokeAgentWithContract.mockResolvedValue({ ok: true, report: reportOf() });
 	mockRunGates.mockResolvedValue({ error: undefined, failedFamilies: [], crashes: [], timeouts: [], coordination: undefined });

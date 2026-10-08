@@ -19,6 +19,7 @@ import { createRun } from '#src/runState/createRun.ts';
 import { readRunOwner } from '#src/runState/owner/readRunOwner.ts';
 import { planWorkspaceFolder } from '#tests/helpers/planWorkspaceFolder.ts';
 import { queueSettingsFixture } from '#tests/helpers/queueSettingsFixture.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 /**
  * The auto-plan worker as the queue reaches it: which plan the engine picks
@@ -95,7 +96,7 @@ jest.mock('#src/workOrder/pullWorkOrderState.ts', () => ({ pullWorkOrderState: (
 // -------------------------
 
 const branch = 'lo-70-drain';
-const config: LightsoutConfig = { gates: { check: 'true', test: 'true', 'test-coverage': false } };
+const config: LightsoutConfig = { 'test-files': testFileGlobs, gates: { check: 'true', test: 'true', 'test-coverage': false } };
 const driver: Driver = { name: 'claude-code', invoke: () => Promise.resolve({ text: '', exitCode: 0 }) };
 
 const ticket: RunnableTicket = {

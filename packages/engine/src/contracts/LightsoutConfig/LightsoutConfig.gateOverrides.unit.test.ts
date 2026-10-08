@@ -1,5 +1,6 @@
 import { expect, test } from '@jest/globals';
 import { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // `gate-overrides` is the one block whose names cannot be checked by the block
 // itself: a gate may be configured under `gates`, under `package-gates`, or
@@ -17,7 +18,7 @@ const setupConfig = ({
 	packageGates?: Record<string, unknown>;
 	overrides: Record<string, unknown>;
 }) => {
-	const config: Record<string, unknown> = { gates, 'gate-overrides': overrides };
+	const config: Record<string, unknown> = { 'test-files': testFileGlobs, gates, 'gate-overrides': overrides };
 
 	if (packageGates) {
 		config['package-gates'] = packageGates;

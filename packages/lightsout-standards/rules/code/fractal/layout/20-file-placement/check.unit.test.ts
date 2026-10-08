@@ -6,19 +6,19 @@ import { check } from './check.ts';
 const setupImports = ({
 	imports,
 	scope,
-	standardsLibraries = [],
+	tests = [],
 	dependencies = [['.', []]],
 }: {
 	imports: Array<[string, string]>;
 	scope?: string[];
-	standardsLibraries?: string[];
+	tests?: string[];
 	dependencies?: Array<[string, string[]]>;
 }) => {
 	const edges = imports.map(([from, to]) => ({ from, to }));
 	const paths = [...new Set(imports.flat())];
 
 	return {
-		'import-graph': setupImportGraphInput({ edges, dependencies, source: scope ?? paths, files: scope ?? paths, referenceFiles: paths, standardsLibraries }),
+		'import-graph': setupImportGraphInput({ edges, dependencies, source: scope ?? paths, files: scope ?? paths, referenceFiles: paths, referenceTests: tests }),
 	};
 };
 
@@ -257,6 +257,7 @@ describe('file-placement check', () => {
 				['src/billing/refundCustomer.ts', formatMoney],
 				['tests/formatMoney.unit.test.ts', formatMoney],
 			],
+			tests: ['tests/formatMoney.unit.test.ts'],
 		});
 
 		const findings = await check.run({ inputs, options: {} });

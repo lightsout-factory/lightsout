@@ -4,6 +4,8 @@ import type { ParsedPlan } from '#src/plan/common/types/ParsedPlan.ts';
 
 interface Params {
 	plan: ParsedPlan;
+	/** The repo's `test-files` globs: a test file is never counted. */
+	testFileGlobs: string[];
 }
 
 /**
@@ -13,9 +15,9 @@ interface Params {
  * Budget` raises the touched count and never the ceiling. Moves still count in
  * `touched`, on both sides.
  */
-export const getPlanTouchedPaths = ({ plan }: Params): { created: string[]; touched: string[] } => {
-	const created = plan.createPaths.filter((path) => isPlanSourceFile({ path }));
-	const touched = getPlanNamedPaths({ plan }).filter((path) => isPlanSourceFile({ path }));
+export const getPlanTouchedPaths = ({ plan, testFileGlobs }: Params): { created: string[]; touched: string[] } => {
+	const created = plan.createPaths.filter((path) => isPlanSourceFile({ path, testFileGlobs }));
+	const touched = getPlanNamedPaths({ plan }).filter((path) => isPlanSourceFile({ path, testFileGlobs }));
 
 	return { created: [...new Set(created)], touched: [...new Set(touched)] };
 };

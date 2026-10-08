@@ -13,6 +13,7 @@ import type { WorkOrderState } from '#src/contracts/workOrder/WorkOrderState.ts'
 import { publishWorkOrderPlan } from '#src/workOrder/publishWorkOrderPlan/publishWorkOrderPlan.ts';
 import { canonicalTicketRecordText } from '#tests/helpers/canonicalTicketRecordText.ts';
 import { ticketTrackerConfigBlock } from '#tests/helpers/queueConfigBlock.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // Mocked Imports
 // -------------------------
@@ -163,7 +164,7 @@ const setupTicketPlan = async ({
 		params: {
 			cwd,
 			address,
-			config: { gates, 'ticket-tracker': trackerBlock },
+			config: { 'test-files': testFileGlobs, gates, 'ticket-tracker': trackerBlock },
 			env,
 			onProgress: (message: string) => progressLines.push(message),
 		},

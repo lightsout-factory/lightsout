@@ -4,6 +4,7 @@ import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutCo
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 import { resolveStandardsGroups } from '#src/standards/resolveStandardsGroups/resolveStandardsGroups.ts';
 import { listStandardsRules } from '#src/standardsCheck/listStandardsRules.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 /**
  * The repo the listing is read for — the shipped library answers regardless,
@@ -13,7 +14,11 @@ import { listStandardsRules } from '#src/standardsCheck/listStandardsRules.ts';
 const cwd = join(__dirname, '..', '..', '..', '..');
 
 /** Standards are opt-in, so the config names the shipped standards pack — and sets no rule, so every row is the pack's default. */
-const standardsPackConfig: LightsoutConfig = { gates: { check: 'true', test: 'true', 'test-coverage': false }, 'standards-pack': 'lightsout/standards' };
+const standardsPackConfig: LightsoutConfig = {
+	'test-files': testFileGlobs,
+	gates: { check: 'true', test: 'true', 'test-coverage': false },
+	'standards-pack': 'lightsout/standards',
+};
 
 /** The listing a repo on the standards pack gets with no rule settings of its own: the groups it resolves to, listed. */
 const listDefaults = async () => listStandardsRules({ groups: await resolveStandardsGroups({ cwd, config: standardsPackConfig }) });

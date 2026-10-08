@@ -7,6 +7,8 @@ interface Params {
 	tests: string[];
 	files: string[];
 	referenceFiles: string[];
+	/** The test files among `referenceFiles`, by the repo's own `test-files` globs. */
+	referenceTests: string[];
 	/** Repo-relative standards pack roots, from the walk that listed the files. */
 	standardsLibraries: string[];
 	/** Monorepo package parent dir (config `packages-dir`, default 'packages'). */
@@ -17,8 +19,17 @@ interface Params {
  * Dependencies are read the same way channel detection reads them, so a rule
  * asking "does this repo use React?" gets the same answer either route.
  */
-export const buildFileListInput = async ({ cwd, source, tests, files, referenceFiles, standardsLibraries, packagesDir }: Params): Promise<FileListInput> => {
+export const buildFileListInput = async ({
+	cwd,
+	source,
+	tests,
+	files,
+	referenceFiles,
+	referenceTests,
+	standardsLibraries,
+	packagesDir,
+}: Params): Promise<FileListInput> => {
 	const dependencies = await readPackageDependencies({ cwd, packagesDir });
 
-	return { kind: StandardsInputKind.FileList, cwd, source, tests, files, referenceFiles, dependencies, standardsLibraries };
+	return { kind: StandardsInputKind.FileList, cwd, source, tests, files, referenceFiles, referenceTests, dependencies, standardsLibraries };
 };

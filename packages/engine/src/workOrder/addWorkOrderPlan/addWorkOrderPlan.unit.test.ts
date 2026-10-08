@@ -14,6 +14,7 @@ import type { WorkOrderPlan } from '#src/contracts/workOrder/WorkOrderPlan.ts';
 import type { WorkOrderState } from '#src/contracts/workOrder/WorkOrderState.ts';
 import { addWorkOrderPlan } from '#src/workOrder/addWorkOrderPlan/addWorkOrderPlan.ts';
 import { updateLocalWorkOrderState } from '#src/workOrder/common/state/updateLocalWorkOrderState.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // Mocked Imports
 // -------------------------
@@ -102,7 +103,7 @@ const setupAddPlan = async ({
 	record,
 	branch = name,
 	slug = 'search-basics',
-	config = { gates },
+	config = { 'test-files': testFileGlobs, gates },
 	/** Files planted at the work order folder's top level, as a single-folder plan left them. */
 	topLevelFiles = [],
 	/** Directories planted at the work order folder's top level. */
@@ -305,7 +306,7 @@ describe('addWorkOrderPlan', () => {
 		// can be read as a ticket — which changes nothing here: the record already
 		// says which ticket it belongs to, and adding a plan never asks a pattern.
 		const { params, recordPath, planFolderOf } = await setupAddPlan({
-			config: { gates, ship: { 'ticket-pattern': '^(lo-\\d+)' } },
+			config: { 'test-files': testFileGlobs, gates, ship: { 'ticket-pattern': '^(lo-\\d+)' } },
 			record: recordOf({ ticketRef: null }),
 		});
 

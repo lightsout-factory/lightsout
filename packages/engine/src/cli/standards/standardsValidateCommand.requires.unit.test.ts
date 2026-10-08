@@ -61,6 +61,7 @@ const setupWarningsOnly = ({ warnings }: { warnings: string[] }) => {
 		formatVersion: 2,
 		rootPath: '/repo/libs/house',
 		documents: [],
+		fixtureTestFiles: [],
 		rules: [
 			rule({ id: 'component-file-structure', deterministic: false, requires: ['house/index-files'] }),
 			rule({ id: 'index-files', deterministic: true, requires: [] }),

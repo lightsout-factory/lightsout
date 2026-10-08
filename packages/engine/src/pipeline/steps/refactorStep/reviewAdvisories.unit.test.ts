@@ -5,6 +5,7 @@ import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutCo
 import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFinding.ts';
 import type { PipelineRun } from '#src/pipeline/common/PipelineRun.ts';
 import { reviewAdvisories } from '#src/pipeline/steps/refactorStep/reviewAdvisories.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // Mocked Imports
 // -------------------------
@@ -32,7 +33,7 @@ jest.mock('#src/standardsCheck/runStandardsReview/runStandardsReview.ts', () => 
 const setupRun = ({ packagesDir }: { packagesDir: string }) => {
 	mockRunStandardsReview.mockResolvedValue({ findings: [], notes: [] });
 
-	const config: LightsoutConfig = { gates: { check: 'true', test: 'true', 'test-coverage': false }, 'packages-dir': packagesDir };
+	const config: LightsoutConfig = { 'test-files': testFileGlobs, gates: { check: 'true', test: 'true', 'test-coverage': false }, 'packages-dir': packagesDir };
 	const run = {
 		cwd: '/repo',
 		config,

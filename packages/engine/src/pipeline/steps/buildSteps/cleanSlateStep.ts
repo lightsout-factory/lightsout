@@ -1,10 +1,10 @@
 import { readGitChangedFiles } from '#src/common/git/readGitChangedFiles.ts';
 import { messageOf } from '#src/common/messageOf.ts';
 import { isGeneratedPath } from '#src/common/sourceFiles/isGeneratedPath.ts';
+import { isTestFile } from '#src/common/sourceFiles/isTestFile.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import { checkTestResultsCapability } from '#src/gates/testResults/checkTestResultsCapability.ts';
 import { approveTestFiles } from '#src/pipeline/approvedTests/approveTestFiles.ts';
-import { isTestSideFile } from '#src/pipeline/common/isTestSideFile.ts';
 import type { PipelineRun } from '#src/pipeline/common/PipelineRun.ts';
 import type { PipelineStep } from '#src/pipeline/common/types/PipelineStep.ts';
 import { stopOnGateCoordination } from '#src/pipeline/steps/buildSteps/common/stopOnGateCoordination.ts';
@@ -106,7 +106,7 @@ export const cleanSlateStep = ({ run, ledgerGates }: Params): PipelineStep['run'
 		const generated = run.config.generated ?? [];
 		const approvedTests = await approveTestFiles({
 			run,
-			paths: baselineDirtyFiles.filter((path) => isTestSideFile({ path }) && !isGeneratedPath({ path, generated })),
+			paths: baselineDirtyFiles.filter((path) => isTestFile({ path, testFileGlobs: run.config['test-files'] }) && !isGeneratedPath({ path, generated })),
 		});
 
 		await captureStandardsBaseline({ run });

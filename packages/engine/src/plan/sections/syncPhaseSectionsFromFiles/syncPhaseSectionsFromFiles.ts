@@ -14,6 +14,8 @@ interface Params {
 	overviewPath: string;
 	/** Absolute paths of the phase files, overview excluded. */
 	phasePaths: string[];
+	/** The repo's `test-files` globs: a test file is never counted. */
+	testFileGlobs: string[];
 }
 
 /**
@@ -58,9 +60,9 @@ const withOwnDeclarations = async ({ declarations, phasePaths }: { declarations:
  * is tolerated as `syncPhaseSections` tolerates it: refusing a mismatch is the
  * caller's decision, since the draft and repair paths repair around one.
  */
-export const syncPhaseSectionsFromFiles = async ({ cwd, overviewPath, phasePaths }: Params): Promise<SyncedPlanFile> => {
+export const syncPhaseSectionsFromFiles = async ({ cwd, overviewPath, phasePaths, testFileGlobs }: Params): Promise<SyncedPlanFile> => {
 	const before = await readFile(overviewPath, 'utf8');
-	const stamped = await stampPhaseCounts({ cwd, overviewPath, phasePaths });
+	const stamped = await stampPhaseCounts({ cwd, overviewPath, phasePaths, testFileGlobs });
 
 	await syncPhaseSections({
 		overviewPath,

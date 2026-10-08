@@ -11,4 +11,5 @@ interface Params {
  * conditions, so the two lists cannot drift. Dropping tests is right for every
  * caller here and wrong for the standards gate, which reads the wider list.
  */
-export const sourceFiles = ({ run }: Params): string[] => standardsScopeFiles({ run }).filter((file) => !isTestFile({ path: file }));
+export const sourceFiles = ({ run }: Params): string[] =>
+	standardsScopeFiles({ run }).filter((file) => !isTestFile({ path: file, testFileGlobs: run.config['test-files'] }));

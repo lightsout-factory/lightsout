@@ -1,6 +1,5 @@
 import { defaultPackagesDir } from '#src/common/constants/defaultPackagesDir.ts';
 import { runPreflightGate } from '#src/common/gates/runPreflightGate.ts';
-import { listSourceFiles } from '#src/common/sourceFiles/listSourceFiles.ts';
 import type { Driver } from '#src/common/types/Driver.ts';
 import type { LoadedConfig } from '#src/common/types/LoadedConfig.ts';
 import { resolveConsumerTypescript } from '#src/common/workspace/resolveConsumerTypescript.ts';
@@ -72,11 +71,7 @@ const executeCoverage = async ({
 	// Resolved once for the run: without a consumer TypeScript, grouping degrades
 	// to one file per batch component, exactly like the implement fan-out.
 	const compiler = resolveConsumerTypescript({ cwd, packagesDir: config['packages-dir'] ?? defaultPackagesDir });
-	// Without the pack roots, a rule check under a pack's `tests/` document set
-	// would be filtered out as a test everywhere.
-	const { standardsLibraries } = await listSourceFiles({ cwd });
-
-	return runCoverageRounds({ run, driver, batchInputs: { testStandards, compiler, standardsLibraries }, maxBatches, resumed: seeded });
+	return runCoverageRounds({ run, driver, batchInputs: { testStandards, compiler, testFileGlobs: config['test-files'] }, maxBatches, resumed: seeded });
 };
 
 /** Every pipeline takes the same repo lock, so no two runs can race one tree. */

@@ -5,6 +5,7 @@ import { expect, test } from '@jest/globals';
 import { improveCommand } from '#src/cli/improveCommand/improveCommand.ts';
 import { parseFlags } from '#src/cli/parseFlags.ts';
 import { captureCommandOutput } from '#tests/helpers/captureCommandOutput.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // improve resolves its config and driver BEFORE the friction check, and its
 // config load is non-fatal only when no config file exists — both arrangements
@@ -58,7 +59,7 @@ test('improveCommand: no recorded friction reports there is nothing to improve f
 test('improveCommand: a present-but-invalid config is a hard error, not the missing-config fallback', async () => {
 	const { context } = setupImprove({
 		args: ['--engine', '/does/not/need/to/exist'],
-		config: { driver: 'codex', gates: { check: 'c', test: 't', 'test-coverage': false } },
+		config: { driver: 'codex', 'test-files': testFileGlobs, gates: { check: 'c', test: 't', 'test-coverage': false } },
 	});
 
 	await expect(improveCommand(context)).rejects.toThrow(/driver/);
@@ -138,6 +139,7 @@ test("improveCommand: a config on disk is loaded, and the improve entry's own mo
 	const { context, argvPath, logged, exitCodes } = setupImproveRun({
 		report: changeReport(),
 		config: {
+			'test-files': testFileGlobs,
 			gates: { check: 'true', test: 'true', 'test-coverage': false },
 			harness: 'claude-code',
 			model: 'global-model',
@@ -160,7 +162,7 @@ test("improveCommand: a config on disk is loaded, and the improve entry's own mo
 test('improveCommand: with a config that names no improve entry, the globals are what reach the harness', async () => {
 	const { context, argvPath } = setupImproveRun({
 		report: changeReport(),
-		config: { gates: { check: 'true', test: 'true', 'test-coverage': false }, model: 'global-model', effort: 'max' },
+		config: { 'test-files': testFileGlobs, gates: { check: 'true', test: 'true', 'test-coverage': false }, model: 'global-model', effort: 'max' },
 	});
 
 	await expect(improveCommand(context)).rejects.toThrow(/process\.exit/);

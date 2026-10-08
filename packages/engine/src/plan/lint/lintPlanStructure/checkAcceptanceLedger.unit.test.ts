@@ -6,6 +6,7 @@ import { FindingSeverity } from '#src/contracts/plan/grade/FindingSeverity.ts';
 import { StructuralCheck } from '#src/contracts/plan/grade/StructuralCheck.ts';
 import { checkAcceptanceLedger } from '#src/plan/lint/lintPlanStructure/checkAcceptanceLedger.ts';
 import { parsePlan } from '#src/plan/parsePlan/parsePlan.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 /** The gates a repository declares, so a row cannot name one nothing runs. */
 const gateKeys = new Set(['check', 'test']);
@@ -46,7 +47,7 @@ const check = async ({
 		writeFileSync(join(cwd, path), text);
 	}
 
-	return checkAcceptanceLedger({ plan, cwd, phase: 'plan.md', required, gateKeys: gates });
+	return checkAcceptanceLedger({ plan, cwd, phase: 'plan.md', required, gateKeys: gates, testFileGlobs });
 };
 
 /** Each finding as the terse pair the cases assert on. */

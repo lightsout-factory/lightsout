@@ -10,6 +10,7 @@ import type { StandardsSnapshot } from '#src/contracts/standardsCheck/StandardsS
 import type { PipelineRun } from '#src/pipeline/common/PipelineRun.ts';
 import { cleanSlateStep } from '#src/pipeline/steps/buildSteps/cleanSlateStep.ts';
 import type { VerificationResult } from '#src/pipeline/steps/common/types/VerificationResult.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // Mocked Imports
 // -------------------------
@@ -87,7 +88,7 @@ const setupCleanSlateRun = ({ result }: { result: VerificationResult }) => {
 
 	const run = {
 		cwd: '/tmp/lightsout-clean-slate',
-		config: {} as unknown as LightsoutConfig,
+		config: { 'test-files': testFileGlobs } as unknown as LightsoutConfig,
 		current: () => manifest,
 		progress: (message: string) => progress.push(message),
 		nextRecord: ({ id }: { id: string }) => ({ id, status: RunStatus.Running, attempts: 1 }),
@@ -141,7 +142,7 @@ const setupPassingCleanSlateRun = ({ generated, dirtyFiles }: { generated: strin
 
 	const run = {
 		cwd: '/tmp/lightsout-clean-slate',
-		config: { generated } as unknown as LightsoutConfig,
+		config: { 'test-files': testFileGlobs, generated } as unknown as LightsoutConfig,
 		current: () => manifest,
 		progress: () => undefined,
 		nextRecord: ({ id }: { id: string }) => ({ id, status: RunStatus.Running, attempts: 1 }),

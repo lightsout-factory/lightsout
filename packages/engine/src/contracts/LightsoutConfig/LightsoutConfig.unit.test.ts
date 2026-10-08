@@ -1,7 +1,8 @@
 import { expect, test } from '@jest/globals';
 import { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
-const base = { gates: { check: 'c', test: 't', 'test-coverage': false } };
+const base = { 'test-files': testFileGlobs, gates: { check: 'c', test: 't', 'test-coverage': false } };
 
 // The block contracts — Gates, PackageGates, ConfigCommands,
 // StandardsRuleSettings — each pin their own shape in their own test. What
@@ -9,12 +10,27 @@ const base = { gates: { check: 'c', test: 't', 'test-coverage': false } };
 // optional, and the top-level fields. Each opt-in block's own round trip
 // through the composition is pinned in `LightsoutConfig.optionalBlocks.unit.test.ts`.
 
-test('LightsoutConfig: gates is required, and every other block is optional', () => {
+test('LightsoutConfig: gates and test-files are required, and every other block is optional', () => {
 	// with no gates block there is nothing to verify a run with
-	expect(LightsoutConfig.safeParse({}).success).toBe(false);
-	// a config carrying only gates parses — commands, packageGates, and
+	expect(LightsoutConfig.safeParse({ 'test-files': testFileGlobs }).success).toBe(false);
+	// with no test-files list the engine cannot tell a test from source
+	expect(LightsoutConfig.safeParse({ gates: base.gates }).success).toBe(false);
+	// a config carrying only those two parses — commands, packageGates, and
 	// standardsChecks are all opt-in (decision 2: backward compatibility)
 	expect(LightsoutConfig.safeParse(base).success).toBe(true);
+});
+
+test('LightsoutConfig: test-files keeps its globs as written, and refuses a missing list, an empty one, or an empty glob with a message naming the key', () => {
+	const issuesOf = (config: Record<string, unknown>) =>
+		(LightsoutConfig.safeParse(config).error?.issues ?? []).map((issue) => ({ path: issue.path.join('.'), message: issue.message }));
+
+	// the engine holds no convention of its own, so the list is read verbatim
+	expect(LightsoutConfig.parse({ ...base, 'test-files': ['spec/**', '**/*.spec.ts'] })['test-files']).toStrictEqual(['spec/**', '**/*.spec.ts']);
+	// a missing list says how to fill it, since every existing config lacks it
+	expect(issuesOf({ gates: base.gates })).toStrictEqual([{ path: 'test-files', message: expect.stringMatching(/^test-files is required: list the globs/) }]);
+	// an empty list would make every file source, silently
+	expect(issuesOf({ ...base, 'test-files': [] })).toStrictEqual([{ path: 'test-files', message: 'test-files must list at least one glob' }]);
+	expect(issuesOf({ ...base, 'test-files': ['**/*.test.*', ''] })).toStrictEqual([{ path: 'test-files.1', message: 'a test-files glob cannot be empty' }]);
 });
 
 test('LightsoutConfig: each block reaches its own contract, valid and invalid alike', () => {

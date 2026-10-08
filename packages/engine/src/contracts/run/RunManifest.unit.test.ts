@@ -1,6 +1,7 @@
 import { expect, test } from '@jest/globals';
 import { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { RunManifest } from '#src/contracts/run/RunManifest.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 const base = {
 	runId: 'run-1',
@@ -223,7 +224,7 @@ test('RunManifest: planName is optional so an earlier manifest still parses, rou
 });
 
 test('RunManifest: a recorded config the current config schema rejects still parses, kept exactly as recorded', () => {
-	const config = { 'standards-pak': ['acme/house'], gates: { check: 'c', test: 't', 'test-coverage': false } };
+	const config = { 'standards-pak': ['acme/house'], 'test-files': testFileGlobs, gates: { check: 'c', test: 't', 'test-coverage': false } };
 
 	const parsed = RunManifest.safeParse({ ...base, harness: 'codex', config });
 

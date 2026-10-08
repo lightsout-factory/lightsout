@@ -1,7 +1,6 @@
 import type { RawStandardsFinding, StandardsCheckModule } from '@lightsout/standards-contracts';
 import { readFileTexts } from '#common/checkInput/readFileTexts/readFileTexts.ts';
 import { isIndexFile } from '#common/paths/isIndexFile.ts';
-import { isTestFile } from '#common/paths/isTestFile.ts';
 import { findMisfiledFiles } from './findMisfiledFiles.ts';
 
 export const check: StandardsCheckModule = {
@@ -11,8 +10,9 @@ export const check: StandardsCheckModule = {
 	// is `index-files`'s to report, so it is left out here: one wrong file is
 	// one finding.
 	run: ({ inputs }): RawStandardsFinding[] => {
-		const { files, contents, standardsLibraries } = readFileTexts({ input: inputs['file-text'] });
-		const sourceFiles = files.filter((file) => !isTestFile({ path: file, standardsLibraries }) && !isIndexFile({ path: file }));
+		const { files, contents, tests } = readFileTexts({ input: inputs['file-text'] });
+		const testFiles = new Set(tests);
+		const sourceFiles = files.filter((file) => !testFiles.has(file) && !isIndexFile({ path: file }));
 
 		return findMisfiledFiles({ files: sourceFiles, contents });
 	},

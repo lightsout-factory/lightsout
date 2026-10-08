@@ -13,6 +13,7 @@ import { getReader } from '#src/lightsout/getReader.ts';
 const configText = JSON.stringify({
 	harness: 'claude-code',
 	gates: { check: 'true', test: 'true', 'test-coverage': false },
+	'test-files': ['**/*.test.*'],
 	'standards-libraries': { acme: './house' },
 	'standards-pack': 'acme/house',
 	'standards-rule-settings': { 'house-name-things-well': 'off' },
@@ -70,6 +71,7 @@ const setupUnconfiguredRepo = async (): Promise<{ reader: LightsoutReader }> => 
 const selectedPackConfigText = JSON.stringify({
 	harness: 'claude-code',
 	gates: { check: 'true', test: 'true', 'test-coverage': false },
+	'test-files': ['**/*.test.*'],
 	'standards-libraries': { acme: './house' },
 	'standards-pack': 'acme/house',
 	'standards-rule-settings': { 'house-name-things-well': 'off' },
@@ -117,6 +119,7 @@ describe('getReader config', () => {
 		expect(view.sections.map((section) => ({ title: section.title, keys: section.fields.map((field) => field.key) }))).toStrictEqual([
 			{ title: 'Harness', keys: ['harness', 'model', 'effort', 'permissions', 'commands'] },
 			{ title: 'Gates', keys: ['gates', 'package-gates', 'gate-overrides', 'packages-dir', 'coverage-summary-path', 'executor-file-limit'] },
+			{ title: 'Test files', keys: ['test-files'] },
 			{ title: 'Standards', keys: ['standards-pack', 'package-standards-packs', 'standards-libraries', 'standards-rule-settings'] },
 			{ title: 'Agent commands', keys: ['agent-commands'] },
 			{ title: 'Generated', keys: ['generated', 'vendored'] },

@@ -6,6 +6,7 @@ import type { RefactorBatch } from '#src/contracts/refactor/RefactorBatch.ts';
 import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFinding.ts';
 import { createBatchTools } from '#src/refactor/batch/runBatch/createBatchTools/createBatchTools.ts';
 import { createUncalledDriver } from '#tests/helpers/createUncalledDriver.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // Mocked Imports
 // -------------------------
@@ -78,7 +79,7 @@ const setupBatchTools = ({ packagesDir }: { packagesDir: string }) => {
 		pack: { name: 'lightsout/standards', topics: [], rules: [], conditionalPacks: [], inactiveRules: [] },
 		states: new Map(),
 	};
-	const config: LightsoutConfig = { gates: { check: 'true', test: 'true', 'test-coverage': false }, 'packages-dir': packagesDir };
+	const config: LightsoutConfig = { 'test-files': testFileGlobs, gates: { check: 'true', test: 'true', 'test-coverage': false }, 'packages-dir': packagesDir };
 	const tools = createBatchTools({
 		cwd: '/repo',
 		runId: 'run-1',

@@ -11,6 +11,7 @@ import { publishPlan } from '#src/plan/publish/publishPlan/publishPlan.ts';
 import { planWorkspaceFolder } from '#tests/helpers/planWorkspaceFolder.ts';
 import { ticketTrackerConfigBlock } from '#tests/helpers/queueConfigBlock.ts';
 import { seedWorkOrderRecord } from '#tests/helpers/seedWorkOrderRecord.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // Mocked Imports
 // -------------------------
@@ -112,7 +113,7 @@ const setupPlan = ({
 		params: {
 			cwd,
 			name: folder,
-			config: config ?? { gates, 'ticket-tracker': trackerBlock },
+			config: config ?? { 'test-files': testFileGlobs, gates, 'ticket-tracker': trackerBlock },
 			env,
 			onProgress: (message: string) => progress.push(message),
 		},

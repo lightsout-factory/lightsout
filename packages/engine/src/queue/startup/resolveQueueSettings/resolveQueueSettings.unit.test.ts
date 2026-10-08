@@ -1,10 +1,15 @@
 import { describe, expect, test } from '@jest/globals';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { resolveQueueSettings } from '#src/queue/startup/resolveQueueSettings/resolveQueueSettings.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 const queueBlock = { 'max-parallel': 3 } as const;
 
-const configOf = (queue?: LightsoutConfig['queue']): LightsoutConfig => ({ gates: { check: 'true', test: 'true', 'test-coverage': false }, queue });
+const configOf = (queue?: LightsoutConfig['queue']): LightsoutConfig => ({
+	'test-files': testFileGlobs,
+	gates: { check: 'true', test: 'true', 'test-coverage': false },
+	queue,
+});
 
 describe('resolveQueueSettings', () => {
 	test('applies every default, so no step downstream re-decides one', () => {

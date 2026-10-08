@@ -25,6 +25,8 @@ export const setupSyntaxTreeInput = ({ sources = [], dependencies = [], ...overr
 		tests: [],
 		files: paths,
 		referenceFiles: [],
+		// Every test the input names is a test of the repo too, unless the caller says otherwise.
+		referenceTests: overrides.tests ?? [],
 		standardsLibraries: [],
 		compiler: ts,
 		trees,

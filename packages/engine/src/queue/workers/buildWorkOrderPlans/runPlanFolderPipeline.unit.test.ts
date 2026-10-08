@@ -20,6 +20,7 @@ import { readRunOwner } from '#src/runState/owner/readRunOwner.ts';
 import { getRejectionError } from '#tests/helpers/getRejectionError.ts';
 import { planWorkspaceFolder } from '#tests/helpers/planWorkspaceFolder.ts';
 import { setupBranchRepo } from '#tests/helpers/setupBranchRepo.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 /** What either pipeline is handed: the two the folder's shape chooses between differ only in which path they carry. */
 interface PipelineCall {
@@ -50,7 +51,7 @@ jest.mock('#src/pipeline/runImplementPipeline/runImplementPipeline.ts', () => ({
 }));
 // -------------------------
 
-const config: LightsoutConfig = { gates: { check: 'true', test: 'true', 'test-coverage': false } };
+const config: LightsoutConfig = { 'test-files': testFileGlobs, gates: { check: 'true', test: 'true', 'test-coverage': false } };
 const driver: Driver = { name: 'claude-code', invoke: () => Promise.resolve({ text: '', exitCode: 0 }) };
 
 const manifestOf = (status: RunStatus): RunManifest => ({

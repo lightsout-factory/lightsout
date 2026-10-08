@@ -3,6 +3,7 @@ import { readRunConfig } from '#src/cli/common/readRunConfig.ts';
 import { describeConfigIssues } from '#src/common/config/describeConfigIssues.ts';
 import { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { manifestOf } from '#tests/helpers/setupResume.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 const recordedRunId = 'run-recorded-config-01';
 
@@ -20,6 +21,7 @@ describe('readRunConfig', () => {
 	test('readRunConfig: a recorded config the engine accepts comes back as the typed config', () => {
 		const recorded = {
 			harness: 'codex',
+			'test-files': testFileGlobs,
 			gates: { check: 'pnpm run check:recorded', test: 'pnpm run test:recorded', 'test-coverage': false },
 		};
 		const { manifest } = setupRecordedRun({ config: recorded, configPath: '/elsewhere/lightsout.config.json' });
@@ -42,6 +44,7 @@ describe('readRunConfig', () => {
 
 	test('readRunConfig: a recorded config this engine rejects is refused with its issues and its recorded path', () => {
 		const recorded = {
+			'test-files': testFileGlobs,
 			gates: { check: 'pnpm run check', test: 'pnpm run test', 'test-coverage': false },
 			'not-a-lightsout-key': true,
 		};
@@ -64,7 +67,7 @@ describe('readRunConfig', () => {
 
 	test('readRunConfig: a rejected config whose run recorded no path is refused without naming one', () => {
 		const { manifest } = setupRecordedRun({
-			config: { gates: { check: 'pnpm run check', test: 'pnpm run test', 'test-coverage': false }, 'not-a-lightsout-key': true },
+			config: { 'test-files': testFileGlobs, gates: { check: 'pnpm run check', test: 'pnpm run test', 'test-coverage': false }, 'not-a-lightsout-key': true },
 		});
 
 		const result = readRunConfig({ manifest });

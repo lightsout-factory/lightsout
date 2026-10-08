@@ -7,6 +7,7 @@ import { workOrderRequestShipCommand } from '#src/cli/workOrder/workOrderCommand
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { WorkOrderState } from '#src/contracts/workOrder/WorkOrderState.ts';
 import { captureCommandOutput } from '#tests/helpers/captureCommandOutput.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // Mocked Imports
 // -------------------------
@@ -73,7 +74,7 @@ const setupRequestShip = ({ args, result = { record } }: { args: string[]; resul
 	mockRequestTicketShip.mockResolvedValue(result);
 	mockWithdrawTicketShipRequest.mockResolvedValue(result);
 
-	writeFileSync(join(cwd, 'lightsout.config.json'), JSON.stringify({ gates }));
+	writeFileSync(join(cwd, 'lightsout.config.json'), JSON.stringify({ 'test-files': testFileGlobs, gates }));
 
 	return { context: { flags: parseFlags({ args }), rest: [], cwd }, cwd, ...captured };
 };

@@ -4,6 +4,7 @@ import { dirname, join } from 'node:path';
 import { expect, test } from '@jest/globals';
 import { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { detectPriorArtCandidates } from '#src/plan/common/detection/detectPriorArtCandidates.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 /** A temp repo with the given existing source files and a plan whose Files-to-Create/Delete/Move sections list the given paths. */
 const setup = ({
@@ -97,9 +98,10 @@ test('detectPriorArtCandidates: a genuinely novel name yields no candidate', asy
 	expect(candidates).toStrictEqual([]);
 });
 
-test('detectPriorArtCandidates: collisions against a test file or index.* are excluded', async () => {
+test('detectPriorArtCandidates: collisions against a file the test-files globs match, or index.*, are excluded', async () => {
 	const { cwd, planPaths } = setup({ existing: ['src/tests/getUser.ts', 'src/index.ts'], creates: ['src/getUser.ts'] });
-	const candidates = await detectPriorArtCandidates({ cwd, planPaths });
+	const config = LightsoutConfig.parse({ 'test-files': testFileGlobs, gates: { check: 'true', test: 'true', 'test-coverage': false } });
+	const candidates = await detectPriorArtCandidates({ cwd, planPaths, config });
 
 	expect(candidates).toStrictEqual([]);
 });
@@ -141,6 +143,7 @@ test('detectPriorArtCandidates: a plan with no Files to Create yields no candida
 test('detectPriorArtCandidates: a collision inside a configured generated path is excluded', async () => {
 	const { cwd, planPaths } = setup({ existing: ['generated-src/fetchUser.ts'], creates: ['src/getUser.ts'] });
 	const config = LightsoutConfig.parse({
+		'test-files': testFileGlobs,
 		gates: { check: 'true', test: 'true', 'test-coverage': false },
 		generated: ['generated-src/'],
 	});

@@ -16,6 +16,8 @@ interface Params {
 	overviewPath: string;
 	/** Absolute paths of the authored phase files. */
 	phasePaths: string[];
+	/** The repo's `test-files` globs: a test file is never counted. */
+	testFileGlobs: string[];
 }
 
 /**
@@ -23,13 +25,13 @@ interface Params {
  * lint's agree. The expander's findings are the lint's to report, and a phase
  * file that cannot be read is left unstamped for the closing lint to report.
  */
-const getCounts = async ({ cwd, phasePaths }: { cwd: string; phasePaths: string[] }) => {
+const getCounts = async ({ cwd, phasePaths, testFileGlobs }: { cwd: string; phasePaths: string[]; testFileGlobs: string[] }) => {
 	const { phases } = await readPhaseFiles({ planPaths: phasePaths });
 	const expansion = await expandFolderMoves({ cwd, phases: phases.sort((one, other) => one.number - other.number) });
 	const counts = new Map<string, PhaseSizeCounts>();
 
 	for (const phase of expansion.phases) {
-		const { created, touched } = getPlanTouchedPaths({ plan: phase.plan });
+		const { created, touched } = getPlanTouchedPaths({ plan: phase.plan, testFileGlobs });
 
 		counts.set(phase.base, { created: created.length, touched: touched.length });
 	}
@@ -82,8 +84,8 @@ const rewriteRows = ({ lines, counts }: { lines: string[]; counts: Map<string, P
  * to report a phase whose touched count exceeds it. The scope text and declared
  * creates, exports and scripts are left alone for the same reason.
  */
-export const stampPhaseCounts = async ({ cwd, overviewPath, phasePaths }: Params): Promise<PhaseDeclaration[]> => {
-	const counts = await getCounts({ cwd, phasePaths });
+export const stampPhaseCounts = async ({ cwd, overviewPath, phasePaths, testFileGlobs }: Params): Promise<PhaseDeclaration[]> => {
+	const counts = await getCounts({ cwd, phasePaths, testFileGlobs });
 	const overviewBase = basename(overviewPath);
 	const original = await readFile(overviewPath, 'utf8');
 	const lines = rewriteRows({ lines: original.split('\n'), counts });

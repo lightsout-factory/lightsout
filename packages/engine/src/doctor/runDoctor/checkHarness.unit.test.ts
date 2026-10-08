@@ -1,11 +1,17 @@
 import { describe, expect, test } from '@jest/globals';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { checkHarness } from '#src/doctor/runDoctor/checkHarness.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 const gates: LightsoutConfig['gates'] = { check: 'true', test: 'true', 'test-coverage': false };
 
 /** A config referencing whichever harnesses the case names — the probe seam keeps every binary imaginary. */
-const setupConfig = ({ harness, commands }: Pick<LightsoutConfig, 'harness' | 'commands'> = {}): LightsoutConfig => ({ gates, harness, commands });
+const setupConfig = ({ harness, commands }: Pick<LightsoutConfig, 'harness' | 'commands'> = {}): LightsoutConfig => ({
+	'test-files': testFileGlobs,
+	gates,
+	harness,
+	commands,
+});
 
 describe('checkHarness', () => {
 	test('flags a broken harness binary with the probe output', async () => {

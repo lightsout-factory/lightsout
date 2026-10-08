@@ -2,6 +2,7 @@ import { describe, expect, test } from '@jest/globals';
 import { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { buildExportCensus } from '#src/plan/evidence/buildExportCensus.ts';
 import { seedSourceRepo } from '#tests/helpers/seedSourceRepo.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // No mocks: the subject walks a repo off disk, so the arrangement is a temp
 // tree of one-export modules and the act is the real walk over it.
@@ -10,6 +11,7 @@ import { seedSourceRepo } from '#tests/helpers/seedSourceRepo.ts';
 const setupCensusRepo = ({ existing, generated = [] }: { existing: string[]; generated?: string[] }) => {
 	const cwd = seedSourceRepo({ existing });
 	const config = LightsoutConfig.parse({
+		'test-files': testFileGlobs,
 		gates: { check: 'true', test: 'true', 'test-coverage': false },
 		generated,
 	});

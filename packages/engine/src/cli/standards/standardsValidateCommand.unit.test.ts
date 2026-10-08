@@ -6,6 +6,7 @@ import type { LoadedStandardsPackFile } from '#src/common/types/LoadedStandardsP
 import type { LoadedStandardsRule } from '#src/common/types/LoadedStandardsRule.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { captureCommandOutput } from '#tests/helpers/captureCommandOutput.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // Mocked Imports
 // -------------------------
@@ -72,7 +73,7 @@ const setupValidate = ({
 	notes?: string[];
 } = {}) => {
 	const captured = captureCommandOutput();
-	const pack: LoadedStandardsLibrary = { name: 'acme', formatVersion: 2, rootPath: '/packages/acme', documents: [], rules, packs: [] };
+	const pack: LoadedStandardsLibrary = { name: 'acme', formatVersion: 2, rootPath: '/packages/acme', documents: [], fixtureTestFiles: [], rules, packs: [] };
 
 	mockResolveDefaultStandardsLibrary.mockReturnValue('/plugin/standards');
 	mockLoadStandardsPack.mockResolvedValue(pack);
@@ -103,7 +104,7 @@ const library = ({
 	rootPath: string;
 	rules?: LoadedStandardsRule[];
 	packs?: LoadedStandardsPackFile[];
-}): LoadedStandardsLibrary => ({ name, formatVersion: 2, rootPath, documents: [], rules, packs });
+}): LoadedStandardsLibrary => ({ name, formatVersion: 2, rootPath, documents: [], fixtureTestFiles: [], rules, packs });
 
 // Each library differs from its namesakes by root, so an equality check tells
 // which copy of a name reached the validator.
@@ -128,6 +129,7 @@ const libraryFolders: Record<string, LoadedStandardsLibrary> = {
 };
 
 const acmeConfig: LightsoutConfig = {
+	'test-files': testFileGlobs,
 	gates: { check: 'true', test: 'true', 'test-coverage': false },
 	'standards-libraries': { acme: './libs/acme' },
 };

@@ -9,6 +9,7 @@ import { cleanOverviewBody } from '#tests/helpers/cleanOverviewBody.ts';
 import { cleanPlanBody } from '#tests/helpers/cleanPlanBody.ts';
 import { emptyDecisionsRecord } from '#tests/helpers/emptyDecisionsRecord.ts';
 import { setupConsumerRepo } from '#tests/helpers/setupConsumerRepo.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // The one required section a repository's own config adds: `## Documentation`,
 // asked for on the implementable variants and only when a `docs` block is there.
@@ -28,7 +29,11 @@ const writePlan = ({ cwd, name, body }: { cwd: string; name: string; body: strin
 
 /** A repository declaring one documentation surface — the config the conditional required section keys off. */
 const declaringConfig = () =>
-	LightsoutConfig.parse({ gates: { check: 'true', test: 'true', 'test-coverage': false }, docs: [{ path: 'README.md', covers: 'The product tour.' }] });
+	LightsoutConfig.parse({
+		'test-files': testFileGlobs,
+		gates: { check: 'true', test: 'true', 'test-coverage': false },
+		docs: [{ path: 'README.md', covers: 'The product tour.' }],
+	});
 
 test('lintPlanStructure: a repository declaring documentation surfaces requires the section on an implementable plan', async () => {
 	const cwd = setupConsumerRepo();

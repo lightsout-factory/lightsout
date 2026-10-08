@@ -24,6 +24,7 @@ import { seedWorkOrderRecord } from '#tests/helpers/seedWorkOrderRecord.ts';
 import { setupBranchRepo } from '#tests/helpers/setupBranchRepo.ts';
 import { shipSettingsFixture } from '#tests/helpers/shipSettingsFixture.ts';
 import { terminalRelayFixture } from '#tests/helpers/terminalRelayFixture.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 import { trackerSettingsFixture } from '#tests/helpers/trackerSettingsFixture.ts';
 
 // Mocked Imports
@@ -96,7 +97,7 @@ jest.mock('#src/queue/drainLanes/runDrainLanes/common/admitScanned/nameWaveWorkO
 }));
 // -------------------------
 
-const config: LightsoutConfig = { gates: { check: 'true', test: 'true', 'test-coverage': false } };
+const config: LightsoutConfig = { 'test-files': testFileGlobs, gates: { check: 'true', test: 'true', 'test-coverage': false } };
 const driver: Driver = { name: 'claude-code', invoke: () => Promise.resolve({ text: '', exitCode: 0 }) };
 
 /** The environment the drain is handed, so a tracker write reading credentials never has to reach `process.env`. */

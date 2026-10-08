@@ -4,8 +4,10 @@ export interface FileTexts {
 	tests: string[];
 	/** Files outside the scope that may still reference it, so a name is never called unused because the run was narrowed. */
 	referenceFiles: string[];
+	/** The test files among `referenceFiles`, as the repo's own `test-files` globs classify them. */
+	referenceTests: string[];
 	/** Text for every path in `files` and `referenceFiles`, read once for the whole run. */
 	contents: Map<string, string>;
-	/** Repo-relative standards pack roots — inside one, a `tests/` folder names a document set rather than a directory of tests. */
+	/** Repo-relative standards library roots. */
 	standardsLibraries: string[];
 }

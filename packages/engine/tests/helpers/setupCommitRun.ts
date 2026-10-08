@@ -11,6 +11,7 @@ import type { WorktreeOwner } from '#src/contracts/worktree/WorktreeOwner.ts';
 import { writeWorktreeRecord } from '#src/worktree/records/writeWorktreeRecord.ts';
 import { seedRunFolder } from '#tests/helpers/seedRunFolder.ts';
 import { setupBranchRepo } from '#tests/helpers/setupBranchRepo.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 import { writeRepoFile } from '#tests/helpers/writeRepoFile.ts';
 
 /** The ticket folder's name, which is also the branch every plan below implements on. */
@@ -32,6 +33,7 @@ export const plainSubject = `${workOrderName} ${planId}`;
 export const headCommitOf = ({ cwd }: { cwd: string }) => execSync('git rev-parse HEAD', { cwd }).toString().trim();
 
 export const configOf = ({ generated }: { generated?: string[] }): LightsoutConfig => ({
+	'test-files': testFileGlobs,
 	gates: { check: 'true', test: 'true', 'test-coverage': false },
 	...(generated === undefined ? {} : { generated }),
 });

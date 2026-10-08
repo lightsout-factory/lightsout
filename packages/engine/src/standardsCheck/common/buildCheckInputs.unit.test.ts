@@ -2,7 +2,7 @@ import { describe, expect, test } from '@jest/globals';
 import { type StandardsCheckInput, StandardsInputKind } from '@lightsout/standards-contracts';
 import { buildCheckInputs } from '#src/standardsCheck/common/buildCheckInputs.ts';
 
-const paths = { cwd: '/repo', source: ['src/a.ts'], tests: [], files: ['src/a.ts'], referenceFiles: [], standardsLibraries: [] };
+const paths = { cwd: '/repo', source: ['src/a.ts'], tests: [], files: ['src/a.ts'], referenceFiles: [], referenceTests: [], standardsLibraries: [] };
 
 /** A builder that answers the two path-carrying kinds and records which kinds it was asked for. */
 const setupBuilder = () => {

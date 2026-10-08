@@ -53,7 +53,10 @@ export const checkChangedFilesExecuted = async ({ cwd, config, changedFiles, com
 	const executable: string[] = [];
 
 	for (const file of changedFiles.filter(
-		(changed) => isTestableSourceFile({ path: changed }) && !isTestFile({ path: changed }) && !isToolingConfigFile({ path: changed, packagesDir }),
+		(changed) =>
+			isTestableSourceFile({ path: changed }) &&
+			!isTestFile({ path: changed, testFileGlobs: config['test-files'] }) &&
+			!isToolingConfigFile({ path: changed, packagesDir }),
 	)) {
 		const content = await readFile(join(cwd, file), 'utf8').catch(() => undefined);
 

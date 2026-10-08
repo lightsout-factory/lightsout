@@ -9,6 +9,7 @@ import type { WorktreeOwner } from '#src/contracts/worktree/WorktreeOwner.ts';
 import type { WorktreeRecord } from '#src/contracts/worktree/WorktreeRecord.ts';
 import { freshCwd } from '#tests/helpers/freshCwd.ts';
 import { seedWorkOrderRecord } from '#tests/helpers/seedWorkOrderRecord.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // Mocked Imports
 // -------------------------
@@ -114,6 +115,7 @@ const setupWorkspace = ({ worktree, setup, flags = [], answers = {} }: { worktre
 	mockCreateWorktree.mockResolvedValue(created);
 
 	const config: LightsoutConfig = {
+		'test-files': testFileGlobs,
 		gates,
 		...(worktree === undefined ? {} : { implement: { worktree } }),
 		...(setup === undefined ? {} : { worktree: { setup } }),
@@ -155,7 +157,7 @@ const setupTicketWorkspace = ({ holder, record, lock, startPoint }: { holder?: s
 	mockWriteWorktreeRecord.mockResolvedValue(undefined);
 	mockCreateWorktree.mockResolvedValue(ticketWorktreePath);
 
-	const config: LightsoutConfig = { gates };
+	const config: LightsoutConfig = { 'test-files': testFileGlobs, gates };
 
 	return { config, flags: new Map<string, string | true>() };
 };
@@ -178,7 +180,7 @@ const setupCutWorkspace = async () => {
 	mockWriteWorktreeRecord.mockResolvedValue(undefined);
 	mockCreateWorktree.mockResolvedValue(cutPath);
 
-	const config: LightsoutConfig = { gates };
+	const config: LightsoutConfig = { 'test-files': testFileGlobs, gates };
 
 	return { config, flags: new Map<string, string | true>(), cutPath };
 };

@@ -9,6 +9,7 @@ import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import type { PipelineResult } from '#src/pipeline/PipelineResult.ts';
 import { manifestOf, runId, setupResume } from '#tests/helpers/setupResume.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 import { writeRepoFile } from '#tests/helpers/writeRepoFile.ts';
 
 // Mocked Imports
@@ -60,10 +61,10 @@ jest.mock('#src/cli/common/implementRun/finishImplementRun/shipAfterImplement/sh
 // -------------------------
 
 /** The config the run recorded when it started — accepted by this engine, and unlike the file the checkout holds now. */
-const recordedConfig = { gates: { check: 'echo recorded', test: 'true', 'test-coverage': false }, 'standards-pack': false };
+const recordedConfig = { 'test-files': testFileGlobs, gates: { check: 'echo recorded', test: 'true', 'test-coverage': false }, 'standards-pack': false };
 
 /** What the launching checkout's lightsout.config.json says since it was rewritten after the run started. */
-const editedFileConfig = { gates: { check: 'echo edited', test: 'true', 'test-coverage': false }, 'standards-pack': false };
+const editedFileConfig = { 'test-files': testFileGlobs, gates: { check: 'echo edited', test: 'true', 'test-coverage': false }, 'standards-pack': false };
 
 /** A config path outside every checkout a case seeds, so a loaded config naming it can only have read it off the manifest. */
 const recordedConfigPath = join(tmpdir(), 'lightsout-recorded-elsewhere', 'lightsout.config.json');

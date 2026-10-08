@@ -1,12 +1,12 @@
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { holdsTestTitle } from '#src/common/sourceFiles/holdsTestTitle/holdsTestTitle.ts';
+import { isTestFile } from '#src/common/sourceFiles/isTestFile.ts';
 import type { AcceptanceTestRecord } from '#src/contracts/run/AcceptanceTestRecord.ts';
 import type { TestChangeReview } from '#src/contracts/work/TestChangeReview.ts';
 import { TestDisposition } from '#src/contracts/work/TestDisposition.ts';
 import { TestReviewDecision } from '#src/contracts/work/TestReviewDecision.ts';
 import type { TestChange } from '#src/pipeline/approvedTests/reviewTestChanges/common/types/TestChange.ts';
-import { isTestSideFile } from '#src/pipeline/common/isTestSideFile.ts';
 import type { PipelineRun } from '#src/pipeline/common/PipelineRun.ts';
 
 type Verdict = TestChangeReview['verdicts'][number];
@@ -19,14 +19,14 @@ const requiredFields: Record<TestDisposition, (keyof Disposition)[]> = {
 	[TestDisposition.Replaced]: ['newTestName', 'testFile'],
 };
 
-const refuseDisposition = ({ path, disposition }: { path: string; disposition: Disposition }) => {
+const refuseDisposition = ({ path, disposition, testFileGlobs }: { path: string; disposition: Disposition; testFileGlobs: string[] }) => {
 	const missing = requiredFields[disposition.disposition].filter((field) => disposition[field] === undefined);
 
 	if (missing.length > 0) {
 		return `${path}: the \`${disposition.disposition}\` disposition for \`${disposition.testName}\` names no ${missing.join(' and no ')}, so it cannot be applied`;
 	}
 
-	if (disposition.testFile !== undefined && !isTestSideFile({ path: disposition.testFile })) {
+	if (disposition.testFile !== undefined && !isTestFile({ path: disposition.testFile, testFileGlobs })) {
 		return `${path}: the disposition for \`${disposition.testName}\` points at ${disposition.testFile}, which is not a test-side file — an acceptance test parked outside the tests is a test nothing collects`;
 	}
 
@@ -84,7 +84,7 @@ export const applyTestDispositions = async ({
 	for (const row of acceptanceTests) {
 		const verdict = verdicts.find((entry) => entry.path === row.testFile && entry.decision === TestReviewDecision.Approve);
 		const disposition = verdict?.acceptanceTests.find((entry) => entry.testName === row.testName);
-		const refusal = disposition === undefined ? undefined : refuseDisposition({ path: row.testFile, disposition });
+		const refusal = disposition === undefined ? undefined : refuseDisposition({ path: row.testFile, disposition, testFileGlobs: run.config['test-files'] });
 
 		rejections.push(...(refusal === undefined ? [] : [refusal]));
 		next.push(disposition === undefined || refusal !== undefined ? row : applyTo({ row, disposition }));

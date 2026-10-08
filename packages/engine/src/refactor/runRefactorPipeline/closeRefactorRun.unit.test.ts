@@ -5,6 +5,7 @@ import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFinding.ts';
 import type { RefactorRun } from '#src/refactor/common/RefactorRun.ts';
 import { closeRefactorRun } from '#src/refactor/runRefactorPipeline/closeRefactorRun.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // Mocked Imports
 // -------------------------
@@ -34,7 +35,7 @@ jest.mock('#src/standardsCheck/runStandardsCheck/runStandardsCheck.ts', () => ({
 const setupCloseRefactorRun = ({ path, all }: { path: string; all: boolean }) => {
 	mockRunStandardsCheck.mockResolvedValue({ findings: [], notes: [] });
 
-	const config: LightsoutConfig = { gates: { check: 'true', test: 'true', 'test-coverage': false }, 'packages-dir': 'packages' };
+	const config: LightsoutConfig = { 'test-files': testFileGlobs, gates: { check: 'true', test: 'true', 'test-coverage': false }, 'packages-dir': 'packages' };
 	const manifest = { runId: 'run-1', steps: [], currentStep: null } as unknown as RunManifest;
 	const run = {
 		cwd: '/repo',

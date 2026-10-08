@@ -105,7 +105,7 @@ Completing the task is not enough. Agents should leave the repository better tha
 
 2. **Define your standards and gate commands.**
 
-Add a `lightsout.config.json` to the repository with your code standards and validation commands. Only the `gates` commands are mandatory — everything else is optional with sensible defaults. Code standards are opt-in: set `"standards-pack": "lightsout/standards"` to turn on the bundled ones, and without it lightsout runs with none. See [docs/configuration.md](docs/configuration.md) for all available options.
+Add a `lightsout.config.json` to the repository with your code standards and validation commands. Only the `gates` commands and the `test-files` globs are mandatory — everything else is optional with sensible defaults. Code standards are opt-in: set `"standards-pack": "lightsout/standards"` to turn on the bundled ones, and without it lightsout runs with none. See [docs/configuration.md](docs/configuration.md) for all available options.
 
 The factory runs the work on your own installed, logged-in coding agent.
 Claude Code is the default; set `"harness"` to `"codex"`, `"omp"` (Oh My Pi)
@@ -116,6 +116,7 @@ as Claude Code and Codex plugins.
 
 ```json
 {
+  "test-files": ["**/*.test.*", "**/__mocks__/**"],
   "gates": {
     "check": "pnpm check",
     "test": "pnpm test:unit",

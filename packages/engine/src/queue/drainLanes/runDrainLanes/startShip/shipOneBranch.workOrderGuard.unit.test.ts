@@ -26,6 +26,7 @@ import { seedWorkOrderRecord } from '#tests/helpers/seedWorkOrderRecord.ts';
 import { setupBranchRepo } from '#tests/helpers/setupBranchRepo.ts';
 import { shipIntegrationFixture } from '#tests/helpers/shipIntegrationFixture.ts';
 import { shipSettingsFixture } from '#tests/helpers/shipSettingsFixture.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 import { writeRepoFile } from '#tests/helpers/writeRepoFile.ts';
 
 /**
@@ -64,7 +65,7 @@ jest.mock('#src/gates/runGates/runGates.ts', () => ({ runGates: (params: { cwd: 
 jest.mock('#src/ship/runShip/runShip.ts', () => ({ runShip: (params: Parameters<typeof mockRunShip>[0]) => mockRunShip(params) }));
 // -------------------------
 
-const config: LightsoutConfig = { gates: { check: 'true', test: 'true', 'test-coverage': false } };
+const config: LightsoutConfig = { 'test-files': testFileGlobs, gates: { check: 'true', test: 'true', 'test-coverage': false } };
 
 const shipSettings = shipSettingsFixture();
 

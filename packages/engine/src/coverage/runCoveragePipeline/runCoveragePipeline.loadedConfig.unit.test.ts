@@ -8,6 +8,7 @@ import { runCoveragePipeline } from '#src/coverage/runCoveragePipeline/runCovera
 import { createUncalledDriver } from '#tests/helpers/createUncalledDriver.ts';
 import { freshCwd } from '#tests/helpers/freshCwd.ts';
 import { getRejectionError } from '#tests/helpers/getRejectionError.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // Mocked Imports
 // -------------------------
@@ -38,8 +39,8 @@ const setupPipeline = async () => {
 
 	const cwd = await freshCwd();
 	const driver = createUncalledDriver({ reason: 'no batch runs once the initializer stops the pipeline' });
-	const config: LightsoutConfig = { harness: 'codex', model: 'stamped-model', gates };
-	const loadedConfig: LoadedConfig = { config: { harness: 'claude-code', gates }, path: '/repo/lightsout.config.json' };
+	const config: LightsoutConfig = { harness: 'codex', model: 'stamped-model', 'test-files': testFileGlobs, gates };
+	const loadedConfig: LoadedConfig = { config: { harness: 'claude-code', 'test-files': testFileGlobs, gates }, path: '/repo/lightsout.config.json' };
 
 	return { cwd, driver, config, loadedConfig };
 };
@@ -52,9 +53,9 @@ describe('runCoveragePipeline', () => {
 
 		expect(mockInitializeCoverageRun).toHaveBeenCalledWith(
 			expect.objectContaining({
-				config: { harness: 'codex', model: 'stamped-model', gates: { check: 'true', test: 'true', 'test-coverage': 'true' } },
+				config: { harness: 'codex', model: 'stamped-model', 'test-files': testFileGlobs, gates: { check: 'true', test: 'true', 'test-coverage': 'true' } },
 				loadedConfig: {
-					config: { harness: 'claude-code', gates: { check: 'true', test: 'true', 'test-coverage': 'true' } },
+					config: { harness: 'claude-code', 'test-files': testFileGlobs, gates: { check: 'true', test: 'true', 'test-coverage': 'true' } },
 					path: '/repo/lightsout.config.json',
 				},
 			}),

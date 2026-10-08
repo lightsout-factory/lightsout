@@ -10,6 +10,7 @@ import type { PipelineRun } from '#src/pipeline/common/PipelineRun.ts';
 import { runDirFor } from '#tests/helpers/runDirFor.ts';
 import { seedRunFolder } from '#tests/helpers/seedRunFolder.ts';
 import { setupConsumerRepo } from '#tests/helpers/setupConsumerRepo.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 const runId = 'run-1';
 const checkpoint = 'verify-tests';
@@ -77,7 +78,7 @@ const setupReview = ({ verdicts, acceptanceTests = [acceptanceRow] }: SetupParam
 	const run = {
 		cwd,
 		driver: createReviewerDriver({ verdicts }),
-		config: { gates: { check: 'true', test: 'true' } } as unknown as LightsoutConfig,
+		config: { 'test-files': testFileGlobs, gates: { check: 'true', test: 'true' } } as unknown as LightsoutConfig,
 		current: () => manifest,
 		progress: () => {},
 		update: async ({ patch }: { patch: Partial<RunManifest> }) => {
@@ -128,7 +129,7 @@ const setupUntrackedReview = ({ verdicts }: { verdicts: unknown[] }) => {
 	const run = {
 		cwd,
 		driver,
-		config: { gates: { check: 'true', test: 'true' } } as unknown as LightsoutConfig,
+		config: { 'test-files': testFileGlobs, gates: { check: 'true', test: 'true' } } as unknown as LightsoutConfig,
 		current: () => manifest,
 		progress: () => {},
 		update: async ({ patch }: { patch: Partial<RunManifest> }) => {

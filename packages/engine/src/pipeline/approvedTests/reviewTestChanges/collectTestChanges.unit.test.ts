@@ -11,6 +11,7 @@ import { approvedTestPath } from '#src/pipeline/approvedTests/common/approvedTes
 import { collectTestChanges } from '#src/pipeline/approvedTests/reviewTestChanges/collectTestChanges.ts';
 import type { PipelineRun } from '#src/pipeline/common/PipelineRun.ts';
 import { runDirFor } from '#tests/helpers/runDirFor.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 import { writeRepoFile } from '#tests/helpers/writeRepoFile.ts';
 
 // The checkpoint's change bundle: which paths are candidates, which of them
@@ -76,7 +77,7 @@ const setupChangeRun = async ({ committed = {}, live = {}, approved = {}, change
 
 	const run = {
 		cwd,
-		config: config as LightsoutConfig,
+		config: { 'test-files': testFileGlobs, ...config } as LightsoutConfig,
 		current: () => ({ runId, changedFiles, approvedTests }) as unknown as RunManifest,
 	};
 

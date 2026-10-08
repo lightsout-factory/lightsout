@@ -13,6 +13,7 @@ import { runDirectWork } from '#src/direct/runDirectWork/runDirectWork.ts';
 import { readRunManifest } from '#src/runState/readRunManifest.ts';
 import { getRunProgress } from '#src/views/getRunProgress.ts';
 import { setupConsumerRepo } from '#tests/helpers/setupConsumerRepo.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // Mocked Imports
 // -------------------------
@@ -50,7 +51,11 @@ const reportOf = (overrides: Partial<WorkReport> = {}): WorkReport => ({
  */
 const setupDirectRun = ({ agentCommands }: { agentCommands?: string[] } = {}) => {
 	const cwd = setupConsumerRepo();
-	const config: LightsoutConfig = { gates: { check: 'true', test: 'true', 'test-coverage': false }, 'agent-commands': agentCommands };
+	const config: LightsoutConfig = {
+		'test-files': testFileGlobs,
+		gates: { check: 'true', test: 'true', 'test-coverage': false },
+		'agent-commands': agentCommands,
+	};
 
 	mockInvokeAgentWithContract.mockResolvedValue({ ok: true, report: reportOf() });
 	mockRunGates.mockResolvedValue({ error: undefined, failedFamilies: [], crashes: [], timeouts: [], coordination: undefined });

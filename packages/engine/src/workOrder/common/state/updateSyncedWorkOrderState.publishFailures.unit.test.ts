@@ -12,6 +12,7 @@ import { updateLocalWorkOrderState } from '#src/workOrder/common/state/updateLoc
 import { updateSyncedWorkOrderState } from '#src/workOrder/common/state/updateSyncedWorkOrderState.ts';
 import { canonicalTicketRecordText } from '#tests/helpers/canonicalTicketRecordText.ts';
 import { ticketTrackerConfigBlock } from '#tests/helpers/queueConfigBlock.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 /**
  * What a synced update answers when the local change lands but the publish does
@@ -96,7 +97,7 @@ const setupSyncedRecord = async ({
 	local = localRecord,
 	published,
 	sidecarOf,
-	config = { gates, 'ticket-tracker': trackerBlock },
+	config = { 'test-files': testFileGlobs, gates, 'ticket-tracker': trackerBlock },
 	uploadFailure,
 	detail = 'added plan 003-ship-guard',
 	refusal,

@@ -28,7 +28,7 @@ export const weighSelection = ({ selected, config }: Params): { weights: PhaseWe
 	const weights = selected.map((file) => {
 		const base = basename(file.path);
 
-		return computePlanWeight({ plan: parsePlan({ content: file.text, base }), phase: base, packagesDir, thresholds });
+		return computePlanWeight({ plan: parsePlan({ content: file.text, base }), phase: base, packagesDir, thresholds, testFileGlobs: config['test-files'] });
 	});
 	const heavyPhases = new Set(weights.filter(({ weight }) => weight === PlanWeight.Heavy).map(({ phase }) => phase));
 

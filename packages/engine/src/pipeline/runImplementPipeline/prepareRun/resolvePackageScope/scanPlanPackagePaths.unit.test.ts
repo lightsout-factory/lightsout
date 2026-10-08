@@ -9,6 +9,7 @@ import { expect, test } from '@jest/globals';
 import { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { readPlanPackages } from '#src/pipeline/runImplementPipeline/prepareRun/resolvePackageScope/readPlanPackages.ts';
 import { scanPlanPackagePaths } from '#src/pipeline/runImplementPipeline/prepareRun/resolvePackageScope/scanPlanPackagePaths.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 test('readPlanPackages parses the block-list form', () => {
 	const plan = '---\npackages:\n  - backend-api\n  - "shared"\n---\n# Plan\n';
@@ -80,6 +81,7 @@ const baseGates = { check: 'true', test: 'true', 'test-coverage': false };
 
 test('config rejects a packageGates command missing {package}', () => {
 	const parsed = LightsoutConfig.safeParse({
+		'test-files': testFileGlobs,
 		gates: baseGates,
 		'package-gates': { check: 'pnpm typecheck', test: 'pnpm --filter {package} test' },
 	});
@@ -90,6 +92,7 @@ test('config rejects a packageGates command missing {package}', () => {
 
 test('config accepts packageGates with the placeholder everywhere', () => {
 	const parsed = LightsoutConfig.safeParse({
+		'test-files': testFileGlobs,
 		gates: baseGates,
 		'package-gates': { check: 'pnpm --filter {package} typecheck', test: 'pnpm --filter {package} test' },
 	});
@@ -98,7 +101,7 @@ test('config accepts packageGates with the placeholder everywhere', () => {
 });
 
 test('config requires test-coverage: a command or an explicit false', () => {
-	expect(LightsoutConfig.safeParse({ gates: { check: 'true', test: 'true' } }).success).toBe(false);
-	expect(LightsoutConfig.safeParse({ gates: { ...baseGates, 'test-coverage': 'pnpm cov' } }).success).toBe(true);
-	expect(LightsoutConfig.safeParse({ gates: baseGates }).success).toBe(true);
+	expect(LightsoutConfig.safeParse({ 'test-files': testFileGlobs, gates: { check: 'true', test: 'true' } }).success).toBe(false);
+	expect(LightsoutConfig.safeParse({ 'test-files': testFileGlobs, gates: { ...baseGates, 'test-coverage': 'pnpm cov' } }).success).toBe(true);
+	expect(LightsoutConfig.safeParse({ 'test-files': testFileGlobs, gates: baseGates }).success).toBe(true);
 });

@@ -10,6 +10,7 @@ import type { TrackerTicket } from '#src/common/types/TrackerTicket.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { captureCommandOutput } from '#tests/helpers/captureCommandOutput.ts';
 import { queueConfigBlock, ticketTrackerConfigBlock } from '#tests/helpers/queueConfigBlock.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 import { trackerSettingsFixture } from '#tests/helpers/trackerSettingsFixture.ts';
 
 // Mocked Imports
@@ -79,7 +80,7 @@ const setupTicketState = ({
 	mockResolveTrackerSettings.mockReturnValue(trackerSettings);
 	writeFileSync(
 		join(cwd, 'lightsout.config.json'),
-		JSON.stringify({ gates, 'ticket-tracker': ticketTrackerConfigBlock, ...(queue === undefined ? {} : { queue }) }),
+		JSON.stringify({ 'test-files': testFileGlobs, gates, 'ticket-tracker': ticketTrackerConfigBlock, ...(queue === undefined ? {} : { queue }) }),
 	);
 
 	return { context: { flags: parseFlags({ args }), rest: [], cwd }, ...captured };

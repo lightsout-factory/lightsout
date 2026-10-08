@@ -10,6 +10,7 @@ import { WorkReportStatus } from '#src/contracts/work/WorkReportStatus.ts';
 import { runDirectWork } from '#src/direct/runDirectWork/runDirectWork.ts';
 import { readRunManifest } from '#src/runState/readRunManifest.ts';
 import { setupConsumerRepo } from '#tests/helpers/setupConsumerRepo.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // Mocked Imports
 // -------------------------
@@ -41,9 +42,9 @@ const driver: Driver = { name: 'claude-code', invoke: () => Promise.resolve({ te
 const setupLoadedConfigDirectRun = () => {
 	const cwd = setupConsumerRepo();
 	const gates = { check: 'true', test: 'true', 'test-coverage': false } as const;
-	const config: LightsoutConfig = { gates, harness: 'claude-code', model: 'stamped-model', effort: 'max' };
+	const config: LightsoutConfig = { 'test-files': testFileGlobs, gates, harness: 'claude-code', model: 'stamped-model', effort: 'max' };
 	const loadedConfig: LoadedConfig = {
-		config: { gates, harness: 'codex', model: 'file-model', effort: 'low' },
+		config: { 'test-files': testFileGlobs, gates, harness: 'codex', model: 'file-model', effort: 'low' },
 		path: join(cwd, 'lightsout.config.json'),
 	};
 
@@ -79,11 +80,23 @@ describe('runDirectWork', () => {
 			onDisk: { config: onDisk.config, configPath: onDisk.configPath },
 		}).toStrictEqual({
 			returned: {
-				config: { gates: { check: 'true', test: 'true', 'test-coverage': false }, harness: 'codex', model: 'file-model', effort: 'low' },
+				config: {
+					'test-files': testFileGlobs,
+					gates: { check: 'true', test: 'true', 'test-coverage': false },
+					harness: 'codex',
+					model: 'file-model',
+					effort: 'low',
+				},
 				configPath: loadedConfig.path,
 			},
 			onDisk: {
-				config: { gates: { check: 'true', test: 'true', 'test-coverage': false }, harness: 'codex', model: 'file-model', effort: 'low' },
+				config: {
+					'test-files': testFileGlobs,
+					gates: { check: 'true', test: 'true', 'test-coverage': false },
+					harness: 'codex',
+					model: 'file-model',
+					effort: 'low',
+				},
 				configPath: loadedConfig.path,
 			},
 		});

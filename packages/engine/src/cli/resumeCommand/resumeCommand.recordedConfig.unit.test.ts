@@ -7,6 +7,7 @@ import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutCo
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import { runDirFor } from '#tests/helpers/runDirFor.ts';
 import { manifestOf, runId, setupResume } from '#tests/helpers/setupResume.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // Mocked Imports
 // -------------------------
@@ -30,7 +31,7 @@ jest.mock('#src/ticketLifecycle/requireImplementLifecycle.ts', () => ({
 // -------------------------
 
 /** A config this engine accepts, standing for the one a run recorded when it started. */
-const recordedConfig = { gates: { check: 'true', test: 'true', 'test-coverage': false }, 'standards-pack': false };
+const recordedConfig = { 'test-files': testFileGlobs, gates: { check: 'true', test: 'true', 'test-coverage': false }, 'standards-pack': false };
 
 /** A seeded run's manifest exactly as its bytes stand on disk, so a refusal can be shown to have written nothing. */
 const readManifestText = ({ cwd, id }: { cwd: string; id: string }): string => readFileSync(join(runDirFor({ cwd, runId: id }), 'manifest.json'), 'utf8');

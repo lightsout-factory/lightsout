@@ -5,8 +5,9 @@ import { describe, expect, test } from '@jest/globals';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { resolveStandards } from '#src/standards/resolveStandards.ts';
 import { getRejectionError } from '#tests/helpers/getRejectionError.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
-const baseConfig: LightsoutConfig = { gates: { check: 'true', test: 'true', 'test-coverage': false } };
+const baseConfig: LightsoutConfig = { 'test-files': testFileGlobs, gates: { check: 'true', test: 'true', 'test-coverage': false } };
 
 /** A temp consumer repo holding the given repo-relative files. */
 const setupRepo = ({ files = {} }: { files?: Record<string, string> } = {}) => {

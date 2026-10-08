@@ -7,6 +7,7 @@ import type { PhaseDeclaration } from '#src/common/types/PhaseDeclaration.ts';
 import { ActivityLevelKind } from '#src/contracts/activity/ActivityLevelKind.ts';
 import type { ConfigDocs } from '#src/contracts/ConfigDocs.ts';
 import type { Effort } from '#src/contracts/Effort.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { Permissions } from '#src/contracts/Permissions.ts';
 import type { DecisionsRecord } from '#src/contracts/plan/decisions/DecisionsRecord.ts';
 import { PlanDraftReport } from '#src/contracts/plan/draft/PlanDraftReport.ts';
@@ -49,6 +50,8 @@ interface Params {
 	docs?: ConfigDocs;
 	/** `plan.contract` from config, threaded through so a phase file carries the same acceptance-test ledger a single plan would. */
 	contract?: boolean;
+	/** The repo's config, when it has one — the prior-art census reads its excluded paths and test-file globs. */
+	config?: LightsoutConfig;
 	model?: string;
 	effort?: Effort;
 	permissions?: Permissions;
@@ -122,12 +125,12 @@ const spawnPhase = async ({
  * phases cost against what the overview did.
  */
 export const authorFocusedPhaseFiles = async (params: Params): Promise<AuthorPhaseFilesResult> => {
-	const { cwd, name, declarations, progress } = params;
+	const { cwd, name, declarations, progress, config } = params;
 
 	progress(`plan draft ${name}: authoring ${declarations.length} phase file(s), up to ${planDraftConcurrency} at a time`);
 
 	const fanOut = params.level?.open({ level: ActivityLevelKind.Pass, label: 'phase fan-out' });
-	const census = await buildExportCensus({ cwd });
+	const census = await buildExportCensus({ cwd, config });
 	const spawning = { ...params, level: fanOut };
 	const tasks = declarations.map(
 		(declaration, index) => () => spawnPhase({ params: spawning, declaration, previousDeclaration: index === 0 ? undefined : declarations[index - 1], census }),

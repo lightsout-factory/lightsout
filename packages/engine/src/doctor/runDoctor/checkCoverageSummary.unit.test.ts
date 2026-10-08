@@ -5,6 +5,7 @@ import { describe, expect, test } from '@jest/globals';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { checkCoverageSummary } from '#src/doctor/runDoctor/checkCoverageSummary.ts';
 import type { PackageDir } from '#src/doctor/runDoctor/common/types/PackageDir.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 const gates: LightsoutConfig['gates'] = { check: 'true', test: 'true', 'test-coverage': 'pnpm test:coverage' };
 
@@ -36,13 +37,15 @@ describe('checkCoverageSummary', () => {
 		const cwd = setupRepo();
 
 		// nothing measures coverage here, so a missing summary is not a finding
-		expect(await checkCoverageSummary({ config: { gates: { ...gates, 'test-coverage': false } }, packageDirs: packageDirs({ cwd }) })).toBe(undefined);
+		expect(
+			await checkCoverageSummary({ config: { 'test-files': testFileGlobs, gates: { ...gates, 'test-coverage': false } }, packageDirs: packageDirs({ cwd }) }),
+		).toBe(undefined);
 	});
 
 	test('a single-package repo passes when the summary the run reads is on disk', async () => {
 		const cwd = setupRepo({ summaries: ['coverage/coverage-summary.json'] });
 
-		const check = await checkCoverageSummary({ config: { gates }, packageDirs: packageDirs({ cwd }) });
+		const check = await checkCoverageSummary({ config: { 'test-files': testFileGlobs, gates }, packageDirs: packageDirs({ cwd }) });
 
 		expect(check?.status).toBe('pass');
 		expect(check?.detail).toBe('coverage summary found for 1 scope(s)');
@@ -51,7 +54,7 @@ describe('checkCoverageSummary', () => {
 	test('a missing summary warns with the reporter to configure — a fresh clone looks identical', async () => {
 		const cwd = setupRepo();
 
-		const check = await checkCoverageSummary({ config: { gates }, packageDirs: packageDirs({ cwd }) });
+		const check = await checkCoverageSummary({ config: { 'test-files': testFileGlobs, gates }, packageDirs: packageDirs({ cwd }) });
 
 		// warn, not fail: a repo that has never run coverage is in this state too
 		expect(check?.status).toBe('warn');
@@ -62,6 +65,7 @@ describe('checkCoverageSummary', () => {
 	test('monorepo mode checks each package and never the root, exactly as the measurement runs', async () => {
 		const cwd = setupRepo({ summaries: ['coverage/coverage-summary.json', 'packages/api/coverage/coverage-summary.json'] });
 		const config: LightsoutConfig = {
+			'test-files': testFileGlobs,
 			gates,
 			'package-gates': { check: 'x {package}', test: 'x {package}', 'test-coverage': 'x {package}' },
 		};
@@ -76,7 +80,10 @@ describe('checkCoverageSummary', () => {
 	test('monorepo mode passes on the packages alone, counting them and never the root', async () => {
 		const cwd = setupRepo({ summaries: ['packages/api/coverage/coverage-summary.json', 'packages/web/coverage/coverage-summary.json'] });
 
-		const check = await checkCoverageSummary({ config: { gates, 'package-gates': packageGates }, packageDirs: packageDirs({ cwd, packages: ['api', 'web'] }) });
+		const check = await checkCoverageSummary({
+			config: { 'test-files': testFileGlobs, gates, 'package-gates': packageGates },
+			packageDirs: packageDirs({ cwd, packages: ['api', 'web'] }),
+		});
 
 		// the root has no summary and is never asked for one — the two packages are the whole measurement
 		expect(check?.status).toBe('pass');
@@ -88,7 +95,10 @@ describe('checkCoverageSummary', () => {
 	test('every scope missing a summary is named in the one finding', async () => {
 		const cwd = setupRepo();
 
-		const check = await checkCoverageSummary({ config: { gates, 'package-gates': packageGates }, packageDirs: packageDirs({ cwd, packages: ['api', 'web'] }) });
+		const check = await checkCoverageSummary({
+			config: { 'test-files': testFileGlobs, gates, 'package-gates': packageGates },
+			packageDirs: packageDirs({ cwd, packages: ['api', 'web'] }),
+		});
 
 		expect(check?.status).toBe('warn');
 		expect(check?.detail).toBe('not found: api: coverage/coverage-summary.json, web: coverage/coverage-summary.json');
@@ -98,7 +108,7 @@ describe('checkCoverageSummary', () => {
 		const cwd = setupRepo({ summaries: ['packages/api/coverage/coverage-summary.json'] });
 
 		const check = await checkCoverageSummary({
-			config: { gates: { ...gates, 'test-coverage': false }, 'package-gates': packageGates },
+			config: { 'test-files': testFileGlobs, gates: { ...gates, 'test-coverage': false }, 'package-gates': packageGates },
 			packageDirs: packageDirs({ cwd, packages: ['api'] }),
 		});
 
@@ -109,7 +119,7 @@ describe('checkCoverageSummary', () => {
 
 	test('a monorepo whose scoped gates skip coverage is measured at the root, not per package', async () => {
 		const cwd = setupRepo({ summaries: ['coverage/coverage-summary.json'] });
-		const config: LightsoutConfig = { gates, 'package-gates': { check: 'x {package}', test: 'x {package}' } };
+		const config: LightsoutConfig = { 'test-files': testFileGlobs, gates, 'package-gates': { check: 'x {package}', test: 'x {package}' } };
 
 		const check = await checkCoverageSummary({ config, packageDirs: packageDirs({ cwd, packages: ['api'] }) });
 
@@ -122,7 +132,10 @@ describe('checkCoverageSummary', () => {
 	test('a configured summary path is what every scope is checked for', async () => {
 		const cwd = setupRepo({ summaries: ['reports/summary.json'] });
 
-		const check = await checkCoverageSummary({ config: { gates, 'coverage-summary-path': 'reports/summary.json' }, packageDirs: packageDirs({ cwd }) });
+		const check = await checkCoverageSummary({
+			config: { 'test-files': testFileGlobs, gates, 'coverage-summary-path': 'reports/summary.json' },
+			packageDirs: packageDirs({ cwd }),
+		});
 
 		expect(check?.status).toBe('pass');
 	});

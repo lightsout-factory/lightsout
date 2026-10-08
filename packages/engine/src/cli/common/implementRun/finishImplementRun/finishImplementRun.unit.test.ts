@@ -9,6 +9,7 @@ import type { PipelineResult } from '#src/pipeline/PipelineResult.ts';
 import { captureCommandOutput } from '#tests/helpers/captureCommandOutput.ts';
 import { runDirFor } from '#tests/helpers/runDirFor.ts';
 import { manifestOf } from '#tests/helpers/setupResume.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // Mocked Imports
 // -------------------------
@@ -74,7 +75,7 @@ const setupFinish = ({
 	mockRenderResult.mockResolvedValue(renderedLines);
 	mockShipAfterImplement.mockResolvedValue(shipCode);
 
-	const config = LightsoutConfig.parse({ gates: { check: 'true', test: 'true', 'test-coverage': false } });
+	const config = LightsoutConfig.parse({ 'test-files': testFileGlobs, gates: { check: 'true', test: 'true', 'test-coverage': false } });
 	const result: PipelineResult = { ok, manifest: manifestOf({ runId, status, ...(parentRunId === undefined ? {} : { parentRunId }) }), error };
 	const flags = new Map<string, string | true>();
 	const readSavedReport = ({ dir }: { dir: string }) => {

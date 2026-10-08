@@ -8,6 +8,7 @@ const setupFileTextInput = ({
 	files = ['src/feature/getLabel.ts', 'src/feature/getLabel.unit.test.ts'],
 	tests = ['src/feature/getLabel.unit.test.ts'],
 	referenceFiles = ['src/app/runApp.ts'],
+	referenceTests = ['src/feature/getLabel.unit.test.ts'],
 	contents = [
 		['src/feature/getLabel.ts', 'export const getLabel = () => "label";'],
 		['src/feature/getLabel.unit.test.ts', 'describe("getLabel", () => {});'],
@@ -18,6 +19,7 @@ const setupFileTextInput = ({
 	files?: string[];
 	tests?: string[];
 	referenceFiles?: string[];
+	referenceTests?: string[];
 	contents?: Array<[string, string]>;
 	standardsLibraries?: string[];
 } = {}): FileTextInput => ({
@@ -27,12 +29,13 @@ const setupFileTextInput = ({
 	tests,
 	files,
 	referenceFiles,
+	referenceTests,
 	contents: new Map(contents),
 	standardsLibraries,
 });
 
 describe('readFileTexts', () => {
-	test('hands back the scope, the tests within it, the reference files and the text of every one', () => {
+	test('hands back the scope, the tests within it, the reference files, the tests among them and the text of every one', () => {
 		const input = setupFileTextInput();
 
 		const texts = readFileTexts({ input });
@@ -41,6 +44,7 @@ describe('readFileTexts', () => {
 			files: ['src/feature/getLabel.ts', 'src/feature/getLabel.unit.test.ts'],
 			tests: ['src/feature/getLabel.unit.test.ts'],
 			referenceFiles: ['src/app/runApp.ts'],
+			referenceTests: ['src/feature/getLabel.unit.test.ts'],
 			contents: new Map([
 				['src/feature/getLabel.ts', 'export const getLabel = () => "label";'],
 				['src/feature/getLabel.unit.test.ts', 'describe("getLabel", () => {});'],
@@ -51,11 +55,11 @@ describe('readFileTexts', () => {
 	});
 
 	test('an empty scope reads back as empty rather than as missing', () => {
-		const input = setupFileTextInput({ files: [], tests: [], referenceFiles: [], contents: [] });
+		const input = setupFileTextInput({ files: [], tests: [], referenceFiles: [], referenceTests: [], contents: [] });
 
 		const texts = readFileTexts({ input });
 
-		expect(texts).toStrictEqual({ files: [], tests: [], referenceFiles: [], contents: new Map(), standardsLibraries: [] });
+		expect(texts).toStrictEqual({ files: [], tests: [], referenceFiles: [], referenceTests: [], contents: new Map(), standardsLibraries: [] });
 	});
 
 	test('carries the pack roots the input declares, rather than a fixed empty list', () => {
@@ -69,6 +73,6 @@ describe('readFileTexts', () => {
 	test('a missing input yields an empty scope rather than refusing', () => {
 		const texts = readFileTexts({ input: undefined });
 
-		expect(texts).toStrictEqual({ files: [], tests: [], referenceFiles: [], contents: new Map(), standardsLibraries: [] });
+		expect(texts).toStrictEqual({ files: [], tests: [], referenceFiles: [], referenceTests: [], contents: new Map(), standardsLibraries: [] });
 	});
 });

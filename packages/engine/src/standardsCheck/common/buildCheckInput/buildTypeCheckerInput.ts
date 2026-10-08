@@ -9,6 +9,8 @@ interface Params {
 	tests: string[];
 	files: string[];
 	referenceFiles: string[];
+	/** The test files among `referenceFiles`, by the repo's own `test-files` globs. */
+	referenceTests: string[];
 	/** Repo-relative standards pack roots, from the walk that listed the files. */
 	standardsLibraries: string[];
 	/** The consumer's TypeScript — the engine never bundles a compiler of its own. */
@@ -76,6 +78,7 @@ export const buildTypeCheckerInput = async ({
 	tests,
 	files,
 	referenceFiles,
+	referenceTests,
 	standardsLibraries,
 	compiler,
 	packagesDir,
@@ -109,6 +112,7 @@ export const buildTypeCheckerInput = async ({
 		tests,
 		files,
 		referenceFiles,
+		referenceTests,
 		standardsLibraries,
 		compiler,
 		typedFiles,

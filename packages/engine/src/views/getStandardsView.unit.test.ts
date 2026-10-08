@@ -6,6 +6,7 @@ import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeveri
 import { writeStandardsSnapshot } from '#src/standardsCheck/writeStandardsSnapshot.ts';
 import { getStandardsView } from '#src/views/getStandardsView.ts';
 import { standardsViewFixtures } from '#tests/helpers/standardsViewFixtures.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 const { writeTree, housePackFile, writeStandardsPack, seedStandardsRepo, finding } = standardsViewFixtures;
 
@@ -215,6 +216,7 @@ const seedSelectedPackRepo = async () => {
 		files: {
 			'package.json': JSON.stringify({ name: 'app', dependencies: { react: '^19.0.0' } }),
 			'lightsout.config.json': JSON.stringify({
+				'test-files': testFileGlobs,
 				gates: { check: 'true', test: 'true', 'test-coverage': false },
 				'standards-pack': 'lightsout/fractal',
 			}),
@@ -277,6 +279,7 @@ const seedSplitRuleRepo = async () => {
 			'packages/engine/package.json': JSON.stringify({ name: 'engine' }),
 			'packages/web-app/package.json': JSON.stringify({ name: 'web-app' }),
 			'lightsout.config.json': JSON.stringify({
+				'test-files': testFileGlobs,
 				gates: { check: 'true', test: 'true', 'test-coverage': false },
 				'standards-libraries': { acme: library },
 				'standards-pack': 'acme/house',

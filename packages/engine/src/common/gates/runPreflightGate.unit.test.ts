@@ -5,6 +5,7 @@ import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutCo
 import { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import type { StepRecord } from '#src/contracts/run/StepRecord.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // Mocked Imports
 // -------------------------
@@ -22,7 +23,7 @@ const mockRunGates = jest.fn<(params: RunGatesParams) => Promise<GateRunResult>>
 jest.mock('#src/gates/runGates/runGates.ts', () => ({ runGates: (params: RunGatesParams) => mockRunGates(params) }));
 // -------------------------
 
-const config: LightsoutConfig = { gates: { check: 'true', test: 'true', 'test-coverage': 'true' } };
+const config: LightsoutConfig = { 'test-files': testFileGlobs, gates: { check: 'true', test: 'true', 'test-coverage': 'true' } };
 
 /** A stand-in run. `stop` returns a sentinel so a test can tell a stopped run from one that proceeds. */
 const setupPreflightGate = ({ steps = [], gateError, gateProgress }: { steps?: StepRecord[]; gateError?: string; gateProgress?: string } = {}) => {

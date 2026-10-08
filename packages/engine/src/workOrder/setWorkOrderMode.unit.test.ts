@@ -11,6 +11,7 @@ import type { WorkOrderPlan } from '#src/contracts/workOrder/WorkOrderPlan.ts';
 import type { WorkOrderState } from '#src/contracts/workOrder/WorkOrderState.ts';
 import { updateLocalWorkOrderState } from '#src/workOrder/common/state/updateLocalWorkOrderState.ts';
 import { setWorkOrderMode } from '#src/workOrder/setWorkOrderMode.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 /** The work order's label, which is also the branch every record below names. */
 const name = 'lo-140-multi';
@@ -88,6 +89,7 @@ const setupTicketMode = async ({
 			cwd,
 			name,
 			config: {
+				'test-files': testFileGlobs,
 				gates,
 				ship: { 'after-implement': afterImplement, ...(ticketPattern === undefined ? {} : { 'ticket-pattern': ticketPattern }) },
 			} satisfies LightsoutConfig,

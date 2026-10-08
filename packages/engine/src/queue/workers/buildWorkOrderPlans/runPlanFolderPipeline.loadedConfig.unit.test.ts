@@ -10,6 +10,7 @@ import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import type { PipelineResult } from '#src/pipeline/PipelineResult.ts';
 import { runPlanFolderPipeline } from '#src/queue/workers/buildWorkOrderPlans/runPlanFolderPipeline.ts';
 import { planWorkspaceFolder } from '#tests/helpers/planWorkspaceFolder.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 /** What either pipeline is handed: the stamped config and, beside it, the config as read with the file it came from. */
 interface PipelineCall {
@@ -81,9 +82,14 @@ const setupPlanFolder = ({ phased }: { phased: boolean }) => {
 	mockRunPhasesPipeline.mockResolvedValue({ ok: true, manifest: passedManifest });
 	mockRunImplementPipeline.mockResolvedValue({ ok: true, manifest: passedManifest });
 
-	const config: LightsoutConfig = { harness: 'claude-code', model: 'opus', gates: { check: 'true', test: 'true', 'test-coverage': false } };
+	const config: LightsoutConfig = {
+		harness: 'claude-code',
+		model: 'opus',
+		'test-files': testFileGlobs,
+		gates: { check: 'true', test: 'true', 'test-coverage': false },
+	};
 	const loadedConfig: LoadedConfig = {
-		config: { harness: 'codex', gates: { check: 'pnpm check', test: 'true', 'test-coverage': false } },
+		config: { harness: 'codex', 'test-files': testFileGlobs, gates: { check: 'pnpm check', test: 'true', 'test-coverage': false } },
 		path: '/launching/checkout/lightsout.config.json',
 	};
 

@@ -4,6 +4,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { gateLogCommand } from '#tests/helpers/gateLogCommand.ts';
 import { strictProfile } from '#tests/helpers/strictProfile.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 import { writeSource } from '#tests/helpers/writeSource.ts';
 
 interface Params {
@@ -36,6 +37,7 @@ export const setupMonorepo = ({ plan = '---\npackages:\n  - api\n---\n# Plan: ap
 	writeFileSync(
 		join(dir, 'lightsout.config.json'),
 		JSON.stringify({
+			'test-files': testFileGlobs,
 			gates: {
 				check: `${gateLogCommand({ kind: 'check' })} root`,
 				test: `${gateLogCommand({ kind: 'test' })} root`,

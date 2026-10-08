@@ -23,6 +23,8 @@ interface Params {
 	required: boolean;
 	/** So a row cannot name a gate nothing runs. */
 	gateKeys: Set<string>;
+	/** The repo's `test-files` globs: a row must name a test file, and a test file needs no row. */
+	testFileGlobs: string[];
 }
 
 /**
@@ -31,14 +33,14 @@ interface Params {
  * move-folders-and-files file has none, because a mechanical rename or move adds
  * no behaviour a new test could state.
  */
-const getCoverablePaths = ({ plan }: { plan: ParsedPlan }) => {
+const getCoverablePaths = ({ plan, testFileGlobs }: { plan: ParsedPlan; testFileGlobs: string[] }) => {
 	if (plan.buildMode !== BuildMode.Standard) {
 		return [];
 	}
 
 	const excused = new Set(plan.proseFiles.map((file) => file.path));
 
-	return [...new Set(getPlanWrittenPaths({ plan }))].filter((path) => isPlanSourceFile({ path }) && !excused.has(path));
+	return [...new Set(getPlanWrittenPaths({ plan }))].filter((path) => isPlanSourceFile({ path, testFileGlobs }) && !excused.has(path));
 };
 
 /**
@@ -101,14 +103,26 @@ const checkShape = ({ plan, phase, required, coverable }: { plan: ParsedPlan; ph
 	return findings;
 };
 
-const checkRows = async ({ plan, cwd, phase, gateKeys }: { plan: ParsedPlan; cwd: string; phase: string; gateKeys: Set<string> }) => {
+const checkRows = async ({
+	plan,
+	cwd,
+	phase,
+	gateKeys,
+	testFileGlobs,
+}: {
+	plan: ParsedPlan;
+	cwd: string;
+	phase: string;
+	gateKeys: Set<string>;
+	testFileGlobs: string[];
+}) => {
 	const findings: StructuralFinding[] = [];
 	const seen = new Set<string>();
 
 	for (const row of plan.ledger) {
 		const location = `${phase}:${row.line}`;
 
-		if (!isTestFile({ path: row.testFile })) {
+		if (!isTestFile({ path: row.testFile, testFileGlobs })) {
 			findings.push(
 				finding({
 					phase,
@@ -187,12 +201,12 @@ const checkRows = async ({ plan, cwd, phase, gateKeys }: { plan: ParsedPlan; cwd
  * A row may name an existing test file but not a test it already holds, so a test
  * written for older behaviour is never locked in as a new criterion's verifier.
  */
-export const checkAcceptanceLedger = async ({ plan, cwd, phase, required, gateKeys }: Params): Promise<StructuralFinding[]> => {
-	const coverable = getCoverablePaths({ plan });
+export const checkAcceptanceLedger = async ({ plan, cwd, phase, required, gateKeys, testFileGlobs }: Params): Promise<StructuralFinding[]> => {
+	const coverable = getCoverablePaths({ plan, testFileGlobs });
 
 	return [
 		...checkShape({ plan, phase, required, coverable }),
-		...(await checkRows({ plan, cwd, phase, gateKeys })),
+		...(await checkRows({ plan, cwd, phase, gateKeys, testFileGlobs })),
 		...checkMovedAwayLedgerFiles({ plan, phase }),
 		...checkLedgerCoverage({ plan, phase, coverable }),
 	];

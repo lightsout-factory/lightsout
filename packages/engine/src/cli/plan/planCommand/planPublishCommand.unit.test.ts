@@ -12,6 +12,7 @@ import { planAttachmentManifestName } from '#src/common/constants/planAttachment
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { captureCommandOutput } from '#tests/helpers/captureCommandOutput.ts';
 import { ticketTrackerConfigBlock } from '#tests/helpers/queueConfigBlock.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // Mocked Imports
 // -------------------------
@@ -64,7 +65,7 @@ const setupPublish = ({
 	mockPublishTicketPlan.mockResolvedValue(report);
 
 	if (withConfig) {
-		writeFileSync(join(cwd, 'lightsout.config.json'), JSON.stringify({ gates, 'ticket-tracker': ticketTrackerConfigBlock }));
+		writeFileSync(join(cwd, 'lightsout.config.json'), JSON.stringify({ 'test-files': testFileGlobs, gates, 'ticket-tracker': ticketTrackerConfigBlock }));
 	}
 
 	return { context: { flags: parseFlags({ args }), rest: [], cwd }, cwd, ...captured };

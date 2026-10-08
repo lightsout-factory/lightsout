@@ -6,8 +6,9 @@ import type { StandardsGroup } from '#src/common/types/StandardsGroup.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { resolveStandardsGroups } from '#src/standards/resolveStandardsGroups/resolveStandardsGroups.ts';
 import { getRejectionError } from '#tests/helpers/getRejectionError.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
-const baseConfig: LightsoutConfig = { gates: { check: 'true', test: 'true', 'test-coverage': false } };
+const baseConfig: LightsoutConfig = { 'test-files': testFileGlobs, gates: { check: 'true', test: 'true', 'test-coverage': false } };
 
 /** Standards are opt-in, so a test that wants the root and every package on one pack names it. */
 const fractalConfig: LightsoutConfig = { ...baseConfig, 'standards-pack': 'lightsout/fractal' };

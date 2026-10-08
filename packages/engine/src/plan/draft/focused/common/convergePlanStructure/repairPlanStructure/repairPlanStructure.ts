@@ -79,7 +79,7 @@ export const repairPlanStructure = async (params: Params): Promise<PlanRepairRes
 		verb: 'repair',
 		findingNoun: 'structural finding(s)',
 		check: async () => {
-			await repairMechanicalFindings({ cwd, name, planPaths, decisions, overviewPath });
+			await repairMechanicalFindings({ cwd, name, planPaths, decisions, overviewPath, testFileGlobs: config?.['test-files'] ?? [] });
 
 			return lintPlanStructure({ cwd, planPaths, decisions, config });
 		},

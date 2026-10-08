@@ -4,6 +4,7 @@ import type { Driver } from '#src/common/types/Driver.ts';
 import type { DriverInvocation } from '#src/common/types/DriverInvocation.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { outcomeFields } from '#tests/helpers/outcomeFields.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 import { verdict } from '#tests/helpers/verdict.ts';
 
 /**
@@ -28,6 +29,7 @@ const setupSupervisor = ({ overrides = {}, text = verdict() }: { overrides?: Par
 	};
 
 	const config: LightsoutConfig = {
+		'test-files': testFileGlobs,
 		gates: { check: 'true', test: 'true', 'test-coverage': 'true' },
 		...overrides,
 	};

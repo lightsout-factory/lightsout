@@ -144,6 +144,7 @@ export const lintPlanStructure = async ({ cwd, planPaths, decisions, config }: P
 	const docsDeclared = (config?.docs?.length ?? 0) > 0;
 	const contract = config?.plan?.contract === true;
 	const gateKeys = new Set(Object.keys(config?.gates ?? {}));
+	const testFileGlobs = config?.['test-files'] ?? [];
 	const configCommands = new Set(Object.values(config?.gates ?? {}).filter((value): value is string => typeof value === 'string'));
 	const { phases, findings } = await readPhaseFiles({ planPaths });
 	const overview = phases.find((file) => file.plan.variant === PlanFileKind.Overview);
@@ -166,7 +167,7 @@ export const lintPlanStructure = async ({ cwd, planPaths, decisions, config }: P
 		const provided = provenance.providedBefore.get(phase.base) ?? new Set<string>();
 		const declaredScripts = declaredByPhase.get(phase.base) ?? new Set<string>();
 		const shared = { plan: phase.plan, cwd, planPath: phase.path, phase: phase.base };
-		const { created, touched } = getPlanTouchedPaths({ plan: phase.plan });
+		const { created, touched } = getPlanTouchedPaths({ plan: phase.plan, testFileGlobs });
 		const sizes = { created: created.length, touched: touched.length };
 
 		counts.set(phase.base, sizes);
@@ -178,7 +179,7 @@ export const lintPlanStructure = async ({ cwd, planPaths, decisions, config }: P
 			...(await checkVerificationScripts({ ...shared, packagesDir, configCommands, declaredScripts })),
 			...(phase.plan.variant === PlanFileKind.Implementable
 				? [
-						...(await checkAcceptanceLedger({ plan: phase.plan, cwd, phase: phase.base, required: contract, gateKeys })),
+						...(await checkAcceptanceLedger({ plan: phase.plan, cwd, phase: phase.base, required: contract, gateKeys, testFileGlobs })),
 						...checkRenames({ plan: phase.plan, phase: phase.base }),
 						...checkBuildMode({ plan: phase.plan, phase: phase.base }),
 					]

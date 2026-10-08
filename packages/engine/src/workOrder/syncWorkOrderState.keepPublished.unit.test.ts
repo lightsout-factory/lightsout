@@ -14,6 +14,7 @@ import type { WorkOrderState } from '#src/contracts/workOrder/WorkOrderState.ts'
 import { syncWorkOrderState } from '#src/workOrder/syncWorkOrderState.ts';
 import { planWorkspaceFolder } from '#tests/helpers/planWorkspaceFolder.ts';
 import { ticketTrackerConfigBlock } from '#tests/helpers/queueConfigBlock.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // Mocked Imports
 // -------------------------
@@ -60,7 +61,7 @@ jest.mock('#src/worktree/resolveWorktreePath.ts', () => ({
 // -------------------------
 
 const gates: LightsoutConfig['gates'] = { check: 'true', test: 'true', 'test-coverage': false };
-const config: LightsoutConfig = { gates, 'ticket-tracker': { ...ticketTrackerConfigBlock, provider: 'linear' } };
+const config: LightsoutConfig = { 'test-files': testFileGlobs, gates, 'ticket-tracker': { ...ticketTrackerConfigBlock, provider: 'linear' } };
 const env = { LINEAR_API_KEY: 'lin_key' };
 
 const name = 'lo-140-multi';

@@ -145,6 +145,8 @@ interface Params {
 	path?: string;
 	/** Path prefixes to exclude (the config's `generated` list). */
 	exclude?: string[];
+	/** The repo's `test-files` globs — how source and tests are told apart. */
+	testFileGlobs: string[];
 	onProgress?: (message: string) => void;
 }
 
@@ -169,13 +171,16 @@ export const runPackageChecks = async ({
 	packagesDir = defaultPackagesDir,
 	path,
 	exclude,
+	testFileGlobs,
 	onProgress,
 }: Params): Promise<{ findings: StandardsFinding[]; notes: string[] }> => {
 	const progress = onProgress ?? (() => undefined);
 	const { files: repoFiles, standardsLibraries } = await listSourceFiles({ cwd, exclude });
 	const allFiles = repoFiles.filter((file) => !path || file.startsWith(path));
-	const source = allFiles.filter((file) => !isTestFile({ path: file, standardsLibraries }));
-	const tests = allFiles.filter((file) => isTestFile({ path: file, standardsLibraries }));
+	const isTest = (file: string) => isTestFile({ path: file, testFileGlobs });
+	const source = allFiles.filter((file) => !isTest(file));
+	const tests = allFiles.filter(isTest);
+	const referenceTests = repoFiles.filter(isTest);
 	const notes: string[] = [];
 
 	progress(`checking ${source.length} source file(s) and ${tests.length} test file(s)`);
@@ -187,7 +192,20 @@ export const runPackageChecks = async ({
 	const groupOfFile: GroupOfFile = (file) => findFileStandardsGroup({ file, groups, packagesDir, workspacePackages });
 
 	const buildInput: BuildInput = async ({ kind, options }) =>
-		buildCheckInput({ kind, cwd, source, tests, files: allFiles, referenceFiles: repoFiles, standardsLibraries, packagesDir, options, cache, compiler });
+		buildCheckInput({
+			kind,
+			cwd,
+			source,
+			tests,
+			files: allFiles,
+			referenceFiles: repoFiles,
+			referenceTests,
+			standardsLibraries,
+			packagesDir,
+			options,
+			cache,
+			compiler,
+		});
 
 	const { findings, skipped } = await runLiveRules({ live, buildInput, groupOfFile, compiler, progress });
 

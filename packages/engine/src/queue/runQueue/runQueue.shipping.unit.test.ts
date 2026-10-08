@@ -28,6 +28,7 @@ import { nameWaveLikeTemplate } from '#tests/helpers/nameWaveLikeTemplate.ts';
 import { queueSettingsFixture } from '#tests/helpers/queueSettingsFixture.ts';
 import { seedWorkOrderRecord } from '#tests/helpers/seedWorkOrderRecord.ts';
 import { setupBranchRepo } from '#tests/helpers/setupBranchRepo.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 import { trackerSettingsFixture } from '#tests/helpers/trackerSettingsFixture.ts';
 
 // Mocked Imports
@@ -96,7 +97,7 @@ jest.mock('#src/queue/drainLanes/runDrainLanes/common/admitScanned/nameWaveWorkO
 }));
 // -------------------------
 
-const config: LightsoutConfig = { gates: { check: 'true', test: 'true', 'test-coverage': false } };
+const config: LightsoutConfig = { 'test-files': testFileGlobs, gates: { check: 'true', test: 'true', 'test-coverage': false } };
 
 const shipSettings: ShipSettings = {
 	ticketPattern: /^(?<ticket>[a-z]+-\d+)/,

@@ -29,7 +29,7 @@ const reportsWhatItWasHanded: StandardsCheckFunction = ({ inputs }) => {
 				{
 					siteKey: 'no-banned-file:handed',
 					files: [],
-					detail: `source=${input.source.join('|')} tests=${input.tests.join('|')} packs=${input.standardsLibraries.length}`,
+					detail: `source=${input.source.join('|')} tests=${input.tests.join('|')} referenceTests=${input.referenceTests.join('|')} packs=${input.standardsLibraries.length}`,
 				},
 			];
 };
@@ -85,7 +85,14 @@ describe('checkFixtureTree', () => {
 	test('hands back what the check flagged in the tree it was pointed at', async () => {
 		const { cwd } = setupTree({ files: ['allowed.ts', 'banned.ts'] });
 
-		const found = await checkFixtureTree({ cwd, rule, inputKinds: [StandardsInputKind.FileList], run: bansTheBannedFile, label: 'fixtures/pass/' });
+		const found = await checkFixtureTree({
+			cwd,
+			rule,
+			inputKinds: [StandardsInputKind.FileList],
+			run: bansTheBannedFile,
+			label: 'fixtures/pass/',
+			testFileGlobs: [],
+		});
 
 		expect(found).toStrictEqual([{ siteKey: 'acme/no-banned-file:src/banned.ts', files: [{ path: 'src/banned.ts' }], detail: 'a file the rule bans' }]);
 	});
@@ -101,6 +108,7 @@ describe('checkFixtureTree', () => {
 				run: bansTheBannedTypedFile,
 				label: 'fixtures/pass/',
 				compiler: ts,
+				testFileGlobs: [],
 			}),
 		});
 
@@ -119,17 +127,48 @@ describe('checkFixtureTree', () => {
 			run: bansTheBannedTypedFile,
 			label: 'fixtures/pass/',
 			compiler: ts,
+			testFileGlobs: [],
 		});
 
 		expect(found).toStrictEqual([]);
 	});
 
-	test('splits test files out of source and declares no pack — the tree is a miniature repo of its own', async () => {
+	test('splits test files out of source by the globs it was given and declares no pack — the tree is a miniature repo of its own', async () => {
 		const { cwd } = setupTree({ files: ['allowed.ts', 'allowed.unit.test.ts'] });
 
-		const found = await checkFixtureTree({ cwd, rule, inputKinds: [StandardsInputKind.FileList], run: reportsWhatItWasHanded, label: 'fixtures/pass/' });
+		const found = await checkFixtureTree({
+			cwd,
+			rule,
+			inputKinds: [StandardsInputKind.FileList],
+			run: reportsWhatItWasHanded,
+			label: 'fixtures/pass/',
+			testFileGlobs: ['**/*.unit.test.ts'],
+		});
 
-		expect(found).toStrictEqual([{ siteKey: 'acme/no-banned-file:handed', files: [], detail: 'source=src/allowed.ts tests=src/allowed.unit.test.ts packs=0' }]);
+		expect(found).toStrictEqual([
+			{
+				siteKey: 'acme/no-banned-file:handed',
+				files: [],
+				detail: 'source=src/allowed.ts tests=src/allowed.unit.test.ts referenceTests=src/allowed.unit.test.ts packs=0',
+			},
+		]);
+	});
+
+	test('sorts every file as source when it was given no test globs — the engine holds no naming convention of its own', async () => {
+		const { cwd } = setupTree({ files: ['allowed.ts', 'allowed.unit.test.ts'] });
+
+		const found = await checkFixtureTree({
+			cwd,
+			rule,
+			inputKinds: [StandardsInputKind.FileList],
+			run: reportsWhatItWasHanded,
+			label: 'fixtures/pass/',
+			testFileGlobs: [],
+		});
+
+		expect(found).toStrictEqual([
+			{ siteKey: 'acme/no-banned-file:handed', files: [], detail: 'source=src/allowed.ts|src/allowed.unit.test.ts tests= referenceTests= packs=0' },
+		]);
 	});
 
 	test.each([
@@ -145,6 +184,7 @@ describe('checkFixtureTree', () => {
 			inputKinds: [StandardsInputKind.FileList],
 			run: capsTheSourceFolder,
 			label: 'fixtures/pass/',
+			testFileGlobs: [],
 		});
 
 		expect(found).toStrictEqual(expected);

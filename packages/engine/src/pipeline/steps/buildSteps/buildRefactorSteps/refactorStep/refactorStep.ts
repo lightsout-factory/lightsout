@@ -99,7 +99,7 @@ const finishCleanup = async ({ context, state }: { context: CleanupContext; stat
 		state.remaining = (await standardsWorkList({ run, baseline: context.baseline })).workList;
 	}
 
-	const reviewed = state.edited.filter((file) => !isTestFile({ path: file }));
+	const reviewed = state.edited.filter((file) => !isTestFile({ path: file, testFileGlobs: run.config['test-files'] }));
 
 	state.finalReview = reviewed.length === 0 ? context.initialReview : await reviewAdvisories({ run, groups, files: reviewed });
 

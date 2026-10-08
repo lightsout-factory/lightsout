@@ -9,6 +9,7 @@ import { lintPlanStructure } from '#src/plan/lint/lintPlanStructure/lintPlanStru
 import { emptyDecisionsRecord } from '#tests/helpers/emptyDecisionsRecord.ts';
 import { phaseBody } from '#tests/helpers/phasePlan.ts';
 import { setupConsumerRepo } from '#tests/helpers/setupConsumerRepo.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 /**
  * Committed files with no export, so the consumer repo plants no consumer
@@ -18,7 +19,7 @@ const trackedFiles = ({ paths }: { paths: string[] }) => Object.fromEntries(path
 
 /** The gate commands every consumer repo carries, with the executor-file-limit a case sets. */
 const configWithLimit = ({ limit }: { limit: number }) =>
-	LightsoutConfig.parse({ gates: { check: 'true', test: 'true', 'test-coverage': false }, 'executor-file-limit': limit });
+	LightsoutConfig.parse({ 'test-files': testFileGlobs, gates: { check: 'true', test: 'true', 'test-coverage': false }, 'executor-file-limit': limit });
 
 /** One work order's plan folder holding the given files; returns their absolute paths in written order. */
 const writeDeliverable = ({ cwd, workOrder, files }: { cwd: string; workOrder: string; files: Record<string, string> }) => {

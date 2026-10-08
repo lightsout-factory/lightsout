@@ -10,6 +10,7 @@ import { commitAll } from '#tests/helpers/commitAll.ts';
 import { engineOwnedReported } from '#tests/helpers/engineOwnedReported.ts';
 import { overviewBody, phaseBody } from '#tests/helpers/phasePlan.ts';
 import { setupPhasedDeliverable } from '#tests/helpers/setupPhasedDeliverable.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // The deterministic pass: everything the engine owns — the Decision Log, the
 // Global Constraints, the stamped phase counts and the paired phase row and
@@ -60,6 +61,7 @@ describe('repairMechanicalFindings', () => {
 			planPaths: deliverable.planPaths,
 			decisions: deliverable.decisions,
 			overviewPath: deliverable.overviewPath,
+			testFileGlobs,
 		});
 
 		const declarations = parsePhaseDeclarations({ plan: parsePlan({ content: deliverable.read({ base: 'overview.md' }), base: 'overview.md' }) });
@@ -102,6 +104,7 @@ describe('repairMechanicalFindings', () => {
 			planPaths: deliverable.planPaths,
 			decisions: deliverable.decisions,
 			overviewPath: deliverable.overviewPath,
+			testFileGlobs,
 		});
 
 		const after = renamesDisagreements({ findings: await deliverable.lint() });
@@ -161,6 +164,7 @@ describe('repairMechanicalFindings', () => {
 			planPaths: deliverable.planPaths,
 			decisions: deliverable.decisions,
 			overviewPath: deliverable.overviewPath,
+			testFileGlobs,
 		});
 
 		const after = buildModeDisagreements({ findings: await deliverable.lint() });
@@ -210,6 +214,7 @@ describe('repairMechanicalFindings', () => {
 			planPaths: deliverable.planPaths,
 			decisions: deliverable.decisions,
 			overviewPath: deliverable.overviewPath,
+			testFileGlobs,
 		});
 
 		const declarations = parsePhaseDeclarations({ plan: parsePlan({ content: deliverable.read({ base: 'overview.md' }), base: 'overview.md' }) });
@@ -233,6 +238,7 @@ describe('repairMechanicalFindings', () => {
 			planPaths: deliverable.planPaths,
 			decisions: deliverable.decisions,
 			overviewPath: deliverable.overviewPath,
+			testFileGlobs,
 		});
 
 		const after = engineOwnedReported({ findings: await deliverable.lint() }).phaseCounts;

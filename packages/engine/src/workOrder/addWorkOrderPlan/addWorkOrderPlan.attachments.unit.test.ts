@@ -11,6 +11,7 @@ import type { WorkOrderState } from '#src/contracts/workOrder/WorkOrderState.ts'
 import { addWorkOrderPlan } from '#src/workOrder/addWorkOrderPlan/addWorkOrderPlan.ts';
 import { updateLocalWorkOrderState } from '#src/workOrder/common/state/updateLocalWorkOrderState.ts';
 import { ticketTrackerConfigBlock } from '#tests/helpers/queueConfigBlock.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // Mocked Imports
 // -------------------------
@@ -84,7 +85,7 @@ const setupAddPlan = async ({ attachments }: { attachments: TrackerAttachment[] 
 	return {
 		recordPath: join(workOrderFolder, 'state.json'),
 		planFolderOf: ({ planId }: { planId: string }) => join(workOrderFolder, 'plans', planId),
-		params: { cwd, name, slug: 'search-basics', config: { gates, 'ticket-tracker': trackerBlock }, env },
+		params: { cwd, name, slug: 'search-basics', config: { 'test-files': testFileGlobs, gates, 'ticket-tracker': trackerBlock }, env },
 	};
 };
 

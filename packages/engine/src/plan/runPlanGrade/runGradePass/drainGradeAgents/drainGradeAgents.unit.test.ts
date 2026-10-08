@@ -17,6 +17,7 @@ import { drainGradeAgents } from '#src/plan/runPlanGrade/runGradePass/drainGrade
 import { emptyDecisionsRecord } from '#tests/helpers/emptyDecisionsRecord.ts';
 import { freshCwd } from '#tests/helpers/freshCwd.ts';
 import { gapCheckLensOf } from '#tests/helpers/gapCheckLensOf.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 /** Each plan file's text carries a sentence no other file does, so a reader's prompt names the file it was spawned for. */
 const firstPhaseText = '# Phase 1\n\nThe reader marker for phase one.\n';
@@ -178,7 +179,7 @@ const setupDocumentationPass = async ({ documentation }: { documentation: boolea
 		planPaths: files.map((file) => file.path),
 		decisions: emptyDecisionsRecord(),
 		workspaceDir: cwd,
-		config: { gates: { check: 'pnpm check', test: 'pnpm test:unit', 'test-coverage': 'pnpm test:coverage' }, docs: declaredDocs },
+		config: { 'test-files': testFileGlobs, gates: { check: 'pnpm check', test: 'pnpm test:unit', 'test-coverage': 'pnpm test:coverage' }, docs: declaredDocs },
 	};
 	const memory: GradeMemory = { planName: 'demo', findings: [], coverage: { readers: [] }, nextFindingNumber: 1, updatedAt: '2026-01-01T00:00:00.000Z' };
 

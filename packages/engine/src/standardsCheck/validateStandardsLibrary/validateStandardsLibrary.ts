@@ -144,7 +144,15 @@ export const validateStandardsLibrary = async ({ library, libraries }: Params): 
 		for (const side of Object.values(FixtureSide)) {
 			try {
 				const kinds = selectInputKinds({ inputKinds, optionalInputKinds: rule.optionalInputKinds, hasTypescript: compiler !== undefined });
-				const found = await checkFixtureTree({ cwd: join(rule.fixturesPath, side), rule, inputKinds: kinds, run, label: `fixtures/${side}/`, compiler });
+				const found = await checkFixtureTree({
+					cwd: join(rule.fixturesPath, side),
+					rule,
+					inputKinds: kinds,
+					run,
+					label: `fixtures/${side}/`,
+					compiler,
+					testFileGlobs: library.fixtureTestFiles,
+				});
 
 				if (side === FixtureSide.Fail && found.length === 0) {
 					problems.push(`${rule.id}: the fail fixture produced no finding — the check does not catch what the rule describes`);

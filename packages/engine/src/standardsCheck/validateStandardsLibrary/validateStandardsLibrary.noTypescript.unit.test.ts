@@ -72,6 +72,7 @@ const setupPack = () => {
 	const pack: LoadedStandardsLibrary = {
 		name: 'acme',
 		formatVersion: 2,
+		fixtureTestFiles: [],
 		rootPath: '/packages/acme',
 		documents: [],
 		packs: [],

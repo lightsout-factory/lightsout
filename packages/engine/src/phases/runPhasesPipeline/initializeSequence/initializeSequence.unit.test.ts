@@ -16,8 +16,9 @@ import { readRunManifest } from '#src/runState/readRunManifest.ts';
 import { getRejectionError } from '#tests/helpers/getRejectionError.ts';
 import { plantSequence } from '#tests/helpers/plantSequence.ts';
 import { setupBranchRepo } from '#tests/helpers/setupBranchRepo.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
-const config: LightsoutConfig = { gates: { check: 'true', test: 'true', 'test-coverage': false } };
+const config: LightsoutConfig = { 'test-files': testFileGlobs, gates: { check: 'true', test: 'true', 'test-coverage': false } };
 const driver: Driver = { name: 'stub', invoke: async () => ({ text: '', exitCode: 0 }) };
 
 /** A plan folder holding an overview whose Phases table names one file per phase, plus the files themselves. */
@@ -367,8 +368,14 @@ describe('initializeSequence', () => {
 			returned: { config: manifest.config, configPath: manifest.configPath },
 			onDisk: { config: onDisk.config, configPath: onDisk.configPath },
 		}).toStrictEqual({
-			returned: { config: { gates: { check: 'true', test: 'true', 'test-coverage': false } }, configPath: join(dir, 'lightsout.config.json') },
-			onDisk: { config: { gates: { check: 'true', test: 'true', 'test-coverage': false } }, configPath: join(dir, 'lightsout.config.json') },
+			returned: {
+				config: { 'test-files': testFileGlobs, gates: { check: 'true', test: 'true', 'test-coverage': false } },
+				configPath: join(dir, 'lightsout.config.json'),
+			},
+			onDisk: {
+				config: { 'test-files': testFileGlobs, gates: { check: 'true', test: 'true', 'test-coverage': false } },
+				configPath: join(dir, 'lightsout.config.json'),
+			},
 		});
 	});
 });

@@ -13,6 +13,7 @@ import type { WorkOrderState } from '#src/contracts/workOrder/WorkOrderState.ts'
 import type { WorkerOutcome } from '#src/queue/common/types/WorkerOutcome.ts';
 import { runAutoPlanWorker } from '#src/queue/workers/runWorkerWithRelay/runAutoPlanWorker/runAutoPlanWorker.ts';
 import { queueSettingsFixture } from '#tests/helpers/queueSettingsFixture.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 /**
  * What the worker does with a planning session that never produced a plan, and
@@ -111,7 +112,7 @@ const reportOf = (overrides: Partial<WorkReport> = {}): WorkReport => ({
  */
 const setupAutoPlanWorker = ({
 	outcome = { ok: true, report: reportOf() },
-	config = { gates: { check: 'true', test: 'true', 'test-coverage': false } },
+	config = { 'test-files': testFileGlobs, gates: { check: 'true', test: 'true', 'test-coverage': false } },
 }: {
 	outcome?: AgentOutcome<WorkReport>;
 	config?: LightsoutConfig;
@@ -175,7 +176,7 @@ describe('runAutoPlanWorker', () => {
 
 	test('lets the session run the repository’s own agent commands, with the engine it is told to call appended', async () => {
 		const { params } = setupAutoPlanWorker({
-			config: { gates: { check: 'true', test: 'true', 'test-coverage': false }, 'agent-commands': ['gh issue view', 'git log'] },
+			config: { 'test-files': testFileGlobs, gates: { check: 'true', test: 'true', 'test-coverage': false }, 'agent-commands': ['gh issue view', 'git log'] },
 		});
 
 		await runAutoPlanWorker(params);

@@ -11,6 +11,7 @@ import { updateLocalWorkOrderState } from '#src/workOrder/common/state/updateLoc
 import { captureCommandOutput } from '#tests/helpers/captureCommandOutput.ts';
 import { setupBranchRepo } from '#tests/helpers/setupBranchRepo.ts';
 import { stubForgeOnPath } from '#tests/helpers/stubForgeOnPath.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // Mocked Imports
 // -------------------------
@@ -80,6 +81,7 @@ const setupShipCommand = ({
 	writeFileSync(
 		join(cwd, 'lightsout.config.json'),
 		JSON.stringify({
+			'test-files': testFileGlobs,
 			gates: { check: 'true', test: 'true', 'test-coverage': false },
 			...(ship === undefined ? {} : { ship }),
 			...(tracker === undefined ? {} : { 'ticket-tracker': tracker }),
@@ -122,6 +124,7 @@ const setupImplementHarness = () => {
 	writeFileSync(
 		join(cwd, 'lightsout.config.json'),
 		JSON.stringify({
+			'test-files': testFileGlobs,
 			gates: { check: 'true', test: 'true', 'test-coverage': false },
 			harness: 'claude-code',
 			model: 'opus',
@@ -194,6 +197,7 @@ const setupTicketShipCommand = async () => {
 	writeFileSync(
 		join(cwd, 'lightsout.config.json'),
 		JSON.stringify({
+			'test-files': testFileGlobs,
 			gates: { check: 'true', test: 'true', 'test-coverage': false },
 			ship: { 'ticket-pattern': '^(?<ticket>lo-(?<number>\\d+))' },
 		}),

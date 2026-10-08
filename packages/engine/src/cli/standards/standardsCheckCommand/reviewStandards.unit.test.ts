@@ -8,6 +8,7 @@ import type { StandardsGroup } from '#src/common/types/StandardsGroup.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFinding.ts';
 import { captureCommandOutput } from '#tests/helpers/captureCommandOutput.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // Mocked Imports
 // -------------------------
@@ -92,7 +93,7 @@ const reviewParams = () => mockRunStandardsReview.mock.calls[0]?.[0];
  */
 const setupSwitchedOffReview = () => {
 	const cwd = setupRepo();
-	const config: LightsoutConfig = { gates, 'standards-pack': false };
+	const config: LightsoutConfig = { 'test-files': testFileGlobs, gates, 'standards-pack': false };
 	const invoke = jest.fn<Driver['invoke']>().mockResolvedValue({
 		text: JSON.stringify({ findings: [{ rule: 'import-paths', files: [{ path: 'src/index.ts' }], detail: 'should never be asked for' }] }),
 		exitCode: 0,
@@ -120,7 +121,7 @@ describe('reviewStandards', () => {
 	test('the packs the resolver loaded for this config are the ones the review runs against', async () => {
 		const group = resolvedGroup();
 		const cwd = setupRepo({ groups: [group] });
-		const config: LightsoutConfig = { gates, 'standards-pack': 'acme/house' };
+		const config: LightsoutConfig = { 'test-files': testFileGlobs, gates, 'standards-pack': 'acme/house' };
 
 		await reviewStandards({ cwd, config });
 
@@ -139,7 +140,13 @@ describe('reviewStandards', () => {
 
 	test("the review is bounded and scoped by the repo's own config, over the files the path filter leaves", async () => {
 		const cwd = setupRepo({ sources: ['src/index.ts', 'scripts/build.ts'] });
-		const config: LightsoutConfig = { gates, harness: 'codex', 'standards-pack': 'lightsout/fractal', timeouts: { 'agent-minutes': 5 } };
+		const config: LightsoutConfig = {
+			'test-files': testFileGlobs,
+			gates,
+			harness: 'codex',
+			'standards-pack': 'lightsout/fractal',
+			timeouts: { 'agent-minutes': 5 },
+		};
 
 		await reviewStandards({ cwd, config, path: 'src' });
 
@@ -179,8 +186,8 @@ describe('reviewStandards', () => {
 	});
 
 	test.each([
-		{ config: { gates, 'packages-dir': 'apps' } satisfies LightsoutConfig, packagesDir: 'apps' },
-		{ config: { gates } satisfies LightsoutConfig, packagesDir: 'packages' },
+		{ config: { 'test-files': testFileGlobs, gates, 'packages-dir': 'apps' } satisfies LightsoutConfig, packagesDir: 'apps' },
+		{ config: { 'test-files': testFileGlobs, gates } satisfies LightsoutConfig, packagesDir: 'packages' },
 	])("hands the review the config's packages-dir, defaulting to packages", async ({ config, packagesDir }) => {
 		const cwd = setupRepo({ groups: [resolvedGroup()] });
 

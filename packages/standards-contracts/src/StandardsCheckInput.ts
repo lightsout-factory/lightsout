@@ -9,9 +9,11 @@ export interface FileListInput {
 	tests: string[];
 	files: string[];
 	referenceFiles: string[];
+	/** The test files among `referenceFiles`, by the repo's own `test-files` globs: every test in the repo, whatever the scope checked. */
+	referenceTests: string[];
 	/** Declared dependency names per package dir ('.' for the repo root) — engine-read from each package.json. */
 	dependencies: Map<string, string[]>;
-	/** Repo-relative roots of the standards packs in the tree. Inside one, a `tests/` folder names a document set rather than a directory of tests — pass it to `isTestFile`. */
+	/** Repo-relative roots of the standards libraries in the tree. */
 	standardsLibraries: string[];
 }
 
@@ -22,6 +24,8 @@ export interface FileTextInput {
 	tests: string[];
 	files: string[];
 	referenceFiles: string[];
+	/** The test files among `referenceFiles`, by the repo's own `test-files` globs: every test in the repo, whatever the scope checked. */
+	referenceTests: string[];
 	/**
 	 * Text for every path in `files` ∪ `referenceFiles`, plus every tsconfig.json
 	 * and package.json above one of them, when present.
@@ -30,7 +34,7 @@ export interface FileTextInput {
 	 * declared per package: a rule must read the nearest config above that file.
 	 */
 	contents: Map<string, string>;
-	/** Repo-relative roots of the standards packs in the tree. Inside one, a `tests/` folder names a document set rather than a directory of tests — pass it to `isTestFile`. */
+	/** Repo-relative roots of the standards libraries in the tree. */
 	standardsLibraries: string[];
 }
 
@@ -41,12 +45,14 @@ export interface SyntaxTreeInput {
 	tests: string[];
 	files: string[];
 	referenceFiles: string[];
+	/** The test files among `referenceFiles`, by the repo's own `test-files` globs: every test in the repo, whatever the scope checked. */
+	referenceTests: string[];
 	compiler: typeof ts;
 	/** One parsed SourceFile per path in `source`. */
 	trees: Map<string, ts.SourceFile>;
 	/** What each package declares it depends on, keyed by package root (`.` for the repo). A framework carve-out is keyed on what a package DECLARES, so an AST rule needs this to honour one. */
 	dependencies: Map<string, string[]>;
-	/** Repo-relative roots of the standards packs in the tree. Inside one, a `tests/` folder names a document set rather than a directory of tests — pass it to `isTestFile`. */
+	/** Repo-relative roots of the standards libraries in the tree. */
 	standardsLibraries: string[];
 }
 
@@ -57,6 +63,8 @@ export interface TypeCheckerInput {
 	tests: string[];
 	files: string[];
 	referenceFiles: string[];
+	/** The test files among `referenceFiles`, by the repo's own `test-files` globs: every test in the repo, whatever the scope checked. */
+	referenceTests: string[];
 	compiler: typeof ts;
 	/**
 	 * One entry per file the engine could type in `files` ∪ `referenceFiles`.
@@ -71,7 +79,7 @@ export interface TypeCheckerInput {
 	typedFiles: Map<string, { sourceFile: ts.SourceFile; checker: ts.TypeChecker }>;
 	/** What each package declares it depends on, keyed by package root (`.` for the repo). A framework carve-out is keyed on what a package DECLARES, so a typed rule needs this to honour one. */
 	dependencies: Map<string, string[]>;
-	/** Repo-relative roots of the standards packs in the tree. Inside one, a `tests/` folder names a document set rather than a directory of tests — pass it to `isTestFile`. */
+	/** Repo-relative roots of the standards libraries in the tree. */
 	standardsLibraries: string[];
 }
 
@@ -90,11 +98,13 @@ export interface ImportGraphInput {
 	tests: string[];
 	files: string[];
 	referenceFiles: string[];
+	/** The test files among `referenceFiles`, by the repo's own `test-files` globs: every test in the repo, whatever the scope checked. */
+	referenceTests: string[];
 	/** Edges as `collectImportEdges` resolves them: repo-relative from/to pairs. */
 	edges: Array<{ from: string; to: string }>;
 	/** What each package declares it depends on, keyed by package root (`.` for the repo). A framework carve-out is keyed on what a package DECLARES, so a boundary rule needs this to honour one — a module folder a framework mandates is not the rule's to judge. */
 	dependencies: Map<string, string[]>;
-	/** Repo-relative roots of the standards packs in the tree. Inside one, a `tests/` folder names a document set rather than a directory of tests — pass it to `isTestFile`. */
+	/** Repo-relative roots of the standards libraries in the tree. */
 	standardsLibraries: string[];
 }
 

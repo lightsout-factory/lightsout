@@ -10,6 +10,7 @@ import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutCo
 import { planWorkspaceFolder } from '#tests/helpers/planWorkspaceFolder.ts';
 import { ticketTrackerConfigBlock } from '#tests/helpers/queueConfigBlock.ts';
 import { seedWorkOrderRecord } from '#tests/helpers/seedWorkOrderRecord.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // Mocked Imports
 // -------------------------
@@ -99,7 +100,7 @@ const setupBrainstorm = ({
 		params: {
 			cwd,
 			name: folder,
-			config: { gates, 'ticket-tracker': trackerBlock },
+			config: { 'test-files': testFileGlobs, gates, 'ticket-tracker': trackerBlock },
 			env,
 			onProgress: (message: string) => progress.push(message),
 			titlePrefix: '001-x',

@@ -18,6 +18,7 @@ export const setupFileListInput = ({ files, source, tests = [], dependencies = [
 	tests,
 	files: files ?? [...(source ?? []), ...tests],
 	referenceFiles: [],
+	referenceTests: tests,
 	dependencies: new Map(dependencies),
 	standardsLibraries: [],
 	...overrides,

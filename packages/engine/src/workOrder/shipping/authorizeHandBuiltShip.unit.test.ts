@@ -12,6 +12,7 @@ import type { WorkOrderState } from '#src/contracts/workOrder/WorkOrderState.ts'
 import { updateLocalWorkOrderState } from '#src/workOrder/common/state/updateLocalWorkOrderState.ts';
 import { authorizeHandBuiltShip } from '#src/workOrder/shipping/authorizeHandBuiltShip.ts';
 import { ticketTrackerConfigBlock } from '#tests/helpers/queueConfigBlock.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // Mocked Imports
 // -------------------------
@@ -103,7 +104,9 @@ const setupHandBuiltShip = async ({ record = recordOf(), tracker = false }: { re
 	mockReadTicketAsset.mockResolvedValue({ error: 'no asset' });
 	mockSetTicketAttachment.mockResolvedValue({ error: 'the tracker rejected the attachment' });
 
-	const config: LightsoutConfig = tracker ? { gates, 'ticket-tracker': { ...ticketTrackerConfigBlock, provider: 'linear' } } : { gates };
+	const config: LightsoutConfig = tracker
+		? { 'test-files': testFileGlobs, gates, 'ticket-tracker': { ...ticketTrackerConfigBlock, provider: 'linear' } }
+		: { 'test-files': testFileGlobs, gates };
 	const env: NodeJS.ProcessEnv = tracker ? { LINEAR_API_KEY: 'lin_key' } : {};
 	const readBytes = () => (existsSync(recordPath) ? readFileSync(recordPath, 'utf8') : undefined);
 	const readRecord = () => JSON.parse(readFileSync(recordPath, 'utf8')) as WorkOrderState;

@@ -5,11 +5,11 @@ import { readGitChangedFiles } from '#src/common/git/readGitChangedFiles.ts';
 import { quoteShellArgument } from '#src/common/processes/quoteShellArgument.ts';
 import { runCommand } from '#src/common/processes/runCommand.ts';
 import { excludedSourcePaths } from '#src/common/sourceFiles/excludedSourcePaths.ts';
+import { isTestFile } from '#src/common/sourceFiles/isTestFile.ts';
 import { approvedTestsDir } from '#src/pipeline/approvedTests/common/approvedTestsDir.ts';
 import { readApprovedTest } from '#src/pipeline/approvedTests/readApprovedTest.ts';
 import { TestChangeKind } from '#src/pipeline/approvedTests/reviewTestChanges/common/constants/TestChangeKind.ts';
 import type { TestChange } from '#src/pipeline/approvedTests/reviewTestChanges/common/types/TestChange.ts';
-import { isTestSideFile } from '#src/pipeline/common/isTestSideFile.ts';
 import type { PipelineRun } from '#src/pipeline/common/PipelineRun.ts';
 
 /** The device path git reads as "this side of the diff is empty" — an addition's before, a removal's after. */
@@ -60,7 +60,9 @@ export const collectTestChanges = async ({ run }: Params): Promise<TestChange[]>
 	const manifest = run.current();
 	const excluded = excludedSourcePaths({ config: run.config });
 	const seen = [...((await readGitChangedFiles({ cwd: run.cwd })) ?? []), ...manifest.changedFiles, ...manifest.approvedTests.map((record) => record.path)];
-	const candidates = [...new Set(seen)].filter((path) => isTestSideFile({ path }) && !excluded.some((prefix) => path.startsWith(prefix))).sort();
+	const candidates = [...new Set(seen)]
+		.filter((path) => isTestFile({ path, testFileGlobs: run.config['test-files'] }) && !excluded.some((prefix) => path.startsWith(prefix)))
+		.sort();
 
 	if (candidates.length === 0) {
 		return [];

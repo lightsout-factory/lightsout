@@ -10,6 +10,7 @@ import { applyTestDispositions } from '#src/pipeline/approvedTests/reviewTestCha
 import { TestChangeKind } from '#src/pipeline/approvedTests/reviewTestChanges/common/constants/TestChangeKind.ts';
 import type { TestChange } from '#src/pipeline/approvedTests/reviewTestChanges/common/types/TestChange.ts';
 import type { PipelineRun } from '#src/pipeline/common/PipelineRun.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 type Verdict = TestChangeReview['verdicts'][number];
 
@@ -53,7 +54,7 @@ const setupDispositions = ({
 		writeFileSync(target, sourceHolding({ titles }));
 	}
 
-	const run = { cwd, current: () => ({ runId: 'run-1' }) } as unknown as PipelineRun;
+	const run = { cwd, config: { 'test-files': testFileGlobs }, current: () => ({ runId: 'run-1' }) } as unknown as PipelineRun;
 
 	return { run, changes, review: { verdicts }, acceptanceTests };
 };

@@ -8,6 +8,7 @@ import { parsePlan } from '#src/plan/parsePlan/parsePlan.ts';
 import { syncPhaseSectionsFromFiles } from '#src/plan/sections/syncPhaseSectionsFromFiles/syncPhaseSectionsFromFiles.ts';
 import { declaredRecord } from '#tests/helpers/declaredRecord.ts';
 import { type DeclarationSpec, overviewBody, type PhaseSpec, phaseBody } from '#tests/helpers/phasePlan.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // The one rebuild of a phased overview's `## Phases` table and `## Phase
 // Declarations` from its phase files, shared by the draft path, the repair path
@@ -78,7 +79,7 @@ describe('syncPhaseSectionsFromFiles', () => {
 			},
 		});
 
-		const written = await syncPhaseSectionsFromFiles({ cwd: plan.cwd, overviewPath: plan.overviewPath, phasePaths: plan.phasePaths });
+		const written = await syncPhaseSectionsFromFiles({ cwd: plan.cwd, overviewPath: plan.overviewPath, phasePaths: plan.phasePaths, testFileGlobs });
 
 		const after = plan.readOverview();
 		// the estimate said nine of each; the files say two created and three
@@ -134,7 +135,7 @@ describe('syncPhaseSectionsFromFiles', () => {
 			},
 		});
 
-		const written = await syncPhaseSectionsFromFiles({ cwd: plan.cwd, overviewPath: plan.overviewPath, phasePaths: plan.phasePaths });
+		const written = await syncPhaseSectionsFromFiles({ cwd: plan.cwd, overviewPath: plan.overviewPath, phasePaths: plan.phasePaths, testFileGlobs });
 
 		const after = plan.readOverview();
 		// the phase file is what the implementing agent is handed, so its budget
@@ -170,12 +171,12 @@ describe('syncPhaseSectionsFromFiles', () => {
 		const phasesAsAuthored = plan.readPhases();
 		// the first sync is the arrangement: it is what brings the overview into
 		// step, and backdating afterwards means a second write would show up
-		await syncPhaseSectionsFromFiles({ cwd: plan.cwd, overviewPath: plan.overviewPath, phasePaths: plan.phasePaths });
+		await syncPhaseSectionsFromFiles({ cwd: plan.cwd, overviewPath: plan.overviewPath, phasePaths: plan.phasePaths, testFileGlobs });
 		plan.backdate();
 		const synced = plan.readOverview();
 		const modifiedAt = plan.modifiedAt();
 
-		const written = await syncPhaseSectionsFromFiles({ cwd: plan.cwd, overviewPath: plan.overviewPath, phasePaths: plan.phasePaths });
+		const written = await syncPhaseSectionsFromFiles({ cwd: plan.cwd, overviewPath: plan.overviewPath, phasePaths: plan.phasePaths, testFileGlobs });
 
 		// the phase files are compared against how they were authored, before the
 		// first sync, so neither call may have touched one

@@ -10,6 +10,7 @@ import { headSubject } from '#tests/helpers/headSubject.ts';
 import { queueTicketFixture } from '#tests/helpers/queueTicketFixture.ts';
 import { recordingDriver } from '#tests/helpers/recordingDriver.ts';
 import { setupTicketBranch } from '#tests/helpers/setupTicketBranch.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 import { writeRepoFile } from '#tests/helpers/writeRepoFile.ts';
 
 /** What `git rev-parse HEAD` answers in a worktree — the fact a second commit would change. */
@@ -18,7 +19,7 @@ const headOf = ({ cwd }: { cwd: string }) => execSync('git rev-parse HEAD', { cw
 /** The whole message of the newest commit — where the body's `lightsout run` line is read from. */
 const headMessageOf = ({ cwd }: { cwd: string }) => execSync('git log -1 --pretty=%B', { cwd }).toString();
 
-const config: LightsoutConfig = { gates: { check: 'true', test: 'true', 'test-coverage': false } };
+const config: LightsoutConfig = { 'test-files': testFileGlobs, gates: { check: 'true', test: 'true', 'test-coverage': false } };
 
 /**
  * A ticket branch as a worker leaves it once the pipeline has committed each

@@ -3,6 +3,7 @@ import { printRunHeader } from '#src/cli/common/render/printRunHeader.ts';
 import type { Driver } from '#src/common/types/Driver.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { freshCwd } from '#tests/helpers/freshCwd.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 import { writeRepoFile } from '#tests/helpers/writeRepoFile.ts';
 
 // The header's whole output IS its console.log lines, so capturing them is the
@@ -16,7 +17,11 @@ const setupHeader = ({ config = {}, driverName = 'claude-code' }: { config?: Par
 	});
 
 	const driver: Driver = { name: driverName, invoke: async () => ({ text: '', exitCode: 0 }) };
-	const fullConfig: LightsoutConfig = { gates: { check: 'pnpm check', test: 'pnpm test:unit', 'test-coverage': 'pnpm test:coverage' }, ...config };
+	const fullConfig: LightsoutConfig = {
+		'test-files': testFileGlobs,
+		gates: { check: 'pnpm check', test: 'pnpm test:unit', 'test-coverage': 'pnpm test:coverage' },
+		...config,
+	};
 
 	return { config: fullConfig, driver, cwd: '/repo', logged };
 };
@@ -98,7 +103,9 @@ test('printRunHeader: configured timeouts replace the 60m/15m/15m defaults', asy
 });
 
 test('printRunHeader: a coverage gate disabled explicitly prints off (explicit) in place of a command', async () => {
-	const { config, driver, cwd, logged } = setupHeader({ config: { gates: { check: 'pnpm check', test: 'pnpm test:unit', 'test-coverage': false } } });
+	const { config, driver, cwd, logged } = setupHeader({
+		config: { 'test-files': testFileGlobs, gates: { check: 'pnpm check', test: 'pnpm test:unit', 'test-coverage': false } },
+	});
 
 	await printRunHeader({ config, driver, cwd, configPath });
 
@@ -108,6 +115,7 @@ test('printRunHeader: a coverage gate disabled explicitly prints off (explicit) 
 test('printRunHeader: the opt-in generate, build, and format lines print only when their commands are configured', async () => {
 	const { config, driver, cwd, logged } = setupHeader({
 		config: {
+			'test-files': testFileGlobs,
 			gates: { check: 'pnpm check', test: 'pnpm test:unit', 'test-coverage': false, generate: 'pnpm gen', build: 'pnpm build', format: 'pnpm format' },
 		},
 	});

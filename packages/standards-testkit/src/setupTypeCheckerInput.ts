@@ -51,6 +51,8 @@ export const setupTypeCheckerInput = ({ sources = [], dependencies = [], ...over
 		tests: [],
 		files: parsed.map(({ path }) => path),
 		referenceFiles: [],
+		// Every test the input names is a test of the repo too, unless the caller says otherwise.
+		referenceTests: overrides.tests ?? [],
 		standardsLibraries: [],
 		compiler: ts,
 		typedFiles: new Map(parsed.map(({ path, sourceFile }) => [path, { sourceFile, checker }])),

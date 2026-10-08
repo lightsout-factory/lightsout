@@ -4,6 +4,7 @@ import type { GateSchedule } from '#src/common/types/GateSchedule.ts';
 import type { GateResult } from '#src/contracts/gates/GateResult.ts';
 import { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { runSelfCheck } from '#src/gates/runSelfCheck/runSelfCheck.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // Mocked Imports
 // -------------------------
@@ -57,6 +58,7 @@ const setupCoordination = ({ result, observations = [] }: { result: GateRunResul
 	});
 
 	const config = LightsoutConfig.parse({
+		'test-files': testFileGlobs,
 		gates: { check: 'true', test: 'true', 'test-coverage': false, build: 'true' },
 	});
 

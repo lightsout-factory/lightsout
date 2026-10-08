@@ -12,6 +12,7 @@ import { WorkOrderMode } from '#src/contracts/workOrder/WorkOrderMode.ts';
 import type { WorkOrderState } from '#src/contracts/workOrder/WorkOrderState.ts';
 import { addWorkOrderPlan } from '#src/workOrder/addWorkOrderPlan/addWorkOrderPlan.ts';
 import { updateLocalWorkOrderState } from '#src/workOrder/common/state/updateLocalWorkOrderState.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // Mocked Imports
 // -------------------------
@@ -80,7 +81,7 @@ const setupAuthorizedPlanlessRecord = async () => {
 	mockReadTicketAsset.mockResolvedValue({ error: 'no asset' });
 	mockSetTicketAttachment.mockResolvedValue(undefined);
 
-	return { recordPath, params: { cwd, name, slug: 'search-basics', config: { gates }, env } };
+	return { recordPath, params: { cwd, name, slug: 'search-basics', config: { 'test-files': testFileGlobs, gates }, env } };
 };
 
 describe('addWorkOrderPlan', () => {

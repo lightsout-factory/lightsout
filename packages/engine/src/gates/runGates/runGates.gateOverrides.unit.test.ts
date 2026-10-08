@@ -9,6 +9,7 @@ import { runGates } from '#src/gates/runGates/runGates.ts';
 import { gateLogCommand } from '#tests/helpers/gateLogCommand.ts';
 import { readGateLog } from '#tests/helpers/readGateLog.ts';
 import { setupConsumerRepo } from '#tests/helpers/setupConsumerRepo.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 const red = 'node -e "process.exit(1)"';
 
@@ -65,6 +66,7 @@ const setupScopedRepo = () => {
 	writeFileSync(
 		join(dir, 'lightsout.config.json'),
 		JSON.stringify({
+			'test-files': testFileGlobs,
 			gates: { check: 'true', test: 'true', 'test-coverage': false },
 			'package-gates': {
 				check: `${gateLogCommand({ kind: 'check' })} {package} run gate:check`,

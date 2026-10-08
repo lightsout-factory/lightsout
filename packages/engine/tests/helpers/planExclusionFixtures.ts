@@ -1,6 +1,7 @@
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { PlanProgress } from '#src/contracts/workOrder/PlanProgress.ts';
 import type { WorkOrderPlan } from '#src/contracts/workOrder/WorkOrderPlan.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 /**
  * The work order a plan exclusion acts on, as one vocabulary the setup and the
@@ -24,7 +25,7 @@ export const planExclusionFixtures: {
 	checkout: '/repo/.worktrees/lo-140-multi',
 	headCommit: '9f1c0a7d3b6e4152a8c07d5b9e2f4a6c1d3e5f70',
 	/** The ticket branch's OWN config, which the verification reads from that checkout rather than from `cwd`. */
-	checkoutConfig: { gates: { check: 'pnpm check', test: 'pnpm test', 'test-coverage': 'pnpm coverage' } },
+	checkoutConfig: { 'test-files': testFileGlobs, gates: { check: 'pnpm check', test: 'pnpm test', 'test-coverage': 'pnpm coverage' } },
 	planOf: ({ id, progress, exclusion }) => ({
 		id,
 		title: `plan ${id}`,

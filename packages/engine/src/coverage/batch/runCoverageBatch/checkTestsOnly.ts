@@ -44,7 +44,7 @@ export const checkTestsOnly = async ({
 	const changedFiles = (await collectBatchChanges({ cwd, config, reportedFiles, attributedFiles })).filter(
 		(path) => !isMeasurementOutput({ path, coverageDir, packagesDir }),
 	);
-	const offenders = changedFiles.filter((path) => !isTestFile({ path }));
+	const offenders = changedFiles.filter((path) => !isTestFile({ path, testFileGlobs: config['test-files'] }));
 
 	return {
 		changedFiles,

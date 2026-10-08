@@ -3,6 +3,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFinding.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 /** Write a set of pack-relative files, creating the folders they need. */
 const writeTree = async ({ dir, files }: { dir: string; files: Record<string, string> }) => {
@@ -56,6 +57,7 @@ const seedStandardsRepo = async ({
 			'src/loose.ts': 'export const loose = 1;\n',
 			'lightsout.config.json': JSON.stringify({
 				gates: { check: 'true', test: 'true', 'test-coverage': false },
+				'test-files': testFileGlobs,
 				'standards-libraries': { acme: library ?? (await writeStandardsPack()) },
 				'standards-pack': pack,
 				...(overrides ? { 'standards-rule-settings': overrides } : {}),

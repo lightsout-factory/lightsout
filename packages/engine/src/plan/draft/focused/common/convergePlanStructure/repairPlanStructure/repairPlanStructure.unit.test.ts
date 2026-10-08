@@ -11,6 +11,7 @@ import { cleanPlanBody } from '#tests/helpers/cleanPlanBody.ts';
 import { dirtyPlanBody } from '#tests/helpers/dirtyPlanBody.ts';
 import { expectStatus } from '#tests/helpers/expectStatus.ts';
 import { createRepairDriver, runRepairLoop, setupRepairDraft } from '#tests/helpers/repairDraftFixture.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // Mocked Imports
 // -------------------------
@@ -46,7 +47,11 @@ const setupAdvisoryDraft = ({ body = advisoryPlanBody() }: { body?: string } = {
 
 /** A repository declaring one documentation surface — the config that makes `## Documentation` a required heading. */
 const declaringConfig = () =>
-	LightsoutConfig.parse({ gates: { check: 'true', test: 'true', 'test-coverage': false }, docs: [{ path: 'README.md', covers: 'The product tour.' }] });
+	LightsoutConfig.parse({
+		'test-files': testFileGlobs,
+		gates: { check: 'true', test: 'true', 'test-coverage': false },
+		docs: [{ path: 'README.md', covers: 'The product tour.' }],
+	});
 
 describe('repairPlanStructure', () => {
 	test('a clean draft converges without spending a single repair', async () => {

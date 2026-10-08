@@ -1,6 +1,7 @@
 import { basename } from 'node:path';
 import { getRequiredFlag } from '#src/cli/common/args/getRequiredFlag.ts';
 import { bold } from '#src/cli/common/terminal/bold.ts';
+import { readOptionalConfig } from '#src/common/config/readOptionalConfig.ts';
 import { PlanRunStatus } from '#src/common/constants/PlanRunStatus.ts';
 import { exitCli } from '#src/common/exitCli.ts';
 import type { CommandContext } from '#src/common/types/CommandContext.ts';
@@ -8,7 +9,8 @@ import { syncPlanPhases } from '#src/plan/sections/syncPlanPhases.ts';
 
 export const planSyncPhasesCommand = async ({ flags, cwd }: CommandContext): Promise<void> => {
 	const name = await getRequiredFlag({ flags, name: 'name' });
-	const result = await syncPlanPhases({ cwd, name });
+	const config = await readOptionalConfig({ cwd });
+	const result = await syncPlanPhases({ cwd, name, testFileGlobs: config?.['test-files'] ?? [] });
 
 	if (result.status === PlanRunStatus.Failed) {
 		console.error(`\n${result.error}`);

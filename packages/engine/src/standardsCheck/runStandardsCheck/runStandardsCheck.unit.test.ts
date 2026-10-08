@@ -5,6 +5,7 @@ import { expect, test } from '@jest/globals';
 import { readOptionalConfig } from '#src/common/config/readOptionalConfig.ts';
 import { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { runStandardsCheck } from '#src/standardsCheck/runStandardsCheck/runStandardsCheck.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 const bigBody = `
 	let total = 0;
@@ -21,7 +22,11 @@ const bigBody = `
 `;
 
 /** Standards are opt-in, so a repo checked against the bundled rules names the standards pack. */
-const standardsPackConfig = JSON.stringify({ gates: { check: 'true', test: 'true', 'test-coverage': false }, 'standards-pack': 'lightsout/standards' });
+const standardsPackConfig = JSON.stringify({
+	'test-files': testFileGlobs,
+	gates: { check: 'true', test: 'true', 'test-coverage': false },
+	'standards-pack': 'lightsout/standards',
+});
 
 /** A consumer repo on the standards pack with one planted defect per rule. */
 const setupCheckRepo = () => {
@@ -288,6 +293,7 @@ const setupOwnPackRepo = () => {
 			'src/alpha.ts': 'export const alpha = 1;\n',
 			'src/beta.ts': 'export const beta = 2;\n',
 			'lightsout.config.json': JSON.stringify({
+				'test-files': testFileGlobs,
 				gates: { check: 'true', test: 'true', 'test-coverage': false },
 				'standards-libraries': { acme: writeOwnPack() },
 				'standards-pack': 'acme/house',
@@ -336,6 +342,7 @@ const setupOrderedPackRepo = () => {
 		files: {
 			'src/alpha.ts': 'export const alpha = 1;\n',
 			'lightsout.config.json': JSON.stringify({
+				'test-files': testFileGlobs,
 				gates: { check: 'true', test: 'true', 'test-coverage': false },
 				'standards-libraries': { acme: packPath },
 				'standards-pack': 'acme/house',
@@ -378,6 +385,7 @@ const setupScopedRepo = () => {
 			'src/keep.ts': 'export const keep = 1;\n',
 			'src/core/inner.ts': 'export const inner = 2;\n',
 			'lightsout.config.json': JSON.stringify({
+				'test-files': testFileGlobs,
 				gates: { check: 'true', test: 'true', 'test-coverage': false },
 				'standards-libraries': { acme: writeOwnPack() },
 				'standards-pack': 'acme/house',
@@ -408,6 +416,7 @@ test('--path checks the subpath it was given, and the evidence file records that
 const setupRejectedConfigRepo = () => {
 	const dir = mkdtempSync(join(tmpdir(), 'lightsout-standards-handed-'));
 	const startingConfig = {
+		'test-files': testFileGlobs,
 		gates: { check: 'true', test: 'true', 'test-coverage': false },
 		'standards-libraries': { acme: writeOwnPack() },
 		'standards-pack': 'acme/house',

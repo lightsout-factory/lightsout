@@ -10,6 +10,7 @@ import type { Driver } from '#src/common/types/Driver.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { captureCommandOutput } from '#tests/helpers/captureCommandOutput.ts';
 import { queueConfigBlock, ticketTrackerConfigBlock } from '#tests/helpers/queueConfigBlock.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // Mocked Imports
 // -------------------------
@@ -74,13 +75,13 @@ const gates: LightsoutConfig['gates'] = { check: 'true', test: 'true', 'test-cov
  * presence of a `ticket-tracker` block is the whole signal that the plan-folder
  * advisory applies to it.
  */
-const trackerRepoConfig = { gates, queue: queueConfigBlock, 'ticket-tracker': ticketTrackerConfigBlock };
+const trackerRepoConfig = { 'test-files': testFileGlobs, gates, queue: queueConfigBlock, 'ticket-tracker': ticketTrackerConfigBlock };
 
 /**
  * The same repo with the tracker block taken away: a `queue` block on its own
  * names no tracker, so this repo has chosen no ticket convention.
  */
-const queueOnlyRepoConfig = { gates, queue: queueConfigBlock };
+const queueOnlyRepoConfig = { 'test-files': testFileGlobs, gates, queue: queueConfigBlock };
 
 /** Every subcommand the dispatcher can hand a call to. */
 const subcommandMocks = [
@@ -97,7 +98,7 @@ const subcommandMocks = [
 const setupPlan = ({ args, repoConfig }: { args: string[]; repoConfig?: Record<string, unknown> }) => {
 	const captured = captureCommandOutput();
 	const cwd = mkdtempSync(join(tmpdir(), 'lightsout-plan-command-'));
-	const config: LightsoutConfig = { gates };
+	const config: LightsoutConfig = { 'test-files': testFileGlobs, gates };
 
 	if (repoConfig) {
 		writeFileSync(join(cwd, 'lightsout.config.json'), JSON.stringify(repoConfig));

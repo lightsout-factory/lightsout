@@ -19,13 +19,14 @@ import { createRepairDriver, runRepairLoop, setupRepairDraft } from '#tests/help
 
 // Mocked Imports
 // -------------------------
-/** The deterministic pass as the repair loop calls it: the draft's own paths and record, plus the overview of a phased deliverable. */
+/** The deterministic pass as the repair loop calls it: the draft's own paths and record, the overview of a phased deliverable, and the repo's test-files globs. */
 interface MechanicalParams {
 	cwd: string;
 	name: string;
 	planPaths: string[];
 	decisions: DecisionsRecord;
 	overviewPath?: string;
+	testFileGlobs: string[];
 }
 
 const mockRepairMechanicalFindings = jest.fn<(params: MechanicalParams) => Promise<SyncedPlanFile[]>>();
@@ -186,6 +187,7 @@ describe('repairPlanStructure decision log', () => {
 			planPaths: [draft.planPath],
 			decisions: mergedRecordWithBrainstormRow(),
 			overviewPath: undefined,
+			testFileGlobs: [],
 		});
 	});
 
@@ -218,6 +220,7 @@ describe('repairPlanStructure decision log', () => {
 			planPaths: [draft.planPath],
 			decisions: emptyDecisionsRecord(),
 			overviewPath,
+			testFileGlobs: [],
 		});
 		// the pass stands in place of the bare Decision Log sync, which composes
 		// the log itself rather than beside it

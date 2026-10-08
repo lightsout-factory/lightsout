@@ -8,9 +8,11 @@ import { createRun } from '#src/runState/createRun.ts';
 import { readRunOwner } from '#src/runState/owner/readRunOwner.ts';
 import { readRunManifest } from '#src/runState/readRunManifest.ts';
 import { setupConsumerRepo } from '#tests/helpers/setupConsumerRepo.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 const config: LightsoutConfig = {
 	harness: 'stub',
+	'test-files': testFileGlobs,
 	gates: { check: 'true', test: 'true', 'test-coverage': false },
 };
 
@@ -227,13 +229,13 @@ describe('createRun', () => {
 		const manifest = await createRun({ cwd, plan: 'plan.md', driver: 'stub', loadedConfig: { config } });
 		const read = await readRunManifest({ cwd, runId: manifest.runId });
 
-		expect(read.config).toStrictEqual({ harness: 'stub', gates: { check: 'true', test: 'true', 'test-coverage': false } });
+		expect(read.config).toStrictEqual({ harness: 'stub', 'test-files': testFileGlobs, gates: { check: 'true', test: 'true', 'test-coverage': false } });
 	});
 
 	test('records the as-read config and its absolute path from the loaded config', async () => {
 		const { cwd } = setupRepo();
 		const configPath = resolve(cwd, '..', 'launching-checkout', 'lightsout.config.json');
-		const asRead: LightsoutConfig = { harness: 'codex', gates: { check: 'true', test: 'true', 'test-coverage': false } };
+		const asRead: LightsoutConfig = { harness: 'codex', 'test-files': testFileGlobs, gates: { check: 'true', test: 'true', 'test-coverage': false } };
 
 		const manifest = await createRun({ cwd, plan: 'plan.md', driver: 'stub', loadedConfig: { config: asRead, path: configPath } });
 		const read = await readRunManifest({ cwd, runId: manifest.runId });
@@ -243,8 +245,8 @@ describe('createRun', () => {
 			returned: { config: manifest.config, configPath: manifest.configPath },
 			onDisk: { config: read.config, configPath: read.configPath },
 		}).toStrictEqual({
-			returned: { config: { harness: 'codex', gates: { check: 'true', test: 'true', 'test-coverage': false } }, configPath },
-			onDisk: { config: { harness: 'codex', gates: { check: 'true', test: 'true', 'test-coverage': false } }, configPath },
+			returned: { config: { harness: 'codex', 'test-files': testFileGlobs, gates: { check: 'true', test: 'true', 'test-coverage': false } }, configPath },
+			onDisk: { config: { harness: 'codex', 'test-files': testFileGlobs, gates: { check: 'true', test: 'true', 'test-coverage': false } }, configPath },
 		});
 	});
 
@@ -256,7 +258,7 @@ describe('createRun', () => {
 
 		// unset, not an empty string or a path derived from the checkout
 		expect({ config: read.config, configPath: read.configPath, returnedConfigPath: manifest.configPath }).toStrictEqual({
-			config: { harness: 'stub', gates: { check: 'true', test: 'true', 'test-coverage': false } },
+			config: { harness: 'stub', 'test-files': testFileGlobs, gates: { check: 'true', test: 'true', 'test-coverage': false } },
 			configPath: undefined,
 			returnedConfigPath: undefined,
 		});

@@ -1,10 +1,12 @@
 import { describe, expect, test } from '@jest/globals';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { resolveTrackerSettings } from '#src/ticketTracker/resolveTrackerSettings.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 const trackerBlock = { provider: 'linear', team: 'LO', 'api-key-env': 'LINEAR_API_KEY' } as const;
 
 const configOf = (tracker?: LightsoutConfig['ticket-tracker']): LightsoutConfig => ({
+	'test-files': testFileGlobs,
 	gates: { check: 'true', test: 'true', 'test-coverage': false },
 	'ticket-tracker': tracker,
 });

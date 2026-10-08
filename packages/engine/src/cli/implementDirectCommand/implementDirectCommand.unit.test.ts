@@ -11,6 +11,7 @@ import { captureCommandOutput } from '#tests/helpers/captureCommandOutput.ts';
 import { runDirFor } from '#tests/helpers/runDirFor.ts';
 import { seedRunFolder } from '#tests/helpers/seedRunFolder.ts';
 import { setupBranchRepo } from '#tests/helpers/setupBranchRepo.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // Mocked Imports
 // -------------------------
@@ -86,7 +87,12 @@ const setupImplementDirect = ({
 
 	writeFileSync(
 		join(cwd, 'lightsout.config.json'),
-		JSON.stringify({ gates: { check: 'true', test: 'true', 'test-coverage': false }, ship: config.ship, generated: config.generated }),
+		JSON.stringify({
+			'test-files': testFileGlobs,
+			gates: { check: 'true', test: 'true', 'test-coverage': false },
+			ship: config.ship,
+			generated: config.generated,
+		}),
 	);
 
 	if (ticket !== undefined) {
@@ -233,7 +239,10 @@ describe('implementDirectCommand', () => {
 		// The config is read before the tree is guarded, because the workspace this
 		// run builds in is resolved from it — so a repo with no config never reaches
 		// the guard this case is about.
-		writeFileSync(join(cwd, 'lightsout.config.json'), JSON.stringify({ gates: { check: 'true', test: 'true', 'test-coverage': false } }));
+		writeFileSync(
+			join(cwd, 'lightsout.config.json'),
+			JSON.stringify({ 'test-files': testFileGlobs, gates: { check: 'true', test: 'true', 'test-coverage': false } }),
+		);
 		execSync('git add -A && git -c user.name=t -c user.email=t@t commit -qm setup && rm -rf .git', { cwd, stdio: 'ignore' });
 
 		await expect(implementDirectCommand({ flags: parseFlags({ args: ['--ticket', 'ticket.md', '--no-worktree'] }), rest: [], cwd })).rejects.toThrow(

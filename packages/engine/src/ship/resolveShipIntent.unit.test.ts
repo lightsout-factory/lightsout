@@ -1,10 +1,15 @@
 import { describe, expect, test } from '@jest/globals';
 import { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { resolveShipIntent } from '#src/ship/resolveShipIntent.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 /** A config whose only interesting part is its `ship` block, or the absence of one. */
 const configOf = ({ ship }: { ship?: Record<string, unknown> } = {}) =>
-	LightsoutConfig.parse({ gates: { check: 'true', test: 'true', 'test-coverage': false }, ...(ship === undefined ? {} : { ship }) });
+	LightsoutConfig.parse({
+		'test-files': testFileGlobs,
+		gates: { check: 'true', test: 'true', 'test-coverage': false },
+		...(ship === undefined ? {} : { ship }),
+	});
 
 describe('resolveShipIntent', () => {
 	test('nobody asked, so nothing ships', () => {

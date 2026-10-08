@@ -12,6 +12,7 @@ import { emptyDecisionsRecord } from '#tests/helpers/emptyDecisionsRecord.ts';
 import { overviewBody, phaseBody } from '#tests/helpers/phasePlan.ts';
 import { planBodyWith } from '#tests/helpers/planBodyWith.ts';
 import { setupConsumerRepo } from '#tests/helpers/setupConsumerRepo.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 import { writeDemoPlanFile } from '#tests/helpers/writeDemoPlanFile.ts';
 
 /** A plan whose Files-to-Create section names `count` new modules, plus any extra sections. */
@@ -92,7 +93,11 @@ test('lintPlanStructure: a plan declaring its own File Budget silences the touch
 
 test('lintPlanStructure: the configured executor-file-limit moves the advisory off its default', async () => {
 	const cwd = setupConsumerRepo();
-	const config = LightsoutConfig.parse({ gates: { check: 'true', test: 'true', 'test-coverage': false }, 'executor-file-limit': 10 });
+	const config = LightsoutConfig.parse({
+		'test-files': testFileGlobs,
+		gates: { check: 'true', test: 'true', 'test-coverage': false },
+		'executor-file-limit': 10,
+	});
 	const path = writeDemoPlanFile({ cwd, name: 'configured-limit.md', body: sizedPlan({ count: 12 }) });
 
 	const findings = await lintPlanStructure({ cwd, planPaths: [path], decisions: emptyDecisionsRecord(), config });
@@ -203,7 +208,11 @@ test('lintPlanStructure: a path directly under packages/ with no package segment
 test('lintPlanStructure: a configured packagesDir moves the package-segment check off the default', async () => {
 	const cwd = setupConsumerRepo();
 
-	const config = LightsoutConfig.parse({ gates: { check: 'true', test: 'true', 'test-coverage': false }, 'packages-dir': 'modules' });
+	const config = LightsoutConfig.parse({
+		'test-files': testFileGlobs,
+		gates: { check: 'true', test: 'true', 'test-coverage': false },
+		'packages-dir': 'modules',
+	});
 	const body = packagePlan({ modifyPath: 'modules/loose.ts', command: 'true' });
 	const path = writeDemoPlanFile({ cwd, name: 'custom-packages-dir.md', body });
 	const findings = await lintPlanStructure({ cwd, planPaths: [path], decisions: emptyDecisionsRecord(), config });

@@ -20,7 +20,7 @@ interface Params {
 
 /**
  * Test files are included; callers that must ignore them filter with
- * `isTestFile`.
+ * `isTestFile` and the repo's `test-files` globs.
  *
  * A standards pack's `fixtures/` folders are skipped: their failing samples
  * violate the very rule they prove, and no prefix could exclude them since they
@@ -28,8 +28,8 @@ interface Params {
  * inside a fixture still lists it, which is how `standards-validate` runs a
  * check against one.
  *
- * Pack roots are reported because `isTestFile` needs them and no caller can
- * cheaply repeat the walk.
+ * Library roots are reported because a check is handed them, so it can tell
+ * which library a file belongs to, and no caller can cheaply repeat the walk.
  */
 export const listSourceFiles = async ({ cwd, exclude = [] }: Params): Promise<{ files: string[]; standardsLibraries: string[] }> => {
 	const files: string[] = [];

@@ -12,6 +12,8 @@ interface Params {
 	cwd: string;
 	/** A plan address — what the deliverable is resolved by. */
 	name: string;
+	/** The repo's `test-files` globs: a test file is never counted. */
+	testFileGlobs: string[];
 }
 
 type SyncPlanPhasesResult = { status: typeof PlanRunStatus.Complete; file: SyncedPlanFile } | { status: typeof PlanRunStatus.Failed; error: string };
@@ -38,7 +40,7 @@ const missingBlockDefects = ({ declarations, phaseFiles }: { declarations: Phase
  * normalizes to one member carrying an optional `error`, which breaks the
  * caller's narrowing.
  */
-export const syncPlanPhases = async ({ cwd, name }: Params): Promise<SyncPlanPhasesResult> => {
+export const syncPlanPhases = async ({ cwd, name, testFileGlobs }: Params): Promise<SyncPlanPhasesResult> => {
 	const deliverable = await resolvePlanDeliverable({ cwd, name });
 
 	if (deliverable.error !== undefined) {
@@ -65,7 +67,12 @@ export const syncPlanPhases = async ({ cwd, name }: Params): Promise<SyncPlanPha
 		};
 	}
 
-	const file = await syncPhaseSectionsFromFiles({ cwd, overviewPath: deliverable.overviewPath, phasePaths: deliverable.files.map((phase) => phase.path) });
+	const file = await syncPhaseSectionsFromFiles({
+		cwd,
+		overviewPath: deliverable.overviewPath,
+		phasePaths: deliverable.files.map((phase) => phase.path),
+		testFileGlobs,
+	});
 
 	return { status: PlanRunStatus.Complete, file };
 };
