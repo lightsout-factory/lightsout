@@ -151,6 +151,7 @@ export const validateStandardsLibrary = async ({ library, libraries }: Params): 
 					run,
 					label: `fixtures/${side}/`,
 					compiler,
+					sourceFileGlobs: library.fixtureSourceFiles,
 					testFileGlobs: library.fixtureTestFiles,
 				});
 

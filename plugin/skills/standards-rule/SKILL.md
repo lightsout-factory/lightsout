@@ -12,8 +12,9 @@ or reviews one, so every rule in every library has the same shape.
 ## How a library is built
 
 - **Library:** a folder holding `lightsout-standards.json` (`name`,
-  `formatVersion: 2`, and an optional `description`, `homepage` and
-  `fixtureTestFiles` — the globs of the test files its fixtures hold), a
+  `formatVersion: 2`, and an optional `description`, `homepage`,
+  `fixtureSourceFiles` and `fixtureTestFiles` — the globs of the code and test
+  files its fixtures hold), a
   `rules/` folder with `code/` for the agents that write code and `tests/` for
   the agent that writes tests, and a `packs/` folder. A repository registers a
   library of its own in `standards-libraries` in its lightsout config, under

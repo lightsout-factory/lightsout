@@ -22,6 +22,7 @@ import { TerminalQuestionRelay } from '#src/queue/relay/TerminalQuestionRelay.ts
 import { runQueueWorkOrder } from '#src/queue/runQueue/runQueueWorkOrder/runQueueWorkOrder.ts';
 import { queueSettingsFixture } from '#tests/helpers/queueSettingsFixture.ts';
 import { seedWorkOrderRecord } from '#tests/helpers/seedWorkOrderRecord.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
 import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 import { trackerSettingsFixture } from '#tests/helpers/trackerSettingsFixture.ts';
 
@@ -87,11 +88,16 @@ jest.mock('#src/queue/common/readGitCommitsAhead.ts', () => ({
 const settings = queueSettingsFixture();
 const trackerSettings = trackerSettingsFixture();
 
-const config: LightsoutConfig = { 'test-files': testFileGlobs, gates: { check: 'true', test: 'true', 'test-coverage': false }, generated: ['plugin/dist/'] };
+const config: LightsoutConfig = {
+	'source-files': sourceFileGlobs,
+	'test-files': testFileGlobs,
+	gates: { check: 'true', test: 'true', 'test-coverage': false },
+	generated: ['plugin/dist/'],
+};
 // The queue's startup config as read, kept apart from the stamped one above so
 // a run that hands the worker the stamped config in its place is caught.
 const loadedConfig: LoadedConfig = {
-	config: { 'test-files': testFileGlobs, gates: { check: 'pnpm check', test: 'pnpm test', 'test-coverage': false } },
+	config: { 'source-files': sourceFileGlobs, 'test-files': testFileGlobs, gates: { check: 'pnpm check', test: 'pnpm test', 'test-coverage': false } },
 	path: '/repo/lightsout.config.json',
 };
 const driver: Driver = { name: 'claude-code', invoke: () => Promise.resolve({ text: '', exitCode: 0 }) };

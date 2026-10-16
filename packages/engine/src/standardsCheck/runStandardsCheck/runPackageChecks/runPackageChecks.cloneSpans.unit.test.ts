@@ -10,6 +10,7 @@ import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeveri
 import { runPackageChecks } from '#src/standardsCheck/runStandardsCheck/runPackageChecks/runPackageChecks.ts';
 import { delegatingSources, duplicatedSources, offsetImportSources, sharedImportSources, writeSampleSources } from '#tests/helpers/duplicationSamples.ts';
 import { linkTypescript } from '#tests/helpers/linkTypescript.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
 import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 /** One group whose pack holds `rules` at their rule.md defaults, each rule at the state `states` resolved for it. */
@@ -138,7 +139,7 @@ describe('runPackageChecks', () => {
 	test('hands a duplicate-block rule both sites of a duplicated span and the tokens it spans', async () => {
 		const { cwd, handed, groups } = setupDuplicationRun({ sources: duplicatedSources });
 
-		await runPackageChecks({ cwd, testFileGlobs, groups });
+		await runPackageChecks({ cwd, sourceFileGlobs, testFileGlobs, groups });
 
 		const input = cloneSpansInput({ handed });
 
@@ -152,7 +153,7 @@ describe('runPackageChecks', () => {
 	test('reports the line numbers of the file as written, not of the blanked copy the detector read', async () => {
 		const { cwd, handed, groups } = setupDuplicationRun({ sources: offsetImportSources });
 
-		await runPackageChecks({ cwd, testFileGlobs, groups });
+		await runPackageChecks({ cwd, sourceFileGlobs, testFileGlobs, groups });
 
 		const input = cloneSpansInput({ handed });
 		const alphaLine = startLineOf({ input, path: 'src/alpha.ts' });
@@ -168,7 +169,7 @@ describe('runPackageChecks', () => {
 	test('never counts a shared import list as duplication, because nobody can deduplicate one', async () => {
 		const { cwd, handed, groups } = setupDuplicationRun({ sources: sharedImportSources });
 
-		await runPackageChecks({ cwd, testFileGlobs, groups });
+		await runPackageChecks({ cwd, sourceFileGlobs, testFileGlobs, groups });
 
 		const input = cloneSpansInput({ handed });
 
@@ -180,7 +181,7 @@ describe('runPackageChecks', () => {
 	test('hands every span the detector found, and the optional syntax trees, when the repo has a typescript to parse with', async () => {
 		const { cwd, handed, groups } = setupDuplicationRun({ sources: delegatingSources, typescript: true });
 
-		await runPackageChecks({ cwd, testFileGlobs, groups });
+		await runPackageChecks({ cwd, sourceFileGlobs, testFileGlobs, groups });
 
 		const input = cloneSpansInput({ handed });
 
@@ -194,7 +195,7 @@ describe('runPackageChecks', () => {
 	test('still runs a check whose syntax trees are optional when the repo has no typescript, handing it no trees', async () => {
 		const { cwd, handed, groups } = setupDuplicationRun({ sources: delegatingSources });
 
-		const { notes } = await runPackageChecks({ cwd, testFileGlobs, groups });
+		const { notes } = await runPackageChecks({ cwd, sourceFileGlobs, testFileGlobs, groups });
 
 		const input = cloneSpansInput({ handed });
 
@@ -208,7 +209,7 @@ describe('runPackageChecks', () => {
 	test('builds a separate clone detection for each rule from its own minTokens option', async () => {
 		const { cwd, groups, lowHanded, highHanded } = setupThresholdRun({ lowMinTokens: 20, highMinTokens: 200 });
 
-		await runPackageChecks({ cwd, testFileGlobs, groups });
+		await runPackageChecks({ cwd, sourceFileGlobs, testFileGlobs, groups });
 
 		const lowInput = cloneSpansInput({ handed: lowHanded });
 		const highInput = cloneSpansInput({ handed: highHanded });

@@ -10,6 +10,7 @@ import { queueSettingsFixture } from '#tests/helpers/queueSettingsFixture.ts';
 import { queueTicketFixture } from '#tests/helpers/queueTicketFixture.ts';
 import { shipIntegrationFixture } from '#tests/helpers/shipIntegrationFixture.ts';
 import { shipSettingsFixture } from '#tests/helpers/shipSettingsFixture.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
 import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 import { trackerSettingsFixture } from '#tests/helpers/trackerSettingsFixture.ts';
 
@@ -33,7 +34,11 @@ const mockRunDrainLanes = jest.fn<(params: RunDrainLanesParams) => Promise<Queue
 jest.mock('#src/queue/drainLanes/runDrainLanes/runDrainLanes.ts', () => ({ runDrainLanes: (params: RunDrainLanesParams) => mockRunDrainLanes(params) }));
 // -------------------------
 
-const config: LightsoutConfig = { 'test-files': testFileGlobs, gates: { check: 'true', test: 'true', 'test-coverage': false } };
+const config: LightsoutConfig = {
+	'source-files': sourceFileGlobs,
+	'test-files': testFileGlobs,
+	gates: { check: 'true', test: 'true', 'test-coverage': false },
+};
 
 /** Runs the task at once — nothing else touches the main checkout in these cases. */
 const serializeMainCheckout = <Result>({ task }: { task: () => Promise<Result> }) => task();

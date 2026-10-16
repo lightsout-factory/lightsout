@@ -8,6 +8,7 @@ import type { ResolvedRuleState } from '#src/common/types/ResolvedRuleState.ts';
 import type { StandardsGroup } from '#src/common/types/StandardsGroup.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 import { runPackageChecks } from '#src/standardsCheck/runStandardsCheck/runPackageChecks/runPackageChecks.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
 import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 /** A repo that declares its path aliases nowhere: no tsconfig above anything, and a manifest only when one is asked for. */
@@ -79,7 +80,7 @@ const runChecks = ({ rules, cwd }: { rules: LoadedStandardsRule[]; cwd: string }
 		states,
 	};
 
-	return runPackageChecks({ cwd, testFileGlobs, groups: [group] });
+	return runPackageChecks({ cwd, sourceFileGlobs, testFileGlobs, groups: [group] });
 };
 
 describe('runPackageChecks', () => {

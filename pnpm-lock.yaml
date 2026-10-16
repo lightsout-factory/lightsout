@@ -33,6 +33,9 @@ catalogs:
     picomatch:
       specifier: ^4.0.5
       version: 4.0.5
+    tinyglobby:
+      specifier: ^0.2.17
+      version: 0.2.17
     ts-jest:
       specifier: ^29.4.12
       version: 29.4.12
@@ -101,6 +104,9 @@ importers:
       picomatch:
         specifier: 'catalog:'
         version: 4.0.5
+      tinyglobby:
+        specifier: 'catalog:'
+        version: 0.2.17
       yaml:
         specifier: 'catalog:'
         version: 2.9.0

@@ -11,6 +11,7 @@ import { reviewReport } from '#tests/helpers/reviewReport.ts';
 import { roleOf } from '#tests/helpers/roleOf.ts';
 import { setupConsumerRepo } from '#tests/helpers/setupConsumerRepo.ts';
 import { setupMonorepo } from '#tests/helpers/setupMonorepo.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
 import { strictProfile } from '#tests/helpers/strictProfile.ts';
 import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 import { writeSource } from '#tests/helpers/writeSource.ts';
@@ -90,6 +91,7 @@ const setupMixedRed = async () => {
 	writeFileSync(
 		join(dir, 'lightsout.config.json'),
 		JSON.stringify({
+			'source-files': sourceFileGlobs,
 			'test-files': testFileGlobs,
 			gates: { check: 'true', test: 'true', 'test-coverage': 'true' },
 			'package-gates': {

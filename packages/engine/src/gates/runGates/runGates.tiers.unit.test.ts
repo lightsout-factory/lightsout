@@ -9,6 +9,7 @@ import { runGates } from '#src/gates/runGates/runGates.ts';
 import { gateLogCommand } from '#tests/helpers/gateLogCommand.ts';
 import { readGateLog } from '#tests/helpers/readGateLog.ts';
 import { setupConsumerRepo } from '#tests/helpers/setupConsumerRepo.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
 import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 /** Logs "root <kind>" like a green gate, then exits 1, so gates.log records red gates too. */
@@ -57,6 +58,7 @@ const setupTieredMonorepo = ({ redCheckIn }: TieredMonorepoParams) => {
 	writeFileSync(
 		join(dir, 'lightsout.config.json'),
 		JSON.stringify({
+			'source-files': sourceFileGlobs,
 			'test-files': testFileGlobs,
 			gates: { check: 'true', test: 'true', 'test-coverage': false },
 			'package-gates': {

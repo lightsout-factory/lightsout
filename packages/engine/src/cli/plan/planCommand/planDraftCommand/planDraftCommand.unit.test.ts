@@ -284,8 +284,9 @@ test('planDraftCommand: --scope single forces the one-file variant instead of le
 /**
  * A clean plan grown past the touched-file limit by 55 earlier-phase modifies —
  * paths a predecessor writes, so absent from disk and never a path-exists
- * defect. One create plus those 55 is 56 touched source files, well under the
- * 30-file created ceiling, so the only finding is the advisory note.
+ * defect. One create, the skeleton's one modify (`src/index.js`) and those 55
+ * are 57 touched source files, well under the 30-file created ceiling, so the
+ * only finding is the advisory note.
  */
 const mechanicalPlanBody = () => {
 	const entries = Array.from({ length: 55 }, (_, index) => `### \`src/renamed${index}.ts\`\n\nRename one import.\n`).join('\n');
@@ -306,7 +307,7 @@ test('planDraftCommand: an advisory rides a clean draft to stdout, beneath the w
 	expect(printed[1]).toBe(`  ✓ ${join(planDir, 'plan.md')}`);
 	// computed, persisted and never seen is the failure this branch exists to
 	// prevent — an advisory gates nothing, so a clean draft is where it gets read
-	expect(printed[2] ?? '').toMatch(/^note plan\.md \[scope-within-guardrail\] plan\.md — plan touches 56 source files, over the 50-file limit/);
+	expect(printed[2] ?? '').toMatch(/^note plan\.md \[scope-within-guardrail\] plan\.md — plan touches 57 source files, over the 50-file limit/);
 	expect(printed[3] ?? '').toMatch(/^ {3}fix: legal, but the implementing agent stops at 50 files/);
 	expect(errors).toStrictEqual([]);
 	expect(exitCodes).toStrictEqual([0]);
@@ -327,7 +328,7 @@ test('planDraftCommand: a hand-back counts and lists only the blocking findings,
 	expect(errors[0] ?? '').toMatch(/^\n1 structural issue\(s\) remain after re-drafting — resolve, then re-draft:$/);
 	expect(errors[1] ?? '').toMatch(/^⚠ plan\.md \[no-placeholders\] plan\.md:\d+ — unresolved placeholder 'TBD' present$/);
 	expect(errors).toHaveLength(3);
-	expect(printed[0] ?? '').toMatch(/^note plan\.md \[scope-within-guardrail\] plan\.md — plan touches 56 source files, over the 50-file limit/);
+	expect(printed[0] ?? '').toMatch(/^note plan\.md \[scope-within-guardrail\] plan\.md — plan touches 57 source files, over the 50-file limit/);
 	expect(exitCodes).toStrictEqual([1]);
 });
 

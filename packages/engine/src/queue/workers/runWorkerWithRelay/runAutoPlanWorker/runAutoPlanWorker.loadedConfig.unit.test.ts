@@ -8,6 +8,7 @@ import type { WorkOrderState } from '#src/contracts/workOrder/WorkOrderState.ts'
 import type { WorkerOutcome } from '#src/queue/common/types/WorkerOutcome.ts';
 import { runAutoPlanWorker } from '#src/queue/workers/runWorkerWithRelay/runAutoPlanWorker/runAutoPlanWorker.ts';
 import { queueSettingsFixture } from '#tests/helpers/queueSettingsFixture.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
 import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 /**
@@ -99,13 +100,19 @@ const setupAutoPlanWorker = () => {
 	mockBuildWorkOrderPlans.mockResolvedValue({});
 
 	const loadedConfig: LoadedConfig = {
-		config: { harness: 'codex', 'test-files': testFileGlobs, gates: { check: 'pnpm check', test: 'pnpm test', 'test-coverage': false } },
+		config: {
+			harness: 'codex',
+			'source-files': sourceFileGlobs,
+			'test-files': testFileGlobs,
+			gates: { check: 'pnpm check', test: 'pnpm test', 'test-coverage': false },
+		},
 		path: '/repo/lightsout.config.json',
 	};
 	const config: LightsoutConfig = {
 		harness: 'claude-code',
 		model: 'opus',
 		effort: 'high',
+		'source-files': sourceFileGlobs,
 		'test-files': testFileGlobs,
 		gates: { check: 'pnpm check', test: 'pnpm test', 'test-coverage': false },
 	};
@@ -135,7 +142,12 @@ describe('runAutoPlanWorker', () => {
 
 		expect(mockBuildWorkOrderPlans.mock.calls.map(([call]) => call.loadedConfig)).toStrictEqual([
 			{
-				config: { harness: 'codex', 'test-files': testFileGlobs, gates: { check: 'pnpm check', test: 'pnpm test', 'test-coverage': false } },
+				config: {
+					harness: 'codex',
+					'source-files': sourceFileGlobs,
+					'test-files': testFileGlobs,
+					gates: { check: 'pnpm check', test: 'pnpm test', 'test-coverage': false },
+				},
 				path: '/repo/lightsout.config.json',
 			},
 		]);

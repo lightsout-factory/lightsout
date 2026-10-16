@@ -1,7 +1,9 @@
 import { readFile } from 'node:fs/promises';
 import { basename } from 'node:path';
+import { readRepoFileGlobs } from '#src/common/config/readRepoFileGlobs.ts';
 import { PlanRunStatus } from '#src/common/constants/PlanRunStatus.ts';
 import { getBlockingFindings } from '#src/common/findings/getBlockingFindings.ts';
+import type { RepoFileGlobs } from '#src/common/types/RepoFileGlobs.ts';
 import type { DecisionsRecord } from '#src/contracts/plan/decisions/DecisionsRecord.ts';
 import { PlanVariant } from '#src/contracts/plan/draft/PlanVariant.ts';
 import type { StructuralFinding } from '#src/contracts/plan/grade/StructuralFinding.ts';
@@ -82,19 +84,19 @@ const composeEngineSections = async ({
 	overviewPath,
 	phasePaths,
 	decisions,
-	testFileGlobs,
+	fileGlobs,
 }: {
 	cwd: string;
 	name: string;
 	overviewPath: string;
 	phasePaths: string[];
 	decisions: DecisionsRecord;
-	testFileGlobs: string[];
+	fileGlobs: RepoFileGlobs;
 }) => {
 	await syncPlanDecisions({ cwd, name, planPaths: phasePaths, decisions });
 	await syncGlobalConstraints({ planPaths: [overviewPath, ...phasePaths], decisions });
 
-	await syncPhaseSectionsFromFiles({ cwd, overviewPath, phasePaths, testFileGlobs });
+	await syncPhaseSectionsFromFiles({ cwd, overviewPath, phasePaths, fileGlobs });
 };
 
 /**
@@ -166,7 +168,7 @@ export const draftFocusedPhasedPlan = async ({ context, step }: Params): Promise
 
 	// Every plan file carries the engine's own sections before anything reads them:
 	// the stamp inside, and the closing lint after.
-	await composeEngineSections({ cwd, name, overviewPath, phasePaths: phases.planPaths, decisions, testFileGlobs: config?.['test-files'] ?? [] });
+	await composeEngineSections({ cwd, name, overviewPath, phasePaths: phases.planPaths, decisions, fileGlobs: readRepoFileGlobs({ config }) });
 
 	const converged = await convergePlanStructure({
 		context,

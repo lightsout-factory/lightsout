@@ -8,9 +8,14 @@ import { readStandardsLibrary } from '#src/standardsLibraries/readStandardsLibra
 import { resolveStandardsLibraries } from '#src/standardsLibraries/resolveStandardsLibraries/resolveStandardsLibraries.ts';
 import { resolveStandardsLibraryPath } from '#src/standardsLibraries/resolveStandardsLibraries/resolveStandardsLibraryPath.ts';
 import { getRejectionError } from '#tests/helpers/getRejectionError.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
 import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
-const baseConfig: LightsoutConfig = { 'test-files': testFileGlobs, gates: { check: 'true', test: 'true', 'test-coverage': false } };
+const baseConfig: LightsoutConfig = {
+	'source-files': sourceFileGlobs,
+	'test-files': testFileGlobs,
+	gates: { check: 'true', test: 'true', 'test-coverage': false },
+};
 
 interface LibrarySpec {
 	/** Repo-relative folder the library is written under. */

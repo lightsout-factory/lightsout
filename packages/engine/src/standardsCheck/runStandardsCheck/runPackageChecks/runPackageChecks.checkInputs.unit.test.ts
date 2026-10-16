@@ -17,6 +17,7 @@ import type { StandardsGroup } from '#src/common/types/StandardsGroup.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 import { runPackageChecks } from '#src/standardsCheck/runStandardsCheck/runPackageChecks/runPackageChecks.ts';
 import { linkTypescript } from '#tests/helpers/linkTypescript.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
 import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 /** One group whose pack holds a single rule of the asked-for kind, plus the recorder of what it was handed. */
@@ -211,7 +212,7 @@ describe('runPackageChecks', () => {
 	test('hands a file-text rule both alias sources above a file — the package manifest and the tsconfig', async () => {
 		const { cwd, handed, groups } = setupFileTextRun();
 
-		await runPackageChecks({ cwd, testFileGlobs, groups });
+		await runPackageChecks({ cwd, sourceFileGlobs, testFileGlobs, groups });
 
 		const input = fileTextInput({ handed });
 
@@ -225,7 +226,7 @@ describe('runPackageChecks', () => {
 	test('probes for a manifest in every folder above a file, not the repo root alone', async () => {
 		const { cwd, handed, groups } = setupFileTextRun();
 
-		await runPackageChecks({ cwd, testFileGlobs, groups });
+		await runPackageChecks({ cwd, sourceFileGlobs, testFileGlobs, groups });
 
 		const input = fileTextInput({ handed });
 
@@ -240,7 +241,7 @@ describe('runPackageChecks', () => {
 	test('hands a test-file rule the test files and their text, and nothing the run read for another kind', async () => {
 		const { cwd, handed, groups } = setupTestFileRun();
 
-		await runPackageChecks({ cwd, testFileGlobs, groups });
+		await runPackageChecks({ cwd, sourceFileGlobs, testFileGlobs, groups });
 
 		// a test-shape rule reaching a source file would be checking something its
 		// declared kind does not claim
@@ -257,7 +258,7 @@ describe('runPackageChecks', () => {
 	test('hands a rule the pack roots the walk found, and sorts the files inside a pack by the declared test globs alone', async () => {
 		const { cwd, handed, groups } = setupPackRun();
 
-		await runPackageChecks({ cwd, testFileGlobs: ['**/*.unit.test.ts'], groups });
+		await runPackageChecks({ cwd, sourceFileGlobs, testFileGlobs: ['**/*.unit.test.ts'], groups });
 
 		const input = fileListInput({ handed });
 
@@ -276,7 +277,7 @@ describe('runPackageChecks', () => {
 	test('sorts the tests/ folder inside a pack as tests when a declared glob matches it', async () => {
 		const { cwd, handed, groups } = setupPackRun();
 
-		await runPackageChecks({ cwd, testFileGlobs: ['**/*.unit.test.ts', '**/tests/**'], groups });
+		await runPackageChecks({ cwd, sourceFileGlobs, testFileGlobs: ['**/*.unit.test.ts', '**/tests/**'], groups });
 
 		const input = fileListInput({ handed });
 
@@ -289,7 +290,7 @@ describe('runPackageChecks', () => {
 	test('hands a rule the test files of the whole repo as reference tests, even when the run is scoped to a path', async () => {
 		const { cwd, handed, groups } = setupScopedRun();
 
-		await runPackageChecks({ cwd, testFileGlobs, groups, path: 'src' });
+		await runPackageChecks({ cwd, sourceFileGlobs, testFileGlobs, groups, path: 'src' });
 
 		const input = fileListInput({ handed });
 
@@ -303,7 +304,7 @@ describe('runPackageChecks', () => {
 	test('hands a syntax-tree rule one parsed tree per source file, and what each package declares alongside it', async () => {
 		const { cwd, handed, groups } = setupSyntaxTreeRun();
 
-		const { notes } = await runPackageChecks({ cwd, testFileGlobs, groups });
+		const { notes } = await runPackageChecks({ cwd, sourceFileGlobs, testFileGlobs, groups });
 
 		const input = syntaxTreeInput({ handed });
 
@@ -328,7 +329,7 @@ describe('runPackageChecks', () => {
 	test('hands a type-checker rule a checker for every file a tsconfig covers, its tests and pack roots included', async () => {
 		const { cwd, handed, groups } = setupTypeCheckerRun();
 
-		const { notes } = await runPackageChecks({ cwd, testFileGlobs, groups });
+		const { notes } = await runPackageChecks({ cwd, sourceFileGlobs, testFileGlobs, groups });
 
 		const input = typeCheckerInput({ handed });
 
@@ -353,7 +354,7 @@ describe('runPackageChecks', () => {
 	test('hands an import-graph rule what each package declares, so a boundary rule can tell a framework-mandated folder from one the repo chose', async () => {
 		const { cwd, handed, groups } = setupImportGraphDependenciesRun({ packagesDir: 'packages' });
 
-		const { notes } = await runPackageChecks({ cwd, testFileGlobs, groups });
+		const { notes } = await runPackageChecks({ cwd, sourceFileGlobs, testFileGlobs, groups });
 
 		// an empty note list is what says the compiler resolved: the kind needs one,
 		// and a run without it skips the rule instead of building this
@@ -375,7 +376,7 @@ describe('runPackageChecks', () => {
 	test('reads those declarations from the package parent dir the run was configured with, not the default name', async () => {
 		const { cwd, packagesDir, handed, groups } = setupImportGraphDependenciesRun({ packagesDir: 'modules' });
 
-		await runPackageChecks({ cwd, testFileGlobs, groups, packagesDir });
+		await runPackageChecks({ cwd, sourceFileGlobs, testFileGlobs, groups, packagesDir });
 
 		// a repo that keeps its packages under another name would otherwise have
 		// every workspace manifest fall out of the map, silently
@@ -392,7 +393,7 @@ describe('runPackageChecks', () => {
 	test('hands an import-graph rule the edges resolved among the repo files', async () => {
 		const { cwd, handed, groups } = setupImportGraphRun();
 
-		const { notes } = await runPackageChecks({ cwd, testFileGlobs, groups });
+		const { notes } = await runPackageChecks({ cwd, sourceFileGlobs, testFileGlobs, groups });
 
 		// an empty note list is what says the compiler resolved: the kind needs one,
 		// and a run without it skips the rule instead of building this

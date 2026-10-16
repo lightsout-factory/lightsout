@@ -5,7 +5,15 @@ import { expect, test } from '@jest/globals';
 import { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { detectPriorArtCandidates } from '#src/plan/common/detection/detectPriorArtCandidates.ts';
 import { linkTypescript } from '#tests/helpers/linkTypescript.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
 import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
+
+/** The config a fixture repo declares: its code, its tests and gates that always pass. */
+const repoConfig = LightsoutConfig.parse({
+	'source-files': sourceFileGlobs,
+	'test-files': testFileGlobs,
+	gates: { check: 'true', test: 'true', 'test-coverage': false },
+});
 
 /**
  * A temp repo with the given existing source files, each declaring one export
@@ -50,7 +58,7 @@ const setup = ({
 
 test('detectPriorArtCandidates: a synonym name-collision is a candidate', async () => {
 	const { cwd, planPaths } = setup({ existing: ['src/fetchUser.ts'], creates: ['src/getUser.ts'] });
-	const candidates = await detectPriorArtCandidates({ cwd, planPaths });
+	const candidates = await detectPriorArtCandidates({ cwd, planPaths, config: repoConfig });
 
 	expect(candidates.length).toBe(1);
 	expect(candidates[0]?.plannedSymbol).toBe('getUser');
@@ -67,7 +75,7 @@ test('detectPriorArtCandidates: a phased plan tags each candidate with the phase
 
 	writeFileSync(second, '# Plan\n\n## Files to Create\n\n### `src/getOrder.ts`\n\nnew.\n');
 
-	const candidates = await detectPriorArtCandidates({ cwd, planPaths: [...planPaths, second] });
+	const candidates = await detectPriorArtCandidates({ cwd, planPaths: [...planPaths, second], config: repoConfig });
 
 	// the dedup fan-out groups by this label, and `plannedPath` cannot supply it
 	expect(candidates.map(({ plannedSymbol, phase }) => ({ plannedSymbol, phase }))).toStrictEqual([
@@ -78,7 +86,7 @@ test('detectPriorArtCandidates: a phased plan tags each candidate with the phase
 
 test('detectPriorArtCandidates: an exact name-collision is a candidate', async () => {
 	const { cwd, planPaths } = setup({ existing: ['src/parseThing.ts'], creates: ['src/other/parseThing.ts'] });
-	const candidates = await detectPriorArtCandidates({ cwd, planPaths });
+	const candidates = await detectPriorArtCandidates({ cwd, planPaths, config: repoConfig });
 
 	expect(candidates.length).toBe(1);
 	expect(candidates[0]?.collidesWith.some((collision) => collision.path === 'src/parseThing.ts')).toBeTruthy();
@@ -86,30 +94,46 @@ test('detectPriorArtCandidates: an exact name-collision is a candidate', async (
 
 test('detectPriorArtCandidates: a to/from inverse is not a candidate', async () => {
 	const { cwd, planPaths } = setup({ existing: ['src/rgbToHex.ts'], creates: ['src/hexToRgb.ts'] });
-	const candidates = await detectPriorArtCandidates({ cwd, planPaths });
+	const candidates = await detectPriorArtCandidates({ cwd, planPaths, config: repoConfig });
 
 	expect(candidates).toStrictEqual([]);
 });
 
 test('detectPriorArtCandidates: a component+route casing pair is not a candidate', async () => {
 	const { cwd, planPaths } = setup({ existing: ['src/GetStarted.tsx'], creates: ['src/get-started.ts'] });
-	const candidates = await detectPriorArtCandidates({ cwd, planPaths });
+	const candidates = await detectPriorArtCandidates({ cwd, planPaths, config: repoConfig });
 
 	expect(candidates).toStrictEqual([]);
 });
 
 test('detectPriorArtCandidates: a genuinely novel name yields no candidate', async () => {
 	const { cwd, planPaths } = setup({ existing: ['src/fetchUser.ts'], creates: ['src/brandNewWidget.ts'] });
-	const candidates = await detectPriorArtCandidates({ cwd, planPaths });
+	const candidates = await detectPriorArtCandidates({ cwd, planPaths, config: repoConfig });
 
 	expect(candidates).toStrictEqual([]);
 });
 
 test('detectPriorArtCandidates: collisions against a file the test-files globs match are excluded', async () => {
 	const { cwd, planPaths } = setup({ existing: ['src/tests/getUser.ts'], creates: ['src/getUser.ts'] });
-	const config = LightsoutConfig.parse({ 'test-files': testFileGlobs, gates: { check: 'true', test: 'true', 'test-coverage': false } });
+	const candidates = await detectPriorArtCandidates({ cwd, planPaths, config: repoConfig });
+
+	expect(candidates).toStrictEqual([]);
+});
+
+test('detectPriorArtCandidates: a collision against a file the source-files globs do not name is not prior art', async () => {
+	const { cwd, planPaths } = setup({ existing: ['src/fetchUser.ts', 'scripts/loadUser.ts'], creates: ['src/getUser.ts'] });
+	const config = LightsoutConfig.parse({ ...repoConfig, 'source-files': ['src/**/*.ts'] });
 	const candidates = await detectPriorArtCandidates({ cwd, planPaths, config });
 
+	// the census reads only the code the repo declares
+	expect(candidates.map((candidate) => candidate.collidesWith)).toStrictEqual([[{ name: 'fetchUser', path: 'src/fetchUser.ts' }]]);
+});
+
+test('detectPriorArtCandidates: with no config the census is empty, so nothing is prior art', async () => {
+	const { cwd, planPaths } = setup({ existing: ['src/fetchUser.ts'], creates: ['src/getUser.ts'] });
+	const candidates = await detectPriorArtCandidates({ cwd, planPaths });
+
+	// no `source-files` declares no code, and the engine does not guess any
 	expect(candidates).toStrictEqual([]);
 });
 
@@ -117,7 +141,7 @@ test('detectPriorArtCandidates: a plan path that cannot be read is skipped, not 
 	const { cwd, planPaths } = setup({ existing: ['src/fetchUser.ts'], creates: ['src/getUser.ts'] });
 	const ghost = join(cwd, '.lightsout', 'work-orders', 'ghost', 'plans', 'plan.md');
 
-	const candidates = await detectPriorArtCandidates({ cwd, planPaths: [ghost, ...planPaths] });
+	const candidates = await detectPriorArtCandidates({ cwd, planPaths: [ghost, ...planPaths], config: repoConfig });
 
 	// the readable plan still contributes its planned symbols
 	expect(candidates.length).toBe(1);
@@ -126,7 +150,7 @@ test('detectPriorArtCandidates: a plan path that cannot be read is skipped, not 
 
 test('detectPriorArtCandidates: a planned path that already exists is not prior art against itself', async () => {
 	const { cwd, planPaths } = setup({ existing: ['src/getUser.ts'], creates: ['src/getUser.ts'] });
-	const candidates = await detectPriorArtCandidates({ cwd, planPaths });
+	const candidates = await detectPriorArtCandidates({ cwd, planPaths, config: repoConfig });
 
 	// the planned path is excluded from the census it is compared against
 	expect(candidates).toStrictEqual([]);
@@ -134,7 +158,7 @@ test('detectPriorArtCandidates: a planned path that already exists is not prior 
 
 test('detectPriorArtCandidates: a plan with no Files to Create yields no candidates', async () => {
 	const { cwd, planPaths } = setup({ existing: ['src/fetchUser.ts'], creates: [] });
-	const candidates = await detectPriorArtCandidates({ cwd, planPaths });
+	const candidates = await detectPriorArtCandidates({ cwd, planPaths, config: repoConfig });
 
 	expect(candidates).toStrictEqual([]);
 });
@@ -142,6 +166,7 @@ test('detectPriorArtCandidates: a plan with no Files to Create yields no candida
 test('detectPriorArtCandidates: a collision inside a configured generated path is excluded', async () => {
 	const { cwd, planPaths } = setup({ existing: ['generated-src/fetchUser.ts'], creates: ['src/getUser.ts'] });
 	const config = LightsoutConfig.parse({
+		'source-files': sourceFileGlobs,
 		'test-files': testFileGlobs,
 		gates: { check: 'true', test: 'true', 'test-coverage': false },
 		generated: ['generated-src/'],
@@ -155,7 +180,7 @@ test('detectPriorArtCandidates: a collision inside a configured generated path i
 
 test('detectPriorArtCandidates: a shuffled word order is the same concept, so it is a candidate', async () => {
 	const { cwd, planPaths } = setup({ existing: ['src/userDataGet.ts'], creates: ['src/getUserData.ts'] });
-	const candidates = await detectPriorArtCandidates({ cwd, planPaths });
+	const candidates = await detectPriorArtCandidates({ cwd, planPaths, config: repoConfig });
 
 	expect(candidates.length).toBe(1);
 	expect(candidates[0]?.collidesWith.some((collision) => collision.name === 'userDataGet')).toBeTruthy();
@@ -163,14 +188,14 @@ test('detectPriorArtCandidates: a shuffled word order is the same concept, so it
 
 test('detectPriorArtCandidates: a from/to inverse is not a candidate', async () => {
 	const { cwd, planPaths } = setup({ existing: ['src/dtoFromEntity.ts'], creates: ['src/entityFromDto.ts'] });
-	const candidates = await detectPriorArtCandidates({ cwd, planPaths });
+	const candidates = await detectPriorArtCandidates({ cwd, planPaths, config: repoConfig });
 
 	expect(candidates).toStrictEqual([]);
 });
 
 test('detectPriorArtCandidates: a from-conversion keeps its order, so a synonym twin of it is still a candidate', async () => {
 	const { cwd, planPaths } = setup({ existing: ['src/loadRowsFromDisk.ts'], creates: ['src/fetchRowsFromDisk.ts'] });
-	const candidates = await detectPriorArtCandidates({ cwd, planPaths });
+	const candidates = await detectPriorArtCandidates({ cwd, planPaths, config: repoConfig });
 
 	expect(candidates.length).toBe(1);
 	expect(candidates[0]?.collidesWith.some((collision) => collision.path === 'src/loadRowsFromDisk.ts')).toBeTruthy();
@@ -180,7 +205,7 @@ test.each([{ planned: 'src/delete-stale-entry.ts' }, { planned: 'src/delete_stal
 	'detectPriorArtCandidates: a planned $planned still finds the camelCase synonym twin the repo declares',
 	async ({ planned }) => {
 		const { cwd, planPaths } = setup({ existing: ['src/removeStaleEntry.ts'], creates: [planned] });
-		const candidates = await detectPriorArtCandidates({ cwd, planPaths });
+		const candidates = await detectPriorArtCandidates({ cwd, planPaths, config: repoConfig });
 
 		expect(candidates.length).toBe(1);
 		expect(candidates[0]?.collidesWith.some((collision) => collision.path === 'src/removeStaleEntry.ts')).toBeTruthy();
@@ -190,7 +215,11 @@ test.each([{ planned: 'src/delete-stale-entry.ts' }, { planned: 'src/delete_stal
 test('detectPriorArtCandidates: a tests/ folder the repo’s test-files globs do not name is source, so a check under it is prior art', async () => {
 	const existing = ['standards/tests/unit-testing/05-rule/scanRule.ts', 'standards/common/utils/scanRule.unit.test.ts'];
 	const { cwd, planPaths } = setup({ existing, creates: ['src/scanRule.ts'] });
-	const config = LightsoutConfig.parse({ gates: { check: 'true', test: 'true', 'test-coverage': false }, 'test-files': ['**/*.test.*'] });
+	const config = LightsoutConfig.parse({
+		'source-files': sourceFileGlobs,
+		gates: { check: 'true', test: 'true', 'test-coverage': false },
+		'test-files': ['**/*.test.*'],
+	});
 	const candidates = await detectPriorArtCandidates({ cwd, planPaths, config });
 
 	// only the declared globs make a file a test: the check under tests/ is
@@ -201,7 +230,7 @@ test('detectPriorArtCandidates: a tests/ folder the repo’s test-files globs do
 
 test('detectPriorArtCandidates: a file the plan deletes stops contributing its exports to the census', async () => {
 	const { cwd, planPaths } = setup({ existing: ['src/legacy/getUser.ts'], creates: ['src/getUser.ts'], deletes: ['src/legacy/getUser.ts'] });
-	const candidates = await detectPriorArtCandidates({ cwd, planPaths });
+	const candidates = await detectPriorArtCandidates({ cwd, planPaths, config: repoConfig });
 
 	// the file is still on disk today, but the plan removes it — colliding with it
 	// is colliding with something the plan has already dealt with
@@ -214,7 +243,7 @@ test('detectPriorArtCandidates: a file the plan moves stops contributing its exp
 		creates: ['packages/shared/formatDuration.ts'],
 		moves: [{ from: 'cli/common/formatting/formatDuration.ts', to: 'packages/shared/formatDuration.ts' }],
 	});
-	const candidates = await detectPriorArtCandidates({ cwd, planPaths });
+	const candidates = await detectPriorArtCandidates({ cwd, planPaths, config: repoConfig });
 
 	// a symbol changing packages collided with itself indefinitely, because the
 	// old path stayed in the census however the move was recorded
@@ -227,7 +256,7 @@ test('detectPriorArtCandidates: a collision the plan neither deletes nor moves i
 		creates: ['src/getUser.ts'],
 		deletes: ['src/legacy/getUser.ts'],
 	});
-	const candidates = await detectPriorArtCandidates({ cwd, planPaths });
+	const candidates = await detectPriorArtCandidates({ cwd, planPaths, config: repoConfig });
 
 	// subtracting the deleted path never widens into subtracting the rest
 	expect(candidates.length).toBe(1);
@@ -240,7 +269,7 @@ test('detectPriorArtCandidates: a delete in one plan file empties the path for a
 
 	writeFileSync(second, '# Phase 2\n\n## Files to Delete\n\n### `src/legacy/getUser.ts`\n\ngone.\n');
 
-	const candidates = await detectPriorArtCandidates({ cwd, planPaths: [...planPaths, second] });
+	const candidates = await detectPriorArtCandidates({ cwd, planPaths: [...planPaths, second], config: repoConfig });
 
 	// the census is the repo the whole plan leaves behind, not the repo one phase
 	// leaves behind
@@ -254,7 +283,7 @@ test('detectPriorArtCandidates: the shared export census yields the same candida
 		deletes: ['src/legacy/getUser.ts'],
 	});
 
-	const candidates = await detectPriorArtCandidates({ cwd, planPaths });
+	const candidates = await detectPriorArtCandidates({ cwd, planPaths, config: repoConfig });
 
 	// the census moved behind `buildExportCensus` and the bucket comparison behind
 	// `detectExportCollisions` — the whole verdict, not just its path list, has to
@@ -278,7 +307,7 @@ test.each([
 ])('detectPriorArtCandidates: a planned symbol does not collide with its copy in a folder the plan moves away', async ({ moves, expected }) => {
 	const { cwd, planPaths } = setup({ existing: ['src/old/parse.ts'], creates: ['src/fresh/parse.ts'], moves });
 
-	const candidates = await detectPriorArtCandidates({ cwd, planPaths });
+	const candidates = await detectPriorArtCandidates({ cwd, planPaths, config: repoConfig });
 
 	// a folder move empties every file under its source, aligned on the slash,
 	// just as a file move empties its one source path

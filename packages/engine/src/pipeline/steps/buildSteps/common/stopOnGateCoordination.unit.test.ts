@@ -5,6 +5,7 @@ import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import type { StepRecord } from '#src/contracts/run/StepRecord.ts';
 import type { PipelineRun } from '#src/pipeline/common/PipelineRun.ts';
 import { stopOnGateCoordination } from '#src/pipeline/steps/buildSteps/common/stopOnGateCoordination.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
 import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // Mocked Imports
@@ -67,7 +68,11 @@ const setupCoordinationStop = ({ ticketRef, holdFailure }: { ticketRef: string |
 		approvedTests: [],
 		currentStep: null,
 	} as unknown as RunManifest;
-	const config: LightsoutConfig = { 'test-files': testFileGlobs, gates: { check: 'true', test: 'true', 'test-coverage': false } };
+	const config: LightsoutConfig = {
+		'source-files': sourceFileGlobs,
+		'test-files': testFileGlobs,
+		gates: { check: 'true', test: 'true', 'test-coverage': false },
+	};
 
 	const run = {
 		cwd: worktreePath,

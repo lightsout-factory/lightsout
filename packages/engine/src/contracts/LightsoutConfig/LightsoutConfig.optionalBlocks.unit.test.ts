@@ -1,8 +1,9 @@
 import { expect, test } from '@jest/globals';
 import { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
 import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
-const base = { 'test-files': testFileGlobs, gates: { check: 'c', test: 't', 'test-coverage': false } };
+const base = { 'source-files': sourceFileGlobs, 'test-files': testFileGlobs, gates: { check: 'c', test: 't', 'test-coverage': false } };
 
 // The opt-in blocks of the composed config: each one survives parsing as the
 // file wrote it, stays strict through the composition, and leaves no key on

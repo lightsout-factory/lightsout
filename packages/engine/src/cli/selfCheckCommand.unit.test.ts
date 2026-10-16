@@ -12,6 +12,7 @@ import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import { captureCommandOutput } from '#tests/helpers/captureCommandOutput.ts';
 import { seedRunDir } from '#tests/helpers/seedRunDir.ts';
 import { setupConsumerRepo } from '#tests/helpers/setupConsumerRepo.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
 import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // Mocked Imports
@@ -362,7 +363,11 @@ describe('selfCheckCommand', () => {
 
 	test("selfCheckCommand: runs the gates on the config the run recorded, even when the worktree's file no longer parses", async () => {
 		const { context, exitCodes } = await setupRecordedConfig({
-			recordedConfig: { 'test-files': testFileGlobs, gates: { check: 'pnpm recorded-check', test: 'true', 'test-coverage': false } },
+			recordedConfig: {
+				'source-files': sourceFileGlobs,
+				'test-files': testFileGlobs,
+				gates: { check: 'pnpm recorded-check', test: 'true', 'test-coverage': false },
+			},
 		});
 
 		await expect(selfCheckCommand(context)).rejects.toThrow(/process\.exit/);

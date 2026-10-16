@@ -2,10 +2,12 @@ import { describe, expect, test } from '@jest/globals';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { WorkOrderMode } from '#src/contracts/workOrder/WorkOrderMode.ts';
 import { buildWorkOrderState } from '#src/workOrder/createWorkOrder/buildWorkOrderState.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
 import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 const setupConfig = (): { config: LightsoutConfig } => ({
 	config: {
+		'source-files': sourceFileGlobs,
 		'test-files': testFileGlobs,
 		gates: { check: 'true', test: 'true', 'test-coverage': false },
 		plan: { 'default-work-order-mode': 'multiple-plan' },

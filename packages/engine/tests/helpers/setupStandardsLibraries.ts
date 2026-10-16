@@ -76,6 +76,7 @@ const buildPack = ({ name, packs = [], topics = [], rules = [], ruleSettings = {
 const buildLibrary = ({ name, topics = [], packs = [] }: LibrarySpec): LoadedStandardsLibrary => ({
 	name,
 	formatVersion: 2,
+	fixtureSourceFiles: [],
 	fixtureTestFiles: [],
 	rootPath: `/libraries/${name}`,
 	documents: topics.map((spec) => buildTopic({ library: name, spec })),

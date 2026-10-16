@@ -3,6 +3,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { expect, test } from '@jest/globals';
 import { resolveConfigAndDriver } from '#src/cli/common/resolveConfigAndDriver.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
 import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 const setupConsumerDir = ({ config }: { config?: Record<string, unknown> } = {}) => {
@@ -28,7 +29,13 @@ test('resolveConfigAndDriver: only a genuinely absent config file is non-fatal â
 
 test('resolveConfigAndDriver: global harness and model land in the effective config and the driver', async () => {
 	const { cwd } = setupConsumerDir({
-		config: { harness: 'codex', model: 'gpt-5.2', 'test-files': testFileGlobs, gates: { check: 'c', test: 't', 'test-coverage': false } },
+		config: {
+			harness: 'codex',
+			model: 'gpt-5.2',
+			'source-files': sourceFileGlobs,
+			'test-files': testFileGlobs,
+			gates: { check: 'c', test: 't', 'test-coverage': false },
+		},
 	});
 
 	const { config, driver, configPath } = await resolveConfigAndDriver({ cwd, command: 'plan' });
@@ -38,6 +45,7 @@ test('resolveConfigAndDriver: global harness and model land in the effective con
 		harness: 'codex',
 		model: 'gpt-5.2',
 		effort: undefined,
+		'source-files': sourceFileGlobs,
 		'test-files': testFileGlobs,
 		gates: { check: 'c', test: 't', 'test-coverage': false },
 	});
@@ -49,6 +57,7 @@ test('resolveConfigAndDriver: a per-command harness override drops the global mo
 		config: {
 			model: 'opus',
 			commands: { improve: { harness: 'codex' } },
+			'source-files': sourceFileGlobs,
 			'test-files': testFileGlobs,
 			gates: { check: 'c', test: 't', 'test-coverage': false },
 		},
@@ -62,13 +71,16 @@ test('resolveConfigAndDriver: a per-command harness override drops the global mo
 		model: undefined,
 		effort: undefined,
 		commands: { improve: { harness: 'codex' } },
+		'source-files': sourceFileGlobs,
 		'test-files': testFileGlobs,
 		gates: { check: 'c', test: 't', 'test-coverage': false },
 	});
 });
 
 test('resolveConfigAndDriver: a global effort lands in the effective config', async () => {
-	const { cwd } = setupConsumerDir({ config: { effort: 'high', 'test-files': testFileGlobs, gates: { check: 'c', test: 't', 'test-coverage': false } } });
+	const { cwd } = setupConsumerDir({
+		config: { effort: 'high', 'source-files': sourceFileGlobs, 'test-files': testFileGlobs, gates: { check: 'c', test: 't', 'test-coverage': false } },
+	});
 
 	const { config } = await resolveConfigAndDriver({ cwd, command: 'plan' });
 
@@ -76,6 +88,7 @@ test('resolveConfigAndDriver: a global effort lands in the effective config', as
 		harness: 'claude-code',
 		model: undefined,
 		effort: 'high',
+		'source-files': sourceFileGlobs,
 		'test-files': testFileGlobs,
 		gates: { check: 'c', test: 't', 'test-coverage': false },
 	});
@@ -83,7 +96,13 @@ test('resolveConfigAndDriver: a global effort lands in the effective config', as
 
 test('resolveConfigAndDriver: a per-command effort overrides the global in the effective config', async () => {
 	const { cwd } = setupConsumerDir({
-		config: { effort: 'low', commands: { plan: { effort: 'max' } }, 'test-files': testFileGlobs, gates: { check: 'c', test: 't', 'test-coverage': false } },
+		config: {
+			effort: 'low',
+			commands: { plan: { effort: 'max' } },
+			'source-files': sourceFileGlobs,
+			'test-files': testFileGlobs,
+			gates: { check: 'c', test: 't', 'test-coverage': false },
+		},
 	});
 
 	const { config } = await resolveConfigAndDriver({ cwd, command: 'plan' });
@@ -93,6 +112,7 @@ test('resolveConfigAndDriver: a per-command effort overrides the global in the e
 		model: undefined,
 		effort: 'max',
 		commands: { plan: { effort: 'max' } },
+		'source-files': sourceFileGlobs,
 		'test-files': testFileGlobs,
 		gates: { check: 'c', test: 't', 'test-coverage': false },
 	});
@@ -100,7 +120,12 @@ test('resolveConfigAndDriver: a per-command effort overrides the global in the e
 
 test('resolveConfigAndDriver: a present-but-invalid config (typoed commands key) is a hard error', async () => {
 	const { cwd } = setupConsumerDir({
-		config: { commands: { implment: {} }, 'test-files': testFileGlobs, gates: { check: 'c', test: 't', 'test-coverage': false } },
+		config: {
+			commands: { implment: {} },
+			'source-files': sourceFileGlobs,
+			'test-files': testFileGlobs,
+			gates: { check: 'c', test: 't', 'test-coverage': false },
+		},
 	});
 
 	// continuing would silently discard every setting in the file and run with

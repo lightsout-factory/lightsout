@@ -1,5 +1,6 @@
 import { join } from 'node:path';
 import { buildPlanRepairInvocation } from '#src/agents/plan/buildPlanRepairInvocation.ts';
+import { readRepoFileGlobs } from '#src/common/config/readRepoFileGlobs.ts';
 import type { ActivityLevel } from '#src/common/types/ActivityLevel.ts';
 import type { Driver } from '#src/common/types/Driver.ts';
 import { ActivityLevelKind } from '#src/contracts/activity/ActivityLevelKind.ts';
@@ -79,7 +80,7 @@ export const repairPlanStructure = async (params: Params): Promise<PlanRepairRes
 		verb: 'repair',
 		findingNoun: 'structural finding(s)',
 		check: async () => {
-			await repairMechanicalFindings({ cwd, name, planPaths, decisions, overviewPath, testFileGlobs: config?.['test-files'] ?? [] });
+			await repairMechanicalFindings({ cwd, name, planPaths, decisions, overviewPath, fileGlobs: readRepoFileGlobs({ config }) });
 
 			return lintPlanStructure({ cwd, planPaths, decisions, config });
 		},

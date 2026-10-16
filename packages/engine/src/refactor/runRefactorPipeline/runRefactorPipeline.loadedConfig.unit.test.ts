@@ -9,6 +9,7 @@ import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import { runRefactorPipeline } from '#src/refactor/runRefactorPipeline/runRefactorPipeline.ts';
 import { createRun } from '#src/runState/createRun.ts';
 import { setupConsumerRepo } from '#tests/helpers/setupConsumerRepo.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
 import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // Mocked Imports
@@ -47,9 +48,16 @@ const driver: Driver = { name: 'stub', invoke: async () => ({ text: '', exitCode
 const setupLoadedConfigRun = async () => {
 	const cwd = setupConsumerRepo();
 	const gates: LightsoutConfig['gates'] = { check: 'true', test: 'true', 'test-coverage': false };
-	const stamped: LightsoutConfig = { harness: 'claude-code', model: 'stamped-model', effort: 'high', 'test-files': testFileGlobs, gates };
+	const stamped: LightsoutConfig = {
+		harness: 'claude-code',
+		model: 'stamped-model',
+		effort: 'high',
+		'source-files': sourceFileGlobs,
+		'test-files': testFileGlobs,
+		gates,
+	};
 	const loadedConfig: LoadedConfig = {
-		config: { harness: 'codex', model: 'file-model', effort: 'low', 'test-files': testFileGlobs, gates },
+		config: { harness: 'codex', model: 'file-model', effort: 'low', 'source-files': sourceFileGlobs, 'test-files': testFileGlobs, gates },
 		path: join(cwd, 'lightsout.config.json'),
 	};
 	const manifest = await createRun({ cwd, plan: 'plan.md', pipeline: PipelineKind.Refactor, driver: driver.name });

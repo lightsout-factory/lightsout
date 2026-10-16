@@ -4,6 +4,7 @@ import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFinding.ts';
 import type { PipelineRun } from '#src/pipeline/common/PipelineRun.ts';
 import { standardsWorkList } from '#src/pipeline/steps/refactorStep/standardsWorkList.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
 import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // Mocked Imports
@@ -31,7 +32,12 @@ jest.mock('#src/standardsCheck/runStandardsCheck/runStandardsCheck.ts', () => ({
 const setupRun = () => {
 	mockRunStandardsCheck.mockResolvedValue({ findings: [], notes: [] });
 
-	const config: LightsoutConfig = { 'test-files': testFileGlobs, gates: { check: 'true', test: 'true', 'test-coverage': false }, 'packages-dir': 'apps' };
+	const config: LightsoutConfig = {
+		'source-files': sourceFileGlobs,
+		'test-files': testFileGlobs,
+		gates: { check: 'true', test: 'true', 'test-coverage': false },
+		'packages-dir': 'apps',
+	};
 	const manifest = { changedFiles: ['apps/web/src/index.ts'] } as unknown as RunManifest;
 	const run = {
 		cwd: '/tmp/lightsout-standards-work-list',

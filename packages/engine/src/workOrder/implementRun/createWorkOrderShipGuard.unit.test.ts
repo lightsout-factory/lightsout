@@ -16,6 +16,7 @@ import { updateLocalWorkOrderState } from '#src/workOrder/common/state/updateLoc
 import { createWorkOrderShipGuard } from '#src/workOrder/implementRun/createWorkOrderShipGuard.ts';
 import { retitleWorkOrderPlan } from '#src/workOrder/retitleWorkOrderPlan.ts';
 import { ticketTrackerConfigBlock } from '#tests/helpers/queueConfigBlock.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
 import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // Mocked Imports
@@ -46,8 +47,13 @@ const assetUrl = 'https://uploads.example.com/state.json';
 const gates: LightsoutConfig['gates'] = { check: 'true', test: 'true', 'test-coverage': false };
 
 /** No `ticket-tracker` block, so the record is local only and nothing is reached for. */
-const localConfig: LightsoutConfig = { 'test-files': testFileGlobs, gates };
-const trackerConfig: LightsoutConfig = { 'test-files': testFileGlobs, gates, 'ticket-tracker': { ...ticketTrackerConfigBlock, provider: 'linear' } };
+const localConfig: LightsoutConfig = { 'source-files': sourceFileGlobs, 'test-files': testFileGlobs, gates };
+const trackerConfig: LightsoutConfig = {
+	'source-files': sourceFileGlobs,
+	'test-files': testFileGlobs,
+	gates,
+	'ticket-tracker': { ...ticketTrackerConfigBlock, provider: 'linear' },
+};
 const linearEnv = { LINEAR_API_KEY: 'lin_key' };
 const mergeCommit = 'a1b2c3d4e5f6';
 /** What the tracker says when the ticket the record would be attached to cannot be looked up at all. */

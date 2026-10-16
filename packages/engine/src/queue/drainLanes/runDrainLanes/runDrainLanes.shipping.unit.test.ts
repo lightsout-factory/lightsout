@@ -18,6 +18,7 @@ import { queueTicketFixture } from '#tests/helpers/queueTicketFixture.ts';
 import { setupBranchRepo } from '#tests/helpers/setupBranchRepo.ts';
 import { shipIntegrationFixture } from '#tests/helpers/shipIntegrationFixture.ts';
 import { shipSettingsFixture } from '#tests/helpers/shipSettingsFixture.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
 import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 import { trackerSettingsFixture } from '#tests/helpers/trackerSettingsFixture.ts';
 import { writeRepoFile } from '#tests/helpers/writeRepoFile.ts';
@@ -38,7 +39,11 @@ const mockRunShip = jest.fn<(params: { cwd: string }) => Promise<ShipResult>>();
 jest.mock('#src/ship/runShip/runShip.ts', () => ({ runShip: (params: { cwd: string }) => mockRunShip(params) }));
 // -------------------------
 
-const config: LightsoutConfig = { 'test-files': testFileGlobs, gates: { check: 'true', test: 'true', 'test-coverage': false } };
+const config: LightsoutConfig = {
+	'source-files': sourceFileGlobs,
+	'test-files': testFileGlobs,
+	gates: { check: 'true', test: 'true', 'test-coverage': false },
+};
 
 const author = '-c user.name=t -c user.email=t@t';
 

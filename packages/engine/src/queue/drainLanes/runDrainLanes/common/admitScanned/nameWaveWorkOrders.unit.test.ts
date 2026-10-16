@@ -8,6 +8,7 @@ import type { WorkOrderState } from '#src/contracts/workOrder/WorkOrderState.ts'
 import { nameWaveWorkOrders } from '#src/queue/drainLanes/runDrainLanes/common/admitScanned/nameWaveWorkOrders.ts';
 import { createUncalledDriver } from '#tests/helpers/createUncalledDriver.ts';
 import { queueTicketFixture } from '#tests/helpers/queueTicketFixture.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
 import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // Mocked Imports
@@ -38,7 +39,11 @@ jest.mock('#src/workOrder/findWorkOrderByTicketRef.ts', () => ({
 }));
 // -------------------------
 
-const config: LightsoutConfig = { 'test-files': testFileGlobs, gates: { check: 'true', test: 'true', 'test-coverage': false } };
+const config: LightsoutConfig = {
+	'source-files': sourceFileGlobs,
+	'test-files': testFileGlobs,
+	gates: { check: 'true', test: 'true', 'test-coverage': false },
+};
 
 /** A record already on this machine, in the smallest shape the state contract accepts. */
 const recordOf = ({ name, branch = name, ticketRef }: { name: string; branch?: string; ticketRef: string }): WorkOrderState => ({

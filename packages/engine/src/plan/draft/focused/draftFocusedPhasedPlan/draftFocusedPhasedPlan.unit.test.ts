@@ -2,6 +2,7 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
 import type { PhaseDeclaration } from '#src/common/types/PhaseDeclaration.ts';
+import { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { DecisionsRecord } from '#src/contracts/plan/decisions/DecisionsRecord.ts';
 import type { SourceEvidenceIndex } from '#src/contracts/plan/evidence/SourceEvidenceIndex.ts';
 import type { PlanFacts } from '#src/contracts/plan/facts/PlanFacts.ts';
@@ -17,6 +18,8 @@ import { overviewBody } from '#tests/helpers/phasePlan.ts';
 import { planWorkspaceFolder } from '#tests/helpers/planWorkspaceFolder.ts';
 import { seedPlanWorkspace } from '#tests/helpers/seedPlanWorkspace.ts';
 import { setupConsumerRepo } from '#tests/helpers/setupConsumerRepo.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // The focused phased flow: the sections the engine composes from its own records
 // before the closing lint reads them, and the repair agent seeing only what no
@@ -75,6 +78,13 @@ const phaseWithBudget = ({ placeholder = false }: { placeholder?: boolean } = {}
 	return placeholder ? body.replace('A new module exporting', 'TBD — a new module exporting') : body;
 };
 
+/** The config the consumer repo declares: its code and its tests, which the stamped counts and the lint read. */
+const repoConfig = LightsoutConfig.parse({
+	'source-files': sourceFileGlobs,
+	'test-files': testFileGlobs,
+	gates: { check: 'true', test: 'true', 'test-coverage': false },
+});
+
 /** A seeded workspace, a scripted harness, and the resolved context the focused phased flow takes. */
 const setupFocusedPhasedDraft = ({ name, respond }: { name: string; respond: Parameters<typeof createScriptedDraftDriver>[0]['respond'] }) => {
 	const cwd = setupConsumerRepo();
@@ -91,6 +101,7 @@ const setupFocusedPhasedDraft = ({ name, respond }: { name: string; respond: Par
 		facts: draftFacts(),
 		decisions: draftDecisions({ planName: name }),
 		evidence: draftEvidence({ planName: name }),
+		config: repoConfig,
 		executorFileLimit: 50,
 		timeoutMs: 60_000,
 		progress: () => undefined,
@@ -185,7 +196,7 @@ describe('draftFocusedPhasedPlan', () => {
 		// rendered from one record, and the settled rule in every file.
 		expect({
 			repairs: draft.calls.filter(({ role }) => role === 'repair').length,
-			row: overview.includes('| 1 | `phase1-core.md` | the work | 1 | 1 |'),
+			row: overview.includes('| 1 | `phase1-core.md` | the work | 1 | 2 |'),
 			heading: overview.includes('### Phase 1 — `phase1-core.md`'),
 			strayHeading: overview.includes('### Phase 3'),
 			overviewConstraint: overview.includes(`- ${constraintChoice}`),

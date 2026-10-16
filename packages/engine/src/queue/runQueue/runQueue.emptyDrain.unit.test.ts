@@ -14,6 +14,7 @@ import { queueTicketFixture as ticketOf } from '#tests/helpers/queueTicketFixtur
 import { runDirFor } from '#tests/helpers/runDirFor.ts';
 import { setupBranchRepo } from '#tests/helpers/setupBranchRepo.ts';
 import { shipSettingsFixture } from '#tests/helpers/shipSettingsFixture.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
 import { terminalRelayFixture } from '#tests/helpers/terminalRelayFixture.ts';
 import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 import { trackerSettingsFixture } from '#tests/helpers/trackerSettingsFixture.ts';
@@ -46,7 +47,11 @@ const setupEmptyDrain = ({ eligible }: { eligible: TicketSummary[] }) => {
 	mockScanParkedWorktrees.mockResolvedValue({ resumed: [], outcomes: [], leftBehind: [], merged: [] });
 
 	const { cwd } = setupBranchRepo();
-	const config: LightsoutConfig = { 'test-files': testFileGlobs, gates: { check: 'true', test: 'true', 'test-coverage': false } };
+	const config: LightsoutConfig = {
+		'source-files': sourceFileGlobs,
+		'test-files': testFileGlobs,
+		gates: { check: 'true', test: 'true', 'test-coverage': false },
+	};
 	const driver: Driver = { name: 'claude-code', invoke: () => Promise.resolve({ text: '', exitCode: 0 }) };
 	const relay = terminalRelayFixture();
 

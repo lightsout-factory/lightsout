@@ -12,6 +12,7 @@ import { updateLocalWorkOrderState } from '#src/workOrder/common/state/updateLoc
 import { updateSyncedWorkOrderState } from '#src/workOrder/common/state/updateSyncedWorkOrderState.ts';
 import { canonicalTicketRecordText } from '#tests/helpers/canonicalTicketRecordText.ts';
 import { ticketTrackerConfigBlock } from '#tests/helpers/queueConfigBlock.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
 import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // Mocked Imports
@@ -89,7 +90,7 @@ const setupSyncedRecord = async ({
 	local = localRecord,
 	published,
 	sidecarOf,
-	config = { 'test-files': testFileGlobs, gates, 'ticket-tracker': trackerBlock },
+	config = { 'source-files': sourceFileGlobs, 'test-files': testFileGlobs, gates, 'ticket-tracker': trackerBlock },
 	uploadFailure,
 	detail = 'added plan 003-ship-guard',
 	refusal,
@@ -245,7 +246,7 @@ describe('updateSyncedWorkOrderState', () => {
 	});
 
 	test('updateSyncedWorkOrderState: with no ticket-tracker block, changes the local record and publishes nothing', async () => {
-		const { params, recordPath } = await setupSyncedRecord({ config: { 'test-files': testFileGlobs, gates } });
+		const { params, recordPath } = await setupSyncedRecord({ config: { 'source-files': sourceFileGlobs, 'test-files': testFileGlobs, gates } });
 
 		const result = await updateSyncedWorkOrderState(params);
 

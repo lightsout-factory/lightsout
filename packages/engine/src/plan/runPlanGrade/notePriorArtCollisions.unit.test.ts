@@ -2,8 +2,18 @@ import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, test } from '@jest/globals';
 import type { DedupReport } from '#src/contracts/dedup/DedupReport.ts';
+import { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { notePriorArtCollisions } from '#src/plan/runPlanGrade/notePriorArtCollisions.ts';
 import { seedDedupPlan } from '#tests/helpers/seedDedupPlan.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
+
+/** The repo's config as grade hands it over: the census reads its code files from these globs. */
+const config = LightsoutConfig.parse({
+	gates: { check: 'true', test: 'true', 'test-coverage': false },
+	'source-files': sourceFileGlobs,
+	'test-files': testFileGlobs,
+});
 
 // The nudge argues one thing: there are collisions no dedup pass has weighed.
 // So what it does with `dedup.json` is the whole of its behaviour.
@@ -34,7 +44,7 @@ const writeDedup = ({ workspaceDir, reviewed }: { workspaceDir: string; reviewed
 test('notePriorArtCollisions: a collision no dedup pass has seen is reported', async () => {
 	const { cwd, name, workspaceDir, planPaths, messages, onProgress } = setup();
 
-	await notePriorArtCollisions({ cwd, name, workspaceDir, planPaths, onProgress });
+	await notePriorArtCollisions({ cwd, name, workspaceDir, planPaths, config, onProgress });
 
 	expect(messages.length).toBe(1);
 	expect(messages[0]?.includes('1 planned symbol(s) still name-collide')).toBeTruthy();
@@ -46,7 +56,7 @@ test('notePriorArtCollisions: a collision dedup already ruled on is not reported
 
 	writeDedup({ workspaceDir, reviewed: [{ plannedSymbol: 'getUser', plannedPath: 'src/getUser.ts', phase: 'plan.md' }] });
 
-	await notePriorArtCollisions({ cwd, name, workspaceDir, planPaths, onProgress });
+	await notePriorArtCollisions({ cwd, name, workspaceDir, planPaths, config, onProgress });
 
 	// the collision is still detectable on disk — a `defer` or `distinct` ruling
 	// keeps both files — but there is no work left in it, so the nudge is silent
@@ -58,7 +68,7 @@ test('notePriorArtCollisions: a collision with no recorded ruling is still repor
 
 	writeDedup({ workspaceDir, reviewed: [{ plannedSymbol: 'somethingElse', plannedPath: 'src/somethingElse.ts', phase: 'plan.md' }] });
 
-	await notePriorArtCollisions({ cwd, name, workspaceDir, planPaths, onProgress });
+	await notePriorArtCollisions({ cwd, name, workspaceDir, planPaths, config, onProgress });
 
 	// a report that ruled on a different symbol settles nothing here
 	expect(messages.length).toBe(1);
@@ -70,7 +80,7 @@ test('notePriorArtCollisions: a ruling on the same name at a different path does
 
 	writeDedup({ workspaceDir, reviewed: [{ plannedSymbol: 'getUser', plannedPath: 'src/other/getUser.ts', phase: 'plan.md' }] });
 
-	await notePriorArtCollisions({ cwd, name, workspaceDir, planPaths, onProgress });
+	await notePriorArtCollisions({ cwd, name, workspaceDir, planPaths, config, onProgress });
 
 	// identity is the triple, so the same name planned somewhere else is a
 	// separate collision that nobody has weighed
@@ -82,7 +92,7 @@ test('notePriorArtCollisions: a dedup.json that no longer parses reports every c
 
 	writeFileSync(join(workspaceDir, 'dedup.json'), '{ not json at all');
 
-	await notePriorArtCollisions({ cwd, name, workspaceDir, planPaths, onProgress });
+	await notePriorArtCollisions({ cwd, name, workspaceDir, planPaths, config, onProgress });
 
 	// an unreadable record means nothing is known to be settled — the nudge falls
 	// back to its older, noisier self rather than going quiet
@@ -94,7 +104,7 @@ test('notePriorArtCollisions: a report written before the reviewed field existed
 
 	writeFileSync(join(workspaceDir, 'dedup.json'), JSON.stringify({ planName: 'p', findings: [], complete: true, reviewedAt: '2026-01-01T00:00:00.000Z' }));
 
-	await notePriorArtCollisions({ cwd, name, workspaceDir, planPaths, onProgress });
+	await notePriorArtCollisions({ cwd, name, workspaceDir, planPaths, config, onProgress });
 
 	expect(messages.length).toBe(1);
 });

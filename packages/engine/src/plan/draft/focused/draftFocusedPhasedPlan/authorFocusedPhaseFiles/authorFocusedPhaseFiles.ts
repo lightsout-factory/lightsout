@@ -50,7 +50,7 @@ interface Params {
 	docs?: ConfigDocs;
 	/** `plan.contract` from config, threaded through so a phase file carries the same acceptance-test ledger a single plan would. */
 	contract?: boolean;
-	/** The repo's config, when it has one — the prior-art census reads its excluded paths and test-file globs. */
+	/** The repo's config, when it has one — the prior-art census reads its excluded paths and its source and test globs. */
 	config?: LightsoutConfig;
 	model?: string;
 	effort?: Effort;

@@ -4,15 +4,21 @@ import { describe, expect, test } from '@jest/globals';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { PackagesSource } from '#src/contracts/run/PackagesSource.ts';
 import { resolvePackageScope } from '#src/pipeline/runImplementPipeline/prepareRun/resolvePackageScope/resolvePackageScope.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
 import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 const monorepo: LightsoutConfig = {
+	'source-files': sourceFileGlobs,
 	'test-files': testFileGlobs,
 	gates: { check: 'true', test: 'true', 'test-coverage': false },
 	'package-gates': { check: 'pnpm --filter {package} check', test: 'pnpm --filter {package} test' },
 };
 
-const singleRepo: LightsoutConfig = { 'test-files': testFileGlobs, gates: { check: 'true', test: 'true', 'test-coverage': false } };
+const singleRepo: LightsoutConfig = {
+	'source-files': sourceFileGlobs,
+	'test-files': testFileGlobs,
+	gates: { check: 'true', test: 'true', 'test-coverage': false },
+};
 
 const call = ({
 	config = monorepo,

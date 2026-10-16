@@ -15,6 +15,7 @@
 			"effort": "high"
 		}
 	},
+	"source-files": ["**/*.{ts,tsx,mts,cts,js,jsx,mjs,cjs}", "!**/*.d.ts", "!plugin/dist/**"],
 	"test-files": ["**/*.test.*", "packages/*/tests/**", "**/jest.config.*", "**/jest.*.config.*"],
 	"gates": {
 		"generate": "pnpm --filter @lightsout/web-app build",

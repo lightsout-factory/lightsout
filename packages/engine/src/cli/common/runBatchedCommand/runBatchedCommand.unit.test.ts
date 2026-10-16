@@ -11,6 +11,7 @@ import { RunLockError } from '#src/runState/lock/RunLockError.ts';
 import { captureCommandOutput } from '#tests/helpers/captureCommandOutput.ts';
 import { runDirFor } from '#tests/helpers/runDirFor.ts';
 import { setupConsumerRepo } from '#tests/helpers/setupConsumerRepo.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
 import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 const manifestOf = ({ status }: { status: RunStatus }): RunManifest => ({
@@ -119,6 +120,7 @@ const setupResumeShell = ({ recorded, recordsPath = true }: { recorded: Record<s
 /** The config a resumed run recorded, deliberately unlike the checkout's file it is resumed from. */
 const recordedConfig: LightsoutConfig = {
 	harness: 'codex',
+	'source-files': sourceFileGlobs,
 	'test-files': testFileGlobs,
 	gates: { check: 'recorded-check', test: 'true', 'test-coverage': false },
 };
@@ -224,7 +226,12 @@ describe('runBatchedCommand', () => {
 
 	test("a --run resume hands the run its recorded config with this command's harness applied, never the checkout's file", async () => {
 		const { command, seen, logged, exitCodes } = setupResumeShell({
-			recorded: { harness: 'codex', 'test-files': testFileGlobs, gates: { check: 'true', test: 'true', 'test-coverage': false } },
+			recorded: {
+				harness: 'codex',
+				'source-files': sourceFileGlobs,
+				'test-files': testFileGlobs,
+				gates: { check: 'true', test: 'true', 'test-coverage': false },
+			},
 		});
 
 		await expect(command).rejects.toThrow(/process\.exit/);
@@ -259,7 +266,7 @@ describe('runBatchedCommand', () => {
 
 	test('a --run resume of a run that predates the recorded path prints no config line rather than claiming the checkout has none', async () => {
 		const { command, seen, logged, exitCodes } = setupResumeShell({
-			recorded: { 'test-files': testFileGlobs, gates: { check: 'true', test: 'true', 'test-coverage': false } },
+			recorded: { 'source-files': sourceFileGlobs, 'test-files': testFileGlobs, gates: { check: 'true', test: 'true', 'test-coverage': false } },
 			recordsPath: false,
 		});
 
@@ -285,7 +292,12 @@ describe('runBatchedCommand', () => {
 
 		expect({ loadedConfig: seen.loadedConfig, exitCodes }).toStrictEqual({
 			loadedConfig: {
-				config: { 'test-files': testFileGlobs, gates: { check: 'checkout-file-check', test: 'true', 'test-coverage': false }, 'standards-pack': false },
+				config: {
+					'source-files': sourceFileGlobs,
+					'test-files': testFileGlobs,
+					gates: { check: 'checkout-file-check', test: 'true', 'test-coverage': false },
+					'standards-pack': false,
+				},
 				path: join(cwd, 'lightsout.config.json'),
 			},
 			exitCodes: [0],
@@ -299,7 +311,12 @@ describe('runBatchedCommand', () => {
 
 		expect({ loadedConfig: seen.loadedConfig, exitCodes }).toStrictEqual({
 			loadedConfig: {
-				config: { harness: 'codex', 'test-files': testFileGlobs, gates: { check: 'recorded-check', test: 'true', 'test-coverage': false } },
+				config: {
+					harness: 'codex',
+					'source-files': sourceFileGlobs,
+					'test-files': testFileGlobs,
+					gates: { check: 'recorded-check', test: 'true', 'test-coverage': false },
+				},
 				path: '/elsewhere/launching-checkout/lightsout.config.json',
 			},
 			exitCodes: [0],

@@ -1,6 +1,7 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
+import type { RepoFileGlobs } from '#src/common/types/RepoFileGlobs.ts';
 import { DecisionSource } from '#src/contracts/plan/decisions/DecisionSource.ts';
 import type { DecisionsRecord } from '#src/contracts/plan/decisions/DecisionsRecord.ts';
 import { FindingSeverity } from '#src/contracts/plan/grade/FindingSeverity.ts';
@@ -19,14 +20,14 @@ import { createRepairDriver, runRepairLoop, setupRepairDraft } from '#tests/help
 
 // Mocked Imports
 // -------------------------
-/** The deterministic pass as the repair loop calls it: the draft's own paths and record, the overview of a phased deliverable, and the repo's test-files globs. */
+/** The deterministic pass as the repair loop calls it: the draft's own paths and record, the overview of a phased deliverable, and the repo's own file globs. */
 interface MechanicalParams {
 	cwd: string;
 	name: string;
 	planPaths: string[];
 	decisions: DecisionsRecord;
 	overviewPath?: string;
-	testFileGlobs: string[];
+	fileGlobs: RepoFileGlobs;
 }
 
 const mockRepairMechanicalFindings = jest.fn<(params: MechanicalParams) => Promise<SyncedPlanFile[]>>();
@@ -187,7 +188,7 @@ describe('repairPlanStructure decision log', () => {
 			planPaths: [draft.planPath],
 			decisions: mergedRecordWithBrainstormRow(),
 			overviewPath: undefined,
-			testFileGlobs: [],
+			fileGlobs: { source: [], tests: [] },
 		});
 	});
 
@@ -220,7 +221,7 @@ describe('repairPlanStructure decision log', () => {
 			planPaths: [draft.planPath],
 			decisions: emptyDecisionsRecord(),
 			overviewPath,
-			testFileGlobs: [],
+			fileGlobs: { source: [], tests: [] },
 		});
 		// the pass stands in place of the bare Decision Log sync, which composes
 		// the log itself rather than beside it

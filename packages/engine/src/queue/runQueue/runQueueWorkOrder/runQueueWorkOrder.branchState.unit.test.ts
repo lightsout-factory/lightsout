@@ -22,6 +22,7 @@ import { TerminalQuestionRelay } from '#src/queue/relay/TerminalQuestionRelay.ts
 import { runQueueWorkOrder } from '#src/queue/runQueue/runQueueWorkOrder/runQueueWorkOrder.ts';
 import { queueSettingsFixture } from '#tests/helpers/queueSettingsFixture.ts';
 import { seedWorkOrderRecord } from '#tests/helpers/seedWorkOrderRecord.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
 import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 import { trackerSettingsFixture } from '#tests/helpers/trackerSettingsFixture.ts';
 
@@ -97,7 +98,12 @@ jest.mock('#src/queue/common/readGitCommitsAhead.ts', () => ({
 const settings = queueSettingsFixture();
 const trackerSettings = trackerSettingsFixture();
 
-const config: LightsoutConfig = { 'test-files': testFileGlobs, gates: { check: 'true', test: 'true', 'test-coverage': false }, generated: ['plugin/dist/'] };
+const config: LightsoutConfig = {
+	'source-files': sourceFileGlobs,
+	'test-files': testFileGlobs,
+	gates: { check: 'true', test: 'true', 'test-coverage': false },
+	generated: ['plugin/dist/'],
+};
 const driver: Driver = { name: 'claude-code', invoke: () => Promise.resolve({ text: '', exitCode: 0 }) };
 
 const ticket: RunnableTicket = {

@@ -1,3 +1,4 @@
+import type { RepoFileGlobs } from '#src/common/types/RepoFileGlobs.ts';
 import { packageOf } from '#src/common/workspace/packageOf.ts';
 import type { PhaseWeight } from '#src/contracts/plan/grade/PhaseWeight.ts';
 import { PlanWeight } from '#src/contracts/plan/grade/PlanWeight.ts';
@@ -10,8 +11,8 @@ interface Params {
 	packagesDir: string;
 	/** Already merged over `defaultWeightThresholds`. */
 	thresholds: { createdFiles: number; packages: number };
-	/** The repo's `test-files` globs: a test file is never counted. */
-	testFileGlobs: string[];
+	/** The repo's own globs: which files are code, and which of those are tests. */
+	fileGlobs: RepoFileGlobs;
 }
 
 /** A path under no package is the repository root, which counts as one package like any other. */
@@ -25,8 +26,8 @@ const countPackages = ({ touched, packagesDir }: { touched: string[]; packagesDi
  * A file with nothing to mirror is always heavy, whatever its counts: a plan
  * following no existing pattern is exactly where a reader earns its cost.
  */
-export const computePlanWeight = ({ plan, phase, packagesDir, thresholds, testFileGlobs }: Params): PhaseWeight => {
-	const { created, touched } = getPlanTouchedPaths({ plan, testFileGlobs });
+export const computePlanWeight = ({ plan, phase, packagesDir, thresholds, fileGlobs }: Params): PhaseWeight => {
+	const { created, touched } = getPlanTouchedPaths({ plan, fileGlobs });
 	const packages = countPackages({ touched, packagesDir });
 	const reasons: string[] = [];
 

@@ -8,6 +8,7 @@ import type { ResolvedRuleState } from '#src/common/types/ResolvedRuleState.ts';
 import type { StandardsGroup } from '#src/common/types/StandardsGroup.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 import { runPackageChecks } from '#src/standardsCheck/runStandardsCheck/runPackageChecks/runPackageChecks.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
 import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 /** One source file per place a finding can live: the repo root, the engine package and the web-app package. */
@@ -151,7 +152,7 @@ describe('runPackageChecks', () => {
 	test('grades each finding with the severity of the group holding its first file', async () => {
 		const { cwd, groups } = setupSplitSeverity();
 
-		const { findings } = await runPackageChecks({ cwd, testFileGlobs, groups });
+		const { findings } = await runPackageChecks({ cwd, sourceFileGlobs, testFileGlobs, groups });
 
 		expect(summarize({ findings })).toStrictEqual([
 			{ siteKey: 'acme/size:engine', severity: StandardsSeverity.Blocking, detail: 'cap none' },
@@ -162,7 +163,7 @@ describe('runPackageChecks', () => {
 	test("drops a finding whose first file's group runs the rule off or does not hold it", async () => {
 		const { cwd, groups, calls } = setupOffAndMissing();
 
-		const { findings } = await runPackageChecks({ cwd, testFileGlobs, groups });
+		const { findings } = await runPackageChecks({ cwd, sourceFileGlobs, testFileGlobs, groups });
 
 		expect({ runs: calls.length, findings: summarize({ findings }) }).toStrictEqual({
 			runs: 1,
@@ -173,7 +174,7 @@ describe('runPackageChecks', () => {
 	test("runs a rule once per distinct options and keeps each run's findings for the groups holding those options", async () => {
 		const { cwd, groups, calls } = setupSplitOptions();
 
-		const { findings } = await runPackageChecks({ cwd, testFileGlobs, groups });
+		const { findings } = await runPackageChecks({ cwd, sourceFileGlobs, testFileGlobs, groups });
 
 		const optionsRun = calls.map((call) => call.options).sort((left, right) => (left.cap ?? 0) - (right.cap ?? 0));
 
@@ -189,7 +190,7 @@ describe('runPackageChecks', () => {
 	test('hands every check the whole repo as reference files but keeps only findings in files a group covers', async () => {
 		const { cwd, groups, calls } = setupScopedToWebApp();
 
-		const { findings } = await runPackageChecks({ cwd, testFileGlobs, groups, path: 'packages/web-app' });
+		const { findings } = await runPackageChecks({ cwd, sourceFileGlobs, testFileGlobs, groups, path: 'packages/web-app' });
 
 		const referenceFiles = calls[0]?.inputs[StandardsInputKind.FileList]?.referenceFiles ?? [];
 

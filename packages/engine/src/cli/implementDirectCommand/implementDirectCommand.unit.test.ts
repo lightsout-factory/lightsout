@@ -11,6 +11,7 @@ import { captureCommandOutput } from '#tests/helpers/captureCommandOutput.ts';
 import { runDirFor } from '#tests/helpers/runDirFor.ts';
 import { seedRunFolder } from '#tests/helpers/seedRunFolder.ts';
 import { setupBranchRepo } from '#tests/helpers/setupBranchRepo.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
 import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // Mocked Imports
@@ -88,6 +89,7 @@ const setupImplementDirect = ({
 	writeFileSync(
 		join(cwd, 'lightsout.config.json'),
 		JSON.stringify({
+			'source-files': sourceFileGlobs,
 			'test-files': testFileGlobs,
 			gates: { check: 'true', test: 'true', 'test-coverage': false },
 			ship: config.ship,
@@ -241,7 +243,7 @@ describe('implementDirectCommand', () => {
 		// the guard this case is about.
 		writeFileSync(
 			join(cwd, 'lightsout.config.json'),
-			JSON.stringify({ 'test-files': testFileGlobs, gates: { check: 'true', test: 'true', 'test-coverage': false } }),
+			JSON.stringify({ 'source-files': sourceFileGlobs, 'test-files': testFileGlobs, gates: { check: 'true', test: 'true', 'test-coverage': false } }),
 		);
 		execSync('git add -A && git -c user.name=t -c user.email=t@t commit -qm setup && rm -rf .git', { cwd, stdio: 'ignore' });
 

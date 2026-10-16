@@ -1,11 +1,12 @@
+import type { RepoFileGlobs } from '#src/common/types/RepoFileGlobs.ts';
 import { getPlanNamedPaths } from '#src/plan/common/getPlanNamedPaths.ts';
 import { isPlanSourceFile } from '#src/plan/common/paths/isPlanSourceFile.ts';
 import type { ParsedPlan } from '#src/plan/common/types/ParsedPlan.ts';
 
 interface Params {
 	plan: ParsedPlan;
-	/** The repo's `test-files` globs: a test file is never counted. */
-	testFileGlobs: string[];
+	/** The repo's own globs: which files are code, and which of those are tests. */
+	fileGlobs: RepoFileGlobs;
 }
 
 /**
@@ -15,9 +16,9 @@ interface Params {
  * Budget` raises the touched count and never the ceiling. Moves still count in
  * `touched`, on both sides.
  */
-export const getPlanTouchedPaths = ({ plan, testFileGlobs }: Params): { created: string[]; touched: string[] } => {
-	const created = plan.createPaths.filter((path) => isPlanSourceFile({ path, testFileGlobs }));
-	const touched = getPlanNamedPaths({ plan }).filter((path) => isPlanSourceFile({ path, testFileGlobs }));
+export const getPlanTouchedPaths = ({ plan, fileGlobs }: Params): { created: string[]; touched: string[] } => {
+	const created = plan.createPaths.filter((path) => isPlanSourceFile({ path, fileGlobs }));
+	const touched = getPlanNamedPaths({ plan }).filter((path) => isPlanSourceFile({ path, fileGlobs }));
 
 	return { created: [...new Set(created)], touched: [...new Set(touched)] };
 };

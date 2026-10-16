@@ -9,7 +9,15 @@ import { lintPlanStructure } from '#src/plan/lint/lintPlanStructure/lintPlanStru
 import { emptyDecisionsRecord } from '#tests/helpers/emptyDecisionsRecord.ts';
 import { phaseBody } from '#tests/helpers/phasePlan.ts';
 import { setupConsumerRepo } from '#tests/helpers/setupConsumerRepo.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
 import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
+
+/** The config the fixture repo declares: its code, its tests, and gates that always pass. */
+const repoConfig = LightsoutConfig.parse({
+	'source-files': sourceFileGlobs,
+	'test-files': testFileGlobs,
+	gates: { check: 'true', test: 'true', 'test-coverage': false },
+});
 
 /**
  * Committed files with no export, so the consumer repo plants no consumer
@@ -19,7 +27,12 @@ const trackedFiles = ({ paths }: { paths: string[] }) => Object.fromEntries(path
 
 /** The gate commands every consumer repo carries, with the executor-file-limit a case sets. */
 const configWithLimit = ({ limit }: { limit: number }) =>
-	LightsoutConfig.parse({ 'test-files': testFileGlobs, gates: { check: 'true', test: 'true', 'test-coverage': false }, 'executor-file-limit': limit });
+	LightsoutConfig.parse({
+		'source-files': sourceFileGlobs,
+		'test-files': testFileGlobs,
+		gates: { check: 'true', test: 'true', 'test-coverage': false },
+		'executor-file-limit': limit,
+	});
 
 /** One work order's plan folder holding the given files; returns their absolute paths in written order. */
 const writeDeliverable = ({ cwd, workOrder, files }: { cwd: string; workOrder: string; files: Record<string, string> }) => {
@@ -46,7 +59,7 @@ const setupDeliverables = ({ tracked, deliverables }: { tracked: string[]; deliv
 
 /** Each deliverable linted on its own, in the order the deliverables were written. */
 const lintEach = ({ cwd, planPaths }: { cwd: string; planPaths: string[][] }) =>
-	Promise.all(planPaths.map((paths) => lintPlanStructure({ cwd, planPaths: paths, decisions: emptyDecisionsRecord() })));
+	Promise.all(planPaths.map((paths) => lintPlanStructure({ cwd, planPaths: paths, decisions: emptyDecisionsRecord(), config: repoConfig })));
 
 /** The same plan files linted once per executor-file-limit, in the order the limits are given. */
 const lintAtLimits = ({ cwd, planPaths, limits }: { cwd: string; planPaths: string[]; limits: number[] }) =>

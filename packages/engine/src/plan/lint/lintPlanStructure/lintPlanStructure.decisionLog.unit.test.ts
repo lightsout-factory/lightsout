@@ -1,4 +1,5 @@
 import { expect, test } from '@jest/globals';
+import { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { DecisionSource } from '#src/contracts/plan/decisions/DecisionSource.ts';
 import type { DecisionsRecord } from '#src/contracts/plan/decisions/DecisionsRecord.ts';
 import { FindingSeverity } from '#src/contracts/plan/grade/FindingSeverity.ts';
@@ -8,7 +9,16 @@ import { cleanPlanBody } from '#tests/helpers/cleanPlanBody.ts';
 import { emptyDecisionsRecord } from '#tests/helpers/emptyDecisionsRecord.ts';
 import { planBodyWith } from '#tests/helpers/planBodyWith.ts';
 import { setupConsumerRepo } from '#tests/helpers/setupConsumerRepo.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 import { writeDemoPlanFile } from '#tests/helpers/writeDemoPlanFile.ts';
+
+/** The config the fixture repo declares: its code, its tests, and gates that always pass. */
+const repoConfig = LightsoutConfig.parse({
+	'source-files': sourceFileGlobs,
+	'test-files': testFileGlobs,
+	gates: { check: 'true', test: 'true', 'test-coverage': false },
+});
 
 // The per-file loop holds every plan file to the decision record the pass was
 // handed: a section the engine composes has to be what that record renders,
@@ -34,7 +44,7 @@ test('lintPlanStructure: a plan whose Decision Log disagrees with the record is 
 	const cwd = setupConsumerRepo();
 	const path = writeDemoPlanFile({ cwd, name: 'stale-log.md', body: planBodyWith({ snippet: 'It replaces `src/ghost.ts`, which moved months ago.' }) });
 
-	const findings = await lintPlanStructure({ cwd, planPaths: [path], decisions: oneRowRecord() });
+	const findings = await lintPlanStructure({ cwd, planPaths: [path], decisions: oneRowRecord(), config: repoConfig });
 	const stale = findings.filter((finding) => finding.check === StructuralCheck.DecisionLogCurrent);
 
 	// the body carries the section rendered from an empty record, so the one
@@ -56,7 +66,7 @@ test("lintPlanStructure: the clean plan's rendered Decision Log passes the curre
 	const cwd = setupConsumerRepo();
 	const path = writeDemoPlanFile({ cwd, name: 'current-log.md', body: cleanPlanBody() });
 
-	const findings = await lintPlanStructure({ cwd, planPaths: [path], decisions: emptyDecisionsRecord() });
+	const findings = await lintPlanStructure({ cwd, planPaths: [path], decisions: emptyDecisionsRecord(), config: repoConfig });
 
 	// the fixture's section is exactly what the renderer produces from an empty
 	// record, so there is nothing to sync

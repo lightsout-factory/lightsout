@@ -13,9 +13,10 @@ reaches the shipped `plugin/standards/` bundle.
 The library root holds:
 
 - `lightsout-standards.json` — the manifest: the library's name, `lightsout`,
-  its format version, and `fixtureTestFiles`, the globs that say which files in
-  a rule's fixtures are tests. A fixture tree has no repo config of its own, so
-  this is how validation tells its tests from its source.
+  its format version, and `fixtureSourceFiles` and `fixtureTestFiles`, the globs
+  that say which files in a rule's fixtures are code and which of those are
+  tests. A fixture tree has no repo config of its own, so this is how
+  validation reads it.
 - `rules/` — the topics. `rules/code/` holds what the agents that write code
   read; `rules/tests/` holds what the agent that writes tests reads.
 - `packs/` — one JSON file per pack.

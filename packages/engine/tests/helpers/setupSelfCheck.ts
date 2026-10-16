@@ -7,6 +7,7 @@ import { readGateLog } from '#tests/helpers/readGateLog.ts';
 import { runDirFor } from '#tests/helpers/runDirFor.ts';
 import { seedRunFolder } from '#tests/helpers/seedRunFolder.ts';
 import { selfCheckGateBlocks } from '#tests/helpers/selfCheckGateBlocks.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
 import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 interface Params {
@@ -51,6 +52,7 @@ export const setupSelfCheck = async ({
 		join(dir, 'lightsout.config.json'),
 		JSON.stringify({
 			gates,
+			'source-files': sourceFileGlobs,
 			'test-files': testFileGlobs,
 			...(packageGates === null ? {} : { 'package-gates': packageGates }),
 			...(overrides === undefined ? {} : { 'gate-overrides': overrides }),

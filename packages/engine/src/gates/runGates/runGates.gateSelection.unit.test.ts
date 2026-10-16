@@ -8,6 +8,7 @@ import { runGates } from '#src/gates/runGates/runGates.ts';
 import { gateLogCommand } from '#tests/helpers/gateLogCommand.ts';
 import { readGateLog } from '#tests/helpers/readGateLog.ts';
 import { setupConsumerRepo } from '#tests/helpers/setupConsumerRepo.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
 import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 /** A single-package consumer whose config opts out of coverage (`gates.'test-coverage': false`), with gates that log "root <kind>". */
@@ -36,6 +37,7 @@ const setupScopedBuildRepo = () => {
 	writeFileSync(
 		join(dir, 'lightsout.config.json'),
 		JSON.stringify({
+			'source-files': sourceFileGlobs,
 			'test-files': testFileGlobs,
 			gates: { check: 'true', test: 'true', 'test-coverage': false },
 			'package-gates': {

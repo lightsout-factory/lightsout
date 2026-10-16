@@ -11,10 +11,15 @@ import type { AgentUsage } from '#src/contracts/run/AgentUsage.ts';
 import { commitAll } from '#tests/helpers/commitAll.ts';
 import { createUncalledDriver } from '#tests/helpers/createUncalledDriver.ts';
 import { runInRepo } from '#tests/helpers/runInRepo.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
 import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 import { writeRepoFile } from '#tests/helpers/writeRepoFile.ts';
 
-const config: LightsoutConfig = { 'test-files': testFileGlobs, gates: { check: 'true', test: 'true', 'test-coverage': false } };
+const config: LightsoutConfig = {
+	'source-files': sourceFileGlobs,
+	'test-files': testFileGlobs,
+	gates: { check: 'true', test: 'true', 'test-coverage': false },
+};
 
 const runId = 'run-1234-abcd';
 

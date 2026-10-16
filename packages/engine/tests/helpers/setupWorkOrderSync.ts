@@ -6,6 +6,7 @@ import type { jest } from '@jest/globals';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { WorkOrderState } from '#src/contracts/workOrder/WorkOrderState.ts';
 import { ticketTrackerConfigBlock } from '#tests/helpers/queueConfigBlock.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
 import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 type TrackerFailure = { error: string };
@@ -70,7 +71,7 @@ interface Params {
 const gates: LightsoutConfig['gates'] = { check: 'true', test: 'true', 'test-coverage': false };
 /** The same block as `ticketTrackerConfigBlock`, typed: the fixture is the raw JSON shape, whose `provider` is a plain string. */
 const trackerBlock: LightsoutConfig['ticket-tracker'] = { ...ticketTrackerConfigBlock, provider: 'linear' };
-const config: LightsoutConfig = { 'test-files': testFileGlobs, gates, 'ticket-tracker': trackerBlock };
+const config: LightsoutConfig = { 'source-files': sourceFileGlobs, 'test-files': testFileGlobs, gates, 'ticket-tracker': trackerBlock };
 const env = { LINEAR_API_KEY: 'lin_key' };
 
 const asFileText = ({ value }: { value: unknown }) => `${JSON.stringify(value, undefined, '\t')}\n`;

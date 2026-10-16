@@ -10,6 +10,7 @@ import type { PipelineRun } from '#src/pipeline/common/PipelineRun.ts';
 import { runDirFor } from '#tests/helpers/runDirFor.ts';
 import { seedRunFolder } from '#tests/helpers/seedRunFolder.ts';
 import { setupConsumerRepo } from '#tests/helpers/setupConsumerRepo.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
 import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 const runId = 'run-1';
@@ -78,7 +79,7 @@ const setupReview = ({ verdicts, acceptanceTests = [acceptanceRow] }: SetupParam
 	const run = {
 		cwd,
 		driver: createReviewerDriver({ verdicts }),
-		config: { 'test-files': testFileGlobs, gates: { check: 'true', test: 'true' } } as unknown as LightsoutConfig,
+		config: { 'source-files': sourceFileGlobs, 'test-files': testFileGlobs, gates: { check: 'true', test: 'true' } } as unknown as LightsoutConfig,
 		current: () => manifest,
 		progress: () => {},
 		update: async ({ patch }: { patch: Partial<RunManifest> }) => {
@@ -129,7 +130,7 @@ const setupUntrackedReview = ({ verdicts }: { verdicts: unknown[] }) => {
 	const run = {
 		cwd,
 		driver,
-		config: { 'test-files': testFileGlobs, gates: { check: 'true', test: 'true' } } as unknown as LightsoutConfig,
+		config: { 'source-files': sourceFileGlobs, 'test-files': testFileGlobs, gates: { check: 'true', test: 'true' } } as unknown as LightsoutConfig,
 		current: () => manifest,
 		progress: () => {},
 		update: async ({ patch }: { patch: Partial<RunManifest> }) => {

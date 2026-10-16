@@ -9,6 +9,7 @@ import type { CommandContext } from '#src/common/types/CommandContext.ts';
 import type { Driver } from '#src/common/types/Driver.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { captureCommandOutput } from '#tests/helpers/captureCommandOutput.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
 import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // Mocked Imports
@@ -84,7 +85,7 @@ const subcommandMocks = [
 const setupPlan = ({ args, repoConfig }: { args: string[]; repoConfig?: Record<string, unknown> }) => {
 	const captured = captureCommandOutput();
 	const cwd = mkdtempSync(join(tmpdir(), 'lightsout-plan-command-'));
-	const config: LightsoutConfig = { 'test-files': testFileGlobs, gates };
+	const config: LightsoutConfig = { 'source-files': sourceFileGlobs, 'test-files': testFileGlobs, gates };
 
 	if (repoConfig) {
 		writeFileSync(join(cwd, 'lightsout.config.json'), JSON.stringify(repoConfig));

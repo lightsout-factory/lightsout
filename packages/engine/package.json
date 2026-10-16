@@ -22,6 +22,7 @@
 		"@lightsout/standards-contracts": "workspace:*",
 		"@linear/sdk": "catalog:",
 		"picomatch": "catalog:",
+		"tinyglobby": "catalog:",
 		"yaml": "catalog:",
 		"zod": "catalog:"
 	},

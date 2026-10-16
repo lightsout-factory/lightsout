@@ -2,7 +2,7 @@ import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import type ts from 'typescript';
 import { isInertSourceFile } from '#src/common/sourceFiles/isInertSourceFile.ts';
-import { isTestableSourceFile } from '#src/common/sourceFiles/isTestableSourceFile.ts';
+import { isSourceFile } from '#src/common/sourceFiles/isSourceFile.ts';
 import { isTestFile } from '#src/common/sourceFiles/isTestFile.ts';
 import type { CoverageFile } from '#src/contracts/coverage/CoverageFile.ts';
 import type { CoverageTotal } from '#src/contracts/coverage/CoverageTotal.ts';
@@ -15,6 +15,8 @@ interface Params {
 	setAsidePaths: Set<string>;
 	/** The repo's `test-files` globs. */
 	testFileGlobs: string[];
+	/** The repo's `source-files` globs: only a code file is a candidate. */
+	sourceFileGlobs: string[];
 	/** The consumer's TypeScript module, or undefined — nothing is classified inert without one. */
 	compiler: typeof ts | undefined;
 }
@@ -26,7 +28,7 @@ interface Params {
  * guaranteed declines, enough in a row to read as a systemic stop. Without the
  * consumer's TypeScript, nothing is classified inert.
  */
-export const selectCoverageCandidates = async ({ cwd, measured, setAsidePaths, testFileGlobs, compiler }: Params): Promise<CoverageFile[]> => {
+export const selectCoverageCandidates = async ({ cwd, measured, setAsidePaths, testFileGlobs, sourceFileGlobs, compiler }: Params): Promise<CoverageFile[]> => {
 	const failingScopes = new Set(measured.totals.filter((total) => !total.passed).map((total) => total.scope));
 	const candidates: CoverageFile[] = [];
 
@@ -36,7 +38,7 @@ export const selectCoverageCandidates = async ({ cwd, measured, setAsidePaths, t
 			setAsidePaths.has(file.path) ||
 			file.statementsPct >= 100 ||
 			isTestFile({ path: file.path, testFileGlobs }) ||
-			!isTestableSourceFile({ path: file.path })
+			!isSourceFile({ path: file.path, sourceFileGlobs })
 		) {
 			continue;
 		}

@@ -2,11 +2,13 @@ import { describe, expect, test } from '@jest/globals';
 import type { ConfigShip } from '#src/contracts/ConfigShip.ts';
 import { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { resolveShipSettings } from '#src/ship/resolveShipSettings.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
 import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 /** The smallest config the schema accepts, with whatever ship block the test is about. */
 const setupConfig = ({ ship }: { ship?: ConfigShip } = {}) => {
 	const config = LightsoutConfig.parse({
+		'source-files': sourceFileGlobs,
 		'test-files': testFileGlobs,
 		gates: { check: 'true', test: 'true', 'test-coverage': false },
 		...(ship === undefined ? {} : { ship }),

@@ -1,3 +1,4 @@
+import type { RepoFileGlobs } from '#src/common/types/RepoFileGlobs.ts';
 import type { DecisionsRecord } from '#src/contracts/plan/decisions/DecisionsRecord.ts';
 import type { SyncedPlanFile } from '#src/plan/common/types/SyncedPlanFile.ts';
 import { syncPlanDecisions } from '#src/plan/decisionLog/syncPlanDecisions/syncPlanDecisions.ts';
@@ -14,22 +15,22 @@ interface Params {
 	decisions: DecisionsRecord;
 	/** Absolute path of the overview when the deliverable is phased; absent for a standalone plan. */
 	overviewPath?: string;
-	/** The repo's `test-files` globs: a test file is never counted. */
-	testFileGlobs: string[];
+	/** The repo's own globs: which files are code, and which of those are tests. */
+	fileGlobs: RepoFileGlobs;
 }
 
 /**
  * Spawns nothing: each section here is settled by a record the engine already
  * holds, so an agent attempt spent on it is an attempt not spent on the plan.
  */
-export const repairMechanicalFindings = async ({ cwd, name, planPaths, decisions, overviewPath, testFileGlobs }: Params): Promise<SyncedPlanFile[]> => {
+export const repairMechanicalFindings = async ({ cwd, name, planPaths, decisions, overviewPath, fileGlobs }: Params): Promise<SyncedPlanFile[]> => {
 	const synced = await syncPlanDecisions({ cwd, name, planPaths, decisions });
 	const files: SyncedPlanFile[] = [...('files' in synced ? synced.files : []), ...(await syncGlobalConstraints({ planPaths, decisions }))];
 
 	if (overviewPath !== undefined) {
 		const phasePaths = planPaths.filter((path) => path !== overviewPath);
 
-		files.push(await syncPhaseSectionsFromFiles({ cwd, overviewPath, phasePaths, testFileGlobs }));
+		files.push(await syncPhaseSectionsFromFiles({ cwd, overviewPath, phasePaths, fileGlobs }));
 	}
 
 	return files;

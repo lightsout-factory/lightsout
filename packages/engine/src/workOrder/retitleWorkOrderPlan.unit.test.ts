@@ -9,6 +9,7 @@ import { WorkOrderMode } from '#src/contracts/workOrder/WorkOrderMode.ts';
 import type { WorkOrderState } from '#src/contracts/workOrder/WorkOrderState.ts';
 import { updateLocalWorkOrderState } from '#src/workOrder/common/state/updateLocalWorkOrderState.ts';
 import { retitleWorkOrderPlan } from '#src/workOrder/retitleWorkOrderPlan.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
 import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 /** The work order's label, which is also the branch the record below names. */
@@ -18,7 +19,11 @@ const name = 'lo-140-multi';
  * No `ticket-tracker` block, so the record stays local: what a retitle promises
  * is about the record and the plan folders on disk, not about publishing.
  */
-const config: LightsoutConfig = { 'test-files': testFileGlobs, gates: { check: 'true', test: 'true', 'test-coverage': false } };
+const config: LightsoutConfig = {
+	'source-files': sourceFileGlobs,
+	'test-files': testFileGlobs,
+	gates: { check: 'true', test: 'true', 'test-coverage': false },
+};
 
 const firstPlan: WorkOrderState['plans'][number] = {
 	id: '001-alpha-search',

@@ -1,4 +1,5 @@
 import { expect, test } from '@jest/globals';
+import { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { FindingSeverity } from '#src/contracts/plan/grade/FindingSeverity.ts';
 import { StructuralCheck } from '#src/contracts/plan/grade/StructuralCheck.ts';
 import { renderDecisionLog } from '#src/plan/decisionLog/renderDecisionLog.ts';
@@ -6,7 +7,16 @@ import { lintPlanStructure } from '#src/plan/lint/lintPlanStructure/lintPlanStru
 import { renderGlobalConstraints } from '#src/plan/sections/renderGlobalConstraints.ts';
 import { emptyDecisionsRecord } from '#tests/helpers/emptyDecisionsRecord.ts';
 import { setupConsumerRepo } from '#tests/helpers/setupConsumerRepo.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 import { writeDemoPlanFile } from '#tests/helpers/writeDemoPlanFile.ts';
+
+/** The config the fixture repo declares: its code, its tests, and gates that always pass. */
+const repoConfig = LightsoutConfig.parse({
+	'source-files': sourceFileGlobs,
+	'test-files': testFileGlobs,
+	gates: { check: 'true', test: 'true', 'test-coverage': false },
+});
 
 /**
  * A single implementable plan whose two contested spans the caller chooses: the
@@ -75,7 +85,7 @@ test('lintPlanStructure: a stale Global Constraints section and an unnamed hand-
 	});
 	const path = writeDemoPlanFile({ cwd, name: 'both-stale.md', body });
 
-	const findings = await lintPlanStructure({ cwd, planPaths: [path], decisions: emptyDecisionsRecord() });
+	const findings = await lintPlanStructure({ cwd, planPaths: [path], decisions: emptyDecisionsRecord(), config: repoConfig });
 	const constraints = findings.filter((finding) => finding.check === StructuralCheck.GlobalConstraintsCurrent);
 	const handoff = findings.filter((finding) => finding.check === StructuralCheck.HandoffDeclared);
 
@@ -93,7 +103,7 @@ test('lintPlanStructure: a single plan with an unnamed hand-off is checked, havi
 	});
 	const path = writeDemoPlanFile({ cwd, name: 'plan.md', body });
 
-	const findings = await lintPlanStructure({ cwd, planPaths: [path], decisions: emptyDecisionsRecord() });
+	const findings = await lintPlanStructure({ cwd, planPaths: [path], decisions: emptyDecisionsRecord(), config: repoConfig });
 	const handoff = findings.filter((finding) => finding.check === StructuralCheck.HandoffDeclared);
 
 	// the pairwise hand-off check compares one phase against the next and so

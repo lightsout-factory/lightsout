@@ -1,5 +1,6 @@
 import { expect, test } from '@jest/globals';
 import { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
 import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // `standards-pack` and `package-standards-packs` share one selection schema: a
@@ -12,8 +13,8 @@ const setupSelection = ({ selection }: { selection: unknown }) => {
 	const gates = { check: 'c', test: 't', 'test-coverage': false };
 
 	return {
-		repoConfig: { 'test-files': testFileGlobs, gates, 'standards-pack': selection },
-		packageConfig: { 'test-files': testFileGlobs, gates, 'package-standards-packs': { 'web-app': selection } },
+		repoConfig: { 'source-files': sourceFileGlobs, 'test-files': testFileGlobs, gates, 'standards-pack': selection },
+		packageConfig: { 'source-files': sourceFileGlobs, 'test-files': testFileGlobs, gates, 'package-standards-packs': { 'web-app': selection } },
 	};
 };
 

@@ -2,6 +2,7 @@ import { describe, expect, test } from '@jest/globals';
 import { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { configKeyDescriptions } from '#src/views/common/constants/configKeyDescriptions.ts';
 import { buildConfigSections } from '#src/views/getConfigView/buildConfigSections.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
 import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 /** The queue block this repo's own config shape allows, used to prove the section reads the file rather than a default. */
@@ -32,6 +33,7 @@ const implementBlock = {
 const buildSections = ({ config = {} }: { config?: Record<string, unknown> } = {}) =>
 	buildConfigSections({
 		config: LightsoutConfig.parse({
+			'source-files': sourceFileGlobs,
 			'test-files': testFileGlobs,
 			gates: { check: 'pnpm check', test: 'pnpm test', 'test-coverage': 'pnpm coverage' },
 			...config,

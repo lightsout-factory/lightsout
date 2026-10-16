@@ -1,8 +1,18 @@
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
+import { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { DecisionsRecord } from '#src/contracts/plan/decisions/DecisionsRecord.ts';
 import { lintPlanStructure } from '#src/plan/lint/lintPlanStructure/lintPlanStructure.ts';
 import { setupConsumerRepo } from '#tests/helpers/setupConsumerRepo.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
+
+/** The globs the phases' counts are taken against, so the lint counts what the phase files declare. */
+const lintConfig = LightsoutConfig.parse({
+	gates: { check: 'true', test: 'true', 'test-coverage': false },
+	'source-files': sourceFileGlobs,
+	'test-files': testFileGlobs,
+});
 
 /** Plant a file the plan claims already exists, so a `## Files to Modify` heading is not a broken reference. */
 const plant = ({ cwd, paths }: { cwd: string; paths: string[] }) => {
@@ -49,7 +59,7 @@ export const setupPhasedDeliverable = ({
 		decisions,
 		planPaths,
 		overviewPath,
-		lint: () => lintPlanStructure({ cwd, planPaths, decisions }),
+		lint: () => lintPlanStructure({ cwd, planPaths, decisions, config: lintConfig }),
 		read: ({ base }: { base: string }) => readFileSync(join(dir, base), 'utf8'),
 	};
 };

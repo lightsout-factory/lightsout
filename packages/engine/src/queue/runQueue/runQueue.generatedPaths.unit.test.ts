@@ -20,6 +20,7 @@ import { queueSettingsFixture } from '#tests/helpers/queueSettingsFixture.ts';
 import { seedWorkOrderRecord } from '#tests/helpers/seedWorkOrderRecord.ts';
 import { setupBranchRepo } from '#tests/helpers/setupBranchRepo.ts';
 import { shipSettingsFixture } from '#tests/helpers/shipSettingsFixture.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
 import { terminalRelayFixture } from '#tests/helpers/terminalRelayFixture.ts';
 import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 import { trackerSettingsFixture } from '#tests/helpers/trackerSettingsFixture.ts';
@@ -95,7 +96,12 @@ jest.mock('#src/queue/drainLanes/runDrainLanes/common/admitScanned/nameWaveWorkO
 // -------------------------
 
 /** `plugin/dist/` is the shape this repo configures: a directory of build output rebuilt by every gate run. */
-const config: LightsoutConfig = { 'test-files': testFileGlobs, gates: { check: 'true', test: 'true', 'test-coverage': false }, generated: ['plugin/dist/'] };
+const config: LightsoutConfig = {
+	'source-files': sourceFileGlobs,
+	'test-files': testFileGlobs,
+	gates: { check: 'true', test: 'true', 'test-coverage': false },
+	generated: ['plugin/dist/'],
+};
 const driver: Driver = { name: 'claude-code', invoke: () => Promise.resolve({ text: '', exitCode: 0 }) };
 
 /** The environment the drain is handed, so a tracker write reading credentials never has to reach `process.env`. */

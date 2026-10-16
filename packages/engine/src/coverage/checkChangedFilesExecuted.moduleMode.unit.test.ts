@@ -4,6 +4,7 @@ import { dirname, join } from 'node:path';
 import { expect, test } from '@jest/globals';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { checkChangedFilesExecuted } from '#src/coverage/checkChangedFilesExecuted.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
 import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // Runtime require rather than a static import: the CJS TypeScript compiler
@@ -12,7 +13,11 @@ import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 // `require` is already the local resolver — `import.meta` does not exist there.
 const ts = require('typescript') as typeof import('typescript');
 
-const rootConfig: LightsoutConfig = { 'test-files': testFileGlobs, gates: { check: 'true', test: 'true', 'test-coverage': 'npm run coverage' } };
+const rootConfig: LightsoutConfig = {
+	'source-files': sourceFileGlobs,
+	'test-files': testFileGlobs,
+	gates: { check: 'true', test: 'true', 'test-coverage': 'npm run coverage' },
+};
 
 const changedFiles = ['src/awaiting.ts', 'src/plain.ts'];
 

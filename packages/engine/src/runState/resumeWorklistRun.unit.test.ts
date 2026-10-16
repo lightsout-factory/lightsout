@@ -10,9 +10,14 @@ import { readRunOwner } from '#src/runState/owner/readRunOwner.ts';
 import { resumeWorklistRun } from '#src/runState/resumeWorklistRun.ts';
 import { seedRunFolder } from '#tests/helpers/seedRunFolder.ts';
 import { setupConsumerRepo } from '#tests/helpers/setupConsumerRepo.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
 import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
-const config: LightsoutConfig = { 'test-files': testFileGlobs, gates: { check: 'true', test: 'true', 'test-coverage': false } };
+const config: LightsoutConfig = {
+	'source-files': sourceFileGlobs,
+	'test-files': testFileGlobs,
+	gates: { check: 'true', test: 'true', 'test-coverage': false },
+};
 const Worklist = z.object({ batches: z.array(z.string()) });
 
 const manifestWith = ({ pipeline }: { pipeline?: PipelineKind }): RunManifest => ({

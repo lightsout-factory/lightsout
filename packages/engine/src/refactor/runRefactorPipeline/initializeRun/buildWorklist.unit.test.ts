@@ -2,6 +2,7 @@ import { describe, expect, jest, test } from '@jest/globals';
 import { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFinding.ts';
 import { buildWorklist } from '#src/refactor/runRefactorPipeline/initializeRun/buildWorklist.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
 import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // Mocked Imports
@@ -27,6 +28,7 @@ const setupWorklist = () => {
 	mockRunStandardsCheck.mockResolvedValue({ findings: [], notes: [], ruleOrder: [] });
 
 	const config = LightsoutConfig.parse({
+		'source-files': sourceFileGlobs,
 		'test-files': testFileGlobs,
 		gates: { check: 'true', test: 'true', 'test-coverage': false },
 		'packages-dir': 'modules',

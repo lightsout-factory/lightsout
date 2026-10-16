@@ -1,6 +1,7 @@
 import { mkdirSync, readFileSync, statSync, utimesSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
+import { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { DecisionRow } from '#src/contracts/plan/decisions/DecisionRow.ts';
 import { DecisionSource } from '#src/contracts/plan/decisions/DecisionSource.ts';
 import type { DecisionsRecord } from '#src/contracts/plan/decisions/DecisionsRecord.ts';
@@ -14,6 +15,7 @@ import { engineOwnedReported } from '#tests/helpers/engineOwnedReported.ts';
 import { overviewBody, phaseBody } from '#tests/helpers/phasePlan.ts';
 import { setupConsumerRepo } from '#tests/helpers/setupConsumerRepo.ts';
 import { setupPhasedDeliverable } from '#tests/helpers/setupPhasedDeliverable.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
 import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // The deterministic pass: everything the engine owns — the Decision Log, the
@@ -96,6 +98,13 @@ const plant = ({ cwd, paths }: { cwd: string; paths: string[] }) => {
 	}
 };
 
+/** The config the consumer repo declares: its code and its tests, which the lint counts a plan's files by. */
+const repoConfig = LightsoutConfig.parse({
+	'source-files': sourceFileGlobs,
+	'test-files': testFileGlobs,
+	gates: { check: 'true', test: 'true', 'test-coverage': false },
+});
+
 /** A consumer repo holding a single-file plan — no overview, so the deliverable has no phase table at all. */
 const setupStandalonePlan = ({ body, decisions, existing = [] }: { body: string; decisions: DecisionsRecord; existing?: string[] }) => {
 	const cwd = setupConsumerRepo();
@@ -114,7 +123,7 @@ const setupStandalonePlan = ({ body, decisions, existing = [] }: { body: string;
 		decisions,
 		planPaths: [planPath],
 		planPath,
-		lint: () => lintPlanStructure({ cwd, planPaths: [planPath], decisions }),
+		lint: () => lintPlanStructure({ cwd, planPaths: [planPath], decisions, config: repoConfig }),
 		read: () => readFileSync(planPath, 'utf8'),
 	};
 };
@@ -139,7 +148,7 @@ const setupInStepDeliverable = async () => {
 		planPaths: deliverable.planPaths,
 		decisions: deliverable.decisions,
 		overviewPath: deliverable.overviewPath,
-		testFileGlobs,
+		fileGlobs: { source: sourceFileGlobs, tests: testFileGlobs },
 	});
 
 	const backdated = new Date('2020-01-01T00:00:00.000Z');
@@ -178,7 +187,7 @@ describe('repairMechanicalFindings', () => {
 			planPaths: deliverable.planPaths,
 			decisions: deliverable.decisions,
 			overviewPath: deliverable.overviewPath,
-			testFileGlobs,
+			fileGlobs: { source: sourceFileGlobs, tests: testFileGlobs },
 		});
 
 		const after = engineOwnedReported({ findings: await deliverable.lint() });
@@ -208,7 +217,7 @@ describe('repairMechanicalFindings', () => {
 			name: plan.name,
 			planPaths: plan.planPaths,
 			decisions: plan.decisions,
-			testFileGlobs,
+			fileGlobs: { source: sourceFileGlobs, tests: testFileGlobs },
 		});
 
 		const after = plan.read();
@@ -275,7 +284,7 @@ describe('repairMechanicalFindings', () => {
 			planPaths: deliverable.planPaths,
 			decisions: deliverable.decisions,
 			overviewPath: deliverable.overviewPath,
-			testFileGlobs,
+			fileGlobs: { source: sourceFileGlobs, tests: testFileGlobs },
 		});
 
 		const after = judgmentFindings({ findings: await deliverable.lint() });
@@ -295,7 +304,7 @@ describe('repairMechanicalFindings', () => {
 			planPaths: deliverable.planPaths,
 			decisions: deliverable.decisions,
 			overviewPath: deliverable.overviewPath,
-			testFileGlobs,
+			fileGlobs: { source: sourceFileGlobs, tests: testFileGlobs },
 		});
 
 		// the stamp, the decision log, the constraints and the phase sections all

@@ -7,6 +7,7 @@ import type { TrackerSettings } from '#src/common/types/TrackerSettings.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { publishWorkOrderPlan } from '#src/workOrder/publishWorkOrderPlan/publishWorkOrderPlan.ts';
 import { ticketTrackerConfigBlock } from '#tests/helpers/queueConfigBlock.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
 import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // Mocked Imports
@@ -161,7 +162,7 @@ const setupTicketPlan = ({
 		params: {
 			cwd,
 			address,
-			config: { 'test-files': testFileGlobs, gates, 'ticket-tracker': trackerBlock },
+			config: { 'source-files': sourceFileGlobs, 'test-files': testFileGlobs, gates, 'ticket-tracker': trackerBlock },
 			env,
 			onProgress: (message: string) => progress.push(message),
 		},
@@ -276,7 +277,7 @@ describe('publishWorkOrderPlan', () => {
 		const { params } = setupTicketPlan({ plans: [planEntryOf({ progress: 'ready' })] });
 
 		const legacyName = await publishWorkOrderPlan({ ...params, address: name });
-		const localOnly = await publishWorkOrderPlan({ ...params, config: { 'test-files': testFileGlobs, gates } });
+		const localOnly = await publishWorkOrderPlan({ ...params, config: { 'source-files': sourceFileGlobs, 'test-files': testFileGlobs, gates } });
 
 		expect({ legacyName: legacyName.error, localOnly: localOnly.error, attached: attachedTitles() }).toEqual({
 			legacyName: expect.stringContaining('<ticket-branch>/<plan-id>'),

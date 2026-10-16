@@ -13,6 +13,7 @@ import { requestWorkOrderShip } from '#src/workOrder/requestWorkOrderShip.ts';
 import { retitleWorkOrderPlan } from '#src/workOrder/retitleWorkOrderPlan.ts';
 import { setWorkOrderMode } from '#src/workOrder/setWorkOrderMode.ts';
 import { withdrawWorkOrderShipRequest } from '#src/workOrder/withdrawWorkOrderShipRequest.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
 import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 /** The work order's label: the folder it sits in, and the name every command addresses it by. */
@@ -23,7 +24,7 @@ const gates: LightsoutConfig['gates'] = { check: 'true', test: 'true', 'test-cov
  * No `ticket-tracker` block, so the record is local only: these rows are about
  * which plan ids a request may name, not about what reaches the tracker.
  */
-const config: LightsoutConfig = { 'test-files': testFileGlobs, gates };
+const config: LightsoutConfig = { 'source-files': sourceFileGlobs, 'test-files': testFileGlobs, gates };
 const env: NodeJS.ProcessEnv = {};
 const mergeCommit = 'a1b2c3d4e5f6';
 

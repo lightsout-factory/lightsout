@@ -17,6 +17,8 @@ interface Params {
 	setAside: CoverageSetAside[];
 	/** The repo's `test-files` globs. */
 	testFileGlobs: string[];
+	/** The repo's `source-files` globs. */
+	sourceFileGlobs: string[];
 	/** The consumer's TypeScript module, or undefined — without one, grouping degrades to one file per component. */
 	compiler: typeof ts | undefined;
 	/** 1-based sequential batch number across the run. */
@@ -28,9 +30,17 @@ interface Params {
  * file left while the gate is red is a human's question, and a scope whose
  * candidates its own member pool refuses is an engine bug to surface.
  */
-export const buildCoverageRound = async ({ cwd, measured, setAside, testFileGlobs, compiler, batchNumber }: Params): Promise<CoverageRound> => {
+export const buildCoverageRound = async ({
+	cwd,
+	measured,
+	setAside,
+	testFileGlobs,
+	sourceFileGlobs,
+	compiler,
+	batchNumber,
+}: Params): Promise<CoverageRound> => {
 	const setAsidePaths = new Set(setAside.flatMap((entry) => entry.files));
-	const candidates = await selectCoverageCandidates({ cwd, measured, setAsidePaths, testFileGlobs, compiler });
+	const candidates = await selectCoverageCandidates({ cwd, measured, setAsidePaths, testFileGlobs, sourceFileGlobs, compiler });
 
 	if (candidates.length === 0) {
 		return {

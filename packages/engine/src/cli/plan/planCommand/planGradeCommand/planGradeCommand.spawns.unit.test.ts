@@ -10,6 +10,7 @@ import { captureCommandOutput } from '#tests/helpers/captureCommandOutput.ts';
 import { cleanPlanBody } from '#tests/helpers/cleanPlanBody.ts';
 import { createGapCheckDriver } from '#tests/helpers/createGapCheckDriver.ts';
 import { setupConsumerRepo } from '#tests/helpers/setupConsumerRepo.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
 import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 import { writePlanDeliverable } from '#tests/helpers/writePlanDeliverable.ts';
 
@@ -39,6 +40,7 @@ test("planGradeCommand: the config's model, effort and permissions are handed to
 			model: 'claude-opus-5',
 			effort: Effort.High,
 			permissions: Permissions.FullAccess,
+			'source-files': sourceFileGlobs,
 			'test-files': testFileGlobs,
 			gates: { check: 'true', test: 'true', 'test-coverage': false },
 		},

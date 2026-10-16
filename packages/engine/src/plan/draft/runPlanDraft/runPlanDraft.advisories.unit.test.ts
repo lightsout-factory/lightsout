@@ -34,12 +34,14 @@ describe('runPlanDraft advisories', () => {
 
 		expectStatus(result, 'complete');
 		// left as a length test, this note would park every large mechanical plan
-		// as structural-issues — the outcome the two-number split exists to prevent
+		// as structural-issues — the outcome the two-number split exists to prevent;
+		// the 52 are the 50 bulk edits, the created module and the `src/index.js`
+		// the skeleton modifies, a code file the repo's globs name like any other
 		expect(result.advisories.map(({ check, severity, issue }) => ({ check, severity, issue }))).toStrictEqual([
 			{
 				check: StructuralCheck.ScopeWithinGuardrail,
 				severity: FindingSeverity.Advisory,
-				issue: 'plan touches 51 source files, over the 50-file limit from the configured executor-file-limit',
+				issue: 'plan touches 52 source files, over the 50-file limit from the configured executor-file-limit',
 			},
 		]);
 	});

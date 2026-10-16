@@ -11,6 +11,7 @@ import { captureCommandOutput } from '#tests/helpers/captureCommandOutput.ts';
 import { seedRunFolder } from '#tests/helpers/seedRunFolder.ts';
 import { setupBranchRepo } from '#tests/helpers/setupBranchRepo.ts';
 import { manifestOf } from '#tests/helpers/setupResume.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
 import { stubForgeOnPath } from '#tests/helpers/stubForgeOnPath.ts';
 import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
@@ -113,7 +114,7 @@ const setupDirectLifecycle = ({
 
 	writeFileSync(
 		join(cwd, 'lightsout.config.json'),
-		JSON.stringify({ 'test-files': testFileGlobs, gates: { check: 'true', test: 'true', 'test-coverage': false } }),
+		JSON.stringify({ 'source-files': sourceFileGlobs, 'test-files': testFileGlobs, gates: { check: 'true', test: 'true', 'test-coverage': false } }),
 	);
 	writeFileSync(join(cwd, 'ticket.md'), '# Drain the backlog\n\nBuild the thing.\n');
 	execSync('git add -A && git -c user.name=t -c user.email=t@t commit -qm setup', { cwd, stdio: 'ignore' });

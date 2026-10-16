@@ -45,6 +45,7 @@ export const runStandardsCheck = async ({
 		packagesDir: config?.['packages-dir'],
 		path,
 		exclude: excludedSourcePaths({ config }),
+		sourceFileGlobs: config?.['source-files'] ?? [],
 		testFileGlobs: config?.['test-files'] ?? [],
 		onProgress,
 	});

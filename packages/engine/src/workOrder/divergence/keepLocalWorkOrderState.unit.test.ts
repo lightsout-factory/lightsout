@@ -10,6 +10,7 @@ import type { WorkOrderPlan } from '#src/contracts/workOrder/WorkOrderPlan.ts';
 import type { WorkOrderState } from '#src/contracts/workOrder/WorkOrderState.ts';
 import { keepLocalWorkOrderState } from '#src/workOrder/divergence/keepLocalWorkOrderState.ts';
 import { setupBranchRepo } from '#tests/helpers/setupBranchRepo.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
 import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 import { trackerSettingsFixture } from '#tests/helpers/trackerSettingsFixture.ts';
 
@@ -68,7 +69,11 @@ jest.mock('#src/plan/publish/publishPlan/publishPlan.ts', () => ({ publishPlan: 
 const name = 'lo-140-multi';
 const ticketRef = 'LO-140';
 const planId = '003-held-here';
-const config: LightsoutConfig = { 'test-files': testFileGlobs, gates: { check: 'true', test: 'true', 'test-coverage': false } };
+const config: LightsoutConfig = {
+	'source-files': sourceFileGlobs,
+	'test-files': testFileGlobs,
+	gates: { check: 'true', test: 'true', 'test-coverage': false },
+};
 const env = { LINEAR_API_KEY: 'lin_key' };
 const target = { settings: trackerSettingsFixture(), ticketRef };
 

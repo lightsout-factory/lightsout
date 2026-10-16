@@ -8,6 +8,7 @@ import type { LoadedStandardsRule } from '#src/common/types/LoadedStandardsRule.
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 import { checkFixtureTree } from '#src/standardsCheck/validateStandardsLibrary/checkFixtureTree.ts';
 import { getRejectionError } from '#tests/helpers/getRejectionError.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
 
 /** A check that objects to any file named `banned.ts` — small enough to reason about, real enough to fail. */
 const bansTheBannedFile: StandardsCheckFunction = ({ inputs }) =>
@@ -91,6 +92,7 @@ describe('checkFixtureTree', () => {
 			inputKinds: [StandardsInputKind.FileList],
 			run: bansTheBannedFile,
 			label: 'fixtures/pass/',
+			sourceFileGlobs,
 			testFileGlobs: [],
 		});
 
@@ -108,6 +110,7 @@ describe('checkFixtureTree', () => {
 				run: bansTheBannedTypedFile,
 				label: 'fixtures/pass/',
 				compiler: ts,
+				sourceFileGlobs,
 				testFileGlobs: [],
 			}),
 		});
@@ -127,6 +130,7 @@ describe('checkFixtureTree', () => {
 			run: bansTheBannedTypedFile,
 			label: 'fixtures/pass/',
 			compiler: ts,
+			sourceFileGlobs,
 			testFileGlobs: [],
 		});
 
@@ -142,6 +146,7 @@ describe('checkFixtureTree', () => {
 			inputKinds: [StandardsInputKind.FileList],
 			run: reportsWhatItWasHanded,
 			label: 'fixtures/pass/',
+			sourceFileGlobs,
 			testFileGlobs: ['**/*.unit.test.ts'],
 		});
 
@@ -163,6 +168,7 @@ describe('checkFixtureTree', () => {
 			inputKinds: [StandardsInputKind.FileList],
 			run: reportsWhatItWasHanded,
 			label: 'fixtures/pass/',
+			sourceFileGlobs,
 			testFileGlobs: [],
 		});
 
@@ -184,6 +190,7 @@ describe('checkFixtureTree', () => {
 			inputKinds: [StandardsInputKind.FileList],
 			run: capsTheSourceFolder,
 			label: 'fixtures/pass/',
+			sourceFileGlobs,
 			testFileGlobs: [],
 		});
 

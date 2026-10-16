@@ -10,6 +10,7 @@ import type { Driver } from '#src/common/types/Driver.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { captureCommandOutput } from '#tests/helpers/captureCommandOutput.ts';
 import { queueConfigBlock, ticketTrackerConfigBlock } from '#tests/helpers/queueConfigBlock.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
 import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // Mocked Imports
@@ -75,13 +76,19 @@ const gates: LightsoutConfig['gates'] = { check: 'true', test: 'true', 'test-cov
  * presence of a `ticket-tracker` block is the whole signal that the plan-folder
  * advisory applies to it.
  */
-const trackerRepoConfig = { 'test-files': testFileGlobs, gates, queue: queueConfigBlock, 'ticket-tracker': ticketTrackerConfigBlock };
+const trackerRepoConfig = {
+	'source-files': sourceFileGlobs,
+	'test-files': testFileGlobs,
+	gates,
+	queue: queueConfigBlock,
+	'ticket-tracker': ticketTrackerConfigBlock,
+};
 
 /**
  * The same repo with the tracker block taken away: a `queue` block on its own
  * names no tracker, so this repo has chosen no ticket convention.
  */
-const queueOnlyRepoConfig = { 'test-files': testFileGlobs, gates, queue: queueConfigBlock };
+const queueOnlyRepoConfig = { 'source-files': sourceFileGlobs, 'test-files': testFileGlobs, gates, queue: queueConfigBlock };
 
 /** Every subcommand the dispatcher can hand a call to. */
 const subcommandMocks = [
@@ -98,7 +105,7 @@ const subcommandMocks = [
 const setupPlan = ({ args, repoConfig }: { args: string[]; repoConfig?: Record<string, unknown> }) => {
 	const captured = captureCommandOutput();
 	const cwd = mkdtempSync(join(tmpdir(), 'lightsout-plan-command-'));
-	const config: LightsoutConfig = { 'test-files': testFileGlobs, gates };
+	const config: LightsoutConfig = { 'source-files': sourceFileGlobs, 'test-files': testFileGlobs, gates };
 
 	if (repoConfig) {
 		writeFileSync(join(cwd, 'lightsout.config.json'), JSON.stringify(repoConfig));

@@ -78,8 +78,9 @@ test('planLintCommand: without --name it prints the usage text on stderr and exi
 /**
  * A clean plan grown past the touched-file limit by 55 earlier-phase modifies —
  * paths a predecessor writes, so absent from disk and never a path-exists defect.
- * One create plus those 55 is 56 touched source files (`src/index.js` is a barrel
- * and counts toward neither), well under the 30-file created ceiling.
+ * One create, one modify (`src/index.js`) and those 55 are 57 touched source files
+ * — every one a file the repo's `source-files` globs name — well under the
+ * 30-file created ceiling.
  */
 const mechanicalPlanBody = () => {
 	const entries = Array.from({ length: 55 }, (_, index) => `### \`src/renamed${index}.ts\`\n\nRename one import.\n`).join('\n');
@@ -94,7 +95,7 @@ test('planLintCommand: a touched-file advisory prints as a note beside a clean h
 
 	expect(logged[0] ?? '').toMatch(/^\[\+\d+:\d\d\] plan lint demo: 0 blocking, 1 advisory finding\(s\) across 1 file\(s\)$/);
 	expect(logged[1]).toBe('\nplan lint demo — clean, 1 advisory finding(s) (1 file(s))');
-	expect(logged[2] ?? '').toMatch(/^note plan\.md \[scope-within-guardrail\] plan\.md — plan touches 56 source files, over the 50-file limit/);
+	expect(logged[2] ?? '').toMatch(/^note plan\.md \[scope-within-guardrail\] plan\.md — plan touches 57 source files, over the 50-file limit/);
 	expect(logged[3] ?? '').toMatch(/^ {3}fix: legal, but the implementing agent stops at 50 files/);
 	expect(errors).toStrictEqual([]);
 	// an advisory informs; only a blocking finding moves the signal the self-lint

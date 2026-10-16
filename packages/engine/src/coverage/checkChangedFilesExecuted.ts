@@ -3,7 +3,7 @@ import { join, relative } from 'node:path';
 import type ts from 'typescript';
 import { z } from 'zod';
 import { isInertSourceFile } from '#src/common/sourceFiles/isInertSourceFile.ts';
-import { isTestableSourceFile } from '#src/common/sourceFiles/isTestableSourceFile.ts';
+import { isSourceFile } from '#src/common/sourceFiles/isSourceFile.ts';
 import { isTestFile } from '#src/common/sourceFiles/isTestFile.ts';
 import { isToolingConfigFile } from '#src/common/sourceFiles/isToolingConfigFile.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
@@ -54,7 +54,7 @@ export const checkChangedFilesExecuted = async ({ cwd, config, changedFiles, com
 
 	for (const file of changedFiles.filter(
 		(changed) =>
-			isTestableSourceFile({ path: changed }) &&
+			isSourceFile({ path: changed, sourceFileGlobs: config['source-files'] }) &&
 			!isTestFile({ path: changed, testFileGlobs: config['test-files'] }) &&
 			!isToolingConfigFile({ path: changed, packagesDir }),
 	)) {

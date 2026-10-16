@@ -20,7 +20,7 @@ interface Params {
 // review never loads a pack or a harness for it.
 export const reviewStandards = async ({ cwd, config, path, onProgress }: Params): Promise<{ findings: StandardsFinding[]; notes: string[] }> => {
 	const groups = await resolveStandardsGroups({ cwd, config });
-	const { files: walked } = await listSourceFiles({ cwd, exclude: excludedSourcePaths({ config }) });
+	const { files: walked } = await listSourceFiles({ cwd, sourceFileGlobs: config?.['source-files'] ?? [], exclude: excludedSourcePaths({ config }) });
 	const files = walked.filter((file) => !path || file.startsWith(path));
 
 	return runStandardsReview({

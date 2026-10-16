@@ -11,6 +11,7 @@ import { approvedTestPath } from '#src/pipeline/approvedTests/common/approvedTes
 import { collectTestChanges } from '#src/pipeline/approvedTests/reviewTestChanges/collectTestChanges.ts';
 import type { PipelineRun } from '#src/pipeline/common/PipelineRun.ts';
 import { runDirFor } from '#tests/helpers/runDirFor.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
 import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 import { writeRepoFile } from '#tests/helpers/writeRepoFile.ts';
 
@@ -77,7 +78,7 @@ const setupChangeRun = async ({ committed = {}, live = {}, approved = {}, change
 
 	const run = {
 		cwd,
-		config: { 'test-files': testFileGlobs, ...config } as LightsoutConfig,
+		config: { 'source-files': sourceFileGlobs, 'test-files': testFileGlobs, ...config } as LightsoutConfig,
 		current: () => ({ runId, changedFiles, approvedTests }) as unknown as RunManifest,
 	};
 

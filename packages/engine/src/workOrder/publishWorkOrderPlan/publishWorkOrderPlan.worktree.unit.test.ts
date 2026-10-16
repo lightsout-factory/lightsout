@@ -14,6 +14,7 @@ import type { WorkOrderState } from '#src/contracts/workOrder/WorkOrderState.ts'
 import { publishWorkOrderPlan } from '#src/workOrder/publishWorkOrderPlan/publishWorkOrderPlan.ts';
 import { ticketTrackerConfigBlock } from '#tests/helpers/queueConfigBlock.ts';
 import { setupBranchRepo } from '#tests/helpers/setupBranchRepo.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
 import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // Mocked Imports
@@ -134,7 +135,7 @@ const setupPublishFromWorktree = ({ notesIn = 'primary' }: { notesIn?: 'primary'
 		params: {
 			cwd: worktree,
 			address,
-			config: { 'test-files': testFileGlobs, gates, 'ticket-tracker': trackerBlock },
+			config: { 'source-files': sourceFileGlobs, 'test-files': testFileGlobs, gates, 'ticket-tracker': trackerBlock },
 			env,
 			onProgress: (message: string) => progressLines.push(message),
 		},

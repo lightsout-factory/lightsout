@@ -28,7 +28,19 @@ describe('isTestFile', () => {
 		}).toStrictEqual({ spec: true, python: true, jestNamed: false });
 	});
 
-	test('matches dot-folders too, so a test kept under one is not missed', () => {
-		expect(isTestFile({ path: '.storybook/preview.test.ts', testFileGlobs: ['**/*.test.*'] })).toBe(true);
+	test('a test under a dot-folder is matched only when a glob names the folder, as globs read everywhere', () => {
+		expect({
+			plain: isTestFile({ path: '.storybook/preview.test.ts', testFileGlobs: ['**/*.test.*'] }),
+			named: isTestFile({ path: '.storybook/preview.test.ts', testFileGlobs: ['**/*.test.*', '.storybook/**'] }),
+		}).toStrictEqual({ plain: false, named: true });
+	});
+
+	test('a ! glob excludes what it matches, whatever order the list is in', () => {
+		const testFileGlobs = ['!**/fixtures/**', '**/*.test.*'];
+
+		expect({
+			test: isTestFile({ path: 'src/run.test.ts', testFileGlobs }),
+			fixture: isTestFile({ path: 'src/fixtures/sample.test.ts', testFileGlobs }),
+		}).toStrictEqual({ test: true, fixture: false });
 	});
 });

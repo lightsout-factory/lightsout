@@ -1,6 +1,7 @@
 import { describe, expect, test } from '@jest/globals';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { checkStandardsPack } from '#src/doctor/runDoctor/checkStandardsPack.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
 import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 /** A config naming whichever repo pack and package packs the case gives. */
@@ -11,6 +12,7 @@ const setupConfig = ({
 	standardsPack?: string | string[] | false;
 	packagePacks?: Record<string, string>;
 } = {}): LightsoutConfig => ({
+	'source-files': sourceFileGlobs,
 	'test-files': testFileGlobs,
 	gates: { check: 'true', test: 'true', 'test-coverage': false },
 	'standards-pack': standardsPack,

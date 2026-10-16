@@ -71,7 +71,13 @@ const executeCoverage = async ({
 	// Resolved once for the run: without a consumer TypeScript, grouping degrades
 	// to one file per batch component, exactly like the implement fan-out.
 	const compiler = resolveConsumerTypescript({ cwd, packagesDir: config['packages-dir'] ?? defaultPackagesDir });
-	return runCoverageRounds({ run, driver, batchInputs: { testStandards, compiler, testFileGlobs: config['test-files'] }, maxBatches, resumed: seeded });
+	return runCoverageRounds({
+		run,
+		driver,
+		batchInputs: { testStandards, compiler, testFileGlobs: config['test-files'], sourceFileGlobs: config['source-files'] },
+		maxBatches,
+		resumed: seeded,
+	});
 };
 
 /** Every pipeline takes the same repo lock, so no two runs can race one tree. */

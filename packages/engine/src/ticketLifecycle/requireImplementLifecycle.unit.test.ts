@@ -6,6 +6,7 @@ import type { TrackerTicket } from '#src/common/types/TrackerTicket.ts';
 import type { GateHold } from '#src/contracts/gates/GateHold.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { requireImplementLifecycle } from '#src/ticketLifecycle/requireImplementLifecycle.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
 import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // Mocked Imports
@@ -59,10 +60,11 @@ jest.mock('#src/workOrder/readWorkOrderTicketRef.ts', () => ({
 const gates: LightsoutConfig['gates'] = { check: 'true', test: 'true', 'test-coverage': false };
 /** Named inline rather than through the shared block, whose `provider` widens to `string` and would need a cast here. */
 const trackerBlock: LightsoutConfig['ticket-tracker'] = { provider: 'linear', team: 'LO', 'api-key-env': 'LINEAR_API_KEY' };
-const config: LightsoutConfig = { 'test-files': testFileGlobs, gates, 'ticket-tracker': trackerBlock };
+const config: LightsoutConfig = { 'source-files': sourceFileGlobs, 'test-files': testFileGlobs, gates, 'ticket-tracker': trackerBlock };
 const env = { LINEAR_API_KEY: 'lin_key' };
 /** A repo whose `queue` block sends two planning statuses to the same label, which no write could spell unambiguously. */
 const configSharingOneLabel: LightsoutConfig = {
+	'source-files': sourceFileGlobs,
 	'test-files': testFileGlobs,
 	gates,
 	'ticket-tracker': trackerBlock,
@@ -204,7 +206,7 @@ describe('requireImplementLifecycle', () => {
 	test('lets a repo with no tracker block start without touching anything', async () => {
 		const { guard } = setupGuard();
 
-		const refused = await guard({ config: { 'test-files': testFileGlobs, gates } });
+		const refused = await guard({ config: { 'source-files': sourceFileGlobs, 'test-files': testFileGlobs, gates } });
 
 		expect(refused).toBeUndefined();
 		expect(mockGetTicketsByIdentifiers).not.toHaveBeenCalled();
@@ -273,7 +275,9 @@ describe('requireImplementLifecycle', () => {
 	test('reads the branch’s reference from the record whatever the repo’s own ticket pattern is, usable or not', async () => {
 		const { guard } = setupGuard();
 
-		const refused = await guard({ config: { 'test-files': testFileGlobs, gates, 'ticket-tracker': trackerBlock, ship: { 'ticket-pattern': '(' } } });
+		const refused = await guard({
+			config: { 'source-files': sourceFileGlobs, 'test-files': testFileGlobs, gates, 'ticket-tracker': trackerBlock, ship: { 'ticket-pattern': '(' } },
+		});
 
 		// Which ticket a branch belongs to is its work order's record's answer, so
 		// `ship.ticket-pattern` decides nothing here — not even when it is no
@@ -286,7 +290,12 @@ describe('requireImplementLifecycle', () => {
 		const { guard } = setupGuard();
 
 		const refused = await guard({
-			config: { 'test-files': testFileGlobs, gates, 'ticket-tracker': { provider: 'linear', team: 'LO', 'api-key-env': 'MISSING_TRACKER_KEY' } },
+			config: {
+				'source-files': sourceFileGlobs,
+				'test-files': testFileGlobs,
+				gates,
+				'ticket-tracker': { provider: 'linear', team: 'LO', 'api-key-env': 'MISSING_TRACKER_KEY' },
+			},
 		});
 
 		expect(refused).toContain('MISSING_TRACKER_KEY');

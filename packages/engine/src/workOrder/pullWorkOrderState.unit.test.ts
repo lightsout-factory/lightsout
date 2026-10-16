@@ -12,6 +12,7 @@ import { pullWorkOrderState } from '#src/workOrder/pullWorkOrderState.ts';
 import { readWorkOrderState } from '#src/workOrder/readWorkOrderState.ts';
 import { ticketTrackerConfigBlock } from '#tests/helpers/queueConfigBlock.ts';
 import { setupPullTicketRecord } from '#tests/helpers/setupPullTicketRecord.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
 import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // Mocked Imports
@@ -38,7 +39,7 @@ const name = 'lo-140-multi';
 const gates: LightsoutConfig['gates'] = { check: 'true', test: 'true', 'test-coverage': false };
 /** The shared fixture typed: the raw JSON shape widens `provider` to `string`. */
 const trackerBlock: LightsoutConfig['ticket-tracker'] = { ...ticketTrackerConfigBlock, provider: 'linear' };
-const configWithTracker: LightsoutConfig = { 'test-files': testFileGlobs, gates, 'ticket-tracker': trackerBlock };
+const configWithTracker: LightsoutConfig = { 'source-files': sourceFileGlobs, 'test-files': testFileGlobs, gates, 'ticket-tracker': trackerBlock };
 
 /** A record the contract accepts. `detail` is what a row varies to make two records differ. */
 const recordOf = ({ branch = name, detail = 'added plan 001-record' }: { branch?: string; detail?: string } = {}): WorkOrderState => ({
@@ -140,7 +141,7 @@ describe('pullWorkOrderState', () => {
 
 	test('pullWorkOrderState: with no ticket-tracker block, answers the local record and never reaches the tracker', async () => {
 		const local = recordOf();
-		const { params } = await setupPull({ local, config: { 'test-files': testFileGlobs, gates } });
+		const { params } = await setupPull({ local, config: { 'source-files': sourceFileGlobs, 'test-files': testFileGlobs, gates } });
 
 		const pulled = await pullWorkOrderState(params);
 

@@ -10,6 +10,7 @@ import type { WorkOrderState } from '#src/contracts/workOrder/WorkOrderState.ts'
 import { updateLocalWorkOrderState } from '#src/workOrder/common/state/updateLocalWorkOrderState.ts';
 import { canonicalTicketRecordText } from '#tests/helpers/canonicalTicketRecordText.ts';
 import { ticketTrackerConfigBlock } from '#tests/helpers/queueConfigBlock.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
 import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 type TrackerFailure = { error: string };
@@ -68,7 +69,7 @@ const defaultBranch = 'lo-140-multi';
 const gates: LightsoutConfig['gates'] = { check: 'true', test: 'true', 'test-coverage': false };
 /** The shared fixture typed: the raw JSON shape widens `provider` to `string`. */
 const trackerBlock: LightsoutConfig['ticket-tracker'] = { ...ticketTrackerConfigBlock, provider: 'linear' };
-const configWithTracker: LightsoutConfig = { 'test-files': testFileGlobs, gates, 'ticket-tracker': trackerBlock };
+const configWithTracker: LightsoutConfig = { 'source-files': sourceFileGlobs, 'test-files': testFileGlobs, gates, 'ticket-tracker': trackerBlock };
 const linearEnv = { LINEAR_API_KEY: 'lin_key' };
 
 /**

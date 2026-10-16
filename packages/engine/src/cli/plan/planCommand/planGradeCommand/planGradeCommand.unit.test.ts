@@ -168,7 +168,8 @@ test('planGradeCommand: a structurally dirty plan prints the lint finding, and a
 	expect(printed[0] ?? '').toMatch(/^\nplan grade demo — below-A /);
 	expect(printed[2]).toBe('  structural: 1 · gaps: 3 (3 blocking, 0 unjudged)');
 	expect(printed[3]).toBe('  checked: 1 phase file(s) × 3 lens(es): plan.md');
-	expect(printed[5] ?? '').toMatch(/^note plan\.md \[scope-within-guardrail\] plan\.md — plan touches 51 source files/);
+	// the 50 planted edits, the one create and the skeleton's `src/index.js` modify
+	expect(printed[5] ?? '').toMatch(/^note plan\.md \[scope-within-guardrail\] plan\.md — plan touches 52 source files/);
 	expect(printed[6] ?? '').toMatch(/^ {3}fix: legal, but the implementing agent stops at 50 files/);
 	expect(printed[7]).toBe('plan.md');
 	expect(printed[8]).toBe('f1 ? [insufficient-detail] no error handling named (surface)');

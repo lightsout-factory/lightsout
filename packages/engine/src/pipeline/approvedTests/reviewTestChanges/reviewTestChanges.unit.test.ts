@@ -14,6 +14,7 @@ import { createRateLimitedDriver } from '#tests/helpers/createRateLimitedDriver.
 import { runDirFor } from '#tests/helpers/runDirFor.ts';
 import { seedRunFolder } from '#tests/helpers/seedRunFolder.ts';
 import { setupConsumerRepo } from '#tests/helpers/setupConsumerRepo.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
 import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 const runId = 'run-1';
@@ -71,7 +72,7 @@ const setupReviewRun = ({ driver, live, acceptanceTests = [] }: { driver: Driver
 	const run = {
 		cwd,
 		driver,
-		config: { 'test-files': testFileGlobs, gates: { check: 'true', test: 'true' } } as unknown as LightsoutConfig,
+		config: { 'source-files': sourceFileGlobs, 'test-files': testFileGlobs, gates: { check: 'true', test: 'true' } } as unknown as LightsoutConfig,
 		current: () => manifest,
 		progress: (message: string) => progress.push(message),
 		update: async ({ patch }: { patch: Partial<RunManifest> }) => {

@@ -9,9 +9,14 @@ import { PipelineRun } from '#src/pipeline/common/PipelineRun.ts';
 import type { PipelineStep } from '#src/pipeline/common/types/PipelineStep.ts';
 import { runSteps } from '#src/pipeline/runImplementPipeline/runSteps.ts';
 import { createRun } from '#src/runState/createRun.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
 import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
-const config: LightsoutConfig = { 'test-files': testFileGlobs, gates: { check: 'true', test: 'true', 'test-coverage': false } };
+const config: LightsoutConfig = {
+	'source-files': sourceFileGlobs,
+	'test-files': testFileGlobs,
+	gates: { check: 'true', test: 'true', 'test-coverage': false },
+};
 const idleDriver: Driver = { name: 'stub', invoke: async () => ({ text: '', exitCode: 0 }) };
 
 /**

@@ -7,6 +7,7 @@ import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutCo
 import type { MergedParkedTree } from '#src/queue/common/types/MergedParkedTree.ts';
 import { settleMergedTrees } from '#src/queue/runQueue/drainQueue/settleMergedTrees.ts';
 import { queueSettingsFixture } from '#tests/helpers/queueSettingsFixture.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
 import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 import { trackerSettingsFixture } from '#tests/helpers/trackerSettingsFixture.ts';
 
@@ -33,7 +34,11 @@ jest.mock('#src/ticketTracker/setTicketLabel.ts', () => ({
 }));
 // -------------------------
 
-const config: LightsoutConfig = { 'test-files': testFileGlobs, gates: { check: 'true', test: 'true', 'test-coverage': false } };
+const config: LightsoutConfig = {
+	'source-files': sourceFileGlobs,
+	'test-files': testFileGlobs,
+	gates: { check: 'true', test: 'true', 'test-coverage': false },
+};
 
 const treeOf = ({ number }: { number: number }): MergedParkedTree => ({
 	worktreePath: `/repo-worktrees/lo-${number}-drain`,

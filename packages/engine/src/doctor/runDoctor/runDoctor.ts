@@ -12,7 +12,7 @@ import { checkHarnessUsage } from '#src/doctor/runDoctor/checkHarnessUsage.ts';
 import { checkJestReporter } from '#src/doctor/runDoctor/checkJestReporter/checkJestReporter.ts';
 import { checkRuleRequirements } from '#src/doctor/runDoctor/checkRuleRequirements.ts';
 import { checkScriptBinaries } from '#src/doctor/runDoctor/checkScriptBinaries.ts';
-import { checkSourceWalk } from '#src/doctor/runDoctor/checkSourceWalk.ts';
+import { checkSourceFiles } from '#src/doctor/runDoctor/checkSourceFiles.ts';
 import { checkStandardsPack } from '#src/doctor/runDoctor/checkStandardsPack.ts';
 import type { DoctorCheck } from '#src/doctor/runDoctor/common/types/DoctorCheck.ts';
 import { resolvePackageDirs } from '#src/doctor/runDoctor/resolvePackageDirs.ts';
@@ -79,7 +79,7 @@ export const runDoctor = async ({ cwd, probeHarness, usageProbe, usageDriver }: 
 	}
 
 	checks.push(await checkGitignore({ cwd }));
-	checks.push(await checkSourceWalk({ cwd, generated: config.generated }));
+	checks.push(await checkSourceFiles({ cwd, config }));
 
 	const { packageDirs, scopedGatesCheck } = await resolvePackageDirs({ cwd, config, packagesDir });
 

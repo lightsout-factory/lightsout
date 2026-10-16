@@ -5,6 +5,7 @@ import { expect, test } from '@jest/globals';
 import { readOptionalConfig } from '#src/common/config/readOptionalConfig.ts';
 import { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { runStandardsCheck } from '#src/standardsCheck/runStandardsCheck/runStandardsCheck.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
 import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 const bigBody = `
@@ -23,6 +24,7 @@ const bigBody = `
 
 /** Standards are opt-in, so a repo checked against the bundled rules names the standards pack. */
 const standardsPackConfig = JSON.stringify({
+	'source-files': sourceFileGlobs,
 	'test-files': testFileGlobs,
 	gates: { check: 'true', test: 'true', 'test-coverage': false },
 	'standards-pack': 'lightsout/standards',
@@ -293,6 +295,7 @@ const setupOwnPackRepo = () => {
 			'src/alpha.ts': 'export const alpha = 1;\n',
 			'src/beta.ts': 'export const beta = 2;\n',
 			'lightsout.config.json': JSON.stringify({
+				'source-files': sourceFileGlobs,
 				'test-files': testFileGlobs,
 				gates: { check: 'true', test: 'true', 'test-coverage': false },
 				'standards-libraries': { acme: writeOwnPack() },
@@ -342,6 +345,7 @@ const setupOrderedPackRepo = () => {
 		files: {
 			'src/alpha.ts': 'export const alpha = 1;\n',
 			'lightsout.config.json': JSON.stringify({
+				'source-files': sourceFileGlobs,
 				'test-files': testFileGlobs,
 				gates: { check: 'true', test: 'true', 'test-coverage': false },
 				'standards-libraries': { acme: packPath },
@@ -385,6 +389,7 @@ const setupScopedRepo = () => {
 			'src/keep.ts': 'export const keep = 1;\n',
 			'src/core/inner.ts': 'export const inner = 2;\n',
 			'lightsout.config.json': JSON.stringify({
+				'source-files': sourceFileGlobs,
 				'test-files': testFileGlobs,
 				gates: { check: 'true', test: 'true', 'test-coverage': false },
 				'standards-libraries': { acme: writeOwnPack() },
@@ -416,6 +421,7 @@ test('--path checks the subpath it was given, and the evidence file records that
 const setupRejectedConfigRepo = () => {
 	const dir = mkdtempSync(join(tmpdir(), 'lightsout-standards-handed-'));
 	const startingConfig = {
+		'source-files': sourceFileGlobs,
 		'test-files': testFileGlobs,
 		gates: { check: 'true', test: 'true', 'test-coverage': false },
 		'standards-libraries': { acme: writeOwnPack() },

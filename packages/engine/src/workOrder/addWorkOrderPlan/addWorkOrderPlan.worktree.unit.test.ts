@@ -11,6 +11,7 @@ import { planWorkspaceDir } from '#src/plan/planWorkspaceDir.ts';
 import { addWorkOrderPlan } from '#src/workOrder/addWorkOrderPlan/addWorkOrderPlan.ts';
 import { updateLocalWorkOrderState } from '#src/workOrder/common/state/updateLocalWorkOrderState.ts';
 import { setupBranchRepo } from '#tests/helpers/setupBranchRepo.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
 import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // Mocked Imports
@@ -84,7 +85,7 @@ const setupAddPlanFromWorktree = async () => {
 	return {
 		worktree,
 		primaryTicketFolder: join(realpathSync(cwd), '.lightsout', 'work-orders', name),
-		params: { cwd: worktree, name, slug: 'search-basics', config: { 'test-files': testFileGlobs, gates }, env },
+		params: { cwd: worktree, name, slug: 'search-basics', config: { 'source-files': sourceFileGlobs, 'test-files': testFileGlobs, gates }, env },
 	};
 };
 

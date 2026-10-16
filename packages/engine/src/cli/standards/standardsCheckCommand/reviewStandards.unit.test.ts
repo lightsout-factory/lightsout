@@ -8,6 +8,7 @@ import type { StandardsGroup } from '#src/common/types/StandardsGroup.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFinding.ts';
 import { captureCommandOutput } from '#tests/helpers/captureCommandOutput.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
 import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // Mocked Imports
@@ -93,7 +94,7 @@ const reviewParams = () => mockRunStandardsReview.mock.calls[0]?.[0];
  */
 const setupSwitchedOffReview = () => {
 	const cwd = setupRepo();
-	const config: LightsoutConfig = { 'test-files': testFileGlobs, gates, 'standards-pack': false };
+	const config: LightsoutConfig = { 'source-files': sourceFileGlobs, 'test-files': testFileGlobs, gates, 'standards-pack': false };
 	const invoke = jest.fn<Driver['invoke']>().mockResolvedValue({
 		text: JSON.stringify({ findings: [{ rule: 'import-paths', files: [{ path: 'src/index.ts' }], detail: 'should never be asked for' }] }),
 		exitCode: 0,
@@ -121,7 +122,7 @@ describe('reviewStandards', () => {
 	test('the packs the resolver loaded for this config are the ones the review runs against', async () => {
 		const group = resolvedGroup();
 		const cwd = setupRepo({ groups: [group] });
-		const config: LightsoutConfig = { 'test-files': testFileGlobs, gates, 'standards-pack': 'acme/house' };
+		const config: LightsoutConfig = { 'source-files': sourceFileGlobs, 'test-files': testFileGlobs, gates, 'standards-pack': 'acme/house' };
 
 		await reviewStandards({ cwd, config });
 
@@ -130,17 +131,19 @@ describe('reviewStandards', () => {
 		expect(reviewParams()?.groups).toStrictEqual([group]);
 	});
 
-	test('without a path filter the review covers every source file in the repo', async () => {
-		const cwd = setupRepo();
+	test("without a path filter the review covers every file the repo's source-files match, and nothing they leave out", async () => {
+		const cwd = setupRepo({ sources: ['src/index.ts', 'scripts/build.ts', 'docs/notes.md'] });
+		const config: LightsoutConfig = { 'source-files': sourceFileGlobs, 'test-files': testFileGlobs, gates };
 
-		await reviewStandards({ cwd });
+		await reviewStandards({ cwd, config });
 
-		expect(reviewParams()?.files).toStrictEqual(['src/index.ts']);
+		expect(reviewParams()?.files).toStrictEqual(['scripts/build.ts', 'src/index.ts']);
 	});
 
 	test("the review is bounded and scoped by the repo's own config, over the files the path filter leaves", async () => {
 		const cwd = setupRepo({ sources: ['src/index.ts', 'scripts/build.ts'] });
 		const config: LightsoutConfig = {
+			'source-files': sourceFileGlobs,
 			'test-files': testFileGlobs,
 			gates,
 			harness: 'codex',
@@ -186,8 +189,8 @@ describe('reviewStandards', () => {
 	});
 
 	test.each([
-		{ config: { 'test-files': testFileGlobs, gates, 'packages-dir': 'apps' } satisfies LightsoutConfig, packagesDir: 'apps' },
-		{ config: { 'test-files': testFileGlobs, gates } satisfies LightsoutConfig, packagesDir: 'packages' },
+		{ config: { 'source-files': sourceFileGlobs, 'test-files': testFileGlobs, gates, 'packages-dir': 'apps' } satisfies LightsoutConfig, packagesDir: 'apps' },
+		{ config: { 'source-files': sourceFileGlobs, 'test-files': testFileGlobs, gates } satisfies LightsoutConfig, packagesDir: 'packages' },
 	])("hands the review the config's packages-dir, defaulting to packages", async ({ config, packagesDir }) => {
 		const cwd = setupRepo({ groups: [resolvedGroup()] });
 

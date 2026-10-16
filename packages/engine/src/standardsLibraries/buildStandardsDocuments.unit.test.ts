@@ -48,6 +48,7 @@ const buildDocument = ({
 const setupPack = (): LoadedStandardsLibrary => ({
 	name: 'lightsout defaults',
 	formatVersion: 2,
+	fixtureSourceFiles: [],
 	fixtureTestFiles: [],
 	rootPath: '/pkg',
 	documents: [

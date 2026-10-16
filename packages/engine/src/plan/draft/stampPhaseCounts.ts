@@ -1,6 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import { basename } from 'node:path';
 import type { PhaseDeclaration } from '#src/common/types/PhaseDeclaration.ts';
+import type { RepoFileGlobs } from '#src/common/types/RepoFileGlobs.ts';
 import { expandFolderMoves } from '#src/plan/common/expandFolderMoves/expandFolderMoves.ts';
 import { getPlanTouchedPaths } from '#src/plan/common/getPlanTouchedPaths.ts';
 import { parsePhaseDeclarations } from '#src/plan/common/phases/parsePhaseDeclarations.ts';
@@ -16,8 +17,8 @@ interface Params {
 	overviewPath: string;
 	/** Absolute paths of the authored phase files. */
 	phasePaths: string[];
-	/** The repo's `test-files` globs: a test file is never counted. */
-	testFileGlobs: string[];
+	/** The repo's own globs: which files are code, and which of those are tests. */
+	fileGlobs: RepoFileGlobs;
 }
 
 /**
@@ -25,13 +26,13 @@ interface Params {
  * lint's agree. The expander's findings are the lint's to report, and a phase
  * file that cannot be read is left unstamped for the closing lint to report.
  */
-const getCounts = async ({ cwd, phasePaths, testFileGlobs }: { cwd: string; phasePaths: string[]; testFileGlobs: string[] }) => {
+const getCounts = async ({ cwd, phasePaths, fileGlobs }: { cwd: string; phasePaths: string[]; fileGlobs: RepoFileGlobs }) => {
 	const { phases } = await readPhaseFiles({ planPaths: phasePaths });
 	const expansion = await expandFolderMoves({ cwd, phases: phases.sort((one, other) => one.number - other.number) });
 	const counts = new Map<string, PhaseSizeCounts>();
 
 	for (const phase of expansion.phases) {
-		const { created, touched } = getPlanTouchedPaths({ plan: phase.plan, testFileGlobs });
+		const { created, touched } = getPlanTouchedPaths({ plan: phase.plan, fileGlobs });
 
 		counts.set(phase.base, { created: created.length, touched: touched.length });
 	}
@@ -84,8 +85,8 @@ const rewriteRows = ({ lines, counts }: { lines: string[]; counts: Map<string, P
  * to report a phase whose touched count exceeds it. The scope text and declared
  * creates, exports and scripts are left alone for the same reason.
  */
-export const stampPhaseCounts = async ({ cwd, overviewPath, phasePaths, testFileGlobs }: Params): Promise<PhaseDeclaration[]> => {
-	const counts = await getCounts({ cwd, phasePaths, testFileGlobs });
+export const stampPhaseCounts = async ({ cwd, overviewPath, phasePaths, fileGlobs }: Params): Promise<PhaseDeclaration[]> => {
+	const counts = await getCounts({ cwd, phasePaths, fileGlobs });
 	const overviewBase = basename(overviewPath);
 	const original = await readFile(overviewPath, 'utf8');
 	const lines = rewriteRows({ lines: original.split('\n'), counts });

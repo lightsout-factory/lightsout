@@ -1,11 +1,21 @@
 import { expect, test } from '@jest/globals';
+import { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { FindingSeverity } from '#src/contracts/plan/grade/FindingSeverity.ts';
 import { StructuralCheck } from '#src/contracts/plan/grade/StructuralCheck.ts';
 import { lintPlanStructure } from '#src/plan/lint/lintPlanStructure/lintPlanStructure.ts';
 import { emptyDecisionsRecord } from '#tests/helpers/emptyDecisionsRecord.ts';
 import { phaseBody } from '#tests/helpers/phasePlan.ts';
 import { setupConsumerRepo } from '#tests/helpers/setupConsumerRepo.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 import { writeDemoPlanFile } from '#tests/helpers/writeDemoPlanFile.ts';
+
+/** The config the fixture repo declares: its code, its tests, and gates that always pass. */
+const repoConfig = LightsoutConfig.parse({
+	'source-files': sourceFileGlobs,
+	'test-files': testFileGlobs,
+	gates: { check: 'true', test: 'true', 'test-coverage': false },
+});
 
 /** `count` distinct source paths — distinct because the touched count drops duplicates. */
 const touchedPaths = ({ count }: { count: number }) => Array.from({ length: count }, (_, index) => `src/touched${index}.ts`);
@@ -18,7 +28,7 @@ test('lintPlanStructure: a plan touching more source files than the touched ceil
 		body: phaseBody({ create: ['src/gen0.ts'], modify: touchedPaths({ count: 70 }), reference: false }),
 	});
 
-	const findings = await lintPlanStructure({ cwd, planPaths: [path], decisions: emptyDecisionsRecord() });
+	const findings = await lintPlanStructure({ cwd, planPaths: [path], decisions: emptyDecisionsRecord(), config: repoConfig });
 	const ceiling = findings.filter((finding) => finding.check === StructuralCheck.TouchedFilesWithinCeiling);
 	const guardrail = findings.filter((finding) => finding.check === StructuralCheck.ScopeWithinGuardrail);
 
@@ -38,7 +48,7 @@ test('lintPlanStructure: a plan touching exactly the touched ceiling keeps only 
 	const cwd = setupConsumerRepo();
 	const path = writeDemoPlanFile({ cwd, name: 'seventy.md', body: phaseBody({ modify: touchedPaths({ count: 70 }), reference: false }) });
 
-	const findings = await lintPlanStructure({ cwd, planPaths: [path], decisions: emptyDecisionsRecord() });
+	const findings = await lintPlanStructure({ cwd, planPaths: [path], decisions: emptyDecisionsRecord(), config: repoConfig });
 	const ceiling = findings.filter((finding) => finding.check === StructuralCheck.TouchedFilesWithinCeiling);
 	const guardrail = findings.filter((finding) => finding.check === StructuralCheck.ScopeWithinGuardrail);
 
@@ -56,7 +66,7 @@ test("lintPlanStructure: a plan's own File Budget does not lift it past the touc
 	const cwd = setupConsumerRepo();
 	const path = writeDemoPlanFile({ cwd, name: 'budgeted.md', body: phaseBody({ modify: touchedPaths({ count: 71 }), fileBudget: 200, reference: false }) });
 
-	const findings = await lintPlanStructure({ cwd, planPaths: [path], decisions: emptyDecisionsRecord() });
+	const findings = await lintPlanStructure({ cwd, planPaths: [path], decisions: emptyDecisionsRecord(), config: repoConfig });
 	const ceiling = findings.filter((finding) => finding.check === StructuralCheck.TouchedFilesWithinCeiling);
 	const guardrail = findings.filter((finding) => finding.check === StructuralCheck.ScopeWithinGuardrail);
 
@@ -74,7 +84,7 @@ test('lintPlanStructure: a rename-only plan is exempt from the touched ceiling',
 		body: phaseBody({ modify: touchedPaths({ count: 71 }), renames: [{ from: 'one', to: 'uno' }], reference: false }),
 	});
 
-	const findings = await lintPlanStructure({ cwd, planPaths: [path], decisions: emptyDecisionsRecord() });
+	const findings = await lintPlanStructure({ cwd, planPaths: [path], decisions: emptyDecisionsRecord(), config: repoConfig });
 	const ceiling = findings.filter((finding) => finding.check === StructuralCheck.TouchedFilesWithinCeiling);
 
 	// a rename's size is not what makes it hard, got: ${JSON.stringify(findings)}
@@ -86,7 +96,7 @@ test('lintPlanStructure: a move-folders-and-files plan is exempt from the touche
 	const move = Array.from({ length: 36 }, (_, index) => ({ from: `src/old${index}.ts`, to: `src/new${index}.ts` }));
 	const path = writeDemoPlanFile({ cwd, name: 'wide-move.md', body: phaseBody({ move, buildMode: 'move-folders-and-files', reference: false }) });
 
-	const findings = await lintPlanStructure({ cwd, planPaths: [path], decisions: emptyDecisionsRecord() });
+	const findings = await lintPlanStructure({ cwd, planPaths: [path], decisions: emptyDecisionsRecord(), config: repoConfig });
 	const sizes = findings.filter(
 		(finding) => finding.check === StructuralCheck.TouchedFilesWithinCeiling || finding.check === StructuralCheck.ScopeWithinGuardrail,
 	);
@@ -101,7 +111,7 @@ test('lintPlanStructure: the touched-ceiling fix for a standard plan points at b
 	const cwd = setupConsumerRepo();
 	const path = writeDemoPlanFile({ cwd, name: 'too-wide-standard.md', body: phaseBody({ modify: touchedPaths({ count: 71 }), reference: false }) });
 
-	const findings = await lintPlanStructure({ cwd, planPaths: [path], decisions: emptyDecisionsRecord() });
+	const findings = await lintPlanStructure({ cwd, planPaths: [path], decisions: emptyDecisionsRecord(), config: repoConfig });
 	const ceiling = findings
 		.filter((finding) => finding.check === StructuralCheck.TouchedFilesWithinCeiling)
 		.map(({ severity, fix }) => ({

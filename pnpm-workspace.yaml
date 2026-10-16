@@ -15,6 +15,7 @@ catalog:
   esbuild: ^0.24.0
   jest: ^30.4.2
   picomatch: ^4.0.5
+  tinyglobby: ^0.2.17
   ts-jest: ^29.4.12
   typescript: ^5.7.0
   yaml: ^2.9.0

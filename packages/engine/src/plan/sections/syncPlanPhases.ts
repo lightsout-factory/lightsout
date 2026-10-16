@@ -1,6 +1,7 @@
 import { basename } from 'node:path';
 import { PlanRunStatus } from '#src/common/constants/PlanRunStatus.ts';
 import type { PhaseDeclaration } from '#src/common/types/PhaseDeclaration.ts';
+import type { RepoFileGlobs } from '#src/common/types/RepoFileGlobs.ts';
 import { getPhaseSetDefects } from '#src/plan/common/phases/getPhaseSetDefects.ts';
 import { parsePhaseDeclarations } from '#src/plan/common/phases/parsePhaseDeclarations.ts';
 import { resolvePlanDeliverable } from '#src/plan/common/resolvePlanDeliverable.ts';
@@ -12,8 +13,8 @@ interface Params {
 	cwd: string;
 	/** A plan address — what the deliverable is resolved by. */
 	name: string;
-	/** The repo's `test-files` globs: a test file is never counted. */
-	testFileGlobs: string[];
+	/** The repo's own globs: which files are code, and which of those are tests. */
+	fileGlobs: RepoFileGlobs;
 }
 
 type SyncPlanPhasesResult = { status: typeof PlanRunStatus.Complete; file: SyncedPlanFile } | { status: typeof PlanRunStatus.Failed; error: string };
@@ -40,7 +41,7 @@ const missingBlockDefects = ({ declarations, phaseFiles }: { declarations: Phase
  * normalizes to one member carrying an optional `error`, which breaks the
  * caller's narrowing.
  */
-export const syncPlanPhases = async ({ cwd, name, testFileGlobs }: Params): Promise<SyncPlanPhasesResult> => {
+export const syncPlanPhases = async ({ cwd, name, fileGlobs }: Params): Promise<SyncPlanPhasesResult> => {
 	const deliverable = await resolvePlanDeliverable({ cwd, name });
 
 	if (deliverable.error !== undefined) {
@@ -71,7 +72,7 @@ export const syncPlanPhases = async ({ cwd, name, testFileGlobs }: Params): Prom
 		cwd,
 		overviewPath: deliverable.overviewPath,
 		phasePaths: deliverable.files.map((phase) => phase.path),
-		testFileGlobs,
+		fileGlobs,
 	});
 
 	return { status: PlanRunStatus.Complete, file };

@@ -1,9 +1,10 @@
 import { expect, test } from '@jest/globals';
 import { resolveCommandHarness } from '#src/cli/common/resolveCommandHarness.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
 import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
-const base: LightsoutConfig = { 'test-files': testFileGlobs, gates: { check: 'c', test: 't', 'test-coverage': false } };
+const base: LightsoutConfig = { 'source-files': sourceFileGlobs, 'test-files': testFileGlobs, gates: { check: 'c', test: 't', 'test-coverage': false } };
 
 test('resolveCommandHarness: no config at all resolves the claude-code default with no model', () => {
 	expect(resolveCommandHarness({ config: undefined, command: 'implement' })).toStrictEqual({ driverName: 'claude-code', model: undefined, effort: undefined });

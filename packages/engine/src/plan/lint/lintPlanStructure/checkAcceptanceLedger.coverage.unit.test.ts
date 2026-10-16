@@ -6,6 +6,7 @@ import { FindingSeverity } from '#src/contracts/plan/grade/FindingSeverity.ts';
 import { StructuralCheck } from '#src/contracts/plan/grade/StructuralCheck.ts';
 import { checkAcceptanceLedger } from '#src/plan/lint/lintPlanStructure/checkAcceptanceLedger.ts';
 import { parsePlan } from '#src/plan/parsePlan/parsePlan.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
 import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 /**
@@ -57,7 +58,14 @@ describe('checkAcceptanceLedger', () => {
 			],
 		});
 
-		const findings = await checkAcceptanceLedger({ plan, cwd, phase: 'plan.md', required: true, gateKeys, testFileGlobs });
+		const findings = await checkAcceptanceLedger({
+			plan,
+			cwd,
+			phase: 'plan.md',
+			required: true,
+			gateKeys,
+			fileGlobs: { source: sourceFileGlobs, tests: testFileGlobs },
+		});
 
 		// the once-per-file guard is keyed on the file, not on the ledger: silencing
 		// the second vanished file would hide a row pointed at nothing

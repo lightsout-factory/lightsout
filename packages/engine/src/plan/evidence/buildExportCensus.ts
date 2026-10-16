@@ -36,7 +36,7 @@ export const buildExportCensus = async ({ cwd, config, exclude = [], excludeFold
 		return buckets;
 	}
 
-	const { files } = await listSourceFiles({ cwd, exclude: excludedSourcePaths({ config }) });
+	const { files } = await listSourceFiles({ cwd, sourceFileGlobs: config?.['source-files'] ?? [], exclude: excludedSourcePaths({ config }) });
 	const testFileGlobs = config?.['test-files'] ?? [];
 
 	for (const file of files) {

@@ -11,6 +11,7 @@ import { ProcessEndReason } from '#src/contracts/activity/ProcessEndReason.ts';
 import { Effort } from '#src/contracts/Effort.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import { captureCommandOutput } from '#tests/helpers/captureCommandOutput.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
 import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 import { usageFixture } from '#tests/helpers/usageFixture.ts';
 
@@ -65,6 +66,7 @@ const planRecord: ActivityMark[] = [
 
 /** A repository config whose price list names the model the record ran under. */
 const pricingConfig = {
+	'source-files': sourceFileGlobs,
 	'test-files': testFileGlobs,
 	gates: { check: 'true', test: 'true', 'test-coverage': false },
 	pricing: { 'claude-opus-5': { input: 15, output: 75, 'cache-read': 1.5, 'cache-write': 18.75 } },

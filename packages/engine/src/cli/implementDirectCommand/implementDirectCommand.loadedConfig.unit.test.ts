@@ -12,6 +12,7 @@ import { captureCommandOutput } from '#tests/helpers/captureCommandOutput.ts';
 import { getRejectionError } from '#tests/helpers/getRejectionError.ts';
 import { seedRunFolder } from '#tests/helpers/seedRunFolder.ts';
 import { setupBranchRepo } from '#tests/helpers/setupBranchRepo.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
 import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // Mocked Imports
@@ -65,6 +66,7 @@ describe('implementDirectCommand', () => {
 		const { context, cwd } = setupDirectBuild({
 			config: {
 				harness: 'codex',
+				'source-files': sourceFileGlobs,
 				'test-files': testFileGlobs,
 				gates: { check: 'true', test: 'true', 'test-coverage': false },
 				commands: { implement: { harness: 'claude-code' } },
@@ -80,6 +82,7 @@ describe('implementDirectCommand', () => {
 				loadedConfig: {
 					config: {
 						harness: 'codex',
+						'source-files': sourceFileGlobs,
 						'test-files': testFileGlobs,
 						gates: { check: 'true', test: 'true', 'test-coverage': false },
 						commands: { implement: { harness: 'claude-code' } },
@@ -92,7 +95,12 @@ describe('implementDirectCommand', () => {
 
 	test('a misspelled config key fails a direct build at start', async () => {
 		const { context, cwd } = setupDirectBuild({
-			config: { 'test-files': testFileGlobs, gates: { check: 'true', test: 'true', 'test-coverage': false }, 'agent-comands': [] },
+			config: {
+				'source-files': sourceFileGlobs,
+				'test-files': testFileGlobs,
+				gates: { check: 'true', test: 'true', 'test-coverage': false },
+				'agent-comands': [],
+			},
 		});
 
 		const error = await getRejectionError({ promise: implementDirectCommand(context) });

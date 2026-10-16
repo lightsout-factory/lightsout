@@ -9,6 +9,7 @@ import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import { writeRunOwner } from '#src/runState/owner/writeRunOwner.ts';
 import { runDirFor } from '#tests/helpers/runDirFor.ts';
 import { manifestOf, runId, setupResume } from '#tests/helpers/setupResume.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
 import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // Mocked Imports
@@ -34,7 +35,12 @@ jest.mock('#src/ticketLifecycle/requireImplementLifecycle.ts', () => ({
 // -------------------------
 
 /** A config this engine accepts, standing for the one a run recorded when it started. */
-const recordedConfig = { 'test-files': testFileGlobs, gates: { check: 'true', test: 'true', 'test-coverage': false }, 'standards-pack': false };
+const recordedConfig = {
+	'source-files': sourceFileGlobs,
+	'test-files': testFileGlobs,
+	gates: { check: 'true', test: 'true', 'test-coverage': false },
+	'standards-pack': false,
+};
 
 /** Beyond any OS pid range — the live-process probe reports it dead. */
 const deadPid = 999_999_999;

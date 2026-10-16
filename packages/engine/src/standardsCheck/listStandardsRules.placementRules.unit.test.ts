@@ -4,6 +4,7 @@ import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutCo
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 import { resolveStandardsGroups } from '#src/standards/resolveStandardsGroups/resolveStandardsGroups.ts';
 import { listStandardsRules } from '#src/standardsCheck/listStandardsRules.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
 import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 /**
@@ -15,6 +16,7 @@ const cwd = join(__dirname, '..', '..', '..', '..');
 
 /** Standards are opt-in, so the config names the shipped standards pack — and sets no rule, so every row is the pack's default. */
 const standardsPackConfig: LightsoutConfig = {
+	'source-files': sourceFileGlobs,
 	'test-files': testFileGlobs,
 	gates: { check: 'true', test: 'true', 'test-coverage': false },
 	'standards-pack': 'lightsout/standards',

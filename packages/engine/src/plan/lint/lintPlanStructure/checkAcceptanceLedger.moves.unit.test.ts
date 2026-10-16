@@ -6,6 +6,7 @@ import { FindingSeverity } from '#src/contracts/plan/grade/FindingSeverity.ts';
 import { StructuralCheck } from '#src/contracts/plan/grade/StructuralCheck.ts';
 import { checkAcceptanceLedger } from '#src/plan/lint/lintPlanStructure/checkAcceptanceLedger.ts';
 import { parsePlan } from '#src/plan/parsePlan/parsePlan.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
 import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 /**
@@ -69,7 +70,14 @@ describe('checkAcceptanceLedger', () => {
 			changes: changeSection({ heading: 'Files to Modify', path: 'src/parse.unit.test.ts' }),
 		});
 
-		const findings = await checkAcceptanceLedger({ plan, cwd, phase: 'plan.md', required: true, gateKeys, testFileGlobs });
+		const findings = await checkAcceptanceLedger({
+			plan,
+			cwd,
+			phase: 'plan.md',
+			required: true,
+			gateKeys,
+			fileGlobs: { source: sourceFileGlobs, tests: testFileGlobs },
+		});
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -80,7 +88,14 @@ describe('checkAcceptanceLedger', () => {
 			changes: changeSection({ heading: 'Files to Modify from Earlier Phases', path: 'src/parse.unit.test.ts' }),
 		});
 
-		const findings = await checkAcceptanceLedger({ plan, cwd, phase: 'plan.md', required: true, gateKeys, testFileGlobs });
+		const findings = await checkAcceptanceLedger({
+			plan,
+			cwd,
+			phase: 'plan.md',
+			required: true,
+			gateKeys,
+			fileGlobs: { source: sourceFileGlobs, tests: testFileGlobs },
+		});
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -91,7 +106,14 @@ describe('checkAcceptanceLedger', () => {
 			changes: moveSection({ from: 'src/old.unit.test.ts', to: 'src/parse.unit.test.ts' }),
 		});
 
-		const findings = await checkAcceptanceLedger({ plan, cwd, phase: 'plan.md', required: true, gateKeys, testFileGlobs });
+		const findings = await checkAcceptanceLedger({
+			plan,
+			cwd,
+			phase: 'plan.md',
+			required: true,
+			gateKeys,
+			fileGlobs: { source: sourceFileGlobs, tests: testFileGlobs },
+		});
 
 		expect(findings).toStrictEqual([]);
 	});
@@ -103,7 +125,14 @@ describe('checkAcceptanceLedger', () => {
 			files: { 'src/old.unit.test.ts': "test('reads a row', () => {});\n" },
 		});
 
-		const findings = await checkAcceptanceLedger({ plan, cwd, phase: 'plan.md', required: true, gateKeys, testFileGlobs });
+		const findings = await checkAcceptanceLedger({
+			plan,
+			cwd,
+			phase: 'plan.md',
+			required: true,
+			gateKeys,
+			fileGlobs: { source: sourceFileGlobs, tests: testFileGlobs },
+		});
 
 		// the destination does not exist yet, so the rule reads the move's source —
 		// and the finding names both, or the reader cannot see what was judged
@@ -125,7 +154,14 @@ describe('checkAcceptanceLedger', () => {
 			changes: moveSection({ from: 'src/parse.unit.test.ts', to: 'src/renamed.unit.test.ts' }),
 		});
 
-		const findings = await checkAcceptanceLedger({ plan, cwd, phase: 'plan.md', required: true, gateKeys, testFileGlobs });
+		const findings = await checkAcceptanceLedger({
+			plan,
+			cwd,
+			phase: 'plan.md',
+			required: true,
+			gateKeys,
+			fileGlobs: { source: sourceFileGlobs, tests: testFileGlobs },
+		});
 
 		expect(findings).toEqual([
 			expect.objectContaining({
@@ -148,7 +184,14 @@ describe('checkAcceptanceLedger', () => {
 			changes: moveSection({ from: 'src/parse.unit.test.ts', to: 'src/renamed.unit.test.ts' }),
 		});
 
-		const findings = await checkAcceptanceLedger({ plan, cwd, phase: 'plan.md', required: true, gateKeys, testFileGlobs });
+		const findings = await checkAcceptanceLedger({
+			plan,
+			cwd,
+			phase: 'plan.md',
+			required: true,
+			gateKeys,
+			fileGlobs: { source: sourceFileGlobs, tests: testFileGlobs },
+		});
 
 		// one vanished file is one mistake: three copies of the same sentence bury
 		// every other finding beside them
@@ -167,7 +210,14 @@ describe('checkAcceptanceLedger', () => {
 			changes: moveSection({ from: 'src/old/', to: 'src/new/' }),
 		});
 
-		const findings = await checkAcceptanceLedger({ plan, cwd, phase: 'plan.md', required: true, gateKeys, testFileGlobs });
+		const findings = await checkAcceptanceLedger({
+			plan,
+			cwd,
+			phase: 'plan.md',
+			required: true,
+			gateKeys,
+			fileGlobs: { source: sourceFileGlobs, tests: testFileGlobs },
+		});
 
 		// the file sits under the folder's source, so it is gone when the tests run,
 		// matched by the folder prefix rather than an exact file move
@@ -189,7 +239,14 @@ describe('checkAcceptanceLedger', () => {
 			files: { 'src/old/parse.unit.test.ts': "test('reads a row', () => {});\n" },
 		});
 
-		const findings = await checkAcceptanceLedger({ plan, cwd, phase: 'plan.md', required: true, gateKeys, testFileGlobs });
+		const findings = await checkAcceptanceLedger({
+			plan,
+			cwd,
+			phase: 'plan.md',
+			required: true,
+			gateKeys,
+			fileGlobs: { source: sourceFileGlobs, tests: testFileGlobs },
+		});
 
 		// the destination does not exist yet, so the rule reads the file the folder
 		// move carries there, and the finding names both

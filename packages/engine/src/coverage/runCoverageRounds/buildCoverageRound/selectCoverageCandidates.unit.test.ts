@@ -7,6 +7,7 @@ import type { CoverageFile } from '#src/contracts/coverage/CoverageFile.ts';
 import type { CoverageTotal } from '#src/contracts/coverage/CoverageTotal.ts';
 import { selectCoverageCandidates } from '#src/coverage/runCoverageRounds/buildCoverageRound/selectCoverageCandidates.ts';
 import { linkTypescript } from '#tests/helpers/linkTypescript.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
 import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 const file = ({ path, statementsPct = 10, scope = 'root' }: { path: string; statementsPct?: number; scope?: string }): CoverageFile => ({
@@ -44,7 +45,7 @@ const select = async ({
 	globs?: string[];
 	compiler?: ReturnType<typeof resolveConsumerTypescript>;
 }) =>
-	(await selectCoverageCandidates({ cwd, measured: { files, totals }, setAsidePaths: new Set(setAside), testFileGlobs: globs, compiler })).map(
+	(await selectCoverageCandidates({ cwd, measured: { files, totals }, setAsidePaths: new Set(setAside), testFileGlobs: globs, sourceFileGlobs, compiler })).map(
 		(entry) => entry.path,
 	);
 

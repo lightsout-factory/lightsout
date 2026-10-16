@@ -5,6 +5,7 @@ import { MoveDirection } from '#src/common/constants/MoveDirection.ts';
 import { mapPathThroughMoves } from '#src/common/paths/mapPathThroughMoves.ts';
 import { holdsTestTitle } from '#src/common/sourceFiles/holdsTestTitle/holdsTestTitle.ts';
 import { isTestFile } from '#src/common/sourceFiles/isTestFile.ts';
+import type { RepoFileGlobs } from '#src/common/types/RepoFileGlobs.ts';
 import { FindingSeverity } from '#src/contracts/plan/grade/FindingSeverity.ts';
 import { StructuralCheck } from '#src/contracts/plan/grade/StructuralCheck.ts';
 import type { StructuralFinding } from '#src/contracts/plan/grade/StructuralFinding.ts';
@@ -23,8 +24,8 @@ interface Params {
 	required: boolean;
 	/** So a row cannot name a gate nothing runs. */
 	gateKeys: Set<string>;
-	/** The repo's `test-files` globs: a row must name a test file, and a test file needs no row. */
-	testFileGlobs: string[];
+	/** The repo's own globs: which files are code, and which of those are tests. */
+	fileGlobs: RepoFileGlobs;
 }
 
 /**
@@ -33,14 +34,14 @@ interface Params {
  * move-folders-and-files file has none, because a mechanical rename or move adds
  * no behaviour a new test could state.
  */
-const getCoverablePaths = ({ plan, testFileGlobs }: { plan: ParsedPlan; testFileGlobs: string[] }) => {
+const getCoverablePaths = ({ plan, fileGlobs }: { plan: ParsedPlan; fileGlobs: RepoFileGlobs }) => {
 	if (plan.buildMode !== BuildMode.Standard) {
 		return [];
 	}
 
 	const excused = new Set(plan.proseFiles.map((file) => file.path));
 
-	return [...new Set(getPlanWrittenPaths({ plan }))].filter((path) => isPlanSourceFile({ path, testFileGlobs }) && !excused.has(path));
+	return [...new Set(getPlanWrittenPaths({ plan }))].filter((path) => isPlanSourceFile({ path, fileGlobs }) && !excused.has(path));
 };
 
 /**
@@ -108,13 +109,13 @@ const checkRows = async ({
 	cwd,
 	phase,
 	gateKeys,
-	testFileGlobs,
+	fileGlobs,
 }: {
 	plan: ParsedPlan;
 	cwd: string;
 	phase: string;
 	gateKeys: Set<string>;
-	testFileGlobs: string[];
+	fileGlobs: RepoFileGlobs;
 }) => {
 	const findings: StructuralFinding[] = [];
 	const seen = new Set<string>();
@@ -122,7 +123,7 @@ const checkRows = async ({
 	for (const row of plan.ledger) {
 		const location = `${phase}:${row.line}`;
 
-		if (!isTestFile({ path: row.testFile, testFileGlobs })) {
+		if (!isTestFile({ path: row.testFile, testFileGlobs: fileGlobs.tests })) {
 			findings.push(
 				finding({
 					phase,
@@ -201,12 +202,12 @@ const checkRows = async ({
  * A row may name an existing test file but not a test it already holds, so a test
  * written for older behaviour is never locked in as a new criterion's verifier.
  */
-export const checkAcceptanceLedger = async ({ plan, cwd, phase, required, gateKeys, testFileGlobs }: Params): Promise<StructuralFinding[]> => {
-	const coverable = getCoverablePaths({ plan, testFileGlobs });
+export const checkAcceptanceLedger = async ({ plan, cwd, phase, required, gateKeys, fileGlobs }: Params): Promise<StructuralFinding[]> => {
+	const coverable = getCoverablePaths({ plan, fileGlobs });
 
 	return [
 		...checkShape({ plan, phase, required, coverable }),
-		...(await checkRows({ plan, cwd, phase, gateKeys, testFileGlobs })),
+		...(await checkRows({ plan, cwd, phase, gateKeys, fileGlobs })),
 		...checkMovedAwayLedgerFiles({ plan, phase }),
 		...checkLedgerCoverage({ plan, phase, coverable }),
 	];

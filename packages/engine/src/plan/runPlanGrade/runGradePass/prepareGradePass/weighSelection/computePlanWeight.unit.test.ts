@@ -1,6 +1,7 @@
 import { describe, expect, test } from '@jest/globals';
 import { parsePlan } from '#src/plan/parsePlan/parsePlan.ts';
 import { computePlanWeight } from '#src/plan/runPlanGrade/runGradePass/prepareGradePass/weighSelection/computePlanWeight.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
 import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 /** The thresholds every case is weighed against unless it says otherwise — the shipped defaults. */
@@ -15,7 +16,13 @@ const weigh = ({ creates, modifies = [], mirror = true }: { creates: string[]; m
 	const mirrors = mirror ? '## Patterns to Mirror\n\n- `packages/engine/src/old.ts` — follow it.\n' : '';
 	const content = `# Plan\n\n${heading({ title: 'Files to Create', paths: creates })}${heading({ title: 'Files to Modify', paths: modifies })}${mirrors}`;
 
-	return computePlanWeight({ plan: parsePlan({ content, base: 'plan.md' }), phase: 'plan.md', packagesDir: 'packages', thresholds, testFileGlobs });
+	return computePlanWeight({
+		plan: parsePlan({ content, base: 'plan.md' }),
+		phase: 'plan.md',
+		packagesDir: 'packages',
+		thresholds,
+		fileGlobs: { source: sourceFileGlobs, tests: testFileGlobs },
+	});
 };
 
 describe('computePlanWeight', () => {

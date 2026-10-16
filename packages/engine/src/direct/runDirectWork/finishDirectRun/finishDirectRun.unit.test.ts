@@ -8,6 +8,7 @@ import { finishDirectRun } from '#src/direct/runDirectWork/finishDirectRun/finis
 import { createRun } from '#src/runState/createRun.ts';
 import { createUncalledDriver } from '#tests/helpers/createUncalledDriver.ts';
 import { setupConsumerRepo } from '#tests/helpers/setupConsumerRepo.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
 import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 /** What the commit step is handed, restated here because a `jest.mock` factory may not reach outside the file. */
@@ -28,7 +29,11 @@ const mockCommitRunWork = jest.fn<(params: CommitRunWorkParams) => Promise<strin
 jest.mock('#src/commit/commitRunWork/commitRunWork.ts', () => ({ commitRunWork: (params: CommitRunWorkParams) => mockCommitRunWork(params) }));
 // -------------------------
 
-const config: LightsoutConfig = { 'test-files': testFileGlobs, gates: { check: 'true', test: 'true', 'test-coverage': false } };
+const config: LightsoutConfig = {
+	'source-files': sourceFileGlobs,
+	'test-files': testFileGlobs,
+	gates: { check: 'true', test: 'true', 'test-coverage': false },
+};
 
 /**
  * A direct run whose gates are already green — the only state this unit is ever

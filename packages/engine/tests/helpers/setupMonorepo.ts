@@ -3,6 +3,7 @@ import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { gateLogCommand } from '#tests/helpers/gateLogCommand.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
 import { strictProfile } from '#tests/helpers/strictProfile.ts';
 import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 import { writeSource } from '#tests/helpers/writeSource.ts';
@@ -37,6 +38,7 @@ export const setupMonorepo = ({ plan = '---\npackages:\n  - api\n---\n# Plan: ap
 	writeFileSync(
 		join(dir, 'lightsout.config.json'),
 		JSON.stringify({
+			'source-files': sourceFileGlobs,
 			'test-files': testFileGlobs,
 			gates: {
 				check: `${gateLogCommand({ kind: 'check' })} root`,

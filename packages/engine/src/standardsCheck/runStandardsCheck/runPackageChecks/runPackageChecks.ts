@@ -145,6 +145,8 @@ interface Params {
 	path?: string;
 	/** Path prefixes to exclude (the config's `generated` list). */
 	exclude?: string[];
+	/** The repo's `source-files` globs — which files are code at all. */
+	sourceFileGlobs: string[];
 	/** The repo's `test-files` globs — how source and tests are told apart. */
 	testFileGlobs: string[];
 	onProgress?: (message: string) => void;
@@ -171,11 +173,12 @@ export const runPackageChecks = async ({
 	packagesDir = defaultPackagesDir,
 	path,
 	exclude,
+	sourceFileGlobs,
 	testFileGlobs,
 	onProgress,
 }: Params): Promise<{ findings: StandardsFinding[]; notes: string[] }> => {
 	const progress = onProgress ?? (() => undefined);
-	const { files: repoFiles, standardsLibraries } = await listSourceFiles({ cwd, exclude });
+	const { files: repoFiles, standardsLibraries } = await listSourceFiles({ cwd, sourceFileGlobs, exclude });
 	const allFiles = repoFiles.filter((file) => !path || file.startsWith(path));
 	const isTest = (file: string) => isTestFile({ path: file, testFileGlobs });
 	const source = allFiles.filter((file) => !isTest(file));

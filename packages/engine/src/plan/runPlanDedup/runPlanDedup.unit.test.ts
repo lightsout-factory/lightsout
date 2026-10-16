@@ -16,6 +16,8 @@ import { minimalPlanBody } from '#tests/helpers/minimalPlanBody.ts';
 import { planWorkspaceFolder } from '#tests/helpers/planWorkspaceFolder.ts';
 import { seedDedupPlan } from '#tests/helpers/seedDedupPlan.ts';
 import { setupBranchRepo } from '#tests/helpers/setupBranchRepo.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 import { writeEmptyDecisions } from '#tests/helpers/writeEmptyDecisions.ts';
 
 // The single-plan detect-judge-persist path: what a verdict becomes, what the
@@ -130,6 +132,11 @@ const setupLinkedWorktreePlan = ({ verdicts = [] }: { verdicts?: unknown[] } = {
 	// which the worktree holds like any other checkout
 	mkdirSync(join(worktree, 'src'), { recursive: true });
 	writeFileSync(join(worktree, 'src', 'fetchUser.ts'), 'export const fetchUser = 1;\n');
+	// and its config declares that source, so the census the pass reads has it
+	writeFileSync(
+		join(worktree, 'lightsout.config.json'),
+		JSON.stringify({ gates: { check: 'true', test: 'true', 'test-coverage': false }, 'source-files': sourceFileGlobs, 'test-files': testFileGlobs }),
+	);
 
 	const workspaceDir = planWorkspaceFolder({ cwd: primary, name: name });
 

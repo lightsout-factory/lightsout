@@ -1,6 +1,7 @@
 import { describe, expect, test } from '@jest/globals';
 import { ConfigPricing } from '#src/contracts/ConfigPricing.ts';
 import { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
 import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // Published rates for one model, written the way a user copies them from a
@@ -15,7 +16,11 @@ const setupRates = ({ input = 15, output = 75 }: { input?: number; output?: numb
 
 // The smallest config that parses, so an absent `pricing` block is the only
 // thing the second half of the first case is measuring.
-const setupConfigWithoutPricing = () => ({ 'test-files': testFileGlobs, gates: { check: 'c', test: 't', 'test-coverage': false } });
+const setupConfigWithoutPricing = () => ({
+	'source-files': sourceFileGlobs,
+	'test-files': testFileGlobs,
+	gates: { check: 'c', test: 't', 'test-coverage': false },
+});
 
 describe('ConfigPricing', () => {
 	test('ConfigPricing: parses a model entry with all four per-million rates, and an absent block leaves the key undefined', () => {

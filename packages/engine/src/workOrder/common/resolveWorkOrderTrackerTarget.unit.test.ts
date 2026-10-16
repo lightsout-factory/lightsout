@@ -1,6 +1,7 @@
 import { describe, expect, test } from '@jest/globals';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { resolveWorkOrderTrackerTarget } from '#src/workOrder/common/resolveWorkOrderTrackerTarget.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
 import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 /**
@@ -13,6 +14,7 @@ import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
  */
 const setupConfiguredTracker = (): { config: LightsoutConfig; env: NodeJS.ProcessEnv } => ({
 	config: {
+		'source-files': sourceFileGlobs,
 		'test-files': testFileGlobs,
 		gates: { check: 'true', test: 'true', 'test-coverage': false },
 		'ticket-tracker': { provider: 'linear', team: 'LO', 'api-key-env': 'LINEAR_API_KEY' },

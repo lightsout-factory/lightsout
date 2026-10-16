@@ -8,6 +8,7 @@ import type { BranchState } from '#src/contracts/queue/BranchState.ts';
 import type { NamedWorkOrder } from '#src/queue/common/types/NamedWorkOrder.ts';
 import type { RunnableTicket } from '#src/queue/common/types/RunnableTicket.ts';
 import { reconcileMergedTickets } from '#src/queue/ticketSelection/reconcileMergedTickets.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
 import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // Mocked Imports
@@ -45,7 +46,11 @@ jest.mock('#src/common/git/readGitPrimaryCheckout.ts', () => ({
 }));
 // -------------------------
 
-const config: LightsoutConfig = { 'test-files': testFileGlobs, gates: { check: 'true', test: 'true', 'test-coverage': false } };
+const config: LightsoutConfig = {
+	'source-files': sourceFileGlobs,
+	'test-files': testFileGlobs,
+	gates: { check: 'true', test: 'true', 'test-coverage': false },
+};
 
 const ticketOf = ({ number }: { number: number }): RunnableTicket => ({
 	id: `id-${number}`,

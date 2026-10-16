@@ -7,6 +7,7 @@ import { workOrderRetitlePlanCommand } from '#src/cli/workOrder/workOrderCommand
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { WorkOrderState } from '#src/contracts/workOrder/WorkOrderState.ts';
 import { captureCommandOutput } from '#tests/helpers/captureCommandOutput.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
 import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // Mocked Imports
@@ -55,7 +56,7 @@ const setupRetitle = ({ args, result = { record: retitledRecord } }: { args: str
 
 	mockRetitleTicketPlan.mockResolvedValue(result);
 
-	writeFileSync(join(cwd, 'lightsout.config.json'), JSON.stringify({ 'test-files': testFileGlobs, gates }));
+	writeFileSync(join(cwd, 'lightsout.config.json'), JSON.stringify({ 'source-files': sourceFileGlobs, 'test-files': testFileGlobs, gates }));
 
 	return { context: { flags: parseFlags({ args }), rest: [], cwd }, cwd, ...captured };
 };

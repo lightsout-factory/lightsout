@@ -9,6 +9,7 @@ import { cleanOverviewBody } from '#tests/helpers/cleanOverviewBody.ts';
 import { cleanPlanBody } from '#tests/helpers/cleanPlanBody.ts';
 import { emptyDecisionsRecord } from '#tests/helpers/emptyDecisionsRecord.ts';
 import { setupConsumerRepo } from '#tests/helpers/setupConsumerRepo.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
 import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // The one required section `plan.contract` adds — `## Acceptance Tests`, asked
@@ -31,6 +32,7 @@ const writePlan = ({ cwd, name, body }: { cwd: string; name: string; body: strin
 /** The repository's config, writing contract plans or not. */
 const configWith = ({ contract }: { contract: boolean }) =>
 	LightsoutConfig.parse({
+		'source-files': sourceFileGlobs,
 		'test-files': testFileGlobs,
 		gates: { check: 'true', test: 'true', 'test-coverage': false },
 		...(contract ? { plan: { contract: true } } : {}),

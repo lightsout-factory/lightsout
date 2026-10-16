@@ -1,4 +1,5 @@
 import { basename } from 'node:path';
+import { readRepoFileGlobs } from '#src/common/config/readRepoFileGlobs.ts';
 import { defaultPackagesDir } from '#src/common/constants/defaultPackagesDir.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { PhaseWeight } from '#src/contracts/plan/grade/PhaseWeight.ts';
@@ -28,7 +29,7 @@ export const weighSelection = ({ selected, config }: Params): { weights: PhaseWe
 	const weights = selected.map((file) => {
 		const base = basename(file.path);
 
-		return computePlanWeight({ plan: parsePlan({ content: file.text, base }), phase: base, packagesDir, thresholds, testFileGlobs: config['test-files'] });
+		return computePlanWeight({ plan: parsePlan({ content: file.text, base }), phase: base, packagesDir, thresholds, fileGlobs: readRepoFileGlobs({ config }) });
 	});
 	const heavyPhases = new Set(weights.filter(({ weight }) => weight === PlanWeight.Heavy).map(({ phase }) => phase));
 

@@ -126,7 +126,7 @@ describe('runPlanDraft decision log', () => {
 		expect({
 			pointer: phase.includes('the log in overview.md'),
 			table: phase.includes('| 1 | Elicitation | which split? |'),
-			stamped: readFileSync(join(draft.planDir, 'overview.md'), 'utf8').includes('| 1 | `phase1-core.md` | the work | 1 | 1 |'),
+			stamped: readFileSync(join(draft.planDir, 'overview.md'), 'utf8').includes('| 1 | `phase1-core.md` | the work | 1 | 2 |'),
 			roles: draft.calls.map(({ role }) => role),
 		}).toStrictEqual({ pointer: true, table: false, stamped: true, roles: ['overview', 'phase'] });
 	});

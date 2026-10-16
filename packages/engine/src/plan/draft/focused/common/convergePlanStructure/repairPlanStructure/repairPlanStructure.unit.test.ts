@@ -11,6 +11,7 @@ import { cleanPlanBody } from '#tests/helpers/cleanPlanBody.ts';
 import { dirtyPlanBody } from '#tests/helpers/dirtyPlanBody.ts';
 import { expectStatus } from '#tests/helpers/expectStatus.ts';
 import { createRepairDriver, runRepairLoop, setupRepairDraft } from '#tests/helpers/repairDraftFixture.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
 import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // Mocked Imports
@@ -45,9 +46,17 @@ const setupAdvisoryDraft = ({ body = advisoryPlanBody() }: { body?: string } = {
 	return draft;
 };
 
+/** The repository's config: its code and its tests, declaring nothing else. */
+const repoConfig = LightsoutConfig.parse({
+	'source-files': sourceFileGlobs,
+	'test-files': testFileGlobs,
+	gates: { check: 'true', test: 'true', 'test-coverage': false },
+});
+
 /** A repository declaring one documentation surface — the config that makes `## Documentation` a required heading. */
 const declaringConfig = () =>
 	LightsoutConfig.parse({
+		'source-files': sourceFileGlobs,
 		'test-files': testFileGlobs,
 		gates: { check: 'true', test: 'true', 'test-coverage': false },
 		docs: [{ path: 'README.md', covers: 'The product tour.' }],
@@ -58,7 +67,7 @@ describe('repairPlanStructure', () => {
 		const draft = setupRepairDraft({ body: cleanPlanBody() });
 		let calls = 0;
 
-		const result = await runRepairLoop({ ...draft, driver: createRepairDriver({ onCall: () => (calls += 1) }) });
+		const result = await runRepairLoop({ ...draft, config: repoConfig, driver: createRepairDriver({ onCall: () => (calls += 1) }) });
 
 		expectStatus(result, 'complete');
 		expect('findings' in result && result.findings).toStrictEqual([]);
@@ -69,7 +78,7 @@ describe('repairPlanStructure', () => {
 		const draft = setupRepairDraft({ body: dirtyPlanBody({ markers: 'TBD' }) });
 		let calls = 0;
 
-		const result = await runRepairLoop({ ...draft, driver: createRepairDriver({ bodies: [cleanPlanBody()], onCall: () => (calls += 1) }) });
+		const result = await runRepairLoop({ ...draft, config: repoConfig, driver: createRepairDriver({ bodies: [cleanPlanBody()], onCall: () => (calls += 1) }) });
 
 		expectStatus(result, 'complete');
 		expect('findings' in result && result.findings).toStrictEqual([]);
@@ -100,7 +109,7 @@ describe('repairPlanStructure', () => {
 		const draft = setupAdvisoryDraft();
 		let calls = 0;
 
-		const result = await runRepairLoop({ ...draft, driver: createRepairDriver({ onCall: () => (calls += 1) }) });
+		const result = await runRepairLoop({ ...draft, config: repoConfig, driver: createRepairDriver({ onCall: () => (calls += 1) }) });
 
 		expectStatus(result, 'complete');
 		// an advisory is not a defect: spending one of the three attempts on it
@@ -116,7 +125,11 @@ describe('repairPlanStructure', () => {
 		const draft = setupAdvisoryDraft({ body: advisoryPlanBody().replace('A new module exporting', 'TBD — a new module exporting') });
 		const prompts: string[] = [];
 
-		const result = await runRepairLoop({ ...draft, driver: createRepairDriver({ bodies: [advisoryPlanBody()], onCall: (prompt) => prompts.push(prompt) }) });
+		const result = await runRepairLoop({
+			...draft,
+			config: repoConfig,
+			driver: createRepairDriver({ bodies: [advisoryPlanBody()], onCall: (prompt) => prompts.push(prompt) }),
+		});
 
 		expectStatus(result, 'complete');
 		expect(prompts[0]).toContain(`[${StructuralCheck.NoPlaceholders}]`);
@@ -135,7 +148,7 @@ describe('repairPlanStructure', () => {
 			onCall: () => (calls += 1),
 		});
 
-		const result = await runRepairLoop({ ...draft, driver });
+		const result = await runRepairLoop({ ...draft, config: repoConfig, driver });
 
 		expectStatus(result, 'complete');
 		expect(calls).toBe(3);
@@ -147,7 +160,11 @@ describe('repairPlanStructure', () => {
 		const draft = setupRepairDraft({ body: dirtyPlanBody({ markers: 'TBD' }) });
 		let calls = 0;
 
-		const result = await runRepairLoop({ ...draft, driver: createRepairDriver({ bodies: [dirtyPlanBody({ markers: 'TBD' })], onCall: () => (calls += 1) }) });
+		const result = await runRepairLoop({
+			...draft,
+			config: repoConfig,
+			driver: createRepairDriver({ bodies: [dirtyPlanBody({ markers: 'TBD' })], onCall: () => (calls += 1) }),
+		});
 
 		expectStatus(result, 'complete');
 		// the identical re-linted set breaks before a second repair
@@ -165,7 +182,7 @@ describe('repairPlanStructure', () => {
 			onCall: () => (calls += 1),
 		});
 
-		const result = await runRepairLoop({ ...draft, driver });
+		const result = await runRepairLoop({ ...draft, config: repoConfig, driver });
 
 		expectStatus(result, 'complete');
 		// line drift alone never buys another repair
@@ -183,7 +200,7 @@ describe('repairPlanStructure', () => {
 			},
 		});
 
-		const result = await runRepairLoop({ ...draft, driver });
+		const result = await runRepairLoop({ ...draft, config: repoConfig, driver });
 
 		expectStatus(result, 'complete');
 		// the surviving set comes from the post-repair lint, not the stale pre-repair list
@@ -203,7 +220,7 @@ describe('repairPlanStructure', () => {
 			},
 		});
 
-		const result = await runRepairLoop({ ...draft, driver });
+		const result = await runRepairLoop({ ...draft, config: repoConfig, driver });
 
 		expectStatus(result, 'complete');
 		expect('findings' in result && result.findings).toStrictEqual([]);
@@ -214,7 +231,11 @@ describe('repairPlanStructure', () => {
 	test('a rate-limited repair parks with the re-run command, leaving the draft on disk', async () => {
 		const draft = setupRepairDraft({ body: dirtyPlanBody({ markers: 'TBD' }) });
 
-		const result = await runRepairLoop({ ...draft, driver: createRepairDriver({ respond: () => ({ text: '', exitCode: 1, rateLimited: true }) }) });
+		const result = await runRepairLoop({
+			...draft,
+			config: repoConfig,
+			driver: createRepairDriver({ respond: () => ({ text: '', exitCode: 1, rateLimited: true }) }),
+		});
 
 		expectStatus(result, 'paused-rate-limit');
 		expect('error' in result && result.error).toContain('lightsout plan draft --name demo');
@@ -231,7 +252,7 @@ describe('repairPlanStructure', () => {
 			},
 		};
 
-		const result = await runRepairLoop({ ...draft, driver });
+		const result = await runRepairLoop({ ...draft, config: repoConfig, driver });
 
 		expectStatus(result, 'failed');
 		expect('error' in result && result.error).toMatch(/spawn failed/);
@@ -246,7 +267,7 @@ describe('repairPlanStructure', () => {
 			bodies: [dirtyPlanBody({ markers: 'TBD TODO' }), dirtyPlanBody({ markers: 'TBD' }), cleanPlanBody()],
 		});
 
-		const result = await runRepairLoop({ ...draft, driver, progress: (message) => messages.push(message) });
+		const result = await runRepairLoop({ ...draft, config: repoConfig, driver, progress: (message) => messages.push(message) });
 
 		expectStatus(result, 'complete');
 		// the human watching a draft converge sees the count fall round by round
@@ -263,6 +284,7 @@ describe('repairPlanStructure', () => {
 
 		const result = await runRepairLoop({
 			...draft,
+			config: repoConfig,
 			driver: createRepairDriver({ bodies: [dirtyPlanBody({ markers: 'TBD' })] }),
 			progress: (message) => messages.push(message),
 		});
@@ -286,7 +308,7 @@ describe('repairPlanStructure', () => {
 			}),
 		});
 
-		const result = await runRepairLoop({ ...draft, driver, progress: (message) => messages.push(message) });
+		const result = await runRepairLoop({ ...draft, config: repoConfig, driver, progress: (message) => messages.push(message) });
 
 		expectStatus(result, 'complete');
 		// each decline reaches the session, which is what has to fix it by hand

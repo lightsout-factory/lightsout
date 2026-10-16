@@ -6,6 +6,7 @@ import { resolveConsumerTypescript } from '#src/common/workspace/resolveConsumer
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { selectUnloadableFiles } from '#src/coverage/selectUnloadableFiles/selectUnloadableFiles.ts';
 import { linkTypescript } from '#tests/helpers/linkTypescript.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
 import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // The reader genuinely requires the consumer's Jest config, so every case
@@ -32,6 +33,7 @@ const setupRepo = ({ files }: { files: Record<string, string> }) => {
 const jestConfig = ({ settings }: { settings: Record<string, unknown> }) => `module.exports = ${JSON.stringify(settings)};\n`;
 
 const commandConfig = ({ command }: { command: string }): LightsoutConfig => ({
+	'source-files': sourceFileGlobs,
 	'test-files': testFileGlobs,
 	gates: { check: 'true', test: 'true', 'test-coverage': command },
 });
@@ -40,6 +42,7 @@ const commandConfig = ({ command }: { command: string }): LightsoutConfig => ({
 const rootConfig = commandConfig({ command: 'jest -c jest.config.cjs --coverage' });
 
 const monorepoConfig: LightsoutConfig = {
+	'source-files': sourceFileGlobs,
 	'test-files': testFileGlobs,
 	gates: { check: 'true', test: 'true', 'test-coverage': false },
 	'package-gates': { check: 'true {package}', test: 'true {package}', 'test-coverage': 'pnpm --filter {package} run test:coverage' },
