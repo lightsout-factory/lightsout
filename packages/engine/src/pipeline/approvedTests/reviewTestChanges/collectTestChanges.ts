@@ -1,5 +1,6 @@
 import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { dirname, join, relative } from 'node:path';
+import { readRepoFileGlobs } from '#src/common/config/readRepoFileGlobs.ts';
 import { gitTimeoutMs } from '#src/common/constants/gitTimeoutMs.ts';
 import { readGitChangedFiles } from '#src/common/git/readGitChangedFiles.ts';
 import { quoteShellArgument } from '#src/common/processes/quoteShellArgument.ts';
@@ -61,7 +62,9 @@ export const collectTestChanges = async ({ run }: Params): Promise<TestChange[]>
 	const excluded = excludedSourcePaths({ config: run.config });
 	const seen = [...((await readGitChangedFiles({ cwd: run.cwd })) ?? []), ...manifest.changedFiles, ...manifest.approvedTests.map((record) => record.path)];
 	const candidates = [...new Set(seen)]
-		.filter((path) => isTestFile({ path, testFileGlobs: run.config['test-files'] }) && !excluded.some((prefix) => path.startsWith(prefix)))
+		.filter(
+			(path) => isTestFile({ path, testFileGlobs: readRepoFileGlobs({ config: run.config }).tests }) && !excluded.some((prefix) => path.startsWith(prefix)),
+		)
 		.sort();
 
 	if (candidates.length === 0) {

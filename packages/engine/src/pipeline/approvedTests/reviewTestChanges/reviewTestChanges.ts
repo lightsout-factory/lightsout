@@ -1,3 +1,4 @@
+import { readRepoFileGlobs } from '#src/common/config/readRepoFileGlobs.ts';
 import { isTestFile } from '#src/common/sourceFiles/isTestFile.ts';
 import { getAgentOutcomeStatus } from '#src/invoke/getAgentOutcomeStatus.ts';
 import { approveTestFiles } from '#src/pipeline/approvedTests/approveTestFiles.ts';
@@ -45,7 +46,7 @@ export const reviewTestChanges = async ({ run, checkpoint, planContent, overview
 		overviewContent,
 		checkpoint,
 		acceptanceTests: manifest.acceptanceTests,
-		changedFiles: manifest.changedFiles.filter((file) => !isTestFile({ path: file, testFileGlobs: run.config['test-files'] })),
+		changedFiles: manifest.changedFiles.filter((file) => !isTestFile({ path: file, testFileGlobs: readRepoFileGlobs({ config: run.config }).tests })),
 		changes,
 		onEvent: run.agentEventSink({ step }),
 		onRejectedOutput: run.persistRejected({ step }),

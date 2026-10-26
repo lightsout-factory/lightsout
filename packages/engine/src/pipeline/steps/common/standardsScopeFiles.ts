@@ -1,3 +1,4 @@
+import { readRepoFileGlobs } from '#src/common/config/readRepoFileGlobs.ts';
 import { isSourceFile } from '#src/common/sourceFiles/isSourceFile.ts';
 import type { PipelineRun } from '#src/pipeline/common/PipelineRun.ts';
 
@@ -17,6 +18,7 @@ export const standardsScopeFiles = ({ run }: Params): string[] => {
 	return run
 		.current()
 		.changedFiles.filter(
-			(file) => isSourceFile({ path: file, sourceFileGlobs: run.config['source-files'] }) && !vendored.some((prefix) => file.startsWith(prefix)),
+			(file) =>
+				isSourceFile({ path: file, sourceFileGlobs: readRepoFileGlobs({ config: run.config }).source }) && !vendored.some((prefix) => file.startsWith(prefix)),
 		);
 };

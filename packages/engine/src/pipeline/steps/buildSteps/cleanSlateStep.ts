@@ -1,3 +1,4 @@
+import { readRepoFileGlobs } from '#src/common/config/readRepoFileGlobs.ts';
 import { readGitChangedFiles } from '#src/common/git/readGitChangedFiles.ts';
 import { messageOf } from '#src/common/messageOf.ts';
 import { isGeneratedPath } from '#src/common/sourceFiles/isGeneratedPath.ts';
@@ -106,7 +107,9 @@ export const cleanSlateStep = ({ run, ledgerGates }: Params): PipelineStep['run'
 		const generated = run.config.generated ?? [];
 		const approvedTests = await approveTestFiles({
 			run,
-			paths: baselineDirtyFiles.filter((path) => isTestFile({ path, testFileGlobs: run.config['test-files'] }) && !isGeneratedPath({ path, generated })),
+			paths: baselineDirtyFiles.filter(
+				(path) => isTestFile({ path, testFileGlobs: readRepoFileGlobs({ config: run.config }).tests }) && !isGeneratedPath({ path, generated }),
+			),
 		});
 
 		await captureStandardsBaseline({ run });

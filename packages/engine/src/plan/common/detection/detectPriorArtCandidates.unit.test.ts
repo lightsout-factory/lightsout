@@ -129,12 +129,11 @@ test('detectPriorArtCandidates: a collision against a file the source-files glob
 	expect(candidates.map((candidate) => candidate.collidesWith)).toStrictEqual([[{ name: 'fetchUser', path: 'src/fetchUser.ts' }]]);
 });
 
-test('detectPriorArtCandidates: with no config the census is empty, so nothing is prior art', async () => {
+test('detectPriorArtCandidates: with no config the default JS/TS globs name the code, so prior art is still found', async () => {
 	const { cwd, planPaths } = setup({ existing: ['src/fetchUser.ts'], creates: ['src/getUser.ts'] });
 	const candidates = await detectPriorArtCandidates({ cwd, planPaths });
 
-	// no `source-files` declares no code, and the engine does not guess any
-	expect(candidates).toStrictEqual([]);
+	expect(candidates.map((candidate) => candidate.collidesWith)).toStrictEqual([[{ name: 'fetchUser', path: 'src/fetchUser.ts' }]]);
 });
 
 test('detectPriorArtCandidates: a plan path that cannot be read is skipped, not fatal', async () => {

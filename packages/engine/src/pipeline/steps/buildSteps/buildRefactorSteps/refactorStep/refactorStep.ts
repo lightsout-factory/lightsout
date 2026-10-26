@@ -1,3 +1,4 @@
+import { readRepoFileGlobs } from '#src/common/config/readRepoFileGlobs.ts';
 import { isTestFile } from '#src/common/sourceFiles/isTestFile.ts';
 import { CleanupEndReason } from '#src/contracts/run/CleanupEndReason.ts';
 import type { RefactorStepReport } from '#src/contracts/run/RefactorStepReport.ts';
@@ -99,7 +100,7 @@ const finishCleanup = async ({ context, state }: { context: CleanupContext; stat
 		state.remaining = (await standardsWorkList({ run, baseline: context.baseline })).workList;
 	}
 
-	const reviewed = state.edited.filter((file) => !isTestFile({ path: file, testFileGlobs: run.config['test-files'] }));
+	const reviewed = state.edited.filter((file) => !isTestFile({ path: file, testFileGlobs: readRepoFileGlobs({ config: run.config }).tests }));
 
 	state.finalReview = reviewed.length === 0 ? context.initialReview : await reviewAdvisories({ run, groups, files: reviewed });
 

@@ -104,33 +104,26 @@ export const LightsoutConfig = z
 		/**
 		 * Globs, from the repo root, of every code file the engine reads — its
 		 * tests included; `test-files` says which of them are tests. A `!` glob
-		 * excludes. The engine holds no language, extension or folder of its own:
-		 * the walk lists what git lists (honouring `.gitignore`), and these globs
-		 * say which of those files are code.
+		 * excludes. The walk lists what git lists (honouring `.gitignore`), and
+		 * these globs say which of those files are code. Default: the JS/TS files
+		 * (`defaultSourceFileGlobs`).
 		 */
 		'source-files': z
-			.array(z.string().min(1, { error: 'a source-files glob cannot be empty' }), {
-				error: (issue) =>
-					issue.input === undefined
-						? 'source-files is required: list the globs of this repo\'s code files, tests included, e.g. ["src/**/*.{ts,tsx}", "!**/*.d.ts"]'
-						: undefined,
-			})
-			.min(1, { error: 'source-files must list at least one glob' }),
+			.array(z.string().min(1, { error: 'a source-files glob cannot be empty' }))
+			.min(1, { error: 'source-files must list at least one glob' })
+			.optional(),
 		/**
 		 * Globs, from the repo root, of every test-side file: the tests, and the
 		 * mocks, fixtures, helpers, snapshots and runner configuration that serve
-		 * them. The engine tells tests from source by this list alone — it holds
-		 * no convention of its own — so the test writer, the coverage gate, the
-		 * standards checks and the test-change reviewer all read it.
+		 * them. The engine tells tests from source by this list alone, so the test
+		 * writer, the coverage gate, the standards checks and the test-change
+		 * reviewer all read it. Default: the common JS/TS runner names
+		 * (`defaultTestFileGlobs`).
 		 */
 		'test-files': z
-			.array(z.string().min(1, { error: 'a test-files glob cannot be empty' }), {
-				error: (issue) =>
-					issue.input === undefined
-						? 'test-files is required: list the globs of this repo\'s test files, e.g. ["**/*.test.*", "**/__mocks__/**"] — copy them from your test runner\'s config'
-						: undefined,
-			})
-			.min(1, { error: 'test-files must list at least one glob' }),
+			.array(z.string().min(1, { error: 'a test-files glob cannot be empty' }))
+			.min(1, { error: 'test-files must list at least one glob' })
+			.optional(),
 		/**
 		 * Default `coverage/coverage-summary.json`: repo-relative in
 		 * single-package repos, package-relative in monorepo mode. The JSON file,

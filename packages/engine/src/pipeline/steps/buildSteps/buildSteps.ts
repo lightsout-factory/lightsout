@@ -1,3 +1,4 @@
+import { readRepoFileGlobs } from '#src/common/config/readRepoFileGlobs.ts';
 import { BuildMode } from '#src/common/constants/BuildMode.ts';
 import { buildSelfCheckCommand } from '#src/common/selfCheck/buildSelfCheckCommand.ts';
 import { isTestFile } from '#src/common/sourceFiles/isTestFile.ts';
@@ -72,9 +73,9 @@ export const buildSteps = ({ run, gitPrefix, planContent, overviewContent, stand
 		movePaths: plan.movePaths,
 		folderMoves: plan.folderMoves,
 		testFiles: plan.ledger.map((row) => row.testFile),
-		testFileGlobs: run.config['test-files'],
+		testFileGlobs: readRepoFileGlobs({ config: run.config }).tests,
 	});
-	const deletePaths = plan.deletePaths.filter((path) => isTestFile({ path, testFileGlobs: run.config['test-files'] }));
+	const deletePaths = plan.deletePaths.filter((path) => isTestFile({ path, testFileGlobs: readRepoFileGlobs({ config: run.config }).tests }));
 	const planBuildMode = planBuildModeOf(plan);
 	const mechanical = planBuildMode.buildMode !== BuildMode.Standard;
 	// Built once and given to the implement step's own spawn AND to every fix

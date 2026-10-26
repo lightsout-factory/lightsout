@@ -1,6 +1,7 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
+import { readRepoFileGlobs } from '#src/common/config/readRepoFileGlobs.ts';
 import type { RepoFileGlobs } from '#src/common/types/RepoFileGlobs.ts';
 import { DecisionSource } from '#src/contracts/plan/decisions/DecisionSource.ts';
 import type { DecisionsRecord } from '#src/contracts/plan/decisions/DecisionsRecord.ts';
@@ -188,7 +189,7 @@ describe('repairPlanStructure decision log', () => {
 			planPaths: [draft.planPath],
 			decisions: mergedRecordWithBrainstormRow(),
 			overviewPath: undefined,
-			fileGlobs: { source: [], tests: [] },
+			fileGlobs: readRepoFileGlobs({ config: undefined }),
 		});
 	});
 
@@ -221,7 +222,7 @@ describe('repairPlanStructure decision log', () => {
 			planPaths: [draft.planPath],
 			decisions: emptyDecisionsRecord(),
 			overviewPath,
-			fileGlobs: { source: [], tests: [] },
+			fileGlobs: readRepoFileGlobs({ config: undefined }),
 		});
 		// the pass stands in place of the bare Decision Log sync, which composes
 		// the log itself rather than beside it

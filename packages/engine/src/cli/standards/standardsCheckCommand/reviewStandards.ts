@@ -1,3 +1,4 @@
+import { readRepoFileGlobs } from '#src/common/config/readRepoFileGlobs.ts';
 import { defaultAgentTimeoutMinutes } from '#src/common/constants/defaultAgentTimeoutMinutes.ts';
 import { defaultPackagesDir } from '#src/common/constants/defaultPackagesDir.ts';
 import { excludedSourcePaths } from '#src/common/sourceFiles/excludedSourcePaths.ts';
@@ -20,7 +21,7 @@ interface Params {
 // review never loads a pack or a harness for it.
 export const reviewStandards = async ({ cwd, config, path, onProgress }: Params): Promise<{ findings: StandardsFinding[]; notes: string[] }> => {
 	const groups = await resolveStandardsGroups({ cwd, config });
-	const { files: walked } = await listSourceFiles({ cwd, sourceFileGlobs: config?.['source-files'] ?? [], exclude: excludedSourcePaths({ config }) });
+	const { files: walked } = await listSourceFiles({ cwd, sourceFileGlobs: readRepoFileGlobs({ config }).source, exclude: excludedSourcePaths({ config }) });
 	const files = walked.filter((file) => !path || file.startsWith(path));
 
 	return runStandardsReview({

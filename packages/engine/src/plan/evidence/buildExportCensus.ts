@@ -1,5 +1,6 @@
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
+import { readRepoFileGlobs } from '#src/common/config/readRepoFileGlobs.ts';
 import { defaultPackagesDir } from '#src/common/constants/defaultPackagesDir.ts';
 import { excludedSourcePaths } from '#src/common/sourceFiles/excludedSourcePaths.ts';
 import { isTestFile } from '#src/common/sourceFiles/isTestFile.ts';
@@ -36,8 +37,8 @@ export const buildExportCensus = async ({ cwd, config, exclude = [], excludeFold
 		return buckets;
 	}
 
-	const { files } = await listSourceFiles({ cwd, sourceFileGlobs: config?.['source-files'] ?? [], exclude: excludedSourcePaths({ config }) });
-	const testFileGlobs = config?.['test-files'] ?? [];
+	const { files } = await listSourceFiles({ cwd, sourceFileGlobs: readRepoFileGlobs({ config }).source, exclude: excludedSourcePaths({ config }) });
+	const testFileGlobs = readRepoFileGlobs({ config }).tests;
 
 	for (const file of files) {
 		if (isTestFile({ path: file, testFileGlobs }) || isExcluded(file)) {

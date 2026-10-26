@@ -2,6 +2,7 @@ import { readFile } from 'node:fs/promises';
 import { join, relative } from 'node:path';
 import type ts from 'typescript';
 import { z } from 'zod';
+import { readRepoFileGlobs } from '#src/common/config/readRepoFileGlobs.ts';
 import { isInertSourceFile } from '#src/common/sourceFiles/isInertSourceFile.ts';
 import { isSourceFile } from '#src/common/sourceFiles/isSourceFile.ts';
 import { isTestFile } from '#src/common/sourceFiles/isTestFile.ts';
@@ -54,8 +55,8 @@ export const checkChangedFilesExecuted = async ({ cwd, config, changedFiles, com
 
 	for (const file of changedFiles.filter(
 		(changed) =>
-			isSourceFile({ path: changed, sourceFileGlobs: config['source-files'] }) &&
-			!isTestFile({ path: changed, testFileGlobs: config['test-files'] }) &&
+			isSourceFile({ path: changed, sourceFileGlobs: readRepoFileGlobs({ config }).source }) &&
+			!isTestFile({ path: changed, testFileGlobs: readRepoFileGlobs({ config }).tests }) &&
 			!isToolingConfigFile({ path: changed, packagesDir }),
 	)) {
 		const content = await readFile(join(cwd, file), 'utf8').catch(() => undefined);

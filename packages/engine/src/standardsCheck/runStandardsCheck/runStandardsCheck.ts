@@ -1,3 +1,4 @@
+import { readRepoFileGlobs } from '#src/common/config/readRepoFileGlobs.ts';
 import { excludedSourcePaths } from '#src/common/sourceFiles/excludedSourcePaths.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFinding.ts';
@@ -45,8 +46,8 @@ export const runStandardsCheck = async ({
 		packagesDir: config?.['packages-dir'],
 		path,
 		exclude: excludedSourcePaths({ config }),
-		sourceFileGlobs: config?.['source-files'] ?? [],
-		testFileGlobs: config?.['test-files'] ?? [],
+		sourceFileGlobs: readRepoFileGlobs({ config }).source,
+		testFileGlobs: readRepoFileGlobs({ config }).tests,
 		onProgress,
 	});
 	const findings = checked.findings;

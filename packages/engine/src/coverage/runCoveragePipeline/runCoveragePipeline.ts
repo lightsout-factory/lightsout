@@ -1,3 +1,4 @@
+import { readRepoFileGlobs } from '#src/common/config/readRepoFileGlobs.ts';
 import { defaultPackagesDir } from '#src/common/constants/defaultPackagesDir.ts';
 import { runPreflightGate } from '#src/common/gates/runPreflightGate.ts';
 import type { Driver } from '#src/common/types/Driver.ts';
@@ -74,7 +75,7 @@ const executeCoverage = async ({
 	return runCoverageRounds({
 		run,
 		driver,
-		batchInputs: { testStandards, compiler, testFileGlobs: config['test-files'], sourceFileGlobs: config['source-files'] },
+		batchInputs: { testStandards, compiler, testFileGlobs: readRepoFileGlobs({ config }).tests, sourceFileGlobs: readRepoFileGlobs({ config }).source },
 		maxBatches,
 		resumed: seeded,
 	});

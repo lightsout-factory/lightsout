@@ -1,3 +1,4 @@
+import { readRepoFileGlobs } from '#src/common/config/readRepoFileGlobs.ts';
 import { defaultAgentTimeoutMinutes } from '#src/common/constants/defaultAgentTimeoutMinutes.ts';
 import { defaultCoverageSummaryPath } from '#src/common/constants/defaultCoverageSummaryPath.ts';
 import { defaultExecutorFileLimit } from '#src/common/constants/defaultExecutorFileLimit.ts';
@@ -32,8 +33,8 @@ const configFieldReaders: Record<string, (params: { config: LightsoutConfig }) =
 	'standards-libraries': ({ config }) => config['standards-libraries'],
 	'standards-rule-settings': ({ config }) => config['standards-rule-settings'],
 	'agent-commands': ({ config }) => config['agent-commands'],
-	'source-files': ({ config }) => config['source-files'],
-	'test-files': ({ config }) => config['test-files'],
+	'source-files': ({ config }) => readRepoFileGlobs({ config }).source,
+	'test-files': ({ config }) => readRepoFileGlobs({ config }).tests,
 	generated: ({ config }) => config.generated,
 	vendored: ({ config }) => config.vendored,
 	'timeouts.agent-minutes': ({ config }) => config.timeouts?.['agent-minutes'] ?? defaultAgentTimeoutMinutes,

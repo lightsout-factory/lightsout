@@ -1,5 +1,6 @@
 import { dirname } from 'node:path';
 import { collectBatchChanges } from '#src/common/collectBatchChanges.ts';
+import { readRepoFileGlobs } from '#src/common/config/readRepoFileGlobs.ts';
 import { defaultCoverageSummaryPath } from '#src/common/constants/defaultCoverageSummaryPath.ts';
 import { defaultPackagesDir } from '#src/common/constants/defaultPackagesDir.ts';
 import { isTestFile } from '#src/common/sourceFiles/isTestFile.ts';
@@ -44,7 +45,7 @@ export const checkTestsOnly = async ({
 	const changedFiles = (await collectBatchChanges({ cwd, config, reportedFiles, attributedFiles })).filter(
 		(path) => !isMeasurementOutput({ path, coverageDir, packagesDir }),
 	);
-	const offenders = changedFiles.filter((path) => !isTestFile({ path, testFileGlobs: config['test-files'] }));
+	const offenders = changedFiles.filter((path) => !isTestFile({ path, testFileGlobs: readRepoFileGlobs({ config }).tests }));
 
 	return {
 		changedFiles,

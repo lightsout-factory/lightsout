@@ -1,5 +1,6 @@
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
+import { readRepoFileGlobs } from '#src/common/config/readRepoFileGlobs.ts';
 import { holdsTestTitle } from '#src/common/sourceFiles/holdsTestTitle/holdsTestTitle.ts';
 import { isTestFile } from '#src/common/sourceFiles/isTestFile.ts';
 import type { AcceptanceTestRecord } from '#src/contracts/run/AcceptanceTestRecord.ts';
@@ -84,7 +85,10 @@ export const applyTestDispositions = async ({
 	for (const row of acceptanceTests) {
 		const verdict = verdicts.find((entry) => entry.path === row.testFile && entry.decision === TestReviewDecision.Approve);
 		const disposition = verdict?.acceptanceTests.find((entry) => entry.testName === row.testName);
-		const refusal = disposition === undefined ? undefined : refuseDisposition({ path: row.testFile, disposition, testFileGlobs: run.config['test-files'] });
+		const refusal =
+			disposition === undefined
+				? undefined
+				: refuseDisposition({ path: row.testFile, disposition, testFileGlobs: readRepoFileGlobs({ config: run.config }).tests });
 
 		rejections.push(...(refusal === undefined ? [] : [refusal]));
 		next.push(disposition === undefined || refusal !== undefined ? row : applyTo({ row, disposition }));
