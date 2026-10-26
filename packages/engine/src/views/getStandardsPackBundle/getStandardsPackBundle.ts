@@ -93,14 +93,14 @@ interface Params {
 /**
  * The built-in library read off disk and folded whole — every rule with its
  * fixtures, and every pack file with what it resolves to — so nothing
- * downstream ever holds a `LoadedStandardsLibrary`. An authored copy beside
+ * downstream ever holds a `LoadedStandardsLibrary`. An authored copy in
  * `cwd` wins over the shipped one, which carries no fixtures.
  *
  * @param cwd - the repo the build runs in, where an authored copy of the built-in library is looked for
  * @throws {Error} When the library fails to load, or one of its pack files fails to resolve.
  */
 export const getStandardsPackBundle = async ({ cwd }: Params): Promise<StandardsPackBundle> => {
-	const library = await readStandardsLibrary({ packPath: resolveAuthoredStandardsLibrary({ cwd }) ?? resolveDefaultStandardsLibrary() });
+	const library = await readStandardsLibrary({ packPath: (await resolveAuthoredStandardsLibrary({ cwd })) ?? resolveDefaultStandardsLibrary() });
 	const rules: StandardsPackRuleView[] = [];
 
 	for (const rule of library.rules) {

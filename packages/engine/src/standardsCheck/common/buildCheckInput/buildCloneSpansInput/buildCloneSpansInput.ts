@@ -7,7 +7,7 @@ import { readIntoCache } from '#src/standardsCheck/common/readIntoCache.ts';
 interface Params {
 	cwd: string;
 	source: string[];
-	/** The duplicate-code-block rule's own resolved options — the engine honors them because it runs the detector. */
+	/** The asking check's own resolved options — the engine honors them because it runs the detector. */
 	options: Record<string, number>;
 	cache: Map<string, string>;
 }

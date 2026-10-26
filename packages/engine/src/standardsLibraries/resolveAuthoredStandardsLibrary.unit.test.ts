@@ -1,106 +1,102 @@
+import { execSync } from 'node:child_process';
 import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
 import { resolveAuthoredStandardsLibrary } from '#src/standardsLibraries/resolveAuthoredStandardsLibrary.ts';
 
-/** Marks a folder as a pack root — only the file's presence decides, never its contents. */
-const writeManifestIn = ({ folder }: { folder: string }) => {
+const writeManifestIn = ({ folder, name }: { folder: string; name: string }) => {
 	mkdirSync(folder, { recursive: true });
-	writeFileSync(join(folder, 'lightsout-standards.json'), '{ "name": "authored", "formatVersion": 2 }\n');
+	writeFileSync(join(folder, 'lightsout-standards.json'), `{ "name": "${name}", "formatVersion": 2 }\n`);
 };
 
 /**
- * A temp repo with any of the three folders this resolver looks in.
+ * A temp install whose shipped library is named `shipped`, laid out as the
+ * plugin is (`<install>/dist/cli.mjs` beside `<install>/standards/`), and a temp
+ * repo beside it, a git worktree unless `git` is false.
  *
  * The whole suite runs with LIGHTSOUT_DEFAULT_STANDARDS pointing at this repo's
- * own authored pack (see tooling/jest/setupTestEnvironment.ts). Left standing it
- * would answer every case below before the temp tree was ever looked at, so the
- * factory replaces the environment outright — restoreMocks puts the real one
- * back after each test.
+ * own library (see tooling/jest/setupTestEnvironment.ts). Left standing it
+ * would answer every case below, so the environment and the running program's
+ * path are replaced outright; restoreMocks puts the real ones back.
  */
-const setupRepo = ({ monorepoPack = false, repoIsPack = false, named }: { monorepoPack?: boolean; repoIsPack?: boolean; named?: 'pack' | 'notAPack' } = {}) => {
-	const cwd = mkdtempSync(join(tmpdir(), 'lightsout-authored-pack-'));
-	const monorepoPath = join(cwd, 'packages', 'lightsout-standards');
-	const namedPath = join(cwd, 'named-folder');
+const setupRepo = ({ git = true, override }: { git?: boolean; override?: 'library' | 'notALibrary' } = {}) => {
+	const root = mkdtempSync(join(tmpdir(), 'lightsout-authored-library-'));
+	const cwd = join(root, 'repo');
+	const overridePath = join(root, 'named-folder');
 	const environment = { ...process.env };
 
-	if (monorepoPack) {
-		writeManifestIn({ folder: monorepoPath });
-	}
+	writeManifestIn({ folder: join(root, 'install', 'standards'), name: 'shipped' });
+	mkdirSync(cwd, { recursive: true });
 
-	if (repoIsPack) {
-		writeManifestIn({ folder: cwd });
+	if (git) {
+		execSync('git init -q', { cwd });
 	}
 
 	delete environment.LIGHTSOUT_DEFAULT_STANDARDS;
 
-	if (named !== undefined) {
-		mkdirSync(namedPath, { recursive: true });
+	if (override !== undefined) {
+		mkdirSync(overridePath, { recursive: true });
 
-		if (named === 'pack') {
-			writeManifestIn({ folder: namedPath });
+		if (override === 'library') {
+			writeManifestIn({ folder: overridePath, name: 'anything' });
 		}
 
-		environment.LIGHTSOUT_DEFAULT_STANDARDS = namedPath;
+		environment.LIGHTSOUT_DEFAULT_STANDARDS = overridePath;
 	}
 
 	jest.replaceProperty(process, 'env', environment);
+	jest.replaceProperty(process, 'argv', [process.argv[0] ?? 'node', join(root, 'install', 'dist', 'cli.mjs')]);
 
-	return { cwd, monorepoPath, namedPath };
+	return { cwd, overridePath };
 };
 
 describe('resolveAuthoredStandardsLibrary', () => {
-	test("finds this monorepo's authored pack under packages/lightsout-standards", () => {
-		const { cwd, monorepoPath } = setupRepo({ monorepoPack: true });
-
-		const packPath = resolveAuthoredStandardsLibrary({ cwd });
-
-		expect(packPath).toBe(monorepoPath);
-	});
-
-	test('finds the repo itself when the repo IS a pack', () => {
-		const { cwd } = setupRepo({ repoIsPack: true });
-
-		const packPath = resolveAuthoredStandardsLibrary({ cwd });
-
-		expect(packPath).toBe(cwd);
-	});
-
-	test('prefers the pack under packages/ to a manifest at the repo root', () => {
-		const { cwd, monorepoPath } = setupRepo({ monorepoPack: true, repoIsPack: true });
-
-		const packPath = resolveAuthoredStandardsLibrary({ cwd });
-
-		// both exist, so this pins the order rather than mere resolution
-		expect(packPath).toBe(monorepoPath);
-	});
-
-	test('takes the pack the environment names ahead of anything beside the repo', () => {
-		const { cwd, namedPath } = setupRepo({ monorepoPack: true, repoIsPack: true, named: 'pack' });
-
-		const packPath = resolveAuthoredStandardsLibrary({ cwd });
-
-		expect(packPath).toBe(namedPath);
-	});
-
-	test('walks on to the folders beside the repo when the named folder holds no manifest', () => {
-		const { cwd, monorepoPath } = setupRepo({ monorepoPack: true, named: 'notAPack' });
-
-		const packPath = resolveAuthoredStandardsLibrary({ cwd });
-
-		// unlike resolveDefaultStandardsLibrary, which refuses: here a miss is a
-		// fallback to the shipped copy, not a run checking the wrong rules
-		expect(packPath).toBe(monorepoPath);
-	});
-
-	test('answers with nothing when no authored pack sits beside the repo', () => {
+	test('finds the folder in the repo whose manifest carries the shipped library name, wherever it sits', async () => {
 		const { cwd } = setupRepo();
 
-		const packPath = resolveAuthoredStandardsLibrary({ cwd });
+		writeManifestIn({ folder: join(cwd, 'libs', 'house-copy'), name: 'shipped' });
 
-		// the normal case on any repo that is neither this monorepo nor a pack —
-		// the caller falls back to the copy the engine ships
-		expect(packPath).toBeUndefined();
+		expect(await resolveAuthoredStandardsLibrary({ cwd })).toBe(join(cwd, 'libs', 'house-copy'));
+	});
+
+	test("never takes a repo's own library under another name for the built-in one", async () => {
+		const { cwd } = setupRepo();
+
+		writeManifestIn({ folder: join(cwd, 'standards'), name: 'house' });
+
+		expect(await resolveAuthoredStandardsLibrary({ cwd })).toBeUndefined();
+	});
+
+	test('outside git, finds the repo itself when the repo is the library', async () => {
+		const { cwd } = setupRepo({ git: false });
+
+		writeManifestIn({ folder: cwd, name: 'shipped' });
+
+		expect(await resolveAuthoredStandardsLibrary({ cwd })).toBe(cwd);
+	});
+
+	test('takes the library the environment names ahead of anything in the repo', async () => {
+		const { cwd, overridePath } = setupRepo({ override: 'library' });
+
+		writeManifestIn({ folder: join(cwd, 'libs', 'house-copy'), name: 'shipped' });
+
+		expect(await resolveAuthoredStandardsLibrary({ cwd })).toBe(overridePath);
+	});
+
+	test('answers with nothing when the named folder holds no manifest, leaving resolveDefaultStandardsLibrary to refuse it', async () => {
+		const { cwd } = setupRepo({ override: 'notALibrary' });
+
+		writeManifestIn({ folder: join(cwd, 'libs', 'house-copy'), name: 'shipped' });
+
+		// with the override broken there is no shipped name to match, and the
+		// caller's fallback reports the broken override by name
+		expect(await resolveAuthoredStandardsLibrary({ cwd })).toBeUndefined();
+	});
+
+	test('answers with nothing when the repo holds no copy of the shipped library', async () => {
+		const { cwd } = setupRepo();
+
+		expect(await resolveAuthoredStandardsLibrary({ cwd })).toBeUndefined();
 	});
 });
