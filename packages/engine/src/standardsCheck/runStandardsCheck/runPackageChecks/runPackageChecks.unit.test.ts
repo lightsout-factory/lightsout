@@ -27,7 +27,7 @@ const setupFullNameRun = () => {
 	const sizeRun: StandardsCheckFunction = () => [{ siteKey: 'size:src/alpha.ts', files: [{ path: 'src/alpha.ts' }], detail: 'too big' }];
 	const rules = [rule({ id: 'size', name: 'acme/size', library: 'acme', inputKinds: [StandardsInputKind.FileText], run: sizeRun })];
 	const states = new Map<string, ResolvedRuleState>([
-		['acme/size', { severity: StandardsSeverity.Advisory, options: {}, fromConfig: false, reachesAgents: true }],
+		['acme/size', { severity: StandardsSeverity.Advisory, options: {}, fromConfig: false, reachesAgents: true, packExclude: [], repoExclude: [] }],
 	]);
 
 	return { cwd, groups: [groupOf({ rules, states })] };

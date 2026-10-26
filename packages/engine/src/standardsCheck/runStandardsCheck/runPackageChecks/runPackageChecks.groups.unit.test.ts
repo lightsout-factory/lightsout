@@ -81,7 +81,7 @@ const groupOf = ({ packages, rule, state }: { packages: string[]; rule: LoadedSt
 	pack: {
 		name: `acme/${packages.join('-') || 'root'}`,
 		topics: [],
-		rules: state === undefined ? [] : [{ rule, severity: state.severity, options: state.options }],
+		rules: state === undefined ? [] : [{ rule, severity: state.severity, options: state.options, exclude: [] }],
 		conditionalPacks: [],
 		inactiveRules: [],
 	},
@@ -93,6 +93,8 @@ const stateOf = ({ severity, options = {} }: { severity: StandardsSeverity; opti
 	options,
 	fromConfig: false,
 	reachesAgents: severity !== StandardsSeverity.Off,
+	packExclude: [],
+	repoExclude: [],
 });
 
 /** The findings reduced to what a test compares, in site-key order — the order the check reported them in is not the contract. */

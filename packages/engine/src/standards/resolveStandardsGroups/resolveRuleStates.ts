@@ -9,6 +9,7 @@ import { resolveRuleName } from '#src/standardsLibraries/resolveRuleName.ts';
 interface RuleSetting {
 	severity?: StandardsSeverity;
 	options?: Record<string, number>;
+	exclude?: string[];
 }
 
 /** Each entry keyed by the full name it resolves to, so a short name and a full name reach one rule alike. */
@@ -43,8 +44,11 @@ const resolveEntries = ({ packs, ruleSettings }: { packs: ResolvedStandardsPack[
 const stateOf = ({ packRule, setting }: { packRule: ResolvedPackRule; setting: RuleSetting | undefined }) => ({
 	severity: setting?.severity ?? packRule.severity,
 	options: { ...packRule.options, ...setting?.options },
-	fromConfig: setting !== undefined,
+	fromConfig: setting?.severity !== undefined || setting?.options !== undefined,
 	reachesAgents: packRule.severity !== StandardsSeverity.Off || (setting?.severity !== undefined && setting.severity !== StandardsSeverity.Off),
+	packExclude: packRule.exclude,
+	// The repo entry's own array, shared by every pack's state, so `matchesGlobs` compiles it once.
+	repoExclude: setting?.exclude ?? [],
 });
 
 interface Params {
@@ -56,9 +60,10 @@ interface Params {
 /**
  * The repo's layer over packs that already applied every rule.md default and
  * every pack setting, so a state starts from the pack's grade. Severity
- * replaces; options merge key by key. An entry applies to every pack holding
- * its rule and leaves the others alone, and does nothing when only a
- * conditional pack that did not apply holds it.
+ * replaces; options merge key by key. The repo's excludes are kept apart from
+ * the pack's, because they are matched against a different root. An entry
+ * applies to every pack holding its rule and leaves the others alone, and does
+ * nothing when only a conditional pack that did not apply holds it.
  *
  * @returns One map per pack, in `packs` order, keyed by full rule name.
  * @throws {Error} When an entry names no rule in any of the packs, a short name is ambiguous, or two entries name one rule.

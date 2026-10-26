@@ -47,12 +47,22 @@ const judgmentGroups: StandardsGroup[] = [
 		pack: {
 			name: 'acme/house',
 			topics: [],
-			rules: [{ rule: singleReturn, severity: singleReturn.defaultSeverity, options: singleReturn.defaultOptions }],
+			rules: [{ rule: singleReturn, severity: singleReturn.defaultSeverity, options: singleReturn.defaultOptions, exclude: [] }],
 			conditionalPacks: [],
 			inactiveRules: [],
 		},
 		states: new Map<string, ResolvedRuleState>([
-			[singleReturn.name, { severity: singleReturn.defaultSeverity, options: singleReturn.defaultOptions, fromConfig: false, reachesAgents: true }],
+			[
+				singleReturn.name,
+				{
+					severity: singleReturn.defaultSeverity,
+					options: singleReturn.defaultOptions,
+					fromConfig: false,
+					reachesAgents: true,
+					packExclude: [],
+					repoExclude: [],
+				},
+			],
 		]),
 	},
 ];

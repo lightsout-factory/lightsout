@@ -69,6 +69,8 @@ If your workspace packages do not live in `packages/`, set `packages-dir`:
 
 **`standards-rule-settings` stays one layer over every package's pack.** An entry applies to each package whose pack holds the rule and leaves the others alone.
 
+**A pack's `exclude` globs read from each package's own root.** A pack's `rule-settings` exclude is matched against a file's path inside its workspace package, so one pack serves every package that uses it; a file outside every package is matched from the repo root. A `standards-rule-settings` exclude is always matched from the repo root.
+
 **An agent working across packages reads each topic once.** When the packs differ, the standards an agent receives are grouped under `Applies to:` headings, one for each set of packages, widest first. A rule that holds in fewer packages than its topic carries an `Applies only to:` line. When every topic and rule applies everywhere, there are no headings at all.
 
 **Deterministic checks and the agent review follow the package a file lives in.** A finding is graded with the pack of the package that holds its first file, so one rule can block in one package and only advise in another. Checks that compare packages, such as duplicate-code detection, still read the whole repository.

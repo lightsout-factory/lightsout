@@ -52,12 +52,15 @@ const groups: StandardsGroup[] = [
 		pack: {
 			name: 'acme/house',
 			topics: [],
-			rules: judgmentRules.map((rule) => ({ rule, severity: rule.defaultSeverity, options: rule.defaultOptions })),
+			rules: judgmentRules.map((rule) => ({ rule, severity: rule.defaultSeverity, options: rule.defaultOptions, exclude: [] })),
 			conditionalPacks: [],
 			inactiveRules: [],
 		},
 		states: new Map<string, ResolvedRuleState>(
-			judgmentRules.map((rule) => [rule.name, { severity: rule.defaultSeverity, options: rule.defaultOptions, fromConfig: false, reachesAgents: true }]),
+			judgmentRules.map((rule) => [
+				rule.name,
+				{ severity: rule.defaultSeverity, options: rule.defaultOptions, fromConfig: false, reachesAgents: true, packExclude: [], repoExclude: [] },
+			]),
 		),
 	},
 ];

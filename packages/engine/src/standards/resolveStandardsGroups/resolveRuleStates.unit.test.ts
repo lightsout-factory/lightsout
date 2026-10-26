@@ -72,6 +72,7 @@ const setupPacks = ({ packs }: { packs: PackSpec[] }): { packs: ResolvedStandard
 				rule: findRule({ rules, name: `${spec.library ?? 'acme'}/${spec.id}` }),
 				severity: spec.severity,
 				options: spec.options ?? {},
+				exclude: [],
 			})),
 			conditionalPacks: [],
 			inactiveRules: (pack.inactive ?? []).map((id) => findRule({ rules, name: `acme/${id}` })),
@@ -122,9 +123,9 @@ describe('resolveRuleStates', () => {
 
 		expect(states).toStrictEqual([
 			new Map([
-				['acme/size', { severity: 'advisory', options: { a: 1, b: 2 }, fromConfig: false, reachesAgents: true }],
-				['acme/boundary', { severity: 'blocking', options: {}, fromConfig: false, reachesAgents: true }],
-				['acme/opt-in', { severity: 'off', options: { c: 3 }, fromConfig: false, reachesAgents: false }],
+				['acme/size', { severity: 'advisory', options: { a: 1, b: 2 }, fromConfig: false, reachesAgents: true, packExclude: [], repoExclude: [] }],
+				['acme/boundary', { severity: 'blocking', options: {}, fromConfig: false, reachesAgents: true, packExclude: [], repoExclude: [] }],
+				['acme/opt-in', { severity: 'off', options: { c: 3 }, fromConfig: false, reachesAgents: false, packExclude: [], repoExclude: [] }],
 			]),
 		]);
 	});
@@ -136,7 +137,9 @@ describe('resolveRuleStates', () => {
 
 		const states = resolveRuleStates({ packs, ruleSettings: { size: 'advisory' } });
 
-		expect(states).toStrictEqual([new Map([['acme/size', { severity: 'advisory', options: { a: 1, b: 2 }, fromConfig: true, reachesAgents: true }]])]);
+		expect(states).toStrictEqual([
+			new Map([['acme/size', { severity: 'advisory', options: { a: 1, b: 2 }, fromConfig: true, reachesAgents: true, packExclude: [], repoExclude: [] }]]),
+		]);
 	});
 
 	test("resolveRuleStates: repo options merge key by key over the pack's options", () => {
@@ -146,7 +149,9 @@ describe('resolveRuleStates', () => {
 
 		const states = resolveRuleStates({ packs, ruleSettings: { size: { options: { b: 5 } } } });
 
-		expect(states).toStrictEqual([new Map([['acme/size', { severity: 'blocking', options: { a: 1, b: 5 }, fromConfig: true, reachesAgents: true }]])]);
+		expect(states).toStrictEqual([
+			new Map([['acme/size', { severity: 'blocking', options: { a: 1, b: 5 }, fromConfig: true, reachesAgents: true, packExclude: [], repoExclude: [] }]]),
+		]);
 	});
 
 	test('resolveRuleStates: a repo off stops the rule running but keeps its prose for agents', () => {
@@ -156,7 +161,9 @@ describe('resolveRuleStates', () => {
 
 		const states = resolveRuleStates({ packs, ruleSettings: { boundary: 'off' } });
 
-		expect(states).toStrictEqual([new Map([['acme/boundary', { severity: 'off', options: {}, fromConfig: true, reachesAgents: true }]])]);
+		expect(states).toStrictEqual([
+			new Map([['acme/boundary', { severity: 'off', options: {}, fromConfig: true, reachesAgents: true, packExclude: [], repoExclude: [] }]]),
+		]);
 	});
 
 	test('resolveRuleStates: only blocking or advisory turns on a rule the pack ships off', () => {
@@ -180,9 +187,9 @@ describe('resolveRuleStates', () => {
 
 		expect(states).toStrictEqual([
 			new Map([
-				['acme/turned-advisory', { severity: 'advisory', options: {}, fromConfig: true, reachesAgents: true }],
-				['acme/turned-blocking', { severity: 'blocking', options: {}, fromConfig: true, reachesAgents: true }],
-				['acme/kept-off', { severity: 'off', options: {}, fromConfig: true, reachesAgents: false }],
+				['acme/turned-advisory', { severity: 'advisory', options: {}, fromConfig: true, reachesAgents: true, packExclude: [], repoExclude: [] }],
+				['acme/turned-blocking', { severity: 'blocking', options: {}, fromConfig: true, reachesAgents: true, packExclude: [], repoExclude: [] }],
+				['acme/kept-off', { severity: 'off', options: {}, fromConfig: true, reachesAgents: false, packExclude: [], repoExclude: [] }],
 			]),
 		]);
 	});
@@ -199,8 +206,8 @@ describe('resolveRuleStates', () => {
 		const states = entries.map((ruleSettings) => resolveRuleStates({ packs, ruleSettings }));
 
 		const expected = [
-			new Map([['acme/size', { severity: 'advisory', options: { a: 1 }, fromConfig: true, reachesAgents: true }]]),
-			new Map([['beta/boundary', { severity: 'blocking', options: {}, fromConfig: false, reachesAgents: true }]]),
+			new Map([['acme/size', { severity: 'advisory', options: { a: 1 }, fromConfig: true, reachesAgents: true, packExclude: [], repoExclude: [] }]]),
+			new Map([['beta/boundary', { severity: 'blocking', options: {}, fromConfig: false, reachesAgents: true, packExclude: [], repoExclude: [] }]]),
 		];
 		expect(states).toStrictEqual([expected, expected]);
 	});
@@ -236,7 +243,9 @@ describe('resolveRuleStates', () => {
 		const states = resolveRuleStates({ packs, ruleSettings: { 'hooks-first': 'advisory' } });
 
 		// hooks-first gets no state, and size keeps the pack's grade with nothing from config
-		expect(states).toStrictEqual([new Map([['acme/size', { severity: 'blocking', options: { a: 1 }, fromConfig: false, reachesAgents: true }]])]);
+		expect(states).toStrictEqual([
+			new Map([['acme/size', { severity: 'blocking', options: { a: 1 }, fromConfig: false, reachesAgents: true, packExclude: [], repoExclude: [] }]]),
+		]);
 	});
 
 	test('resolveRuleStates: an entry applies only to the packs that hold the rule', () => {
@@ -257,10 +266,10 @@ describe('resolveRuleStates', () => {
 
 		expect(states).toStrictEqual([
 			new Map([
-				['acme/size', { severity: 'advisory', options: { a: 1 }, fromConfig: true, reachesAgents: true }],
-				['acme/boundary', { severity: 'blocking', options: {}, fromConfig: false, reachesAgents: true }],
+				['acme/size', { severity: 'advisory', options: { a: 1 }, fromConfig: true, reachesAgents: true, packExclude: [], repoExclude: [] }],
+				['acme/boundary', { severity: 'blocking', options: {}, fromConfig: false, reachesAgents: true, packExclude: [], repoExclude: [] }],
 			]),
-			new Map([['acme/boundary', { severity: 'advisory', options: {}, fromConfig: false, reachesAgents: true }]]),
+			new Map([['acme/boundary', { severity: 'advisory', options: {}, fromConfig: false, reachesAgents: true, packExclude: [], repoExclude: [] }]]),
 		]);
 	});
 });

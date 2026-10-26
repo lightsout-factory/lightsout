@@ -38,12 +38,15 @@ const setupGroup = () => {
 		defaultOptions: { maxLines: 10 },
 	});
 	const packRules: ResolvedPackRule[] = [
-		{ rule: aardvark, severity: StandardsSeverity.Advisory, options: {} },
-		{ rule: zebra, severity: StandardsSeverity.Advisory, options: { maxLines: 40 } },
+		{ rule: aardvark, severity: StandardsSeverity.Advisory, options: {}, exclude: [] },
+		{ rule: zebra, severity: StandardsSeverity.Advisory, options: { maxLines: 40 }, exclude: [] },
 	];
 	const states = new Map<string, ResolvedRuleState>([
-		['team/aardvark-rule', { severity: StandardsSeverity.Advisory, options: {}, fromConfig: false, reachesAgents: true }],
-		['acme/zebra-rule', { severity: StandardsSeverity.Blocking, options: { maxLines: 60 }, fromConfig: true, reachesAgents: true }],
+		['team/aardvark-rule', { severity: StandardsSeverity.Advisory, options: {}, fromConfig: false, reachesAgents: true, packExclude: [], repoExclude: [] }],
+		[
+			'acme/zebra-rule',
+			{ severity: StandardsSeverity.Blocking, options: { maxLines: 60 }, fromConfig: true, reachesAgents: true, packExclude: [], repoExclude: [] },
+		],
 	]);
 	const groups: StandardsGroup[] = [
 		{ packages: [''], pack: { name: 'acme/house', topics: [], rules: packRules, conditionalPacks: [], inactiveRules: [] }, states },
@@ -62,17 +65,30 @@ const setupSplitGroups = () => {
 	const alpha = loadedRule({ id: 'alpha-rule', library: 'acme' });
 	const beta = loadedRule({ id: 'beta-rule', library: 'acme', deterministic: true });
 	const packRules: ResolvedPackRule[] = [
-		{ rule: alpha, severity: StandardsSeverity.Advisory, options: {} },
-		{ rule: beta, severity: StandardsSeverity.Advisory, options: { maxLines: 40 } },
+		{ rule: alpha, severity: StandardsSeverity.Advisory, options: {}, exclude: [] },
+		{ rule: beta, severity: StandardsSeverity.Advisory, options: { maxLines: 40 }, exclude: [] },
 	];
-	const alphaState: ResolvedRuleState = { severity: StandardsSeverity.Advisory, options: {}, fromConfig: false, reachesAgents: true };
+	const alphaState: ResolvedRuleState = {
+		severity: StandardsSeverity.Advisory,
+		options: {},
+		fromConfig: false,
+		reachesAgents: true,
+		packExclude: [],
+		repoExclude: [],
+	};
 	const rootStates = new Map<string, ResolvedRuleState>([
 		['acme/alpha-rule', alphaState],
-		['acme/beta-rule', { severity: StandardsSeverity.Blocking, options: { maxLines: 40 }, fromConfig: false, reachesAgents: true }],
+		[
+			'acme/beta-rule',
+			{ severity: StandardsSeverity.Blocking, options: { maxLines: 40 }, fromConfig: false, reachesAgents: true, packExclude: [], repoExclude: [] },
+		],
 	]);
 	const webAppStates = new Map<string, ResolvedRuleState>([
 		['acme/alpha-rule', alphaState],
-		['acme/beta-rule', { severity: StandardsSeverity.Advisory, options: { maxLines: 40 }, fromConfig: false, reachesAgents: true }],
+		[
+			'acme/beta-rule',
+			{ severity: StandardsSeverity.Advisory, options: { maxLines: 40 }, fromConfig: false, reachesAgents: true, packExclude: [], repoExclude: [] },
+		],
 	]);
 	const groups: StandardsGroup[] = [
 		{ packages: ['', 'engine'], pack: { name: 'acme/base', topics: [], rules: packRules, conditionalPacks: [], inactiveRules: [] }, states: rootStates },

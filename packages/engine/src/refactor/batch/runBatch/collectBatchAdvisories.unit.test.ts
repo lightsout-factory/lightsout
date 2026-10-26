@@ -49,12 +49,15 @@ const groupOf = ({ rules }: { rules: LoadedStandardsRule[] }): StandardsGroup =>
 	pack: {
 		name: 'acme/house',
 		topics: [],
-		rules: rules.map((rule) => ({ rule, severity: rule.defaultSeverity, options: rule.defaultOptions })),
+		rules: rules.map((rule) => ({ rule, severity: rule.defaultSeverity, options: rule.defaultOptions, exclude: [] })),
 		conditionalPacks: [],
 		inactiveRules: [],
 	},
 	states: new Map<string, ResolvedRuleState>(
-		rules.map((rule) => [rule.name, { severity: rule.defaultSeverity, options: rule.defaultOptions, fromConfig: false, reachesAgents: true }]),
+		rules.map((rule) => [
+			rule.name,
+			{ severity: rule.defaultSeverity, options: rule.defaultOptions, fromConfig: false, reachesAgents: true, packExclude: [], repoExclude: [] },
+		]),
 	),
 });
 

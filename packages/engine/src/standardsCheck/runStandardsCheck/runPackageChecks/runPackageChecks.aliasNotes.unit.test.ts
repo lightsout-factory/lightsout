@@ -66,14 +66,17 @@ const rule = ({ id, inputKinds }: { id: string; inputKinds: StandardsInputKind[]
 /** Runs the given rules as one group's pack, at the severities a repo's config would have resolved for them. */
 const runChecks = ({ rules, cwd }: { rules: LoadedStandardsRule[]; cwd: string }) => {
 	const states = new Map<string, ResolvedRuleState>(
-		rules.map((entry) => [entry.name, { severity: entry.defaultSeverity, options: entry.defaultOptions, fromConfig: false, reachesAgents: true }]),
+		rules.map((entry) => [
+			entry.name,
+			{ severity: entry.defaultSeverity, options: entry.defaultOptions, fromConfig: false, reachesAgents: true, packExclude: [], repoExclude: [] },
+		]),
 	);
 	const group: StandardsGroup = {
 		packages: [''],
 		pack: {
 			name: 'acme/house',
 			topics: [],
-			rules: rules.map((entry) => ({ rule: entry, severity: entry.defaultSeverity, options: entry.defaultOptions })),
+			rules: rules.map((entry) => ({ rule: entry, severity: entry.defaultSeverity, options: entry.defaultOptions, exclude: [] })),
 			conditionalPacks: [],
 			inactiveRules: [],
 		},

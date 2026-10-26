@@ -36,11 +36,11 @@ interface StateSpec {
 
 /** The rules a resolved pack holds, each at the severity the spec gives it. */
 const packRules = ({ specs }: { specs: PackRuleSpec[] }): ResolvedPackRule[] =>
-	specs.map(({ id, severity, requires = [] }) => ({ rule: rule({ id, requires }), severity, options: {} }));
+	specs.map(({ id, severity, requires = [] }) => ({ rule: rule({ id, requires }), severity, options: {}, exclude: [] }));
 
 /** The repo's final rule states, keyed by the full name `house/<id>`. */
 const ruleStates = ({ states }: { states: Record<string, StateSpec> }): Map<string, ResolvedRuleState> =>
-	new Map(Object.entries(states).map(([id, state]) => [`house/${id}`, { ...state, options: {} }]));
+	new Map(Object.entries(states).map(([id, state]) => [`house/${id}`, { ...state, options: {}, packExclude: [], repoExclude: [] }]));
 
 describe('findMissingRequirements', () => {
 	test('reports a required rule the pack does not hold', () => {

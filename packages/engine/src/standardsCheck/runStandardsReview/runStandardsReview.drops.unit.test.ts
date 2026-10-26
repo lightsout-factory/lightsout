@@ -28,18 +28,28 @@ const rule = (overrides: Partial<LoadedStandardsRule> & { id: string }): LoadedS
 	...overrides,
 });
 
-/** One group whose pack holds `rules`, each at its rule.md default. */
-const groupOf = ({ rules }: { rules: LoadedStandardsRule[] }): StandardsGroup => ({
+/** One group whose pack holds `rules`, each at its rule.md default; `repoExclude` gives a rule's state its repo exclude globs. */
+const groupOf = ({ rules, repoExclude = {} }: { rules: LoadedStandardsRule[]; repoExclude?: Record<string, string[]> }): StandardsGroup => ({
 	packages: [''],
 	pack: {
 		name: 'acme/house',
 		topics: [],
-		rules: rules.map((entry) => ({ rule: entry, severity: entry.defaultSeverity, options: entry.defaultOptions })),
+		rules: rules.map((entry) => ({ rule: entry, severity: entry.defaultSeverity, options: entry.defaultOptions, exclude: [] })),
 		conditionalPacks: [],
 		inactiveRules: [],
 	},
 	states: new Map<string, ResolvedRuleState>(
-		rules.map((entry) => [entry.name, { severity: entry.defaultSeverity, options: entry.defaultOptions, fromConfig: false, reachesAgents: true }]),
+		rules.map((entry) => [
+			entry.name,
+			{
+				severity: entry.defaultSeverity,
+				options: entry.defaultOptions,
+				fromConfig: false,
+				reachesAgents: true,
+				packExclude: [],
+				repoExclude: repoExclude[entry.name] ?? [],
+			},
+		]),
 	),
 });
 
@@ -150,5 +160,28 @@ describe('runStandardsReview dropped findings', () => {
 			'agent review: 1 finding(s) dropped — no agent-checked rule is named invented-rule',
 			'agent review: 1 finding(s) dropped — reported with no file to point at',
 		]);
+	});
+
+	test('an agent finding whose every file the rule excludes is dropped, and the drop is stated', async () => {
+		const { driver } = setupDriver({
+			result: {
+				text: reviewText([
+					{ rule: 'common-placement', files: [{ path: 'src/generated/a.ts' }], detail: 'generated' },
+					{ rule: 'common-placement', files: [{ path: 'src/b.ts' }], detail: 'real' },
+				]),
+				exitCode: 0,
+			},
+		});
+
+		const { findings, notes } = await runStandardsReview({
+			cwd: '/repo',
+			driver,
+			groups: [groupOf({ rules: [rule({ id: 'common-placement' })], repoExclude: { 'acme/common-placement': ['src/generated/**'] } })],
+			packagesDir: 'packages',
+			files: ['src/generated/a.ts', 'src/b.ts'],
+		});
+
+		expect(findings.map((finding) => finding.siteKey)).toStrictEqual(['acme/common-placement:src/b.ts']);
+		expect(notes).toStrictEqual(["agent review: 1 finding(s) of acme/common-placement dropped — every file they name matches the rule's exclude list"]);
 	});
 });

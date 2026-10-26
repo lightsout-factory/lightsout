@@ -63,7 +63,7 @@ const groupOf = ({ rules, states }: { rules: LoadedStandardsRule[]; states: Map<
 	pack: {
 		name: 'acme/house',
 		topics: [],
-		rules: rules.map((entry) => ({ rule: entry, severity: entry.defaultSeverity, options: entry.defaultOptions })),
+		rules: rules.map((entry) => ({ rule: entry, severity: entry.defaultSeverity, options: entry.defaultOptions, exclude: [] })),
 		conditionalPacks: [],
 		inactiveRules: [],
 	},
@@ -90,7 +90,10 @@ const runChecks = ({
 		rules.map((entry) => {
 			const severity = severities[entry.id] ?? entry.defaultSeverity;
 
-			return [entry.name, { severity, options: entry.defaultOptions, fromConfig: false, reachesAgents: severity !== StandardsSeverity.Off }];
+			return [
+				entry.name,
+				{ severity, options: entry.defaultOptions, fromConfig: false, reachesAgents: severity !== StandardsSeverity.Off, packExclude: [], repoExclude: [] },
+			];
 		}),
 	);
 

@@ -30,12 +30,15 @@ const groupOf = ({ rules }: { rules: LoadedStandardsRule[] }): StandardsGroup =>
 	pack: {
 		name: 'acme/house',
 		topics: [],
-		rules: rules.map((entry) => ({ rule: entry, severity: entry.defaultSeverity, options: entry.defaultOptions })),
+		rules: rules.map((entry) => ({ rule: entry, severity: entry.defaultSeverity, options: entry.defaultOptions, exclude: [] })),
 		conditionalPacks: [],
 		inactiveRules: [],
 	},
 	states: new Map<string, ResolvedRuleState>(
-		rules.map((entry) => [entry.name, { severity: entry.defaultSeverity, options: entry.defaultOptions, fromConfig: false, reachesAgents: true }]),
+		rules.map((entry) => [
+			entry.name,
+			{ severity: entry.defaultSeverity, options: entry.defaultOptions, fromConfig: false, reachesAgents: true, packExclude: [], repoExclude: [] },
+		]),
 	),
 });
 
@@ -80,15 +83,15 @@ const setupExcludedJudgmentRules = () => {
 				},
 			],
 			rules: [
-				{ rule: repoOff, severity: StandardsSeverity.Advisory, options: {} },
-				{ rule: packOff, severity: StandardsSeverity.Off, options: {} },
+				{ rule: repoOff, severity: StandardsSeverity.Advisory, options: {}, exclude: [] },
+				{ rule: packOff, severity: StandardsSeverity.Off, options: {}, exclude: [] },
 			],
 			conditionalPacks: [],
 			inactiveRules: [],
 		},
 		states: new Map<string, ResolvedRuleState>([
-			['acme/repo-off-judgment', { severity: StandardsSeverity.Off, options: {}, fromConfig: true, reachesAgents: true }],
-			['acme/pack-off-judgment', { severity: StandardsSeverity.Off, options: {}, fromConfig: false, reachesAgents: false }],
+			['acme/repo-off-judgment', { severity: StandardsSeverity.Off, options: {}, fromConfig: true, reachesAgents: true, packExclude: [], repoExclude: [] }],
+			['acme/pack-off-judgment', { severity: StandardsSeverity.Off, options: {}, fromConfig: false, reachesAgents: false, packExclude: [], repoExclude: [] }],
 		]),
 	};
 	const { driver, prompts } = setupDriver({

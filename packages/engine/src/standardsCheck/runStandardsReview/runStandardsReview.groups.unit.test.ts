@@ -35,7 +35,7 @@ const groupOf = ({ packages, rules, off = [] }: { packages: string[]; rules: Loa
 	pack: {
 		name: 'acme/house',
 		topics: [],
-		rules: rules.map((entry) => ({ rule: entry, severity: entry.defaultSeverity, options: entry.defaultOptions })),
+		rules: rules.map((entry) => ({ rule: entry, severity: entry.defaultSeverity, options: entry.defaultOptions, exclude: [] })),
 		conditionalPacks: [],
 		inactiveRules: [],
 	},
@@ -43,8 +43,8 @@ const groupOf = ({ packages, rules, off = [] }: { packages: string[]; rules: Loa
 		rules.map((entry) => [
 			entry.name,
 			off.includes(entry)
-				? { severity: StandardsSeverity.Off, options: entry.defaultOptions, fromConfig: true, reachesAgents: true }
-				: { severity: entry.defaultSeverity, options: entry.defaultOptions, fromConfig: false, reachesAgents: true },
+				? { severity: StandardsSeverity.Off, options: entry.defaultOptions, fromConfig: true, reachesAgents: true, packExclude: [], repoExclude: [] }
+				: { severity: entry.defaultSeverity, options: entry.defaultOptions, fromConfig: false, reachesAgents: true, packExclude: [], repoExclude: [] },
 		]),
 	),
 });

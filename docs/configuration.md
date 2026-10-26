@@ -270,7 +270,12 @@ folder is ignored.
 
 A pack file holds a `description`, an `include` block listing the `packs`,
 `topics` and `rules` it brings in, and optional `rule-settings` for the rules it
-holds. A pack may also be conditional, by declaring `applies-when`:
+holds. A `rule-settings` entry may carry `exclude`, a list of globs matched
+against each file's path relative to its own workspace package root, or the
+repo root for a file outside every package. Excludes from every included pack
+are combined, while severity and options keep last-listed-wins. A pack may
+exclude only for rules it includes. A pack may also be conditional, by declaring
+`applies-when`:
 
 ```json
 {
@@ -377,7 +382,7 @@ is overwritten the next time `pnpm build:config-reference` runs.
 | `standards-pack` | no | The standards for the repo root and every package `package-standards-packs` does not name: one pack address, written `<library>/<pack>`, or a list of them applied in order, the last listed winning where two grade one rule differently. Standards are opt-in: unset and `false` both mean no standards for the root and every package the map does not name. A pack that declares `applies-when` reaches only the packages whose own `package.json` declares one of the dependencies it names. |
 | `package-standards-packs` | no | Standards of its own for each package that differs from `standards-pack`. Each key is a package folder name under `packages-dir`, as `--packages` uses it, and each value is a pack address, `<library>/<pack>`, or a list of them. A package the map does not name uses `standards-pack`, and has no standards when that is unset. `false` is accepted only by `standards-pack`, never here. A key naming no workspace package is an error. |
 | `standards-libraries` | no | Standards libraries the repo registers beside the built-in one, each a folder of topics, rules and pack files. Each key is a library name and each value is either a folder — a value starting with `./` or `../`, or an absolute path, read against the repo root — or an npm package name, looked up in the repo’s `node_modules`. A library’s manifest `name` must equal its key, and `lightsout` is built in and reserved. Versions are fixed the way the rest of the repo’s are: by git for a folder, by the lockfile for a package, and by the plugin version for the built-in library. |
-| `standards-rule-settings` | no | Per-rule severity and options settings, applied over the selected pack as the last layer and keyed by full rule name (`<library>/<rule>`), or by short rule id where only one rule in the pack has it. `off` stops a rule running but keeps its prose for agents; `blocking` or `advisory` turns on a rule the pack ships off. An entry naming no rule in the pack is an error. A rule not named here keeps its pack’s setting — silence is never a change. |
+| `standards-rule-settings` | no | Per-rule severity, options and exclude settings, applied over the selected pack as the last layer and keyed by full rule name (`<library>/<rule>`), or by short rule id where only one rule in the pack has it. `off` stops a rule running but keeps its prose for agents; `blocking` or `advisory` turns on a rule the pack ships off. An entry naming no rule in the pack is an error. A rule not named here keeps its pack’s setting — silence is never a change. `exclude` is a list of file globs, relative to the repo root here (a pack’s own `rule-settings` globs are relative to each package root): a finding is dropped after the check runs when every file it names matches, excludes from packs and this map are combined, and an exclude-only entry changes no severity. |
 | `ship` | no | Opt-in `lightsout ship` settings: the branch ticket pattern whose `ticket` capture group becomes the result’s ticket reference, the pull request body template, the merge method, whether a passed implement run chains into ship, an optional pre-ship command that prepares the release candidate before it is verified, and the explicit exception for a repository that intentionally has no CI. |
 | `ticket-tracker` | no | Opt-in tracker identity: which provider the engine talks to and that provider’s address and credential environment variables — a Linear team and API key, or a Jira Cloud site, project, API token and account email. Every command that reads or writes a ticket resolves it from here, so tracker identity is spelled once rather than once per command. |
 | `worktree` | no | Opt-in shared workspace preparation. `worktree.setup` is the one command run inside a fresh worktree before any agent, such as `pnpm install` — the queue runs it in each ticket worktree it cuts, and an isolated implementation run runs it in the worktree it cuts for itself. An absent block means nothing runs. The block is strict, so a misspelled key fails parsing rather than silently leaving the command unset. |
@@ -456,9 +461,13 @@ Every rule the standards check enforces ships with a default severity and, where
     // Or an object, to change the severity, the rule's options, or both.
     "file-size": { "options": { "file": 300, "tsxFile": 400 } },
     "folder-size": { "severity": "blocking", "options": { "cap": 15 } },
+    // Or an exclude list: every standards check exports `check` by design.
+    "duplicate-export-name": { "exclude": ["packages/lightsout-standards/**/check.ts"] },
   },
 }
 ```
+
+An `exclude` list holds globs from the repo root. The rule's check still runs on every file, and a finding is dropped afterwards only when every file it names matches one of the globs; each rule's dropped findings are counted in one note, so a drop never reads as a clean check. A glob starting with `!`, an absolute path and a `..` segment are refused. Dot-folders behave as in `source-files`: a glob reaches one only when it names it. An exclude-only entry leaves the rule's severity at the pack's, and `standards-check --list` does not mark it `(config)`.
 
 The three severities are:
 
@@ -480,7 +489,7 @@ Run `lightsout standards-check --list` to print every rule with the standards do
 
 The pack lightsout ships blocks only what is wrong on its own terms — code that lies about its types (`no-any`, `type-assertion`, `explicit-return-type`), code nothing uses (`dead-export`, `duplicate-function-body`), a tree that breaks across filesystems (`case-collision`), and tests that are silently weaker than they read (`no-test-state-in-hooks`, `test-mock-prefix`, `test-mock-untyped`). Every rule about where files go, what they are called, and how many exports they hold ships `advisory`: it is still reported and still handed to the refactor agent, but a repository adopting lightsout is not blocked on day one by a layout it has not yet agreed to.
 
-A repository that wants the strict profile promotes those rules itself — an explicit, committed list of what it holds itself to. This is the block lightsout's own repository runs:
+A repository that wants the strict profile promotes those rules itself — an explicit, committed list of what it holds itself to. These are the promotions lightsout's own repository runs:
 
 ```jsonc
 {
