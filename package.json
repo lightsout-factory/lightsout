@@ -14,7 +14,7 @@
 		"lint": "biome check --error-on-warnings .",
 		"format": "biome check --write .",
 		"typecheck": "nx run-many -t typecheck && tsc --noEmit",
-		"check": "pnpm lint && pnpm typecheck && node scripts/buildWorkflowSpecs.mjs --check && node scripts/buildConfigKeyReference.mjs --check && node scripts/buildPluginPrompts.mjs --check",
+		"check": "pnpm lint && pnpm typecheck && node scripts/buildWorkflowSpecs.mjs --check && node scripts/buildConfigKeyReference.mjs --check && node scripts/buildPluginPrompts.mjs --check && node scripts/checkEngineNamesNoStandards.mjs",
 		"test": "pnpm test:unit && pnpm test:e2e",
 		"test:unit": "nx run-many -t test:unit",
 		"test:unit:coverage": "nx run-many -t test:unit:coverage",
