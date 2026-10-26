@@ -5,18 +5,19 @@ import { StandardsInputKind } from '@lightsout/standards-contracts';
 import { check } from './check.ts';
 
 /** A repo as the engine hands it to a file-text rule: every path in scope, with its text. */
-const setupFileTextInput = ({ contents, standardsLibraries = [] }: { contents: Array<[string, string]>; standardsLibraries?: string[] }): FileTextInput => {
+const setupFileTextInput = ({ contents, tests = [] }: { contents: Array<[string, string]>; tests?: string[] }): FileTextInput => {
 	const files = contents.map(([path]) => path);
 
 	return {
 		kind: StandardsInputKind.FileText,
 		cwd: '/repo',
 		source: files,
-		tests: files.filter((path) => path.includes('.test.')),
+		tests,
 		files,
 		referenceFiles: [],
+		referenceTests: tests,
 		contents: new Map(contents),
-		standardsLibraries,
+		standardsLibraries: [],
 	};
 };
 
@@ -70,23 +71,23 @@ describe('dead-export check', () => {
 		expect(findings.map((finding) => finding.detail)).toStrictEqual(["'alphaToken', 'betaToken' are referenced nowhere else"]);
 	});
 
-	test('inside a declared library, a rule under tests/ declares an export the check judges', async () => {
+	test('a file the engine classed as a test declares nothing judged, wherever it sits', async () => {
 		const input = setupFileTextInput({
 			contents: [['standards/rules/tests/code-style/10-rule/check.ts', 'export const checkRule = (): number => 1;']],
-			standardsLibraries: ['standards'],
+			tests: ['standards/rules/tests/code-style/10-rule/check.ts'],
 		});
 
 		const findings = await check.run({ inputs: { 'file-text': input }, options: {} });
 
-		expect(findings.map((finding) => finding.siteKey)).toStrictEqual(['dead-export:standards/rules/tests/code-style/10-rule/check.ts']);
+		expect(findings).toStrictEqual([]);
 	});
 
-	test('the same path with no library declared above it is test code, whose own helpers are nobody’s public API', async () => {
+	test('the same file not classed as a test declares an export the check judges', async () => {
 		const input = setupFileTextInput({ contents: [['standards/rules/tests/code-style/10-rule/check.ts', 'export const checkRule = (): number => 1;']] });
 
 		const findings = await check.run({ inputs: { 'file-text': input }, options: {} });
 
-		expect(findings).toStrictEqual([]);
+		expect(findings.map((finding) => finding.siteKey)).toStrictEqual(['dead-export:standards/rules/tests/code-style/10-rule/check.ts']);
 	});
 
 	test('reports nothing when its input is missing rather than refusing', async () => {

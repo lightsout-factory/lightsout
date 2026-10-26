@@ -14,9 +14,6 @@ interface JoinedBatch {
 	remaining: number;
 }
 
-/** `lightsout/test-file-size` is deliberately outside the set: it never forms a batch. */
-const overCapRules = new Set(['lightsout/file-size', 'lightsout/function-size', 'lightsout/folder-size']);
-
 const sumOver = ({ entries, read }: { entries: JoinedBatch[]; read: (entry: JoinedBatch) => number }) =>
 	entries.reduce((total, entry) => total + read(entry), 0);
 
@@ -46,7 +43,6 @@ const toBurnDownBatch = ({ batch, step }: { batch: RefactorBatch; step?: StepRec
 const buildRefactorBurnDown = ({ manifest, batches }: { manifest: RunManifest; batches: RefactorBatch[] }) => {
 	const steps: Map<string, StepRecord> = new Map(manifest.steps.map((step) => [step.id, step]));
 	const joined = batches.map((batch) => toBurnDownBatch({ batch, step: steps.get(batch.id) }));
-	const overCap = joined.filter((entry) => overCapRules.has(entry.row.rule));
 	const burnDown: RunBurnDown = {
 		before: sumOver({ entries: joined, read: (entry) => entry.row.blocking }),
 		after: sumOver({ entries: joined, read: (entry) => entry.remaining }),
@@ -55,13 +51,6 @@ const buildRefactorBurnDown = ({ manifest, batches }: { manifest: RunManifest; b
 		batchesResolved: joined.filter((entry) => entry.row.outcome === RunBurnDownBatchOutcome.Resolved).length,
 		batchesDeclined: joined.filter((entry) => entry.row.outcome === RunBurnDownBatchOutcome.Declined).length,
 		batches: joined.map((entry) => entry.row),
-		overCap:
-			overCap.length === 0
-				? undefined
-				: {
-						before: sumOver({ entries: overCap, read: (entry) => entry.row.blocking }),
-						after: sumOver({ entries: overCap, read: (entry) => entry.remaining }),
-					},
 	};
 
 	return burnDown;

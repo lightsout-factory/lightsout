@@ -10,6 +10,8 @@ import type { TrackerTicket } from '#src/common/types/TrackerTicket.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { createWorkOrder } from '#src/workOrder/createWorkOrder/createWorkOrder.ts';
 import { recordingDriver } from '#tests/helpers/recordingDriver.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // Mocked Imports
 // -------------------------
@@ -26,9 +28,14 @@ jest.mock('#src/ticketTracker/getTicketsByIdentifiers.ts', () => ({
 
 const gates: LightsoutConfig['gates'] = { check: 'true', test: 'true', 'test-coverage': false };
 /** A config with no `ticket-tracker` block at all — the tracker-free repository the design calls the normal case. */
-const trackerFreeConfig: LightsoutConfig = { gates };
+const trackerFreeConfig: LightsoutConfig = { 'source-files': sourceFileGlobs, 'test-files': testFileGlobs, gates };
 /** The same config with a Linear tracker named, paired with the environment variable that block points at. */
-const trackerConfig: LightsoutConfig = { gates, 'ticket-tracker': { provider: 'linear', team: 'LO', 'api-key-env': 'LINEAR_API_KEY' } };
+const trackerConfig: LightsoutConfig = {
+	'source-files': sourceFileGlobs,
+	'test-files': testFileGlobs,
+	gates,
+	'ticket-tracker': { provider: 'linear', team: 'LO', 'api-key-env': 'LINEAR_API_KEY' },
+};
 const env = { LINEAR_API_KEY: 'lin_key' };
 
 /** One tracker issue as the tracker itself spells it — the reference in upper case and a sentence-length title. */

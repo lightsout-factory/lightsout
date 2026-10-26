@@ -16,6 +16,8 @@ interface Params {
 	tests: string[];
 	files: string[];
 	referenceFiles: string[];
+	/** The test files among `referenceFiles`. */
+	referenceTests: string[];
 	/** Repo-relative standards pack roots, from the walk that listed the files. */
 	standardsLibraries: string[];
 	/** Monorepo package parent dir (config `packages-dir`, default 'packages') — every kind that carries `dependencies` reads it. */
@@ -41,6 +43,7 @@ export const buildCheckInput = async ({
 	tests,
 	files,
 	referenceFiles,
+	referenceTests,
 	standardsLibraries,
 	packagesDir,
 	options,
@@ -49,16 +52,16 @@ export const buildCheckInput = async ({
 }: Params): Promise<StandardsCheckInput> => {
 	switch (kind) {
 		case StandardsInputKind.FileList:
-			return buildFileListInput({ cwd, source, tests, files, referenceFiles, standardsLibraries, packagesDir });
+			return buildFileListInput({ cwd, source, tests, files, referenceFiles, referenceTests, standardsLibraries, packagesDir });
 
 		case StandardsInputKind.FileText:
-			return buildFileTextInput({ cwd, source, tests, files, referenceFiles, standardsLibraries, cache });
+			return buildFileTextInput({ cwd, source, tests, files, referenceFiles, referenceTests, standardsLibraries, cache });
 
 		case StandardsInputKind.TestFile:
 			return buildTestFileInput({ cwd, tests, cache });
 
 		case StandardsInputKind.CloneSpans:
-			return buildCloneSpansInput({ cwd, source, options, cache, compiler });
+			return buildCloneSpansInput({ cwd, source, options, cache });
 
 		case StandardsInputKind.SyntaxTree:
 		case StandardsInputKind.TypeChecker:
@@ -68,14 +71,14 @@ export const buildCheckInput = async ({
 			}
 
 			if (kind === StandardsInputKind.ImportGraph) {
-				return buildImportGraphInput({ cwd, source, tests, files, referenceFiles, standardsLibraries, compiler, packagesDir });
+				return buildImportGraphInput({ cwd, source, tests, files, referenceFiles, referenceTests, standardsLibraries, compiler, packagesDir });
 			}
 
 			if (kind === StandardsInputKind.TypeChecker) {
-				return buildTypeCheckerInput({ cwd, source, tests, files, referenceFiles, standardsLibraries, compiler, packagesDir });
+				return buildTypeCheckerInput({ cwd, source, tests, files, referenceFiles, referenceTests, standardsLibraries, compiler, packagesDir });
 			}
 
-			return buildSyntaxTreeInput({ cwd, source, tests, files, referenceFiles, standardsLibraries, compiler, cache, packagesDir });
+			return buildSyntaxTreeInput({ cwd, source, tests, files, referenceFiles, referenceTests, standardsLibraries, compiler, cache, packagesDir });
 		}
 	}
 };

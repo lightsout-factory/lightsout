@@ -77,10 +77,8 @@ export const manifestOf = ({ name, runId, status, plan }: { name: string; runId:
 	commits: [],
 	packages: [],
 	baselineDirtyFiles: [],
-	testSubjects: [],
 	acceptanceTests: [],
 	approvedTests: [],
-	unreachableChangedFiles: [],
 	coverageExcludedChangedFiles: [],
 });
 

@@ -20,7 +20,7 @@ interface Params {
  * - `deleted`: git reports a removal as changed, and routing it to a writer
  *   wastes a spawn that escalates the run; whether a file exists is a fact the
  *   engine owns.
- * - `inert`: barrels and type-only files hold no executable code, so a writer
+ * - `inert`: re-export-only and type-only files hold no executable code, so a writer
  *   is a guaranteed no-op. Without the consumer's TypeScript, nothing is inert.
  * - `uncoverable`: real code no unit test can run — a tool's own settings file,
  *   a file with a module-scope `await` under a CommonJS Jest, or a file the

@@ -7,9 +7,16 @@ import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeveri
 import { resolveStandardsGroups } from '#src/standards/resolveStandardsGroups/resolveStandardsGroups.ts';
 import { listStandardsRules } from '#src/standardsCheck/listStandardsRules.ts';
 import { getRejectionError } from '#tests/helpers/getRejectionError.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 /** Standards are opt-in, so the config a case starts from names the shipped standards pack; a case on another pack, or none, overrides it. */
-const baseConfig = { gates: { check: 'true', test: 'true', 'test-coverage': false as const }, 'standards-pack': 'lightsout/standards' };
+const baseConfig = {
+	'source-files': sourceFileGlobs,
+	'test-files': testFileGlobs,
+	gates: { check: 'true', test: 'true', 'test-coverage': false as const },
+	'standards-pack': 'lightsout/standards',
+};
 
 /**
  * The repo the listing is read for — the shipped library answers regardless,

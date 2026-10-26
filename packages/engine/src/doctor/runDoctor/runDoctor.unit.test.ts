@@ -30,11 +30,10 @@ test('doctor passes a healthy consumer repo, and the optional checks with nothin
 	expect(checks.get('gitignore')?.status).toBe('pass');
 	expect(checks.get('script-binaries')?.status).toBe('pass');
 
-	// A single-package repo has no scoped gates, no Jest config, and no
-	// testing-library to weigh in on — silence, not empty passes.
+	// A single-package repo has no scoped gates and no Jest config to weigh in
+	// on — silence, not empty passes.
 	expect(checks.get('scoped-gates')).toBe(undefined);
-	expect(checks.get('jest-mocks')).toBe(undefined);
-	expect(checks.get('user-event')).toBe(undefined);
+	expect(checks.get('jest-reporter')).toBe(undefined);
 });
 
 test('doctor fails hard on an invalid config and checks nothing else', async () => {
@@ -155,7 +154,7 @@ test('doctor treats only manifest-bearing, non-dot directories as packages', asy
 	// a skipped directory is never reported as a package missing its gate script
 	expect(checks.get('scoped-gates')?.status).toBe('pass');
 	// Jest configs under a non-package directory are never read
-	expect(checks.get('jest-mocks')).toBe(undefined);
+	expect(checks.get('jest-reporter')).toBe(undefined);
 });
 
 test('doctor orders checks positives-first: pass, then note, then warn/fail', async () => {
@@ -178,36 +177,6 @@ test('doctor orders checks positives-first: pass, then note, then warn/fail', as
 	expect([...ranks].sort((a, b) => a - b)).toStrictEqual(ranks);
 	// fixture produced both a note and a warn
 	expect(ranks.includes(1) && ranks.includes(2)).toBeTruthy();
-});
-
-test('an optional check that has something to say about a package is in the report, naming the package', async () => {
-	const dir = setupConsumerRepo({
-		git: false,
-		config: {
-			'package-gates': { check: 'pnpm --filter {package} run check', test: 'pnpm --filter {package} run test:unit' },
-		},
-	});
-
-	mkdirSync(join(dir, 'packages/web'), { recursive: true });
-	writeFileSync(
-		join(dir, 'packages/web/package.json'),
-		JSON.stringify({
-			name: '@acme/web',
-			scripts: { check: 'x', 'test:unit': 'x' },
-			devDependencies: { '@testing-library/react': '^16.0.0' },
-		}),
-	);
-	writeFileSync(join(dir, 'packages/web/jest.config.cjs'), 'module.exports = { clearMocks: true };\n');
-
-	const checks = byId(await runDoctor({ cwd: dir, probeHarness: passingProbe }));
-
-	// the package dirs are resolved once and fed to every package-iterating
-	// check, so one package feeds both findings
-	expect(checks.get('jest-mocks')?.status).toBe('warn');
-	expect(checks.get('jest-mocks')?.detail ?? '').toContain('packages/web/jest.config.cjs lacks restoreMocks');
-	// a missing user-event is a recommendation, not a defect
-	expect(checks.get('user-event')?.status).toBe('note');
-	expect(checks.get('user-event')?.detail ?? '').toMatch(/web/);
 });
 
 test('a repo that measures coverage and generates code gets both of those checks, each naming what is absent', async () => {
@@ -244,19 +213,6 @@ test('doctor warns about generated paths with no generate command and is silent 
 	expect(generating.get('generate-command')?.fix ?? '').toContain('gates.generate');
 	// a repo listing no generated paths has nothing for the check to say — no line, not an empty pass
 	expect(healthy.get('generate-command')).toBe(undefined);
-});
-
-test('a repo that opted out of standards entirely gets no lint-rules line at all', async () => {
-	const dir = setupConsumerRepo({ git: false, config: { 'standards-pack': false } });
-
-	const checks = byId(await runDoctor({ cwd: dir, probeHarness: passingProbe }));
-
-	// the lint-rules check exists to protect the standards' mechanical rules —
-	// with no standards in play there is nothing left for it to protect, so it
-	// says nothing rather than nagging about a linter the repo never needed
-	expect(checks.get('lint-rules')).toBe(undefined);
-	// the checks that do not hang off the standards still report
-	expect(checks.get('config')?.status).toBe('pass');
 });
 
 // The usage probe spends real money on the user's own subscription, so what

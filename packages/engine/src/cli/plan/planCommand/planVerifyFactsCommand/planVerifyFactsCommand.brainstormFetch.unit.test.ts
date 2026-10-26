@@ -13,6 +13,8 @@ import { planWorkspaceFolder } from '#tests/helpers/planWorkspaceFolder.ts';
 import { ticketTrackerConfigBlock } from '#tests/helpers/queueConfigBlock.ts';
 import { seedWorkOrderRecord } from '#tests/helpers/seedWorkOrderRecord.ts';
 import { setupBranchRepo } from '#tests/helpers/setupBranchRepo.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // Mocked Imports
 // -------------------------
@@ -108,7 +110,7 @@ const publishAttachments = ({ failure }: { failure?: TrackerFailure }) => {
  */
 const setupVerifyFactsFromWorktree = ({
 	name = ticketPlanName,
-	config = { gates, 'ticket-tracker': ticketTrackerConfigBlock },
+	config = { 'source-files': sourceFileGlobs, 'test-files': testFileGlobs, gates, 'ticket-tracker': ticketTrackerConfigBlock },
 	failure,
 	ticketRef = 'lo-150',
 }: {
@@ -204,7 +206,7 @@ describe('planVerifyFactsCommand', () => {
 
 	test.each([
 		{ scenario: 'no lightsout.config.json at all', config: null },
-		{ scenario: 'a config carrying no ticket-tracker block', config: { gates } },
+		{ scenario: 'a config carrying no ticket-tracker block', config: { 'source-files': sourceFileGlobs, 'test-files': testFileGlobs, gates } },
 	])('asks no ticket and still verifies the facts in a repo with $scenario', async ({ config }) => {
 		const { context, planDir, logged, exitCodes } = setupVerifyFactsFromWorktree({ config });
 

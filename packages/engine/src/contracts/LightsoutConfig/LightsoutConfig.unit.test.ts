@@ -1,7 +1,9 @@
 import { expect, test } from '@jest/globals';
 import { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
-const base = { gates: { check: 'c', test: 't', 'test-coverage': false } };
+const base = { 'source-files': sourceFileGlobs, 'test-files': testFileGlobs, gates: { check: 'c', test: 't', 'test-coverage': false } };
 
 // The block contracts — Gates, PackageGates, ConfigCommands,
 // StandardsRuleSettings — each pin their own shape in their own test. What
@@ -11,10 +13,29 @@ const base = { gates: { check: 'c', test: 't', 'test-coverage': false } };
 
 test('LightsoutConfig: gates is required, and every other block is optional', () => {
 	// with no gates block there is nothing to verify a run with
-	expect(LightsoutConfig.safeParse({}).success).toBe(false);
-	// a config carrying only gates parses — commands, packageGates, and
-	// standardsChecks are all opt-in (decision 2: backward compatibility)
-	expect(LightsoutConfig.safeParse(base).success).toBe(true);
+	expect(LightsoutConfig.safeParse({ 'source-files': sourceFileGlobs, 'test-files': testFileGlobs }).success).toBe(false);
+	// the file lists have defaults, so a config carrying only gates parses
+	expect(LightsoutConfig.safeParse({ gates: base.gates }).success).toBe(true);
+});
+
+const issuesOf = (config: Record<string, unknown>) =>
+	(LightsoutConfig.safeParse(config).error?.issues ?? []).map((issue) => ({ path: issue.path.join('.'), message: issue.message }));
+
+test('LightsoutConfig: source-files keeps its globs as written, exclusions included, and refuses an empty list or an empty glob with a message naming the key', () => {
+	expect(LightsoutConfig.parse({ ...base, 'source-files': ['lib/**/*.py', '!lib/vendor/**'] })['source-files']).toStrictEqual([
+		'lib/**/*.py',
+		'!lib/vendor/**',
+	]);
+	// an empty list would leave the engine no code to read, silently
+	expect(issuesOf({ ...base, 'source-files': [] })).toStrictEqual([{ path: 'source-files', message: 'source-files must list at least one glob' }]);
+	expect(issuesOf({ ...base, 'source-files': ['**/*.ts', ''] })).toStrictEqual([{ path: 'source-files.1', message: 'a source-files glob cannot be empty' }]);
+});
+
+test('LightsoutConfig: test-files keeps its globs as written, and refuses an empty list or an empty glob with a message naming the key', () => {
+	expect(LightsoutConfig.parse({ ...base, 'test-files': ['spec/**', '**/*.spec.ts'] })['test-files']).toStrictEqual(['spec/**', '**/*.spec.ts']);
+	// an empty list would make every file source, silently
+	expect(issuesOf({ ...base, 'test-files': [] })).toStrictEqual([{ path: 'test-files', message: 'test-files must list at least one glob' }]);
+	expect(issuesOf({ ...base, 'test-files': ['**/*.test.*', ''] })).toStrictEqual([{ path: 'test-files.1', message: 'a test-files glob cannot be empty' }]);
 });
 
 test('LightsoutConfig: each block reaches its own contract, valid and invalid alike', () => {

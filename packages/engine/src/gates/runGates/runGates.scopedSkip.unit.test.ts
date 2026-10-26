@@ -8,6 +8,8 @@ import { gateLogCommand } from '#tests/helpers/gateLogCommand.ts';
 import { readGateLog } from '#tests/helpers/readGateLog.ts';
 import { runDirFor } from '#tests/helpers/runDirFor.ts';
 import { seedRunFolder } from '#tests/helpers/seedRunFolder.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 /**
  * A consumer dir with packages whose gate scripts vary, and scoped templates
@@ -32,6 +34,8 @@ const setupScopedRepo = ({ withRunToken = true }: { withRunToken?: boolean } = {
 	writeFileSync(
 		join(dir, 'lightsout.config.json'),
 		JSON.stringify({
+			'source-files': sourceFileGlobs,
+			'test-files': testFileGlobs,
 			gates: { check: 'echo root-check', test: 'echo root-test', 'test-coverage': false },
 			'package-gates': {
 				check: template({ kind: 'check', script: 'gate:check' }),
@@ -66,6 +70,8 @@ const setupCustomSuiteRepo = () => {
 	writeFileSync(
 		join(dir, 'lightsout.config.json'),
 		JSON.stringify({
+			'source-files': sourceFileGlobs,
+			'test-files': testFileGlobs,
 			gates: { check: 'echo root-check', test: 'echo root-test', 'test-coverage': false },
 			'package-gates': {
 				check: `${gateLogCommand({ kind: 'check' })} {package} run gate:check`,

@@ -11,6 +11,8 @@ import { planWorkspaceDir } from '#src/plan/planWorkspaceDir.ts';
 import { captureCommandOutput } from '#tests/helpers/captureCommandOutput.ts';
 import { freshCwd } from '#tests/helpers/freshCwd.ts';
 import { seedWorkOrderRecord } from '#tests/helpers/seedWorkOrderRecord.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // Mocked Imports
 // -------------------------
@@ -81,7 +83,10 @@ const setupTicketPlanWorkspace = async () => {
 
 	await mkdir(sourcePlanDir, { recursive: true });
 	seedWorkOrderRecord({ cwd: sourceCwd, name: 'lo-7-search' });
-	await writeFile(join(sourceCwd, 'lightsout.config.json'), JSON.stringify({ gates, worktree: { setup: setupCommand } }));
+	await writeFile(
+		join(sourceCwd, 'lightsout.config.json'),
+		JSON.stringify({ 'source-files': sourceFileGlobs, 'test-files': testFileGlobs, gates, worktree: { setup: setupCommand } }),
+	);
 	await writeFile(join(sourcePlanDir, 'brainstorm-notes.md'), '# Brainstorm notes\n');
 	await writeFile(join(sourcePlanDir, 'brainstorm-decisions.json'), '{"decisions":[]}\n');
 
@@ -122,7 +127,7 @@ const setupStandingTicketTree = async ({ owner, heldBy }: { owner: WorktreeOwner
 	await mkdir(sourcePlanDir, { recursive: true });
 	await mkdir(tree, { recursive: true });
 	seedWorkOrderRecord({ cwd: sourceCwd, name: 'lo-7-search' });
-	await writeFile(join(sourceCwd, 'lightsout.config.json'), JSON.stringify({ gates }));
+	await writeFile(join(sourceCwd, 'lightsout.config.json'), JSON.stringify({ 'source-files': sourceFileGlobs, 'test-files': testFileGlobs, gates }));
 	await writeFile(join(sourcePlanDir, 'brainstorm-notes.md'), '# Brainstorm notes\n');
 	await writeFile(join(sourcePlanDir, 'brainstorm-decisions.json'), '{"decisions":[]}\n');
 

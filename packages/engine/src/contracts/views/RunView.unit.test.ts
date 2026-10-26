@@ -33,7 +33,6 @@ const setupView = ({ omit, extra = {} }: { omit?: string; extra?: Record<string,
 		rejectedReports: 0,
 		friction: [],
 		changedFiles: [],
-		unreachableChangedFiles: [],
 		...extra,
 	};
 
@@ -58,7 +57,6 @@ const requiredFields = [
 	'rejectedReports',
 	'friction',
 	'changedFiles',
-	'unreachableChangedFiles',
 ];
 
 describe('RunView', () => {
@@ -83,7 +81,6 @@ describe('RunView', () => {
 			rejectedReports: 0,
 			friction: [],
 			changedFiles: [],
-			unreachableChangedFiles: [],
 		});
 	});
 
@@ -302,16 +299,16 @@ describe('RunView', () => {
 		}
 	});
 
-	test('the two file lists must hold strings, and stay separate lists', () => {
-		const { view } = setupView({ extra: { changedFiles: ['src/a.ts', 'src/b.ts'], unreachableChangedFiles: ['src/b.ts'] } });
+	test('the changed-file list must hold strings', () => {
+		const { view } = setupView({ extra: { changedFiles: ['src/a.ts', 'src/b.ts'] } });
 
 		const parsed = RunView.parse(view);
 
-		expect(parsed).toEqual(expect.objectContaining({ changedFiles: ['src/a.ts', 'src/b.ts'], unreachableChangedFiles: ['src/b.ts'] }));
+		expect(parsed).toEqual(expect.objectContaining({ changedFiles: ['src/a.ts', 'src/b.ts'] }));
 	});
 
 	test('a file list holding anything but strings is refused', () => {
-		const { view } = setupView({ extra: { unreachableChangedFiles: [7] } });
+		const { view } = setupView({ extra: { changedFiles: [7] } });
 
 		expect(RunView.safeParse(view).success).toBe(false);
 	});

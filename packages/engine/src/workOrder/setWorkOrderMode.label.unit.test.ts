@@ -10,6 +10,8 @@ import type { WorkOrderPlan } from '#src/contracts/workOrder/WorkOrderPlan.ts';
 import type { WorkOrderState } from '#src/contracts/workOrder/WorkOrderState.ts';
 import { updateLocalWorkOrderState } from '#src/workOrder/common/state/updateLocalWorkOrderState.ts';
 import { setWorkOrderMode } from '#src/workOrder/setWorkOrderMode.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 /** The work order's label: the folder it sits in, and the name every command addresses it by. */
 const label = 'lo-140-multi';
@@ -57,7 +59,12 @@ const setupPrefixedBranch = async ({
 	await updateLocalWorkOrderState({ cwd, name: label, change: () => record });
 
 	return {
-		params: { cwd, name: label, config: { gates, ship: { 'after-implement': false } } satisfies LightsoutConfig, env: {} },
+		params: {
+			cwd,
+			name: label,
+			config: { 'source-files': sourceFileGlobs, 'test-files': testFileGlobs, gates, ship: { 'after-implement': false } } satisfies LightsoutConfig,
+			env: {},
+		},
 	};
 };
 

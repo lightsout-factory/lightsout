@@ -7,6 +7,8 @@ import type { GateResult } from '#src/contracts/gates/GateResult.ts';
 import { runGates } from '#src/gates/runGates/runGates.ts';
 import { gateLogCommand } from '#tests/helpers/gateLogCommand.ts';
 import { setupConsumerRepo } from '#tests/helpers/setupConsumerRepo.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 const red = 'node -e "process.exit(1)"';
 
@@ -54,6 +56,8 @@ test('failFast: false threads into scoped groups — every red gate in a package
 	writeFileSync(
 		join(dir, 'lightsout.config.json'),
 		JSON.stringify({
+			'source-files': sourceFileGlobs,
+			'test-files': testFileGlobs,
 			gates: { check: 'true', test: 'true', 'test-coverage': false },
 			'package-gates': {
 				check: `${red} {package} run gate:check`,
@@ -96,6 +100,8 @@ test('a scoped skip surfaces through onGateResult as a skipped entry', async () 
 	writeFileSync(
 		join(dir, 'lightsout.config.json'),
 		JSON.stringify({
+			'source-files': sourceFileGlobs,
+			'test-files': testFileGlobs,
 			gates: { check: 'echo root-check', test: 'echo root-test', 'test-coverage': false },
 			'package-gates': {
 				check: `${gateLogCommand({ kind: 'check' })} {package} run gate:check`,

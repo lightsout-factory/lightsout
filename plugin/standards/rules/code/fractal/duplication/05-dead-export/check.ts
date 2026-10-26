@@ -12,10 +12,10 @@ export const check: StandardsCheckModule = {
 	 * it declares.
 	 */
 	run: ({ inputs }): RawStandardsFinding[] => {
-		const { files, contents, standardsLibraries } = readFileTexts({ input: inputs['file-text'] });
+		const { files, contents, referenceTests } = readFileTexts({ input: inputs['file-text'] });
 		const byFile = new Map<string, string[]>();
 
-		for (const { file, name } of getUnconsumedExports({ files, contents, standardsLibraries })) {
+		for (const { file, name } of getUnconsumedExports({ files, contents, tests: referenceTests })) {
 			byFile.set(file, [...(byFile.get(file) ?? []), name]);
 		}
 

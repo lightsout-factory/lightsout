@@ -81,16 +81,17 @@ describe('readSprawlTrees', () => {
 		});
 	});
 
-	test('counts a folder the way the folder-size check counts it: direct non-test files of any type, no subfolders', () => {
+	test('counts a folder the way the folder-size check counts it: direct files of any type the test-files globs do not name, no subfolders', () => {
 		const { cwd } = setupTreeRepo();
 
 		const trees = readTrees({ cwd });
 
+		// the fixture sets no test-files, so the engine's defaults decide, and
+		// they name every `tests/` folder, a standards library's included
 		expect(trees[0].folders).toStrictEqual({
 			'packages/app/src': 4,
 			'packages/pack': 1,
 			'packages/pack/rules': 1,
-			'packages/pack/tests': 1,
 		});
 	});
 

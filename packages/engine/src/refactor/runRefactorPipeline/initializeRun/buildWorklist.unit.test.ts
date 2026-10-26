@@ -2,6 +2,8 @@ import { describe, expect, jest, test } from '@jest/globals';
 import { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFinding.ts';
 import { buildWorklist } from '#src/refactor/runRefactorPipeline/initializeRun/buildWorklist.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // Mocked Imports
 // -------------------------
@@ -15,7 +17,7 @@ interface StandardsCheckParams {
 	onProgress?: (message: string) => void;
 }
 
-const mockRunStandardsCheck = jest.fn<(params: StandardsCheckParams) => Promise<{ findings: StandardsFinding[]; notes: string[] }>>();
+const mockRunStandardsCheck = jest.fn<(params: StandardsCheckParams) => Promise<{ findings: StandardsFinding[]; notes: string[]; ruleOrder: string[] }>>();
 
 jest.mock('#src/standardsCheck/runStandardsCheck/runStandardsCheck.ts', () => ({
 	runStandardsCheck: (params: StandardsCheckParams) => mockRunStandardsCheck(params),
@@ -23,9 +25,14 @@ jest.mock('#src/standardsCheck/runStandardsCheck/runStandardsCheck.ts', () => ({
 // -------------------------
 
 const setupWorklist = () => {
-	mockRunStandardsCheck.mockResolvedValue({ findings: [], notes: [] });
+	mockRunStandardsCheck.mockResolvedValue({ findings: [], notes: [], ruleOrder: [] });
 
-	const config = LightsoutConfig.parse({ gates: { check: 'true', test: 'true', 'test-coverage': false }, 'packages-dir': 'modules' });
+	const config = LightsoutConfig.parse({
+		'source-files': sourceFileGlobs,
+		'test-files': testFileGlobs,
+		gates: { check: 'true', test: 'true', 'test-coverage': false },
+		'packages-dir': 'modules',
+	});
 
 	return { config };
 };
@@ -41,5 +48,26 @@ describe('buildWorklist', () => {
 			params: { cwd: '/repo', config, path: 'src/core', all: true, persist: false },
 			sameConfig: true,
 		});
+	});
+
+	test('batches its blocking findings in the rule order the check hands back', async () => {
+		const { config } = setupWorklist();
+		const finding = ({ rule }: { rule: string }): StandardsFinding => ({
+			rule,
+			severity: 'blocking',
+			siteKey: `${rule}:src/a.ts`,
+			files: [{ path: 'src/a.ts' }],
+			detail: 'stub',
+		});
+
+		mockRunStandardsCheck.mockResolvedValue({
+			findings: [finding({ rule: 'acme/early' }), finding({ rule: 'acme/late' })],
+			notes: [],
+			ruleOrder: ['acme/late', 'acme/early'],
+		});
+
+		const worklist = await buildWorklist({ cwd: '/repo', config });
+
+		expect(worklist.batches.map((batch) => batch.rule)).toStrictEqual(['acme/late', 'acme/early']);
 	});
 });

@@ -18,6 +18,8 @@ import type { WorkerOutcome } from '#src/queue/common/types/WorkerOutcome.ts';
 import { runAutoPlanWorker } from '#src/queue/workers/runWorkerWithRelay/runAutoPlanWorker/runAutoPlanWorker.ts';
 import { planWorkspaceFolder } from '#tests/helpers/planWorkspaceFolder.ts';
 import { queueSettingsFixture } from '#tests/helpers/queueSettingsFixture.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 /**
  * What the worker does with a planning session that ended while an engine
@@ -98,7 +100,11 @@ const record: WorkOrderState = {
 	history: [],
 };
 
-const config: LightsoutConfig = { gates: { check: 'true', test: 'true', 'test-coverage': false } };
+const config: LightsoutConfig = {
+	'source-files': sourceFileGlobs,
+	'test-files': testFileGlobs,
+	gates: { check: 'true', test: 'true', 'test-coverage': false },
+};
 
 const reportOf = (overrides: Partial<WorkReport> = {}): WorkReport => ({
 	status: WorkReportStatus.Complete,

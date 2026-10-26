@@ -1,9 +1,10 @@
+import { readRepoFileGlobs } from '#src/common/config/readRepoFileGlobs.ts';
+import { isTestFile } from '#src/common/sourceFiles/isTestFile.ts';
 import { getAgentOutcomeStatus } from '#src/invoke/getAgentOutcomeStatus.ts';
 import { approveTestFiles } from '#src/pipeline/approvedTests/approveTestFiles.ts';
 import { applyTestDispositions } from '#src/pipeline/approvedTests/reviewTestChanges/applyTestDispositions.ts';
 import { collectTestChanges } from '#src/pipeline/approvedTests/reviewTestChanges/collectTestChanges.ts';
 import { consultTestChangeReviewer } from '#src/pipeline/approvedTests/reviewTestChanges/consultTestChangeReviewer.ts';
-import { isTestSideFile } from '#src/pipeline/common/isTestSideFile.ts';
 import type { PipelineRun } from '#src/pipeline/common/PipelineRun.ts';
 import { appendTestReview } from '#src/runState/appendTestReview.ts';
 
@@ -45,7 +46,7 @@ export const reviewTestChanges = async ({ run, checkpoint, planContent, overview
 		overviewContent,
 		checkpoint,
 		acceptanceTests: manifest.acceptanceTests,
-		changedFiles: manifest.changedFiles.filter((file) => !isTestSideFile({ path: file })),
+		changedFiles: manifest.changedFiles.filter((file) => !isTestFile({ path: file, testFileGlobs: readRepoFileGlobs({ config: run.config }).tests })),
 		changes,
 		onEvent: run.agentEventSink({ step }),
 		onRejectedOutput: run.persistRejected({ step }),

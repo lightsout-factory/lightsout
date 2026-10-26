@@ -16,7 +16,7 @@ pins. A criterion naming only a subject is intent, not a criterion.
 
 | Criterion | Test file | Test name | Gate |
 |-----------|-----------|-----------|------|
-| <one-line acceptance criterion> | \`path/to/file.unit.test.ts\` | <exact test name> | test |
+| <one-line acceptance criterion> | \`<path of the test file>\` | <exact test name> | test |
 
 - A file entry carries the surface: the exported signatures, the imports it
   needs and the names it exports, the integration points it wires into, the file
@@ -34,7 +34,7 @@ pins. A criterion naming only a subject is intent, not a criterion.
   it may NOT name is a file you move away, the source side of \`## Files to Move\`:
   that file does not survive the plan, so the row points at nothing. Point it at
   the move’s destination instead.
-- A file with no testable behaviour — a document, a config file, a barrel — is
+- A file with no testable behaviour — a document, a config file — is
   listed under \`## Prose Files\` instead, one \`-\` bullet each: the path in a
   backticked span, then an em dash and why no test states its behaviour. A
   bullet naming a path with no reason is a blocking finding.

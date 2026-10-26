@@ -1,19 +1,15 @@
 import { Detector, MemoryStore } from '@jscpd/core';
 import { Tokenizer } from '@jscpd/tokenizer';
 import { type CloneSpan, type CloneSpansInput, StandardsInputKind } from '@lightsout/standards-contracts';
-import type ts from 'typescript';
-import { blankDelegationSpans } from '#src/standardsCheck/common/buildCheckInput/buildCloneSpansInput/blankDelegationSpans/blankDelegationSpans.ts';
 import { blankImportSpans } from '#src/standardsCheck/common/buildCheckInput/buildCloneSpansInput/blankImportSpans.ts';
 import { readIntoCache } from '#src/standardsCheck/common/readIntoCache.ts';
 
 interface Params {
 	cwd: string;
 	source: string[];
-	/** The duplicate-code-block rule's own resolved options — the engine honors them because it runs the detector. */
+	/** The asking check's own resolved options — the engine honors them because it runs the detector. */
 	options: Record<string, number>;
 	cache: Map<string, string>;
-	/** The consumer's TypeScript, when the install has one — without it the delegation-forward blanking is skipped, never guessed. */
-	compiler?: typeof ts;
 }
 
 const formatOf = ({ path }: { path: string }) => (/\.(m|c)?tsx?$/.test(path) ? 'typescript' : 'javascript');
@@ -22,11 +18,12 @@ const formatOf = ({ path }: { path: string }) => (/\.(m|c)?tsx?$/.test(path) ? '
  * The engine runs the detector rather than the rule, so the rule's `minTokens`
  * reaches it as an option instead of a rule opening files of its own.
  *
- * Imports and delegation forwards are blanked first (newline-preserving): they
- * are non-deduplicable by construction, so counting them would report work
- * nobody can do, and blanking keeps the reported line numbers true.
+ * Imports are blanked first (newline-preserving): they are non-deduplicable by
+ * construction, so counting them would report work nobody can do, and blanking
+ * keeps the reported line numbers true. Which other copies are acceptable is
+ * the check's to judge from the spans it is handed.
  */
-export const buildCloneSpansInput = async ({ cwd, source, options, cache, compiler }: Params): Promise<CloneSpansInput> => {
+export const buildCloneSpansInput = async ({ cwd, source, options, cache }: Params): Promise<CloneSpansInput> => {
 	const { minTokens } = options;
 
 	const texts = await readIntoCache({ cwd, paths: source, cache });
@@ -34,10 +31,7 @@ export const buildCloneSpansInput = async ({ cwd, source, options, cache, compil
 	const spans: CloneSpan[] = [];
 
 	for (const [path, text] of texts) {
-		const blanked = blankImportSpans({ text });
-		const detectable = compiler === undefined ? blanked : blankDelegationSpans({ path, text: blanked, compiler });
-
-		for (const clone of await detector.detect(path, detectable, formatOf({ path }))) {
+		for (const clone of await detector.detect(path, blankImportSpans({ text }), formatOf({ path }))) {
 			const a = clone.duplicationA;
 			const b = clone.duplicationB;
 

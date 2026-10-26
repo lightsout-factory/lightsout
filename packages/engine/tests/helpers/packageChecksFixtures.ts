@@ -7,6 +7,8 @@ import type { ResolvedRuleState } from '#src/common/types/ResolvedRuleState.ts';
 import type { StandardsGroup } from '#src/common/types/StandardsGroup.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 import { runPackageChecks } from '#src/standardsCheck/runStandardsCheck/runPackageChecks/runPackageChecks.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 /** A repo the checks run against. */
 const setupRepo = () => {
@@ -92,7 +94,7 @@ const runChecks = ({
 		}),
 	);
 
-	return runPackageChecks({ cwd, groups: [groupOf({ rules, states })], path, exclude, onProgress });
+	return runPackageChecks({ cwd, groups: [groupOf({ rules, states })], path, exclude, sourceFileGlobs, testFileGlobs, onProgress });
 };
 
 /**

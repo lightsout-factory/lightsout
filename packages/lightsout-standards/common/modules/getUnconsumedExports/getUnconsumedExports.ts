@@ -1,7 +1,6 @@
 import { readPackageEntries } from '../../checkInput/readPackageEntries.ts';
 import { readFileExports } from '../../parsing/readFileExports.ts';
 import { isIndexFile } from '../../paths/isIndexFile.ts';
-import { isTestFile } from '../../paths/isTestFile.ts';
 import { isPackageEntry } from '../isPackageEntry.ts';
 import type { UnconsumedExport } from './UnconsumedExport.ts';
 
@@ -17,8 +16,8 @@ interface Params {
 	files: string[];
 	/** Text for every file in scope and every reference file. */
 	contents: Map<string, string>;
-	/** Repo-relative standards pack roots, so a pack's `tests/` document set is not read as test code. */
-	standardsLibraries: string[];
+	/** Every test file in the repo, as the engine classified them from the repo's own globs. */
+	tests: string[];
 }
 
 /**
@@ -36,13 +35,14 @@ interface Params {
  * every import names the declaring file, so a folder index file's list is a name
  * nothing reads through, and counting it would hide a dead export behind it.
  */
-export const getUnconsumedExports = ({ files, contents, standardsLibraries }: Params): UnconsumedExport[] => {
+export const getUnconsumedExports = ({ files, contents, tests }: Params): UnconsumedExport[] => {
 	const scope = new Set(files);
+	const testFiles = new Set(tests);
 	const entries = readPackageEntries({ contents });
 	const declarations: Array<{ name: string; file: string }> = [];
 
 	for (const [file, text] of contents) {
-		if (!scope.has(file) || isIndexFile({ path: file }) || isTestFile({ path: file, standardsLibraries })) {
+		if (!scope.has(file) || isIndexFile({ path: file }) || testFiles.has(file)) {
 			continue;
 		}
 
@@ -64,8 +64,7 @@ export const getUnconsumedExports = ({ files, contents, standardsLibraries }: Pa
 				continue;
 			}
 
-			const isFolderIndex =
-				!isTestFile({ path: other, standardsLibraries }) && isExportingIndex({ file: other, text }) && !isPackageEntry({ path: other, entries });
+			const isFolderIndex = !testFiles.has(other) && isExportingIndex({ file: other, text }) && !isPackageEntry({ path: other, entries });
 
 			referenced ||= !isFolderIndex;
 		}

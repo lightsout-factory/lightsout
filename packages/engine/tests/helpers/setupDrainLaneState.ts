@@ -12,6 +12,8 @@ import { queueOutcomeFixture } from '#tests/helpers/queueOutcomeFixture.ts';
 import { queueSettingsFixture } from '#tests/helpers/queueSettingsFixture.ts';
 import { shipIntegrationFixture } from '#tests/helpers/shipIntegrationFixture.ts';
 import { shipSettingsFixture } from '#tests/helpers/shipSettingsFixture.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 import { trackerSettingsFixture } from '#tests/helpers/trackerSettingsFixture.ts';
 
 /** An idle scheduler ledger and controlled collaborators for direct lane tests. */
@@ -21,7 +23,11 @@ export const setupDrainLaneState = ({ maxParallel = 2 }: { maxParallel?: number 
 		.fn<(params: { workOrder: NamedWorkOrder }) => Promise<WorkOrderRunOutcome>>()
 		.mockImplementation(async ({ workOrder }) => queueOutcomeFixture({ ticket: workOrder.ticket }));
 	const progress: string[] = [];
-	const config: LightsoutConfig = { gates: { check: 'true', test: 'true', 'test-coverage': false } };
+	const config: LightsoutConfig = {
+		'source-files': sourceFileGlobs,
+		'test-files': testFileGlobs,
+		gates: { check: 'true', test: 'true', 'test-coverage': false },
+	};
 	/** No repository these lane tests stand up has ever timed out waiting for the machine. */
 	const holds: GateHolds = {};
 	const context = {

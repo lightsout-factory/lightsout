@@ -11,6 +11,8 @@ import { publishPlan } from '#src/plan/publish/publishPlan/publishPlan.ts';
 import { planWorkspaceFolder } from '#tests/helpers/planWorkspaceFolder.ts';
 import { ticketTrackerConfigBlock } from '#tests/helpers/queueConfigBlock.ts';
 import { seedWorkOrderRecord } from '#tests/helpers/seedWorkOrderRecord.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // Mocked Imports
 // -------------------------
@@ -118,7 +120,7 @@ const setupPlan = ({
 		params: {
 			cwd,
 			name: folder,
-			config: config ?? { gates, 'ticket-tracker': trackerBlock },
+			config: config ?? { 'source-files': sourceFileGlobs, 'test-files': testFileGlobs, gates, 'ticket-tracker': trackerBlock },
 			env,
 			onProgress: (message: string) => progress.push(message),
 			titlePrefix: planId,
@@ -154,7 +156,7 @@ const setupLocalOnlyWorkOrder = ({ workOrder = 'rate-limit-banner', plan = planI
 		params: {
 			cwd,
 			name,
-			config: { gates, 'ticket-tracker': trackerBlock },
+			config: { 'source-files': sourceFileGlobs, 'test-files': testFileGlobs, gates, 'ticket-tracker': trackerBlock },
 			env,
 			onProgress: (message: string) => progress.push(message),
 			titlePrefix: plan,
@@ -234,7 +236,10 @@ describe('publishPlan', () => {
 	});
 
 	test('a folder with no deliverable refuses before anything is resolved — no ship settings, no tracker, no call', async () => {
-		const { params } = setupPlan({ files: { 'brainstorm-notes.md': '# notes' }, config: { gates } });
+		const { params } = setupPlan({
+			files: { 'brainstorm-notes.md': '# notes' },
+			config: { 'source-files': sourceFileGlobs, 'test-files': testFileGlobs, gates },
+		});
 
 		const report = await publishPlan(params);
 
@@ -246,7 +251,7 @@ describe('publishPlan', () => {
 	test('an unusable ship.ticket-pattern reaches the publish not at all, because the record answers which ticket this is', async () => {
 		const { params } = setupPlan({
 			files: { 'plan.md': '# plan' },
-			config: { gates, ship: { 'ticket-pattern': '^(unclosed' }, 'ticket-tracker': trackerBlock },
+			config: { 'source-files': sourceFileGlobs, 'test-files': testFileGlobs, gates, ship: { 'ticket-pattern': '^(unclosed' }, 'ticket-tracker': trackerBlock },
 		});
 
 		const report = await publishPlan(params);
@@ -267,7 +272,7 @@ describe('publishPlan', () => {
 	});
 
 	test('a repo with no ticket-tracker block hears the resolver’s own sentence, and reaches no tracker', async () => {
-		const { params } = setupPlan({ files: { 'plan.md': '# plan' }, config: { gates } });
+		const { params } = setupPlan({ files: { 'plan.md': '# plan' }, config: { 'source-files': sourceFileGlobs, 'test-files': testFileGlobs, gates } });
 
 		const report = await publishPlan(params);
 

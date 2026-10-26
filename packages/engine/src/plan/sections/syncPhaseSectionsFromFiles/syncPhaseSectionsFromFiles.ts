@@ -2,6 +2,7 @@ import { readFile } from 'node:fs/promises';
 import { basename } from 'node:path';
 import { BuildMode } from '#src/common/constants/BuildMode.ts';
 import type { PhaseDeclaration } from '#src/common/types/PhaseDeclaration.ts';
+import type { RepoFileGlobs } from '#src/common/types/RepoFileGlobs.ts';
 import type { SyncedPlanFile } from '#src/plan/common/types/SyncedPlanFile.ts';
 import { stampPhaseCounts } from '#src/plan/draft/stampPhaseCounts.ts';
 import { parsePlan } from '#src/plan/parsePlan/parsePlan.ts';
@@ -14,6 +15,8 @@ interface Params {
 	overviewPath: string;
 	/** Absolute paths of the phase files, overview excluded. */
 	phasePaths: string[];
+	/** The repo's own globs: which files are code, and which of those are tests. */
+	fileGlobs: RepoFileGlobs;
 }
 
 /**
@@ -58,9 +61,9 @@ const withOwnDeclarations = async ({ declarations, phasePaths }: { declarations:
  * is tolerated as `syncPhaseSections` tolerates it: refusing a mismatch is the
  * caller's decision, since the draft and repair paths repair around one.
  */
-export const syncPhaseSectionsFromFiles = async ({ cwd, overviewPath, phasePaths }: Params): Promise<SyncedPlanFile> => {
+export const syncPhaseSectionsFromFiles = async ({ cwd, overviewPath, phasePaths, fileGlobs }: Params): Promise<SyncedPlanFile> => {
 	const before = await readFile(overviewPath, 'utf8');
-	const stamped = await stampPhaseCounts({ cwd, overviewPath, phasePaths });
+	const stamped = await stampPhaseCounts({ cwd, overviewPath, phasePaths, fileGlobs });
 
 	await syncPhaseSections({
 		overviewPath,

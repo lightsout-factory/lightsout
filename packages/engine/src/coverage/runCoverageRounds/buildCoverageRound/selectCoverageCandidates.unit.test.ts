@@ -7,6 +7,8 @@ import type { CoverageFile } from '#src/contracts/coverage/CoverageFile.ts';
 import type { CoverageTotal } from '#src/contracts/coverage/CoverageTotal.ts';
 import { selectCoverageCandidates } from '#src/coverage/runCoverageRounds/buildCoverageRound/selectCoverageCandidates.ts';
 import { linkTypescript } from '#tests/helpers/linkTypescript.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 const file = ({ path, statementsPct = 10, scope = 'root' }: { path: string; statementsPct?: number; scope?: string }): CoverageFile => ({
 	path,
@@ -33,34 +35,36 @@ const select = async ({
 	files,
 	totals,
 	setAside = [],
-	standardsLibraries = [],
+	globs = testFileGlobs,
 	compiler,
 }: {
 	cwd: string;
 	files: CoverageFile[];
 	totals: CoverageTotal[];
 	setAside?: string[];
-	standardsLibraries?: string[];
+	globs?: string[];
 	compiler?: ReturnType<typeof resolveConsumerTypescript>;
 }) =>
-	(await selectCoverageCandidates({ cwd, measured: { files, totals }, setAsidePaths: new Set(setAside), standardsLibraries, compiler })).map(
+	(await selectCoverageCandidates({ cwd, measured: { files, totals }, setAsidePaths: new Set(setAside), testFileGlobs: globs, sourceFileGlobs, compiler })).map(
 		(entry) => entry.path,
 	);
 
 describe('selectCoverageCandidates', () => {
-	test('a check under a standards pack’s tests/ set is source, not a test — the set name buys no exemption', async () => {
+	test('only the repo’s test-files globs mark a file as a test — a tests/ folder they do not name is source', async () => {
 		const cwd = setupRepo();
 		const files = [
-			// under a standards pack, tests/ is a document set — the checks in it
-			// are source files a run must be able to target
 			file({ path: 'packages/acme/tests/unit-testing/05-rule/check.ts', statementsPct: 0 }),
-			// the package's own tests still say so in their filenames
 			file({ path: 'packages/acme/common/utils/helper.unit.test.ts', statementsPct: 0 }),
 		];
 
-		expect(await select({ cwd, files, totals: [total()], standardsLibraries: ['packages/acme'] })).toStrictEqual([
-			'packages/acme/tests/unit-testing/05-rule/check.ts',
-		]);
+		expect(await select({ cwd, files, totals: [total()], globs: ['**/*.test.*'] })).toStrictEqual(['packages/acme/tests/unit-testing/05-rule/check.ts']);
+	});
+
+	test('with no test-files globs declared, nothing is a test', async () => {
+		const cwd = setupRepo();
+		const files = [file({ path: 'src/a.unit.test.ts' }), file({ path: 'src/a.ts' })];
+
+		expect(await select({ cwd, files, totals: [total()], globs: [] })).toStrictEqual(['src/a.unit.test.ts', 'src/a.ts']);
 	});
 
 	test('keeps the measurement’s worst-first order, so the round works the worst file first', async () => {

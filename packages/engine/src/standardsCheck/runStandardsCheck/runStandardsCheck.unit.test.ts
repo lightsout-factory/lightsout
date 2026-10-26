@@ -5,6 +5,8 @@ import { expect, test } from '@jest/globals';
 import { readOptionalConfig } from '#src/common/config/readOptionalConfig.ts';
 import { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { runStandardsCheck } from '#src/standardsCheck/runStandardsCheck/runStandardsCheck.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 const bigBody = `
 	let total = 0;
@@ -21,7 +23,12 @@ const bigBody = `
 `;
 
 /** Standards are opt-in, so a repo checked against the bundled rules names the standards pack. */
-const standardsPackConfig = JSON.stringify({ gates: { check: 'true', test: 'true', 'test-coverage': false }, 'standards-pack': 'lightsout/standards' });
+const standardsPackConfig = JSON.stringify({
+	'source-files': sourceFileGlobs,
+	'test-files': testFileGlobs,
+	gates: { check: 'true', test: 'true', 'test-coverage': false },
+	'standards-pack': 'lightsout/standards',
+});
 
 /** A consumer repo on the standards pack with one planted defect per rule. */
 const setupCheckRepo = () => {
@@ -288,6 +295,8 @@ const setupOwnPackRepo = () => {
 			'src/alpha.ts': 'export const alpha = 1;\n',
 			'src/beta.ts': 'export const beta = 2;\n',
 			'lightsout.config.json': JSON.stringify({
+				'source-files': sourceFileGlobs,
+				'test-files': testFileGlobs,
 				gates: { check: 'true', test: 'true', 'test-coverage': false },
 				'standards-libraries': { acme: writeOwnPack() },
 				'standards-pack': 'acme/house',
@@ -311,6 +320,65 @@ test("a repo's own standards pack supplies the rules, and the bundled defaults d
 	]);
 });
 
+/** A repo whose own pack lists its two topics against path order, each topic holding one rule. */
+const setupOrderedPackRepo = () => {
+	const packPath = mkdtempSync(join(tmpdir(), 'lightsout-ordered-standards-'));
+	const rule = '---\nsummary: a rule\nchecks: agent\n---\n\nA rule.\n';
+
+	writeTree({
+		dir: packPath,
+		files: {
+			'lightsout-standards.json': '{ "name": "acme", "formatVersion": 2 }\n',
+			'rules/code/alpha/topic.md': '# Alpha\n',
+			'rules/code/alpha/05-alpha-rule/rule.md': rule,
+			'rules/code/zeta/topic.md': '# Zeta\n',
+			'rules/code/zeta/05-zeta-first/rule.md': rule,
+			'rules/code/zeta/10-zeta-second/rule.md': rule,
+			'packs/house.json': JSON.stringify({ description: 'the house pack', include: { topics: ['acme/code/zeta', 'acme/code/alpha'] } }),
+		},
+	});
+
+	const dir = mkdtempSync(join(tmpdir(), 'lightsout-standards-ordered-'));
+
+	writeTree({
+		dir,
+		files: {
+			'src/alpha.ts': 'export const alpha = 1;\n',
+			'lightsout.config.json': JSON.stringify({
+				'source-files': sourceFileGlobs,
+				'test-files': testFileGlobs,
+				gates: { check: 'true', test: 'true', 'test-coverage': false },
+				'standards-libraries': { acme: packPath },
+				'standards-pack': 'acme/house',
+			}),
+		},
+	});
+
+	return dir;
+};
+
+test('the rule order follows the pack: its topics in listed order, each topic in its own rule order', async () => {
+	const dir = setupOrderedPackRepo();
+
+	const { ruleOrder } = await runStandardsCheck({ cwd: dir, config: await readOptionalConfig({ cwd: dir }), persist: false });
+
+	// zeta is listed first although alpha sorts first by path; inside zeta, the numbered folders decide
+	expect(ruleOrder).toStrictEqual(['acme/zeta-first', 'acme/zeta-second', 'acme/alpha-rule']);
+});
+
+test('the built-in standards pack lists its duplication rules last, so a refactor of a repo on it runs its mechanical fixes first', async () => {
+	const dir = setupCheckRepo();
+
+	const { ruleOrder } = await runStandardsCheck({ cwd: dir, config: await readOptionalConfig({ cwd: dir }), persist: false });
+
+	expect(ruleOrder.slice(-4)).toStrictEqual([
+		'lightsout/dead-export',
+		'lightsout/duplicate-function-body',
+		'lightsout/duplicate-code-block',
+		'lightsout/duplicate-export-name',
+	]);
+});
+
 /** A repo on the house pack whose source spans a nested folder, so a scope has something to bite on. */
 const setupScopedRepo = () => {
 	const dir = mkdtempSync(join(tmpdir(), 'lightsout-standards-scope-'));
@@ -321,6 +389,8 @@ const setupScopedRepo = () => {
 			'src/keep.ts': 'export const keep = 1;\n',
 			'src/core/inner.ts': 'export const inner = 2;\n',
 			'lightsout.config.json': JSON.stringify({
+				'source-files': sourceFileGlobs,
+				'test-files': testFileGlobs,
 				gates: { check: 'true', test: 'true', 'test-coverage': false },
 				'standards-libraries': { acme: writeOwnPack() },
 				'standards-pack': 'acme/house',
@@ -351,6 +421,8 @@ test('--path checks the subpath it was given, and the evidence file records that
 const setupRejectedConfigRepo = () => {
 	const dir = mkdtempSync(join(tmpdir(), 'lightsout-standards-handed-'));
 	const startingConfig = {
+		'source-files': sourceFileGlobs,
+		'test-files': testFileGlobs,
 		gates: { check: 'true', test: 'true', 'test-coverage': false },
 		'standards-libraries': { acme: writeOwnPack() },
 		'standards-pack': 'acme/house',

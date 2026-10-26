@@ -7,6 +7,8 @@ import type { TrackerSettings } from '#src/common/types/TrackerSettings.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { restoreWorkOrderPlan } from '#src/workOrder/restoreWorkOrderPlan.ts';
 import { attachmentMarkerText } from '#tests/helpers/attachmentMarkerText.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // Mocked Imports
 // -------------------------
@@ -40,11 +42,18 @@ jest.mock('#src/ticketTracker/resolveTrackerSettings.ts', () => ({
 const apiKeyEnv = 'LIGHTSOUT_TEST_TRACKER_KEY';
 const env: NodeJS.ProcessEnv = { [apiKeyEnv]: 'lin_key' };
 const gates: LightsoutConfig['gates'] = { check: 'true', test: 'true', 'test-coverage': false };
-const trackerConfig: LightsoutConfig = { gates, 'ticket-tracker': { provider: 'linear', team: 'LO', 'api-key-env': apiKeyEnv } };
+const trackerConfig: LightsoutConfig = {
+	'source-files': sourceFileGlobs,
+	'test-files': testFileGlobs,
+	gates,
+	'ticket-tracker': { provider: 'linear', team: 'LO', 'api-key-env': apiKeyEnv },
+};
 /** The same repo with the tracker block taken out, so the restore has nowhere to read from. */
-const localOnlyConfig: LightsoutConfig = { gates };
+const localOnlyConfig: LightsoutConfig = { 'source-files': sourceFileGlobs, 'test-files': testFileGlobs, gates };
 /** A tracker that IS configured and cannot be resolved — never passed over as local only. */
 const unusableTrackerConfig: LightsoutConfig = {
+	'source-files': sourceFileGlobs,
+	'test-files': testFileGlobs,
 	gates,
 	'ticket-tracker': { provider: 'jira', 'site-url': 'https://example.atlassian.net', project: 'LO', 'api-key-env': apiKeyEnv, 'api-user-email-env': 'X' },
 };

@@ -23,6 +23,7 @@ const buildInput = ({ cwd }: { cwd: string }) =>
 		tests: ['src/alpha.unit.test.ts'],
 		files: ['src/alpha.ts', 'src/alpha.unit.test.ts'],
 		referenceFiles: ['src/alpha.ts', 'src/alpha.unit.test.ts', 'src/outside.ts'],
+		referenceTests: ['src/alpha.unit.test.ts'],
 		standardsLibraries: [],
 		packagesDir: 'packages',
 	});
@@ -40,6 +41,7 @@ describe('buildFileListInput', () => {
 		expect(input.files).toStrictEqual(['src/alpha.ts', 'src/alpha.unit.test.ts']);
 		// the reference list is the whole repo, wider than the scoped files
 		expect(input.referenceFiles).toHaveLength(3);
+		expect(input.referenceTests).toStrictEqual(['src/alpha.unit.test.ts']);
 	});
 
 	test('reads the root package dependencies as one union of the three declaration blocks', async () => {

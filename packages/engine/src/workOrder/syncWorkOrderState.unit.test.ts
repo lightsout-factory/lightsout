@@ -9,6 +9,8 @@ import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutCo
 import type { WorkOrderState } from '#src/contracts/workOrder/WorkOrderState.ts';
 import { syncWorkOrderState } from '#src/workOrder/syncWorkOrderState.ts';
 import { ticketTrackerConfigBlock } from '#tests/helpers/queueConfigBlock.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // Mocked Imports
 // -------------------------
@@ -92,7 +94,7 @@ const setupSync = ({
 	local,
 	published,
 	synced,
-	config = { gates, 'ticket-tracker': trackerBlock },
+	config = { 'source-files': sourceFileGlobs, 'test-files': testFileGlobs, gates, 'ticket-tracker': trackerBlock },
 	listFailureAfterFirstRead,
 	sidecarUnwritable,
 	localText,
@@ -279,7 +281,10 @@ describe('syncWorkOrderState', () => {
 	});
 
 	test('syncWorkOrderState: refuses when the repository configures no ticket tracker', async () => {
-		const { params } = setupSync({ local: recordOf({ title: 'The local title' }), config: { gates } });
+		const { params } = setupSync({
+			local: recordOf({ title: 'The local title' }),
+			config: { 'source-files': sourceFileGlobs, 'test-files': testFileGlobs, gates },
+		});
 
 		const result = await syncWorkOrderState(params);
 
@@ -295,6 +300,8 @@ describe('syncWorkOrderState', () => {
 		const { params } = setupSync({
 			local: recordOf({ title: 'The local title' }),
 			config: {
+				'source-files': sourceFileGlobs,
+				'test-files': testFileGlobs,
 				gates,
 				'ticket-tracker': {
 					provider: 'jira',
@@ -348,7 +355,10 @@ describe('syncWorkOrderState', () => {
 	});
 
 	test('syncWorkOrderState: the local-only refusal spells the work-order command word', async () => {
-		const { params } = setupSync({ local: recordOf({ title: 'The local title' }), config: { gates } });
+		const { params } = setupSync({
+			local: recordOf({ title: 'The local title' }),
+			config: { 'source-files': sourceFileGlobs, 'test-files': testFileGlobs, gates },
+		});
 
 		const result = await syncWorkOrderState(params);
 

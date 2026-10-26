@@ -95,14 +95,14 @@ test('buildLedgerTestWriterInvocation: the missing-tests section rides the user 
 	expect(repair.prompt.endsWith('Remember: your entire final message must be exactly one JSON report object — nothing else.')).toBeTruthy();
 });
 
-test('buildLedgerTestWriterInvocation: the role prompt says the ledger assignment replaces the subject rules', () => {
+test('buildLedgerTestWriterInvocation: the role prompt says the ledger assignment replaces the file list', () => {
 	const { systemPrompt } = buildLedgerTestWriterInvocation(soloParams);
 	// the prompt wraps its lines; the sentences are what matter
 	const prose = systemPrompt.replace(/\s+/g, ' ');
 
 	// the section keys off the same heading the user prompt leads with
 	expect(prose).toContain('When your task carries a `# Ledger tests to write` section');
-	expect(prose).toContain('the rules of that section replace the subject rules above');
+	expect(prose).toContain('the rules of that section replace the file list above');
 	// the writer is told to trust the plan over the disk, and to run nothing
 	expect(prose).toContain('The source under test may not exist on disk yet');
 	expect(prose).toContain('do not run anything to check');

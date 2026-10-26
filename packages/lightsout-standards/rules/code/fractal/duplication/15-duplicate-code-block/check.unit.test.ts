@@ -1,10 +1,64 @@
 import { describe, expect, test } from '@jest/globals';
-import { setupCloneSpansInput } from '@lightsout/standards-testkit';
+import { setupCloneSpansInput, setupSyntaxTreeInput } from '@lightsout/standards-testkit';
 import { check } from './check.ts';
 
+const forwardingMember = `	setStep({ step, index, total, label }: { step: string; index: number; total: number; label: string }): Promise<void> {
+		return this.runState.setStep({ step, index, total, label });
+	}`;
+
+const computingMember = `	total({ records }: { records: { amount: number; fee: number; active: boolean }[] }): number {
+		let sum = 0;
+		for (const record of records) {
+			if (record.active && record.amount > 0) {
+				sum += record.amount * 2 - record.fee;
+			}
+		}
+		return sum;
+	}`;
+
+/** Two classes holding the same collaborator, identical but for their names, and the span the engine reports across them. */
+const setupClassCopy = ({ body }: { body: string }) => {
+	const classOf = ({ name }: { name: string }) => `export class ${name} {
+	private readonly runState: RunState;
+
+	constructor({ runState }: { runState: RunState }) {
+		this.runState = runState;
+	}
+
+	update({ patch, reason, actor, timestamp }: { patch: object; reason: string; actor: string; timestamp: number }): Promise<void> {
+		return this.runState.update({ patch, reason, actor, timestamp });
+	}
+
+${body}
+}
+`;
+	const pipeline = classOf({ name: 'PipelineRun' });
+	const endLine = pipeline.split('\n').length - 1;
+
+	return {
+		spans: setupCloneSpansInput({
+			spans: [
+				{
+					files: [
+						{ path: 'src/PipelineRun.ts', startLine: 2, endLine },
+						{ path: 'src/RefactorRun.ts', startLine: 2, endLine },
+					],
+					tokens: 150,
+				},
+			],
+		}),
+		trees: setupSyntaxTreeInput({
+			sources: [
+				['src/PipelineRun.ts', pipeline],
+				['src/RefactorRun.ts', classOf({ name: 'RefactorRun' })],
+			],
+		}),
+	};
+};
+
 describe('duplicate-code-block check', () => {
-	test('asks for the spans the engine detected, since the detector runs once for the whole repo', () => {
-		expect(check.inputKinds).toStrictEqual(['clone-spans']);
+	test('needs the spans the engine detected, and uses syntax trees, when there are any, to tell a forwarding member from other code', () => {
+		expect({ required: check.inputKinds, optional: check.optionalInputKinds }).toStrictEqual({ required: ['clone-spans'], optional: ['syntax-tree'] });
 	});
 
 	test('reports one duplicated block as a finding naming both sides and how long the copy is', async () => {
@@ -182,5 +236,29 @@ describe('duplicate-code-block check', () => {
 		const findings = await check.run({ inputs: {}, options: { minTokens: 50 } });
 
 		expect(findings).toStrictEqual([]);
+	});
+
+	test('a copy made only of members that forward to a held collaborator is no finding, since composition repeats them by design', async () => {
+		const { spans, trees } = setupClassCopy({ body: forwardingMember });
+
+		const findings = await check.run({ inputs: { 'clone-spans': spans, 'syntax-tree': trees }, options: { minTokens: 50 } });
+
+		expect(findings).toStrictEqual([]);
+	});
+
+	test('a copy that also repeats real code stays a finding', async () => {
+		const { spans, trees } = setupClassCopy({ body: computingMember });
+
+		const findings = await check.run({ inputs: { 'clone-spans': spans, 'syntax-tree': trees }, options: { minTokens: 50 } });
+
+		expect(findings.map((finding) => finding.siteKey)).toStrictEqual(['duplicate-code-block:src/PipelineRun.ts|src/RefactorRun.ts']);
+	});
+
+	test('with no syntax trees to read, a copy made only of forwarding members is still reported', async () => {
+		const { spans } = setupClassCopy({ body: forwardingMember });
+
+		const findings = await check.run({ inputs: { 'clone-spans': spans }, options: { minTokens: 50 } });
+
+		expect(findings.length).toBe(1);
 	});
 });

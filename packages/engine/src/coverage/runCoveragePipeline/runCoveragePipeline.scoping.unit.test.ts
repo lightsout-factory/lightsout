@@ -49,13 +49,20 @@ const setupRepo = ({
 	check = 'true',
 	contents = {},
 	plant = {},
+	testFiles,
 }: {
 	files: Record<string, number>;
 	check?: string;
 	contents?: Record<string, string>;
 	plant?: Record<string, string>;
+	/** The repo's `test-files` globs, when a case declares its own. */
+	testFiles?: string[];
 }) => {
-	const dir = setupConsumerRepo({ git: false, scripts: { check, 'test-coverage': 'node coverageGate.cjs' }, config: { 'standards-pack': false } });
+	const dir = setupConsumerRepo({
+		git: false,
+		scripts: { check, 'test-coverage': 'node coverageGate.cjs' },
+		config: { 'standards-pack': false, ...(testFiles === undefined ? {} : { 'test-files': testFiles }) },
+	});
 
 	writeFileSync(join(dir, 'coverageGate.cjs'), coverageGate);
 
@@ -289,18 +296,18 @@ describe('runCoveragePipeline gates and scoping', () => {
 		expect(listedFiles({ prompt: prompts[0] ?? '' })).toStrictEqual(['src/real.ts']);
 	});
 
-	test('inside a standards pack a tests/ document set is source, so its checks are the ones handed to a writer', async () => {
+	test('a tests/ folder the repo’s test-files globs do not name is source, so its files are handed to a writer', async () => {
 		const dir = setupRepo({
 			files: { 'standards/rules/tests/unit-testing/05-rule/check.ts': 10, 'standards/common/utils/scan.unit.test.ts': 100, 'src/real.ts': 100 },
-			plant: { 'standards/lightsout-standards.json': '{ "name": "acme", "formatVersion": 2 }\n' },
+			testFiles: ['**/*.test.*'],
 		});
 		const { driver, prompts } = stubWriter({ dir });
 
 		const result = await runPipeline({ dir, driver });
 
-		// the pack roots the walk found travel the whole run: without them the
-		// check under `tests/` reads as test code, no candidate is left, and the
-		// round escalates instead of spending a writer
+		// the repo's globs travel the whole run: were a tests/ folder a test by
+		// convention, no candidate would be left and the round would escalate
+		// instead of spending a writer
 		expect(result.ok).toBe(true);
 		expect(listedFiles({ prompt: prompts[0] ?? '' })).toStrictEqual(['standards/rules/tests/unit-testing/05-rule/check.ts']);
 	});

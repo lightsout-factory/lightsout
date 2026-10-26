@@ -1,10 +1,7 @@
 import { defaultPackagesDir } from '#src/common/constants/defaultPackagesDir.ts';
-import { excludedSourcePaths } from '#src/common/sourceFiles/excludedSourcePaths.ts';
-import { listSourceFiles } from '#src/common/sourceFiles/listSourceFiles.ts';
 import { resolveConsumerTypescript } from '#src/common/workspace/resolveConsumerTypescript.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import type { PipelineRun } from '#src/pipeline/common/PipelineRun.ts';
-import { resolveTestSubjects } from '#src/pipeline/common/resolveTestSubjects.ts';
 import type { PipelineStep } from '#src/pipeline/common/types/PipelineStep.ts';
 import { groupTestTargets } from '#src/pipeline/steps/buildSteps/buildTestSteps/writeTestsStep/groupTestTargets.ts';
 import { selectTestTargets } from '#src/pipeline/steps/buildSteps/buildTestSteps/writeTestsStep/selectTestTargets.ts';
@@ -27,7 +24,7 @@ const narrateSkippedFiles = ({ run, deleted, inert, uncoverable }: { run: Pipeli
 	}
 
 	if (inert.length > 0) {
-		run.progress(`write-tests: ${inert.length} inert file(s) skipped (barrel/type-only, nothing to cover): ${inert.join(', ')}`);
+		run.progress(`write-tests: ${inert.length} inert file(s) skipped (no runtime code, nothing to cover): ${inert.join(', ')}`);
 	}
 
 	if (uncoverable.length > 0) {
@@ -54,25 +51,14 @@ export const writeTestsStep = ({ run, gitPrefix, planContent, testStandards }: P
 
 		narrateSkippedFiles({ run, deleted, inert, uncoverable });
 
-		const universe = (await listSourceFiles({ cwd: run.cwd, exclude: excludedSourcePaths({ config: run.config }) })).files;
-		const { subjects, orphans } = await resolveTestSubjects({ cwd: run.cwd, targets, universe, packagesDir, compiler });
-
-		if (orphans.length > 0) {
-			run.progress(
-				`write-tests: ${orphans.length} changed file(s) skipped — nothing public reaches them (they sit in an internal/ folder no public file imports): ${orphans.join(', ')}`,
-			);
-		}
-
-		const testSubjects = [...new Set([...subjects.values()].flat())].sort();
-
 		// Persisted before any writer spawns — a crash mid-fan-out must not lose
-		// the skip record or the subjects a verify fix re-invocation hands back.
-		await run.setStep({ record, patch: { testSubjects, unreachableChangedFiles: orphans, coverageExcludedChangedFiles: coverageExcluded } });
+		// the skip record a verify fix re-invocation reads back.
+		await run.setStep({ record, patch: { coverageExcludedChangedFiles: coverageExcluded } });
 
-		const groups = await groupTestTargets({ run, subjects, compiler });
+		const groups = await groupTestTargets({ run, targets, compiler });
 
 		run.progress(
-			`step write-tests — attempt ${record.attempts} · ${groups.length} group(s): ${testSubjects.length} subject(s) covering ${subjects.size} changed file(s), up to ${testWriterConcurrency} writers in parallel`,
+			`step write-tests — attempt ${record.attempts} · ${groups.length} group(s) covering ${targets.length} changed file(s), up to ${testWriterConcurrency} writers in parallel`,
 		);
 		const { reports, failures, terminated, parked } = await runWriterBatches({
 			run,
@@ -90,8 +76,6 @@ export const writeTestsStep = ({ run, gitPrefix, planContent, testStandards }: P
 			record: { ...record, report: { reports } },
 			patch: {
 				...(await collectChanged({ run, gitPrefix, reports })),
-				testSubjects,
-				unreachableChangedFiles: orphans,
 				coverageExcludedChangedFiles: coverageExcluded,
 			},
 		});

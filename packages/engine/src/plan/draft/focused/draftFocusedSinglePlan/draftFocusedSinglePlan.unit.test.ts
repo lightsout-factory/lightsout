@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
 import type { DriverInvocation } from '#src/common/types/DriverInvocation.ts';
 import { Effort } from '#src/contracts/Effort.ts';
+import { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { Permissions } from '#src/contracts/Permissions.ts';
 import { SourceEvidenceIndex } from '#src/contracts/plan/evidence/SourceEvidenceIndex.ts';
 import { PlanFacts } from '#src/contracts/plan/facts/PlanFacts.ts';
@@ -18,6 +19,15 @@ import { planWorkspaceFolder } from '#tests/helpers/planWorkspaceFolder.ts';
 import { recordingDriver } from '#tests/helpers/recordingDriver.ts';
 import { seedPlanWorkspace } from '#tests/helpers/seedPlanWorkspace.ts';
 import { setupConsumerRepo } from '#tests/helpers/setupConsumerRepo.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
+
+/** The config the consumer repo declares: its code and its tests, which the lint counts a plan's files by. */
+const repoConfig = LightsoutConfig.parse({
+	'source-files': sourceFileGlobs,
+	'test-files': testFileGlobs,
+	gates: { check: 'true', test: 'true', 'test-coverage': false },
+});
 
 /** What one spawn is asked to write, keyed off the brief the focused builder emitted. */
 type Respond = Parameters<typeof createScriptedDraftDriver>[0]['respond'];
@@ -32,7 +42,7 @@ const planCreating = ({ extra }: { extra: number }) => {
 	return cleanPlanBody().replace('## Files to Modify', `${creates}\n## Files to Modify`);
 };
 
-/** The clean single skeleton with `extra` further modified files — one created file, so only the touched count can bust a ceiling, and 70 is the touched one. The touched count is 1 + `extra`, because the skeleton's modified `src/index.js` is a barrel the lint does not count. */
+/** The clean single skeleton with `extra` further modified files — one created file, so only the touched count can bust a ceiling, and 70 is the touched one. The touched count is 2 + `extra`: the created file and the skeleton's modified `src/index.js` count beside them. */
 const planTouching = ({ extra }: { extra: number }) => {
 	const modifies = Array.from({ length: extra }, (_, index) => `### \`src/modified${index}.ts\`\n\nRe-export \`modified${index}\`.\n`).join('\n');
 
@@ -88,6 +98,7 @@ const setupFocusedSingle = ({
 			verifiedAt: '2026-01-01T00:00:00.000Z',
 		}),
 		decisions: emptyDecisionsRecord({ planName: name }),
+		config: repoConfig,
 		executorFileLimit: 50,
 		model,
 		effort,
@@ -208,7 +219,7 @@ describe('draftFocusedSinglePlan', () => {
 			name: 'focused-touched-escalated',
 			respond: ({ role, path }) => {
 				if (role === 'single') {
-					return planTouching({ extra: 70 });
+					return planTouching({ extra: 69 });
 				}
 
 				return role === 'overview'

@@ -6,11 +6,11 @@ import { createWarmSpawn } from '#src/pipeline/steps/common/createWarmSpawn.ts';
 import { createWriterAggregate } from '#src/pipeline/steps/common/createWriterAggregate.ts';
 import type { TestTargetGroup } from '#src/pipeline/steps/common/types/TestTargetGroup.ts';
 import type { WriterResult } from '#src/pipeline/steps/common/types/WriterResult.ts';
-import { drainBySubjects } from '#src/pipeline/steps/writeTestsStep/runWriterBatches/drainBySubjects.ts';
+import { drainWriterGroups } from '#src/pipeline/steps/writeTestsStep/runWriterBatches/drainWriterGroups.ts';
 
 interface Params {
 	run: PipelineRun;
-	/** One assignment per writer: subjects to test through, changed files that must execute. Groups sharing a subject file never run at the same time. */
+	/** One assignment per writer: the changed files its tests must execute. No two groups share a file. */
 	groups: TestTargetGroup[];
 	planContent: string;
 	testStandards?: string;
@@ -27,15 +27,14 @@ export const runWriterBatches = async ({
 	testStandards,
 	acceptanceTests,
 }: Params): Promise<{ reports: WorkReport[]; failures: string[]; terminated: boolean; parked: boolean }> => {
-	const aggregate = createWriterAggregate<TestTargetGroup>({ run, step: 'write-tests', label: ({ group }) => group.subjects.join(', ') });
+	const aggregate = createWriterAggregate<TestTargetGroup>({ run, step: 'write-tests', label: ({ group }) => group.files.join(', ') });
 
 	const spawnWriter: SpawnWriter = async ({ group, onFirstEvent }) => ({
 		group,
 		...(await run.invokeRole({
 			invocation: buildUnitTestWriterInvocation({
 				planContent,
-				subjects: group.subjects,
-				mustExecute: group.mustExecute,
+				files: group.files,
 				standards: testStandards,
 				acceptanceTests,
 			}),
@@ -57,7 +56,7 @@ export const runWriterBatches = async ({
 		await collectWarm();
 	}
 
-	await drainBySubjects({
+	await drainWriterGroups({
 		groups: warmGroup ? groups.slice(1) : groups,
 		spawnWriter,
 		aggregate,

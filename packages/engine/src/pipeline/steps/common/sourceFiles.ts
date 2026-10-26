@@ -1,3 +1,4 @@
+import { readRepoFileGlobs } from '#src/common/config/readRepoFileGlobs.ts';
 import { isTestFile } from '#src/common/sourceFiles/isTestFile.ts';
 import type { PipelineRun } from '#src/pipeline/common/PipelineRun.ts';
 import { standardsScopeFiles } from '#src/pipeline/steps/common/standardsScopeFiles.ts';
@@ -11,4 +12,5 @@ interface Params {
  * conditions, so the two lists cannot drift. Dropping tests is right for every
  * caller here and wrong for the standards gate, which reads the wider list.
  */
-export const sourceFiles = ({ run }: Params): string[] => standardsScopeFiles({ run }).filter((file) => !isTestFile({ path: file }));
+export const sourceFiles = ({ run }: Params): string[] =>
+	standardsScopeFiles({ run }).filter((file) => !isTestFile({ path: file, testFileGlobs: readRepoFileGlobs({ config: run.config }).tests }));

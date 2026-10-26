@@ -4,6 +4,8 @@ import { dirname, join } from 'node:path';
 import { expect, test } from '@jest/globals';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { checkChangedFilesExecuted } from '#src/coverage/checkChangedFilesExecuted.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // Runtime require rather than a static import: the CJS TypeScript compiler
 // probes __filename at load, so it has to be required at runtime rather than
@@ -11,7 +13,11 @@ import { checkChangedFilesExecuted } from '#src/coverage/checkChangedFilesExecut
 // `require` is already the local resolver — `import.meta` does not exist there.
 const ts = require('typescript') as typeof import('typescript');
 
-const rootConfig: LightsoutConfig = { gates: { check: 'true', test: 'true', 'test-coverage': 'npm run coverage' } };
+const rootConfig: LightsoutConfig = {
+	'source-files': sourceFileGlobs,
+	'test-files': testFileGlobs,
+	gates: { check: 'true', test: 'true', 'test-coverage': 'npm run coverage' },
+};
 
 /** A CommonJS jest config exporting the given settings verbatim. */
 const cjsConfig = ({ settings }: { settings: Record<string, unknown> }) => `module.exports = ${JSON.stringify(settings)};\n`;
@@ -95,7 +101,11 @@ test('checkChangedFilesExecuted: an empty changed set, a missing compiler, or an
 	expect(await checkChangedFilesExecuted({ cwd: '/nowhere', config: rootConfig, changedFiles: [], compiler: ts })).toBe(undefined);
 	expect(await checkChangedFilesExecuted({ cwd: '/nowhere', config: rootConfig, changedFiles: ['src/a.ts'], compiler: undefined })).toBe(undefined);
 
-	const optedOut: LightsoutConfig = { gates: { check: 'true', test: 'true', 'test-coverage': false } };
+	const optedOut: LightsoutConfig = {
+		'source-files': sourceFileGlobs,
+		'test-files': testFileGlobs,
+		gates: { check: 'true', test: 'true', 'test-coverage': false },
+	};
 	const cwd = setupRepo({ files: { 'src/a.ts': 'export const a = () => 1;' } });
 
 	// no scope owns the file — outside the measurement, outside the check
@@ -114,9 +124,7 @@ test('checkChangedFilesExecuted: executed files pass; zero-covered and unmeasure
 
 	const error = await checkChangedFilesExecuted({ cwd, config: rootConfig, changedFiles: ['src/ran.ts', 'src/cold.ts', 'src/absent.ts'], compiler: ts });
 
-	expect(error).toBe(
-		"changed-file-execution: 2 changed file(s) never executed under the tests: src/cold.ts, src/absent.ts — cover each through its public subject's tests; a file no test can reach through a public surface is a wiring defect to fix in source.",
-	);
+	expect(error).toBe('changed-file-execution: 2 changed file(s) never executed under the tests: src/cold.ts, src/absent.ts — write tests that execute each.');
 });
 
 test('checkChangedFilesExecuted: deleted, inert, test, and zero-total files are legitimately absent from coverage', async () => {
@@ -151,6 +159,8 @@ test('checkChangedFilesExecuted: a missing summary fails with the doctor guidanc
 
 test('checkChangedFilesExecuted: monorepo mode reads each package summary, and root files sit outside the measurement', async () => {
 	const config: LightsoutConfig = {
+		'source-files': sourceFileGlobs,
+		'test-files': testFileGlobs,
 		gates: { check: 'true', test: 'true', 'test-coverage': false },
 		'package-gates': { check: 'true {package}', test: 'true {package}', 'test-coverage': 'pnpm --filter {package} run test:coverage' },
 	};
@@ -211,6 +221,8 @@ test('checkChangedFilesExecuted: a configured summary path is read instead of th
 
 test('checkChangedFilesExecuted: a package whose coverage command was never configured is outside the measurement', async () => {
 	const config: LightsoutConfig = {
+		'source-files': sourceFileGlobs,
+		'test-files': testFileGlobs,
 		gates: { check: 'true', test: 'true', 'test-coverage': false },
 		'package-gates': { check: 'true {package}', test: 'true {package}', 'test-coverage': 'pnpm --filter {package} run test:coverage' },
 	};
@@ -234,6 +246,8 @@ test('checkChangedFilesExecuted: in root mode a file under the packages director
 
 test('checkChangedFilesExecuted: a configured packages directory is where a changed file’s scope is looked up', async () => {
 	const config: LightsoutConfig = {
+		'source-files': sourceFileGlobs,
+		'test-files': testFileGlobs,
 		gates: { check: 'true', test: 'true', 'test-coverage': false },
 		'packages-dir': 'apps',
 		'package-gates': { check: 'true {package}', test: 'true {package}', 'test-coverage': 'pnpm --filter {package} run test:coverage' },
@@ -269,9 +283,7 @@ test('checkChangedFilesExecuted: a fixture file the config negates is exempt, wh
 
 	// the fixture is absent from the summary and exempt; the collected file is
 	// absent from the summary and is not — the teeth stay on
-	expect(error).toBe(
-		"changed-file-execution: 1 changed file(s) never executed under the tests: src/cold.ts — cover each through its public subject's tests; a file no test can reach through a public surface is a wiring defect to fix in source.",
-	);
+	expect(error).toBe('changed-file-execution: 1 changed file(s) never executed under the tests: src/cold.ts — write tests that execute each.');
 });
 
 // Run 00dd4d49: a pack-root fixtures/framework-owned/ tree — fixtures one level
@@ -360,6 +372,8 @@ test('checkChangedFilesExecuted: a configuration the engine cannot require leave
 
 test('checkChangedFilesExecuted: in monorepo mode a package’s unit config is located through its coverage script’s -c argument', async () => {
 	const config: LightsoutConfig = {
+		'source-files': sourceFileGlobs,
+		'test-files': testFileGlobs,
 		gates: { check: 'true', test: 'true', 'test-coverage': false },
 		'package-gates': { check: 'true {package}', test: 'true {package}', 'test-coverage': 'pnpm --filter {package} run test:coverage' },
 	};

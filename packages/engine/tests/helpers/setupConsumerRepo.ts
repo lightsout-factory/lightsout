@@ -2,7 +2,9 @@ import { execSync } from 'node:child_process';
 import { mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
 import { strictProfile } from '#tests/helpers/strictProfile.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 import { writeSource } from '#tests/helpers/writeSource.ts';
 
 interface Params {
@@ -66,6 +68,8 @@ export const setupConsumerRepo = ({ git = true, plan = '# Plan: add feature\n', 
 		join(dir, 'lightsout.config.json'),
 		JSON.stringify({
 			gates: { check: 'true', test: 'true', 'test-coverage': false, ...scripts },
+			'source-files': sourceFileGlobs,
+			'test-files': testFileGlobs,
 			...config,
 			// the strict profile underneath whatever the test overrides — an `off` there
 			// still wins. A repo that names its own pack (or none) gets only what it

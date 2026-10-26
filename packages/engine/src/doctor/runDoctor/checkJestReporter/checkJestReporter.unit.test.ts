@@ -2,7 +2,7 @@ import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
-import { checkJestReporter } from '#src/doctor/runDoctor/checkJestReporter.ts';
+import { checkJestReporter } from '#src/doctor/runDoctor/checkJestReporter/checkJestReporter.ts';
 
 // A config that loads whatever the engine names in the reporter variable — the
 // one conditional entry a consumer adds. The variable's name is written out

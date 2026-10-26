@@ -9,16 +9,25 @@ import { check } from './check.ts';
  * its text. `listedWithoutText` names paths the run found but never read, so a
  * file can appear in scope with no contents entry behind it.
  */
-const setupFileTextInput = ({ contents, listedWithoutText = [] }: { contents: Array<[string, string]>; listedWithoutText?: string[] }): FileTextInput => {
+const setupFileTextInput = ({
+	contents,
+	listedWithoutText = [],
+	tests = [],
+}: {
+	contents: Array<[string, string]>;
+	listedWithoutText?: string[];
+	tests?: string[];
+}): FileTextInput => {
 	const files = [...contents.map(([path]) => path), ...listedWithoutText];
 
 	return {
 		kind: StandardsInputKind.FileText,
 		cwd: '/repo',
 		source: files,
-		tests: [],
+		tests,
 		files,
 		referenceFiles: [],
+		referenceTests: tests,
 		contents: new Map(contents),
 		standardsLibraries: [],
 	};
@@ -139,9 +148,10 @@ describe('multi-export check', () => {
 	test.each([
 		{ shape: 'named for a test', path: 'src/billing/rate.unit.test.ts' },
 		{ shape: 'sitting under a test directory', path: 'tests/helpers/rate.ts' },
-	])('spares a file $shape, which the code standards leave to the test standards', async ({ path }) => {
+	])('spares a test file $shape, which the code standards leave to the test standards', async ({ path }) => {
 		const input = setupFileTextInput({
 			contents: [[path, ['export const baseRate = 1;', 'export const taxRate = 2;'].join('\n')]],
+			tests: [path],
 		});
 
 		const findings = await check.run({ inputs: { 'file-text': input }, options: {} });

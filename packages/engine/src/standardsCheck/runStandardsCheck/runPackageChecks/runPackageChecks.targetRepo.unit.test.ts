@@ -9,6 +9,8 @@ import type { StandardsGroup } from '#src/common/types/StandardsGroup.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 import { runPackageChecks } from '#src/standardsCheck/runStandardsCheck/runPackageChecks/runPackageChecks.ts';
 import { linkTypescript } from '#tests/helpers/linkTypescript.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // What the run borrows from the repo it checks: the typescript the compiler-backed
 // rules need, and the workspace packages under the packages dir the repo configured.
@@ -110,7 +112,7 @@ const runChecks = ({ rules, cwd, packagesDir }: { rules: LoadedStandardsRule[]; 
 		states,
 	};
 
-	return runPackageChecks({ cwd, groups: [group], packagesDir });
+	return runPackageChecks({ cwd, sourceFileGlobs, testFileGlobs, groups: [group], packagesDir });
 };
 
 describe('runPackageChecks target repo', () => {

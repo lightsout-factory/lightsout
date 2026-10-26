@@ -11,6 +11,8 @@ import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutCo
 import type { WorkOrderState } from '#src/contracts/workOrder/WorkOrderState.ts';
 import { captureCommandOutput } from '#tests/helpers/captureCommandOutput.ts';
 import { ticketTrackerConfigBlock } from '#tests/helpers/queueConfigBlock.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // Mocked Imports
 // -------------------------
@@ -93,7 +95,10 @@ const setupWorkOrderNew = ({
 
 	mockCreateWorkOrder.mockResolvedValue(outcome);
 
-	writeFileSync(join(cwd, 'lightsout.config.json'), JSON.stringify({ gates, 'ticket-tracker': ticketTrackerConfigBlock }));
+	writeFileSync(
+		join(cwd, 'lightsout.config.json'),
+		JSON.stringify({ 'source-files': sourceFileGlobs, 'test-files': testFileGlobs, gates, 'ticket-tracker': ticketTrackerConfigBlock }),
+	);
 
 	return { context: { flags: parseFlags({ args }), rest: [word, ...args], cwd }, cwd, ...captured };
 };

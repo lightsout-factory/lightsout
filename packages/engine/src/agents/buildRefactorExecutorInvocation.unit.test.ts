@@ -25,7 +25,26 @@ test('buildRefactorExecutorInvocation: the system prompt carries the role, the p
 	// the role prompt leads the system prompt
 	expect(systemPrompt.startsWith('# Role: Refactor Executor')).toBeTruthy();
 	expect(systemPrompt.includes(`\n\n---\n\n# Plan (context for what these changes were for)\n\n${planContent}`)).toBeTruthy();
-	expect(systemPrompt.includes(`# Standards\n\nThese rules are binding:\n\n${standards}`)).toBeTruthy();
+	expect(
+		systemPrompt.includes(
+			`# Standards\n\nThese rules are binding on every edit you make. They say how each finding is fixed; they are not a second work-list:\n\n${standards}`,
+		),
+	).toBeTruthy();
+});
+
+test('buildRefactorExecutorInvocation: test standards ride the system prompt as their own section, after the code standards', () => {
+	const { systemPrompt } = buildRefactorExecutorInvocation({ scope, planContent, changedFiles: ['src/widget.ts'], standards, testStandards: 'TEST RULES' });
+
+	const testSection = systemPrompt.indexOf('# Test standards\n\nThese rules are binding on every test file you edit.');
+
+	expect(testSection).toBeGreaterThan(systemPrompt.indexOf('# Standards\n\n'));
+	expect(systemPrompt.slice(testSection)).toContain('TEST RULES');
+});
+
+test('buildRefactorExecutorInvocation: no test standards section when test standards are absent', () => {
+	const { systemPrompt } = buildRefactorExecutorInvocation({ scope, planContent, changedFiles: ['src/widget.ts'], standards });
+
+	expect(systemPrompt).not.toContain('# Test standards');
 });
 
 test('buildRefactorExecutorInvocation: no standards section when standards are absent', () => {
@@ -247,10 +266,10 @@ test('buildRefactorExecutorInvocation: both scopes let one fix reach the files i
 	expect(standalone.systemPrompt.includes('cannot be finished without')).toBeTruthy();
 
 	// the limit that is left, stated only to the caller whose branch a reviewer
-	// reads as a feature: a folder cap is cleared by moving files the feature
-	// never touched, which is the reorganization that branch did not sign up for
-	expect(feature.systemPrompt.includes('A folder-level finding (`folder-size`) is REPORTED')).toBeTruthy();
-	expect(standalone.systemPrompt.includes('A folder-level finding')).toBeFalsy();
+	// reads as a feature: a remedy that regroups files the feature never touched
+	// is the reorganization that branch did not sign up for
+	expect(feature.systemPrompt.includes('A finding whose only real remedy is regrouping files this feature never\n  touched is REPORTED')).toBeTruthy();
+	expect(standalone.systemPrompt.includes('regrouping files this feature never')).toBeFalsy();
 
 	// and the licence to reorganize, stated only to the caller invoked to do it
 	expect(standalone.systemPrompt.includes('They are not a fence.')).toBeTruthy();
@@ -340,12 +359,12 @@ test('the advisory outcome example uses a full rule name and a site key prefixed
 		scope,
 		planContent,
 		changedFiles: ['src/widget.ts'],
-		advisories: [finding({ rule: 'lightsout/function-size', siteKey: 'lightsout/function-size:src/widget.ts', severity: StandardsSeverity.Advisory })],
+		advisories: [finding({ rule: 'acme/max-nesting', siteKey: 'acme/max-nesting:src/widget.ts', severity: StandardsSeverity.Advisory })],
 		reportAdvisoryOutcomes: true,
 	});
 
 	// the agent copies the example's shape, so it must show the full names findings carry
-	expect(prompt).toContain('"rule": "lightsout/function-size", "siteKey": "lightsout/function-size:');
-	expect(prompt).not.toContain('"rule": "function-size"');
-	expect(prompt).not.toContain('"siteKey": "function-size:');
+	expect(prompt).toContain('"rule": "acme/max-nesting", "siteKey": "acme/max-nesting:');
+	expect(prompt).not.toContain('"rule": "max-nesting"');
+	expect(prompt).not.toContain('"siteKey": "max-nesting:');
 });

@@ -13,6 +13,8 @@ import { updateLocalWorkOrderState } from '#src/workOrder/common/state/updateLoc
 import { captureCommandOutput } from '#tests/helpers/captureCommandOutput.ts';
 import { setupBranchRepo } from '#tests/helpers/setupBranchRepo.ts';
 import { manifestOf } from '#tests/helpers/setupResume.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // Mocked Imports
 // -------------------------
@@ -87,7 +89,12 @@ const setupTicketChain = async ({
 
 	mockRunShip.mockResolvedValue({ status: ShipStatus.Shipped, branch: workOrderName, ticketRef: 'LO-140', mergeCommit: '0f1e2d3c', failingChecks: [] });
 
-	const config = LightsoutConfig.parse({ gates: { check: 'true', test: 'true', 'test-coverage': false }, ship: { 'after-implement': afterImplement } });
+	const config = LightsoutConfig.parse({
+		'source-files': sourceFileGlobs,
+		'test-files': testFileGlobs,
+		gates: { check: 'true', test: 'true', 'test-coverage': false },
+		ship: { 'after-implement': afterImplement },
+	});
 	const manifest = manifestOf({ status: RunStatus.Passed, branch: workOrderName, plan: join(planFolder, 'plan.md') });
 
 	return { config, cwd, result: { ok: true, manifest }, ...captured };

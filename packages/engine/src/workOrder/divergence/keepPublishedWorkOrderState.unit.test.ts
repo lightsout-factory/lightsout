@@ -14,6 +14,8 @@ import { keepPublishedWorkOrderState } from '#src/workOrder/divergence/keepPubli
 import { planWorkspaceFolder } from '#tests/helpers/planWorkspaceFolder.ts';
 import { ticketTrackerConfigBlock } from '#tests/helpers/queueConfigBlock.ts';
 import { setupBranchRepo } from '#tests/helpers/setupBranchRepo.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 import { trackerSettingsFixture } from '#tests/helpers/trackerSettingsFixture.ts';
 
 // Mocked Imports
@@ -46,6 +48,8 @@ const name = 'lo-140-multi';
 const ticketRef = 'LO-140';
 const planId = '002-fix';
 const config: LightsoutConfig = {
+	'source-files': sourceFileGlobs,
+	'test-files': testFileGlobs,
 	gates: { check: 'true', test: 'true', 'test-coverage': false },
 	'ticket-tracker': { ...ticketTrackerConfigBlock, provider: 'linear' },
 };

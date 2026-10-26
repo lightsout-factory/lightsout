@@ -1,9 +1,13 @@
 import { describe, expect, test } from '@jest/globals';
 import { describeConfigIssues } from '#src/common/config/describeConfigIssues.ts';
 import { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 const setupRejectedConfig = () => {
 	const result = LightsoutConfig.safeParse({
+		'source-files': sourceFileGlobs,
+		'test-files': testFileGlobs,
 		gates: { check: 42, test: 'node --test', 'test-coverage': false },
 		'standards-pakc': false,
 	});

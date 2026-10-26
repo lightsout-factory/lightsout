@@ -16,6 +16,8 @@ import { runAutoPlanWorker } from '#src/queue/workers/runWorkerWithRelay/runAuto
 import { queueSettingsFixture } from '#tests/helpers/queueSettingsFixture.ts';
 import { runDirFor } from '#tests/helpers/runDirFor.ts';
 import { setupBranchRepo } from '#tests/helpers/setupBranchRepo.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // Mocked Imports
 // -------------------------
@@ -87,7 +89,11 @@ const workOrderName = 'lo-70-drain';
 const planId = '002-search-basics';
 const address = `${workOrderName}/${planId}`;
 
-const config: LightsoutConfig = { gates: { check: 'true', test: 'true', 'test-coverage': false } };
+const config: LightsoutConfig = {
+	'source-files': sourceFileGlobs,
+	'test-files': testFileGlobs,
+	gates: { check: 'true', test: 'true', 'test-coverage': false },
+};
 const driver: Driver = { name: 'claude-code', invoke: () => Promise.resolve({ text: '', exitCode: 0 }) };
 
 const ticket: TicketSummary = {

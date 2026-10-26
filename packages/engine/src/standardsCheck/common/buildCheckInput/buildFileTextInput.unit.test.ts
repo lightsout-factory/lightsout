@@ -46,6 +46,7 @@ const buildInput = ({ cwd, cache, files = ['src/alpha.ts'] }: { cwd: string; cac
 		tests: [],
 		files,
 		referenceFiles: [...files, 'src/outside.ts'],
+		referenceTests: [],
 		standardsLibraries: [],
 		cache,
 	});

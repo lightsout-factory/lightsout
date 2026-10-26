@@ -59,8 +59,10 @@ interface Params {
 		testStandards?: string;
 		/** The consumer's TypeScript module, or undefined — without one, grouping degrades to one file per component. */
 		compiler: typeof ts | undefined;
-		/** Repo-relative standards-pack roots — what makes the test-file question answerable. */
-		standardsLibraries: string[];
+		/** The repo's `test-files` globs — a test is never a coverage candidate. */
+		testFileGlobs: string[];
+		/** The repo's `source-files` globs — only a code file is. */
+		sourceFileGlobs: string[];
 	};
 	/** Stop (parked, resumable) after this many batches this run — budget control. */
 	maxBatches?: number;
@@ -72,7 +74,7 @@ interface Params {
  * work-list would be built from, so every round re-measures.
  */
 export const runCoverageRounds = async ({ run, driver, batchInputs, maxBatches, resumed }: Params): Promise<CoverageResult> => {
-	const { testStandards, compiler, standardsLibraries } = batchInputs;
+	const { testStandards, compiler, testFileGlobs, sourceFileGlobs } = batchInputs;
 	let declineStreak = resumed.declineStreak;
 	let batchCount = resumed.batchCount;
 	let processed = 0;
@@ -109,7 +111,15 @@ export const runCoverageRounds = async ({ run, driver, batchInputs, maxBatches, 
 
 		batchCount += 1;
 
-		const round = await buildCoverageRound({ cwd: run.cwd, measured, setAside: run.setAside, standardsLibraries, compiler, batchNumber: batchCount });
+		const round = await buildCoverageRound({
+			cwd: run.cwd,
+			measured,
+			setAside: run.setAside,
+			testFileGlobs,
+			sourceFileGlobs,
+			compiler,
+			batchNumber: batchCount,
+		});
 
 		if ('error' in round) {
 			await run.update({ patch: { status: RunStatus.Escalated, currentStep: null } });

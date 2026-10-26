@@ -22,7 +22,7 @@ const getTokens = ({ name }: { name: string }) =>
 		.map((token) => verbSynonyms[token] ?? token);
 
 interface Params {
-	/** Extension already stripped, e.g. via `getExportName`. */
+	/** A declared name, or a file name with its extension stripped. */
 	name: string;
 }
 

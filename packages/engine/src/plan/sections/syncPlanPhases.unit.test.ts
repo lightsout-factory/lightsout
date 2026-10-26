@@ -9,6 +9,8 @@ import { declaredRecord } from '#tests/helpers/declaredRecord.ts';
 import { expectStatus } from '#tests/helpers/expectStatus.ts';
 import { minimalPlanBody } from '#tests/helpers/minimalPlanBody.ts';
 import { type DeclarationSpec, overviewBody, type PhaseSpec, phaseBody } from '#tests/helpers/phasePlan.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 import { writePhasedPlanDeliverable } from '#tests/helpers/writePhasedPlanDeliverable.ts';
 import { writePlanDeliverable } from '#tests/helpers/writePlanDeliverable.ts';
 
@@ -88,7 +90,7 @@ describe('syncPlanPhases', () => {
 			},
 		});
 
-		const result = await syncPlanPhases({ cwd: plan.cwd, name: planName });
+		const result = await syncPlanPhases({ cwd: plan.cwd, name: planName, fileGlobs: { source: sourceFileGlobs, tests: testFileGlobs } });
 
 		expectStatus(result, 'complete');
 		// the second phase gained two files and a budget after drafting; its row
@@ -154,7 +156,7 @@ describe('syncPlanPhases', () => {
 	test.each(missingRowOrBlock)('refuses a phase file missing its row or its declaration block, naming it and writing nothing', async ({ named, ...spec }) => {
 		const plan = setupPhasedPlan(spec);
 
-		const result = await syncPlanPhases({ cwd: plan.cwd, name: planName });
+		const result = await syncPlanPhases({ cwd: plan.cwd, name: planName, fileGlobs: { source: sourceFileGlobs, tests: testFileGlobs } });
 
 		expectStatus(result, 'failed');
 		expect({ error: result.error, overview: plan.readOverview() }).toEqual({ error: expect.stringContaining(named), overview: plan.overview });
@@ -175,7 +177,7 @@ describe('syncPlanPhases', () => {
 	])('refuses a row or block naming a phase file that does not exist, naming it and writing nothing', async ({ rows, edit }) => {
 		const plan = setupPhasedPlan({ rows, phases: { 'phase1-core.md': { create: ['src/core.ts'] } }, edit });
 
-		const result = await syncPlanPhases({ cwd: plan.cwd, name: planName });
+		const result = await syncPlanPhases({ cwd: plan.cwd, name: planName, fileGlobs: { source: sourceFileGlobs, tests: testFileGlobs } });
 
 		expectStatus(result, 'failed');
 		expect({ error: result.error, overview: plan.readOverview() }).toEqual({
@@ -206,7 +208,7 @@ describe('syncPlanPhases', () => {
 	test.each(numberingCases)('refuses a gap or a repeat in the phase numbering, writing nothing', async ({ rows, phases, numbers }) => {
 		const plan = setupPhasedPlan({ rows, phases });
 
-		const result = await syncPlanPhases({ cwd: plan.cwd, name: planName });
+		const result = await syncPlanPhases({ cwd: plan.cwd, name: planName, fileGlobs: { source: sourceFileGlobs, tests: testFileGlobs } });
 
 		expectStatus(result, 'failed');
 		expect({ error: result.error, overview: plan.readOverview() }).toEqual({
@@ -224,7 +226,7 @@ describe('syncPlanPhases', () => {
 			phases: { 'phase1-core.md': { create: ['src/core.ts'] }, 'phase3-split.md': { create: ['src/split.ts'] } },
 		});
 
-		const result = await syncPlanPhases({ cwd: plan.cwd, name: planName });
+		const result = await syncPlanPhases({ cwd: plan.cwd, name: planName, fileGlobs: { source: sourceFileGlobs, tests: testFileGlobs } });
 
 		expectStatus(result, 'failed');
 		// every row and block lines up and the numbers run 1 to 2, so the only
@@ -241,7 +243,7 @@ describe('syncPlanPhases', () => {
 	])('refuses a single plan and an address with no plan', async ({ written, error }) => {
 		const plan = setupUnphasedPlan({ written });
 
-		const result = await syncPlanPhases({ cwd: plan.cwd, name: planName });
+		const result = await syncPlanPhases({ cwd: plan.cwd, name: planName, fileGlobs: { source: sourceFileGlobs, tests: testFileGlobs } });
 
 		expect(result).toEqual({ status: 'failed', error });
 	});

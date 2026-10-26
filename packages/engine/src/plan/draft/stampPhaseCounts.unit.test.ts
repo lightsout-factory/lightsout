@@ -7,6 +7,8 @@ import { commitAll } from '#tests/helpers/commitAll.ts';
 import { declaredRecord } from '#tests/helpers/declaredRecord.ts';
 import { type DeclarationSpec, overviewBody, type PhaseSpec, phaseBody } from '#tests/helpers/phasePlan.ts';
 import { runInRepo } from '#tests/helpers/runInRepo.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 import { writeRepoFile } from '#tests/helpers/writeRepoFile.ts';
 
 // The count stamp: the overview's `## Phases` table is authored before any
@@ -98,7 +100,12 @@ describe('stampPhaseCounts', () => {
 			phases: { 'phase1-core.md': { create: ['src/a.ts', 'src/b.ts'], modify: ['src/c.ts'] } },
 		});
 
-		const declarations = await stampPhaseCounts({ cwd: stamp.cwd, overviewPath: stamp.overviewPath, phasePaths: stamp.phasePaths });
+		const declarations = await stampPhaseCounts({
+			cwd: stamp.cwd,
+			overviewPath: stamp.overviewPath,
+			phasePaths: stamp.phasePaths,
+			fileGlobs: { source: sourceFileGlobs, tests: testFileGlobs },
+		});
 
 		// the estimate said nine of each; the files say two created and three touched
 		expect({ rows: rowLines({ text: stamp.readOverview() }), declared: countsOf({ declarations }) }).toStrictEqual({
@@ -119,7 +126,12 @@ describe('stampPhaseCounts', () => {
 			},
 		});
 
-		const declarations = await stampPhaseCounts({ cwd: stamp.cwd, overviewPath: stamp.overviewPath, phasePaths: stamp.phasePaths });
+		const declarations = await stampPhaseCounts({
+			cwd: stamp.cwd,
+			overviewPath: stamp.overviewPath,
+			phasePaths: stamp.phasePaths,
+			fileGlobs: { source: sourceFileGlobs, tests: testFileGlobs },
+		});
 
 		expect({ rows: rowLines({ text: stamp.readOverview() }), declared: countsOf({ declarations }) }).toStrictEqual({
 			rows: ['| 1 | `phase1-core.md` | the work | 1 | 3 |', '| 2 | `phase2-wire.md` | the work | 3 | 3 |'],
@@ -132,10 +144,10 @@ describe('stampPhaseCounts', () => {
 
 	test.each<{ case: string; spec: PhaseSpec; created: number; touched: number }>([
 		{
-			case: 'a test file, a barrel and a declaration file, none of which count',
+			case: 'an index file like any code file, but not a test file or a declaration file the globs exclude',
 			spec: { create: ['src/a.ts', 'src/a.unit.test.ts', 'src/index.ts', 'src/b.d.ts'] },
-			created: 1,
-			touched: 1,
+			created: 2,
+			touched: 2,
 		},
 		{ case: 'a move, touched on both sides and created by neither', spec: { move: [{ from: 'src/old.ts', to: 'src/new.ts' }] }, created: 0, touched: 2 },
 		{ case: 'an earlier-phase modify and a deletion, both touched', spec: { earlierModify: ['src/e.ts'], remove: ['src/d.ts'] }, created: 0, touched: 2 },
@@ -143,7 +155,12 @@ describe('stampPhaseCounts', () => {
 	])('the stamped numbers count $case', async ({ spec, created, touched }) => {
 		const stamp = setupStamp({ rows: [{ number: 1, file: 'phase1-core.md', created: 99, touched: 99 }], phases: { 'phase1-core.md': spec } });
 
-		const declarations = await stampPhaseCounts({ cwd: stamp.cwd, overviewPath: stamp.overviewPath, phasePaths: stamp.phasePaths });
+		const declarations = await stampPhaseCounts({
+			cwd: stamp.cwd,
+			overviewPath: stamp.overviewPath,
+			phasePaths: stamp.phasePaths,
+			fileGlobs: { source: sourceFileGlobs, tests: testFileGlobs },
+		});
 
 		expect(countsOf({ declarations })).toStrictEqual([{ file: 'phase1-core.md', createdCount: created, touchedCount: touched }]);
 	});
@@ -166,7 +183,12 @@ describe('stampPhaseCounts', () => {
 			phases: { 'phase1-core.md': { modify: ['src/m0.ts', 'src/m1.ts', 'src/m2.ts', 'src/m3.ts', 'src/m4.ts', 'src/m5.ts'] } },
 		});
 
-		const declarations = await stampPhaseCounts({ cwd: stamp.cwd, overviewPath: stamp.overviewPath, phasePaths: stamp.phasePaths });
+		const declarations = await stampPhaseCounts({
+			cwd: stamp.cwd,
+			overviewPath: stamp.overviewPath,
+			phasePaths: stamp.phasePaths,
+			fileGlobs: { source: sourceFileGlobs, tests: testFileGlobs },
+		});
 
 		// a budget declares that a phase is MEANT to be large — stamping it would
 		// either overwrite the declaration or leave the two copies disagreeing, and
@@ -193,7 +215,12 @@ describe('stampPhaseCounts', () => {
 			phases: { 'phase9-ghost.md': { create: ['src/ghost.ts'] } },
 		});
 
-		const declarations = await stampPhaseCounts({ cwd: stamp.cwd, overviewPath: stamp.overviewPath, phasePaths: stamp.phasePaths });
+		const declarations = await stampPhaseCounts({
+			cwd: stamp.cwd,
+			overviewPath: stamp.overviewPath,
+			phasePaths: stamp.phasePaths,
+			fileGlobs: { source: sourceFileGlobs, tests: testFileGlobs },
+		});
 
 		// only a row the fan-out actually authored a file for becomes a fact; the
 		// rest stay the overview agent's estimate
@@ -213,7 +240,12 @@ describe('stampPhaseCounts', () => {
 		});
 		const phasePaths = [...stamp.phasePaths, join(stamp.cwd, 'phase2-lost.md')];
 
-		const declarations = await stampPhaseCounts({ cwd: stamp.cwd, overviewPath: stamp.overviewPath, phasePaths });
+		const declarations = await stampPhaseCounts({
+			cwd: stamp.cwd,
+			overviewPath: stamp.overviewPath,
+			phasePaths,
+			fileGlobs: { source: sourceFileGlobs, tests: testFileGlobs },
+		});
 
 		// the stamp does not throw on a file the fan-out never wrote; the closing
 		// lint is what reports it, so its row keeps the overview's estimate
@@ -233,7 +265,12 @@ describe('stampPhaseCounts', () => {
 			overview: withLaterTable,
 		});
 
-		const declarations = await stampPhaseCounts({ cwd: stamp.cwd, overviewPath: stamp.overviewPath, phasePaths: stamp.phasePaths });
+		const declarations = await stampPhaseCounts({
+			cwd: stamp.cwd,
+			overviewPath: stamp.overviewPath,
+			phasePaths: stamp.phasePaths,
+			fileGlobs: { source: sourceFileGlobs, tests: testFileGlobs },
+		});
 
 		// `## Phases` is the only table the stamp owns; a row elsewhere that
 		// happens to name the same file is prose the overview agent wrote
@@ -256,7 +293,12 @@ describe('stampPhaseCounts', () => {
 			},
 		});
 
-		const declarations = await stampPhaseCounts({ cwd: stamp.cwd, overviewPath: stamp.overviewPath, phasePaths: stamp.phasePaths });
+		const declarations = await stampPhaseCounts({
+			cwd: stamp.cwd,
+			overviewPath: stamp.overviewPath,
+			phasePaths: stamp.phasePaths,
+			fileGlobs: { source: sourceFileGlobs, tests: testFileGlobs },
+		});
 
 		// three tracked files under src/old/ leave it and land under src/new/,
 		// so each counts on both sides and none is created; the phase with no
@@ -273,7 +315,12 @@ describe('stampPhaseCounts', () => {
 	test('an overview whose counts already match its phase files is not rewritten', async () => {
 		const stamp = setupMatchedStamp();
 
-		const declarations = await stampPhaseCounts({ cwd: stamp.cwd, overviewPath: stamp.overviewPath, phasePaths: stamp.phasePaths });
+		const declarations = await stampPhaseCounts({
+			cwd: stamp.cwd,
+			overviewPath: stamp.overviewPath,
+			phasePaths: stamp.phasePaths,
+			fileGlobs: { source: sourceFileGlobs, tests: testFileGlobs },
+		});
 
 		// a stamp that changes nothing must not touch the file: its modification
 		// time stays where the backdate put it, so `plan sync-phases` on a plan in

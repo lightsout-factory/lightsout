@@ -15,16 +15,13 @@ import type { VerificationResult } from '#src/pipeline/steps/common/types/Verifi
 
 const passedCoverage = ({ gate }: { gate: GateResult }) => gate.kind === 'testCoverage' && gate.skipped !== true && gate.exitCode === 0;
 
-const changedFilesExecutedError = ({ run, packagesDir }: { run: PipelineRun; packagesDir: string }) => {
-	const manifest = run.current();
-
-	return checkChangedFilesExecuted({
+const changedFilesExecutedError = ({ run, packagesDir }: { run: PipelineRun; packagesDir: string }) =>
+	checkChangedFilesExecuted({
 		cwd: run.cwd,
 		config: run.config,
 		compiler: resolveConsumerTypescript({ cwd: run.cwd, packagesDir }),
-		changedFiles: sourceFiles({ run }).filter((file) => !manifest.unreachableChangedFiles.includes(file)),
+		changedFiles: sourceFiles({ run }),
 	});
-};
 
 interface Params {
 	run: PipelineRun;

@@ -9,12 +9,14 @@ import { WorkOrderMode } from '#src/contracts/workOrder/WorkOrderMode.ts';
 import type { WorkOrderState } from '#src/contracts/workOrder/WorkOrderState.ts';
 import { updateLocalWorkOrderState } from '#src/workOrder/common/state/updateLocalWorkOrderState.ts';
 import { createWorkOrderShipGuard } from '#src/workOrder/implementRun/createWorkOrderShipGuard.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 /** The work order's label, which is also the branch its record saves. */
 const name = 'lo-140-multi';
 const gates: LightsoutConfig['gates'] = { check: 'true', test: 'true', 'test-coverage': false };
 /** No `ticket-tracker` block, so the record is local only and the guard never reaches for a tracker. */
-const localConfig: LightsoutConfig = { gates };
+const localConfig: LightsoutConfig = { 'source-files': sourceFileGlobs, 'test-files': testFileGlobs, gates };
 const mergeCommit = 'a1b2c3d4e5f6';
 const authorizedBy = 'Ada Lovelace ada@example.com';
 const authorizedAt = '2026-01-05T00:00:00.000Z';

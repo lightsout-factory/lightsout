@@ -1,6 +1,8 @@
 import { readdir, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { StandardsLibraryRoot, StandardsSet } from '@lightsout/standards-contracts';
+import { defaultSourceFileGlobs } from '#src/common/constants/defaultSourceFileGlobs.ts';
+import { defaultTestFileGlobs } from '#src/common/constants/defaultTestFileGlobs.ts';
 import { standardsLibraryRootFile } from '#src/common/constants/standardsLibraryRootFile.ts';
 import { formatSchemaIssues } from '#src/common/formatSchemaIssues.ts';
 import { messageOf } from '#src/common/messageOf.ts';
@@ -147,6 +149,8 @@ export const readStandardsLibrary = async ({ packPath }: Params): Promise<Loaded
 		built: root.data.built,
 		description: root.data.description,
 		homepage: root.data.homepage,
+		fixtureSourceFiles: root.data.fixtureSourceFiles ?? defaultSourceFileGlobs,
+		fixtureTestFiles: root.data.fixtureTestFiles ?? defaultTestFileGlobs,
 		rootPath: packPath,
 		documents,
 		rules: requirements.rules,

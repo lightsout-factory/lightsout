@@ -13,6 +13,8 @@ import { runDirectWork } from '#src/direct/runDirectWork/runDirectWork.ts';
 import { createRun } from '#src/runState/createRun.ts';
 import { writeRunManifest } from '#src/runState/writeRunManifest.ts';
 import { setupConsumerRepo } from '#tests/helpers/setupConsumerRepo.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 /**
  * The slice of a run the commit step is handed, as that step declares it —
@@ -105,7 +107,11 @@ const armDirectRun = ({ uncommitted }: { uncommitted?: string }) => {
 /** A consumer repo and a first direct run in it, with `uncommitted` the sentence the commit step answers — none, when the work is committed. */
 const setupDirectCommit = ({ uncommitted }: { uncommitted?: string } = {}) => {
 	const cwd = setupConsumerRepo();
-	const config: LightsoutConfig = { gates: { check: 'true', test: 'true', 'test-coverage': false } };
+	const config: LightsoutConfig = {
+		'source-files': sourceFileGlobs,
+		'test-files': testFileGlobs,
+		gates: { check: 'true', test: 'true', 'test-coverage': false },
+	};
 	const seen = armDirectRun({ uncommitted });
 
 	const run = () =>
@@ -130,7 +136,11 @@ const setupDirectCommit = ({ uncommitted }: { uncommitted?: string } = {}) => {
  */
 const setupResumedDirectCommit = async ({ status }: { status: RunStatus }) => {
 	const cwd = setupConsumerRepo();
-	const config: LightsoutConfig = { gates: { check: 'true', test: 'true', 'test-coverage': false } };
+	const config: LightsoutConfig = {
+		'source-files': sourceFileGlobs,
+		'test-files': testFileGlobs,
+		gates: { check: 'true', test: 'true', 'test-coverage': false },
+	};
 	const seen = armDirectRun({});
 	const created = await createRun({
 		cwd,

@@ -2,8 +2,9 @@ import { readFile } from 'node:fs/promises';
 import { join, relative } from 'node:path';
 import type ts from 'typescript';
 import { z } from 'zod';
+import { readRepoFileGlobs } from '#src/common/config/readRepoFileGlobs.ts';
 import { isInertSourceFile } from '#src/common/sourceFiles/isInertSourceFile.ts';
-import { isTestableSourceFile } from '#src/common/sourceFiles/isTestableSourceFile.ts';
+import { isSourceFile } from '#src/common/sourceFiles/isSourceFile.ts';
 import { isTestFile } from '#src/common/sourceFiles/isTestFile.ts';
 import { isToolingConfigFile } from '#src/common/sourceFiles/isToolingConfigFile.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
@@ -53,7 +54,10 @@ export const checkChangedFilesExecuted = async ({ cwd, config, changedFiles, com
 	const executable: string[] = [];
 
 	for (const file of changedFiles.filter(
-		(changed) => isTestableSourceFile({ path: changed }) && !isTestFile({ path: changed }) && !isToolingConfigFile({ path: changed, packagesDir }),
+		(changed) =>
+			isSourceFile({ path: changed, sourceFileGlobs: readRepoFileGlobs({ config }).source }) &&
+			!isTestFile({ path: changed, testFileGlobs: readRepoFileGlobs({ config }).tests }) &&
+			!isToolingConfigFile({ path: changed, packagesDir }),
 	)) {
 		const content = await readFile(join(cwd, file), 'utf8').catch(() => undefined);
 
@@ -107,5 +111,5 @@ export const checkChangedFilesExecuted = async ({ cwd, config, changedFiles, com
 		return undefined;
 	}
 
-	return `changed-file-execution: ${unexecuted.length} changed file(s) never executed under the tests: ${unexecuted.join(', ')} — cover each through its public subject's tests; a file no test can reach through a public surface is a wiring defect to fix in source.`;
+	return `changed-file-execution: ${unexecuted.length} changed file(s) never executed under the tests: ${unexecuted.join(', ')} — write tests that execute each.`;
 };

@@ -5,6 +5,8 @@ import { syncPlanPhases } from '#src/plan/sections/syncPlanPhases.ts';
 import { captureCommandOutput } from '#tests/helpers/captureCommandOutput.ts';
 import { overviewBody, phaseBody } from '#tests/helpers/phasePlan.ts';
 import { setupConsumerRepo } from '#tests/helpers/setupConsumerRepo.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 import { writePhasedPlanDeliverable } from '#tests/helpers/writePhasedPlanDeliverable.ts';
 
 // plan sync-phases is deterministic — no agent, no driver — so the arrangement
@@ -27,7 +29,7 @@ const setupSyncPhases = async ({ rowFiles, inStep = false }: { rowFiles: string[
 
 	// A human repeating the command finds the overview already restated.
 	if (inStep) {
-		await syncPlanPhases({ cwd, name });
+		await syncPlanPhases({ cwd, name, fileGlobs: { source: sourceFileGlobs, tests: testFileGlobs } });
 	}
 
 	return { context: { flags: parseFlags({ args: ['--name', name] }), rest: [], cwd }, ...captured };

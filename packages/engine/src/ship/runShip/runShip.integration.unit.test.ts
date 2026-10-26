@@ -9,6 +9,8 @@ import { mockShip } from '#tests/helpers/mockShip.ts';
 import { setupShipScenario as setupShip } from '#tests/helpers/setupShipScenario.ts';
 import { shipScenarioFixtures } from '#tests/helpers/shipScenarioFixtures.ts';
 import { shipScenarioGit } from '#tests/helpers/shipScenarioGit.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // Mocked Imports
 // -------------------------
@@ -243,7 +245,9 @@ describe('runShip', () => {
 		// One criterion covering four configurations, so each is arranged and
 		// shipped in turn and the methods the forge was asked for are compared once.
 		const configured = [ShipMergeMethod.Merge, ShipMergeMethod.Squash, ShipMergeMethod.Rebase];
-		const omitted = resolveShipSettings({ config: { gates: { check: 'true', test: 'true', 'test-coverage': false } } });
+		const omitted = resolveShipSettings({
+			config: { 'source-files': sourceFileGlobs, 'test-files': testFileGlobs, gates: { check: 'true', test: 'true', 'test-coverage': false } },
+		});
 		const asked: (ShipMergeMethod | undefined)[] = [];
 
 		expectDefined(omitted);

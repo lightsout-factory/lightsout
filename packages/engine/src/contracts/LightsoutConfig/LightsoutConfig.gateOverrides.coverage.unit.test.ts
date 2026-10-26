@@ -1,5 +1,7 @@
 import { expect, test } from '@jest/globals';
 import { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // The cross-block name check — a gate from either block is legal, a gate from
 // neither is not — is pinned in `LightsoutConfig.gateOverrides.unit.test.ts`
@@ -9,7 +11,7 @@ import { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.
 // alone, and the whole block stays opt-in.
 
 const setupConfig = ({ gates, overrides }: { gates: Record<string, unknown>; overrides?: Record<string, unknown> }) => {
-	const config: Record<string, unknown> = { gates };
+	const config: Record<string, unknown> = { 'source-files': sourceFileGlobs, 'test-files': testFileGlobs, gates };
 
 	if (overrides) {
 		config['gate-overrides'] = overrides;

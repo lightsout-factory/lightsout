@@ -62,22 +62,6 @@ describe('RunDetail burn-down', () => {
 		expect(headline).toBeInTheDocument();
 	});
 
-	test('reports the sprawl the run measured when it counted any', () => {
-		setupBurnDown({ burnDown: { before: 12, after: 4, batches: [], overCap: { before: 9, after: 2 } } });
-
-		const overCap = screen.getByText('files over cap: 9 → 2');
-
-		expect(overCap).toBeInTheDocument();
-	});
-
-	test('leaves the over-cap line out for a run whose rules counted no files', () => {
-		setupBurnDown({ burnDown: { before: 12, after: 4, batches: [] } });
-
-		const overCap = screen.queryByText(/files over cap/);
-
-		expect(overCap).not.toBeInTheDocument();
-	});
-
 	test('says what one batch was given and how it ended', () => {
 		setupBurnDown({ burnDown: { before: 3, after: 0, batches: [buildBatch({ overrides: { rule: 'function-size', folder: 'src/views', blocking: 3 } })] } });
 

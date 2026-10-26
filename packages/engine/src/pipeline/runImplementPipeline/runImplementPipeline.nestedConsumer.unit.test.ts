@@ -10,6 +10,8 @@ import { readRunManifest } from '#src/runState/readRunManifest.ts';
 import { report } from '#tests/helpers/report.ts';
 import { reviewReport } from '#tests/helpers/reviewReport.ts';
 import { roleOf } from '#tests/helpers/roleOf.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 import { withTestChangeReview } from '#tests/helpers/withTestChangeReview.ts';
 import { writeSource } from '#tests/helpers/writeSource.ts';
 
@@ -25,7 +27,12 @@ test('nested consumer: agent-reported repo-root-relative paths normalize to cons
 	writeFileSync(join(dir, 'plan.md'), '# Plan: add feature\n');
 	writeFileSync(
 		join(dir, 'lightsout.config.json'),
-		JSON.stringify({ gates: { check: 'true', test: 'true', 'test-coverage': false }, 'standards-pack': 'lightsout/standards' }),
+		JSON.stringify({
+			'source-files': sourceFileGlobs,
+			'test-files': testFileGlobs,
+			gates: { check: 'true', test: 'true', 'test-coverage': false },
+			'standards-pack': 'lightsout/standards',
+		}),
 	);
 	execSync('git init -q && git config user.name t && git config user.email t@t && git add -A && git -c user.name=t -c user.email=t@t commit -qm init', {
 		cwd: root,

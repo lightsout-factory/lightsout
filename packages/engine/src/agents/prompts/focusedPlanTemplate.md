@@ -62,10 +62,8 @@ will not reach A:
   that many from scratch is not. Likewise, a phase that relocates a folder of
   three hundred files is legitimate work only as a move-folders-and-files phase,
   with the move gathered into a phase of its own.
-- **What counts as a source file.** Every path the plan names except test files,
-  `index` barrels, and `.d.ts` declaration files. A hand-authored type-only
-  module — a `.ts` file exporting one interface — DOES count: it still has to be
-  specified and written.
+- **What counts as a source file.** Every path the plan names that the
+  repository's `source-files` setting names as code, except its test files.
 - **Prior art recorded.** Every newly-created exported symbol is justified in a
   `## Prior Art` section: the searches run against existing exports that prove it
   is new, or the existing symbol it mirrors/extends.
@@ -290,9 +288,9 @@ before the lint runs, so checking one copy against the other by hand is not your
 work.
 
 Creates and Touches are integer counts of source files — the same set the
-created-file ceiling and the touched-file budget are measured on (test files,
-`index` barrels and `.d.ts` declarations excluded; a hand-authored type-only
-module counts). Each must equal the count the phase file itself lists.
+created-file ceiling and the touched-file budget are measured on (the code files
+the repository's `source-files` setting names, test files excluded). Each must
+equal the count the phase file itself lists.
 
 | # | File | Scope | Creates | Touches |
 |---|------|-------|---------|---------|

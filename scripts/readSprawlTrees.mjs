@@ -1,4 +1,7 @@
 import { execFileSync } from 'node:child_process';
+import { existsSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { readRepoFileGlobs } from '../packages/engine/src/common/config/readRepoFileGlobs.ts';
 import { isTestFile } from '../packages/engine/src/common/sourceFiles/isTestFile.ts';
 
 const isBarFile = ({ path }) => /\.tsx?$/.test(path) && !/\.unit\.test\.tsx?$/.test(path) && !path.endsWith('.d.ts');
@@ -61,11 +64,21 @@ const readBlobLines = ({ repoRoot, oids }) => {
 	return counts;
 };
 
+/** The repo's own `test-files` globs, or the engine's defaults where its config sets none. */
+const readTestFileGlobs = ({ repoRoot }) => {
+	const configPath = join(repoRoot, 'lightsout.config.json');
+	const config = existsSync(configPath) ? JSON.parse(readFileSync(configPath, 'utf8')) : undefined;
+
+	return readRepoFileGlobs({ config }).tests;
+};
+
 /**
  * Folder populations are counted the way the `folder-size` check counts them,
- * so a row drawn over cap is over cap by the repo's own measure.
+ * leaving out the files the repo's `test-files` names, so a row drawn over cap
+ * is over cap by the repo's own measure.
  */
 export const readSprawlTrees = ({ repoRoot, commits }) => {
+	const testFileGlobs = readTestFileGlobs({ repoRoot });
 	const trees = commits.map((commit) => {
 		const entries = readTree({ repoRoot, sha: commit.sha });
 		const packRoots = findPackRoots({ paths: entries.map(([path]) => path) });
@@ -85,7 +98,6 @@ export const readSprawlTrees = ({ repoRoot, commits }) => {
 	const lineCounts = readBlobLines({ repoRoot, oids: [...barOids] });
 
 	return trees.map((tree) => {
-		const packRoots = findPackRoots({ paths: tree.map(([path]) => path) });
 		const files = new Map();
 		const folders = new Map();
 
@@ -94,7 +106,7 @@ export const readSprawlTrees = ({ repoRoot, commits }) => {
 				files.set(path, lineCounts.get(oid));
 			}
 
-			if (!isTestFile({ path, standardsLibraries: packRoots })) {
+			if (!isTestFile({ path, testFileGlobs })) {
 				const directory = path.slice(0, path.lastIndexOf('/'));
 
 				folders.set(directory, (folders.get(directory) ?? 0) + 1);

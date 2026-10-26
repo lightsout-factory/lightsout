@@ -2,10 +2,10 @@ import { describe, expect, test } from '@jest/globals';
 import { getUnconsumedExports } from './getUnconsumedExports.ts';
 
 /** A repo as a file-text rule receives it: the files being judged, and text for everything that may reference them. */
-const setupRepo = ({ scope, contents, standardsLibraries = [] }: { scope?: string[]; contents: Array<[string, string]>; standardsLibraries?: string[] }) => ({
+const setupRepo = ({ scope, contents, tests = [] }: { scope?: string[]; contents: Array<[string, string]>; tests?: string[] }) => ({
 	files: scope ?? contents.map(([path]) => path),
 	contents: new Map(contents),
-	standardsLibraries,
+	tests,
 });
 
 describe('getUnconsumedExports', () => {
@@ -92,6 +92,7 @@ describe('getUnconsumedExports', () => {
 					['src/ingestion/index.ts', 'export const indexOwnName = 1;'],
 					['src/ingestion/thing.unit.test.ts', 'export const testOwnHelper = 1;'],
 				],
+				tests: ['src/ingestion/thing.unit.test.ts'],
 			}),
 		);
 
@@ -119,37 +120,10 @@ describe('getUnconsumedExports', () => {
 		expect(found).toStrictEqual([{ file: 'src/ingestion/ingestRecords.ts', name: 'ingestRecords' }]);
 	});
 
-	test('inside a declared pack, a rule under tests/ declares an export like any other source file', () => {
-		const found = getUnconsumedExports(
-			setupRepo({
-				contents: [['standards/tests/code-style/10-rule/check.ts', 'export const checkRule = (): number => 1;']],
-				standardsLibraries: ['standards'],
-			}),
-		);
-
-		expect(found).toStrictEqual([{ file: 'standards/tests/code-style/10-rule/check.ts', name: 'checkRule' }]);
-	});
-
-	test('the same path with no pack declared above it is a test, whose helpers are its own', () => {
+	test('a file under a tests/ folder the repo does not declare a test declares exports like any other source file', () => {
 		const found = getUnconsumedExports(setupRepo({ contents: [['standards/tests/code-style/10-rule/check.ts', 'export const checkRule = (): number => 1;']] }));
 
-		expect(found).toStrictEqual([]);
-	});
-
-	test('a reference from inside a declared pack’s tests/ is an ordinary source reference, not a test reaching it', () => {
-		const found = getUnconsumedExports(
-			setupRepo({
-				contents: [
-					['src/ingestion/ingestRecords.ts', 'export const ingestRecords = (): number => 1;'],
-					['standards/tests/code-style/10-rule/check.ts', 'ingestRecords();'],
-				],
-				standardsLibraries: ['standards'],
-			}),
-		);
-
-		// with no pack declared the same file would count as a test, and the export
-		// would be reported as reached by tests alone
-		expect(found).toStrictEqual([]);
+		expect(found).toStrictEqual([{ file: 'standards/tests/code-style/10-rule/check.ts', name: 'checkRule' }]);
 	});
 
 	test('a mention in a comment counts as a reference, which is what keeps the verdict rare', () => {

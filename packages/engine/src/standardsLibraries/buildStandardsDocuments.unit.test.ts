@@ -48,6 +48,8 @@ const buildDocument = ({
 const setupPack = (): LoadedStandardsLibrary => ({
 	name: 'lightsout defaults',
 	formatVersion: 2,
+	fixtureSourceFiles: [],
+	fixtureTestFiles: [],
 	rootPath: '/pkg',
 	documents: [
 		buildDocument({ path: 'code/style/patterns', intro: '# Patterns', ruleIds: ['functions', 'classes'] }),
@@ -158,15 +160,19 @@ describe('buildStandardsDocuments', () => {
 		const { code, tests } = buildStandardsDocuments({ groups: [groupOfLibrary({ library: pack })] });
 
 		// the header names the pack and the document folder it came from
-		expect(code).toContain('<!-- lightsout defaults: code/fractal/modules -->\n# Modules\n\nA concept earns its folder.');
+		expect(code).toContain(
+			'<!-- lightsout defaults: code/fractal/modules -->\n# Modules\n\nRule: lightsout defaults/graduation\n\nA concept earns its folder.',
+		);
 		// rule prose follows the intro in ruleIds order, joined by a blank line
-		expect(code).toContain('<!-- lightsout defaults: code/style/patterns -->\n# Patterns\n\nUse arrow functions.\n\nDefault to functions.');
+		expect(code).toContain(
+			'<!-- lightsout defaults: code/style/patterns -->\n# Patterns\n\nRule: lightsout defaults/functions\n\nUse arrow functions.\n\nRule: lightsout defaults/classes\n\nDefault to functions.',
+		);
 		// documents are joined the same way — a blank line between them
 		expect(code).toBe(
-			'<!-- lightsout defaults: code/fractal/modules -->\n# Modules\n\nA concept earns its folder.\n\n<!-- lightsout defaults: code/style/patterns -->\n# Patterns\n\nUse arrow functions.\n\nDefault to functions.',
+			'<!-- lightsout defaults: code/fractal/modules -->\n# Modules\n\nRule: lightsout defaults/graduation\n\nA concept earns its folder.\n\n<!-- lightsout defaults: code/style/patterns -->\n# Patterns\n\nRule: lightsout defaults/functions\n\nUse arrow functions.\n\nRule: lightsout defaults/classes\n\nDefault to functions.',
 		);
 		// each set is assembled on its own
-		expect(tests).toBe('<!-- lightsout defaults: tests/code-style -->\n# Test Style\n\nMocks carry a mock prefix.');
+		expect(tests).toBe('<!-- lightsout defaults: tests/code-style -->\n# Test Style\n\nRule: lightsout defaults/mock-prefix\n\nMocks carry a mock prefix.');
 	});
 
 	test('leaves a set out entirely when no document is in play for it', () => {
@@ -188,7 +194,9 @@ describe('buildStandardsDocuments', () => {
 
 		expect(assembled.code).toBe(undefined);
 		expect('code' in assembled).toBeFalsy();
-		expect(assembled.tests).toBe('<!-- lightsout defaults: tests/code-style -->\n# Test Style\n\nMocks carry a mock prefix.');
+		expect(assembled.tests).toBe(
+			'<!-- lightsout defaults: tests/code-style -->\n# Test Style\n\nRule: lightsout defaults/mock-prefix\n\nMocks carry a mock prefix.',
+		);
 	});
 
 	test('sorts documents by path and keeps two documents sharing a path in the order given', () => {
@@ -206,7 +214,7 @@ describe('buildStandardsDocuments', () => {
 
 		// 'code/a' moves ahead of both 'code/b' documents; the tied pair holds its original order
 		expect(code).toBe(
-			'<!-- lightsout defaults: code/a -->\n# A\n\nDefault to functions.\n\n<!-- lightsout defaults: code/b -->\n# B\n\nUse arrow functions.\n\n<!-- lightsout defaults: code/b -->\n# B again\n\nA concept earns its folder.',
+			'<!-- lightsout defaults: code/a -->\n# A\n\nRule: lightsout defaults/classes\n\nDefault to functions.\n\n<!-- lightsout defaults: code/b -->\n# B\n\nRule: lightsout defaults/functions\n\nUse arrow functions.\n\n<!-- lightsout defaults: code/b -->\n# B again\n\nRule: lightsout defaults/graduation\n\nA concept earns its folder.',
 		);
 	});
 
@@ -220,7 +228,7 @@ describe('buildStandardsDocuments', () => {
 		const { code } = buildStandardsDocuments({ groups: [groupOfLibrary({ library: dangling })] });
 
 		// the unknown id contributes nothing — no blank line, no placeholder
-		expect(code).toBe('<!-- lightsout defaults: code/dangling -->\n# Dangling\n\nA concept earns its folder.');
+		expect(code).toBe('<!-- lightsout defaults: code/dangling -->\n# Dangling\n\nRule: lightsout defaults/graduation\n\nA concept earns its folder.');
 	});
 
 	test('drops empty prose rather than opening a document with blank lines', () => {
@@ -234,7 +242,7 @@ describe('buildStandardsDocuments', () => {
 		const { code } = buildStandardsDocuments({ groups: [groupOfLibrary({ library: sparse })] });
 
 		// an intro-less document starts at its first rule, with no leading blank line
-		expect(code).toBe('<!-- lightsout defaults: code/sparse -->\nA concept earns its folder.');
+		expect(code).toBe('<!-- lightsout defaults: code/sparse -->\nRule: lightsout defaults/graduation\n\nA concept earns its folder.');
 	});
 
 	test("leaves out an opt-in rule's prose while the repo's config never names it", () => {
@@ -242,7 +250,7 @@ describe('buildStandardsDocuments', () => {
 
 		const { code } = buildStandardsDocuments({ groups: [groupOfLibrary({ library: pack })] });
 
-		expect(code).toBe('<!-- lightsout defaults: code/modules -->\n# Modules\n\nA concept earns its folder.');
+		expect(code).toBe('<!-- lightsout defaults: code/modules -->\n# Modules\n\nRule: lightsout defaults/graduation\n\nA concept earns its folder.');
 	});
 
 	test('includes an opt-in rule once the repo names it, at any severity', () => {
@@ -303,8 +311,8 @@ describe('buildStandardsDocuments', () => {
 		const assembled = buildStandardsDocuments({ groups: [group] });
 
 		expect(assembled).toStrictEqual({
-			code: '<!-- lightsout: code/fractal/modules -->\n# Modules\n\nA concept earns its folder.\n\n<!-- lightsout: code/style/patterns -->\n# Patterns\n\nUse arrow functions.\n\nDefault to functions.',
-			tests: '<!-- lightsout: tests/code-style -->\n# Test Style\n\nMocks carry a mock prefix.',
+			code: '<!-- lightsout: code/fractal/modules -->\n# Modules\n\nRule: lightsout/graduation\n\nA concept earns its folder.\n\n<!-- lightsout: code/style/patterns -->\n# Patterns\n\nRule: lightsout/functions\n\nUse arrow functions.\n\nRule: lightsout/classes\n\nDefault to functions.',
+			tests: '<!-- lightsout: tests/code-style -->\n# Test Style\n\nRule: lightsout/mock-prefix\n\nMocks carry a mock prefix.',
 		});
 	});
 
@@ -336,7 +344,7 @@ describe('buildStandardsDocuments', () => {
 		const { code } = buildStandardsDocuments({ groups: [group] });
 
 		expect(code).toBe(
-			'<!-- lightsout: code/modules -->\n# Modules\n\nA concept earns its folder.\n\nIts own linter enforces this.\n\n<!-- lightsout: code/opt-in -->\n# Opt In',
+			'<!-- lightsout: code/modules -->\n# Modules\n\nRule: lightsout/graduation\n\nA concept earns its folder.\n\nRule: lightsout/linted\n\nIts own linter enforces this.\n\n<!-- lightsout: code/opt-in -->\n# Opt In',
 		);
 	});
 
@@ -349,7 +357,7 @@ describe('buildStandardsDocuments', () => {
 					rules: [{ rule: buildLightsoutRule({ id: 'graduation', prose: 'A concept earns its folder.' }) }],
 				}),
 			],
-			expected: { code: '<!-- lightsout: code/fractal/modules -->\n# Modules\n\nA concept earns its folder.' },
+			expected: { code: '<!-- lightsout: code/fractal/modules -->\n# Modules\n\nRule: lightsout/graduation\n\nA concept earns its folder.' },
 		},
 		{ groups: [], expected: {} },
 	])("buildStandardsDocuments: only the pack's own topics render, and an empty set or no group renders nothing", ({ groups, expected }) => {

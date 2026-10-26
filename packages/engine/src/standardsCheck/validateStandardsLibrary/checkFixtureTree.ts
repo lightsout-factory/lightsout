@@ -17,6 +17,10 @@ interface Params {
 	/** How a thrown message names the tree, such as `fixtures/pass/`. */
 	label: string;
 	compiler?: typeof ts;
+	/** The library's `fixtureSourceFiles` globs, from the fixture tree's root. */
+	sourceFileGlobs: string[];
+	/** The library's `fixtureTestFiles` globs, from the fixture tree's root. */
+	testFileGlobs: string[];
 }
 
 /**
@@ -25,8 +29,17 @@ interface Params {
  *
  * @throws {Error} When a type-checker rule's tree carries no tsconfig, or the check itself misbehaves.
  */
-export const checkFixtureTree = async ({ cwd, rule, inputKinds, run, label, compiler }: Params): Promise<RawStandardsFinding[]> => {
-	const { files } = await listSourceFiles({ cwd });
+export const checkFixtureTree = async ({
+	cwd,
+	rule,
+	inputKinds,
+	run,
+	label,
+	compiler,
+	sourceFileGlobs,
+	testFileGlobs,
+}: Params): Promise<RawStandardsFinding[]> => {
+	const { files } = await listSourceFiles({ cwd, sourceFileGlobs });
 	const cache = new Map<string, string>();
 	const inputs = await buildCheckInputs({
 		kinds: inputKinds,
@@ -34,10 +47,11 @@ export const checkFixtureTree = async ({ cwd, rule, inputKinds, run, label, comp
 			buildCheckInput({
 				kind,
 				cwd,
-				source: files.filter((file) => !isTestFile({ path: file })),
-				tests: files.filter((file) => isTestFile({ path: file })),
+				source: files.filter((file) => !isTestFile({ path: file, testFileGlobs })),
+				tests: files.filter((file) => isTestFile({ path: file, testFileGlobs })),
 				files,
 				referenceFiles: files,
+				referenceTests: files.filter((file) => isTestFile({ path: file, testFileGlobs })),
 				// A fixture tree is a miniature repo of its own; it declares no pack.
 				standardsLibraries: [],
 				packagesDir: defaultPackagesDir,

@@ -14,6 +14,8 @@ interface AttributionDriverParams {
 	implement: () => string[];
 	/** Collects every prompt the cleanup executor was handed. */
 	refactorPrompts: string[];
+	/** Collects the system prompt of every cleanup executor call, where the standards ride. */
+	refactorSystemPrompts?: string[];
 	onReview?: () => void;
 	/** Answers one cleanup round, by its 1-based number. The default declines every round. */
 	onRefactor?: (params: { pass: number }) => string;
@@ -26,10 +28,18 @@ interface AttributionDriverParams {
  * default that round declines, so whatever qualified as work has to still be
  * standing when cleanup ends.
  */
-export const attributionDriver = ({ dir, testFile, implement, refactorPrompts, onReview, onRefactor = () => report() }: AttributionDriverParams): Driver => ({
+export const attributionDriver = ({
+	dir,
+	testFile,
+	implement,
+	refactorPrompts,
+	refactorSystemPrompts,
+	onReview,
+	onRefactor = () => report(),
+}: AttributionDriverParams): Driver => ({
 	name: 'stub',
 	invoke: withTestChangeReview({
-		invoke: async ({ prompt }) => {
+		invoke: async ({ prompt, systemPrompt }) => {
 			const role = roleOf(prompt);
 
 			if (role === 'standards-review') {
@@ -47,6 +57,7 @@ export const attributionDriver = ({ dir, testFile, implement, refactorPrompts, o
 
 			if (role === 'refactor') {
 				refactorPrompts.push(prompt);
+				refactorSystemPrompts?.push(systemPrompt ?? '');
 
 				return { text: onRefactor({ pass: refactorPrompts.length }), exitCode: 0 };
 			}

@@ -11,7 +11,7 @@ const planContent = '# Plan: add the widget flag\n\nPLAN-SENTINEL';
 /** The role prompt of every role that writes code or tests, by the name its section comparisons report. */
 const setupRolePrompts = () => ({
 	implement: buildFeatureExecutorInvocation({ planContent }).systemPrompt,
-	unitTests: buildUnitTestWriterInvocation({ planContent, subjects: ['src/widget.ts'], mustExecute: ['src/widget.ts'] }).systemPrompt,
+	unitTests: buildUnitTestWriterInvocation({ planContent, files: ['src/widget.ts'] }).systemPrompt,
 	ledgerTests: buildLedgerTestWriterInvocation({ planContent, testFile: 'src/widget.unit.test.ts', rows: [] }).systemPrompt,
 	direct: buildDirectWorkerInvocation({ ticketRef: 'LO-70', ticketBody: 'Build the thing.' }).systemPrompt,
 	refactorFeature: buildRefactorExecutorInvocation({ scope: RefactorScope.Feature, planContent, changedFiles: ['src/widget.ts'] }).systemPrompt,

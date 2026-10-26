@@ -14,6 +14,8 @@ import { freshCwd } from '#tests/helpers/freshCwd.ts';
 import { planWorkspaceFolder } from '#tests/helpers/planWorkspaceFolder.ts';
 import { seedWorkOrderRecord } from '#tests/helpers/seedWorkOrderRecord.ts';
 import { setupBranchRepo } from '#tests/helpers/setupBranchRepo.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // Mocked Imports
 // -------------------------
@@ -111,7 +113,10 @@ const setupWorkspace = async ({
 		seedWorkOrderRecord({ cwd: sourceCwd, name: workOrderName, branch: workOrder.branch });
 	}
 
-	await writeFile(join(sourceCwd, 'lightsout.config.json'), JSON.stringify({ gates, worktree: { setup: setupCommand } }));
+	await writeFile(
+		join(sourceCwd, 'lightsout.config.json'),
+		JSON.stringify({ 'source-files': sourceFileGlobs, 'test-files': testFileGlobs, gates, worktree: { setup: setupCommand } }),
+	);
 
 	if (launchFromTree) {
 		await mkdir(tree, { recursive: true });
@@ -172,7 +177,7 @@ const setupLinkedPlanningTree = async () => {
 	const tree = join(`${sourceCwd}-worktrees`, workOrderName);
 
 	seedWorkOrderRecord({ cwd: sourceCwd, name: workOrderName });
-	await writeFile(join(sourceCwd, 'lightsout.config.json'), JSON.stringify({ gates }));
+	await writeFile(join(sourceCwd, 'lightsout.config.json'), JSON.stringify({ 'source-files': sourceFileGlobs, 'test-files': testFileGlobs, gates }));
 
 	mockResolveWorktreePath.mockResolvedValue(tree);
 	mockReadBranchWorktree.mockResolvedValue(undefined);

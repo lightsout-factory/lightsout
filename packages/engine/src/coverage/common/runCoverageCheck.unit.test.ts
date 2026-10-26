@@ -9,6 +9,8 @@ import { readGateLog } from '#tests/helpers/readGateLog.ts';
 import { runDirFor } from '#tests/helpers/runDirFor.ts';
 import { seedRunFolder } from '#tests/helpers/seedRunFolder.ts';
 import { setupConsumerRepo } from '#tests/helpers/setupConsumerRepo.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 /**
  * An Istanbul json-summary report as the tooling writes it: absolute file
@@ -152,7 +154,12 @@ describe('runCoverageCheck', () => {
 
 		writeFileSync(
 			join(dir, 'lightsout.config.json'),
-			JSON.stringify({ gates: { check: 'true', test: 'true', 'test-coverage': 'true' }, 'coverage-summary-path': 'reports/summary.json' }),
+			JSON.stringify({
+				'source-files': sourceFileGlobs,
+				'test-files': testFileGlobs,
+				gates: { check: 'true', test: 'true', 'test-coverage': 'true' },
+				'coverage-summary-path': 'reports/summary.json',
+			}),
 		);
 
 		const measured = await runCoverageCheck({ cwd: dir, config: await readConfig({ cwd: dir }) });
@@ -262,7 +269,10 @@ describe('runCoverageCheck', () => {
 	test('a repo that opted out of the coverage gate measures nothing and reports not passed', async () => {
 		const dir = setupRootRepo();
 
-		writeFileSync(join(dir, 'lightsout.config.json'), JSON.stringify({ gates: { check: 'true', test: 'true', 'test-coverage': false } }));
+		writeFileSync(
+			join(dir, 'lightsout.config.json'),
+			JSON.stringify({ 'source-files': sourceFileGlobs, 'test-files': testFileGlobs, gates: { check: 'true', test: 'true', 'test-coverage': false } }),
+		);
 
 		const measured = await runCoverageCheck({ cwd: dir, config: await readConfig({ cwd: dir }) });
 

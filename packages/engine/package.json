@@ -18,15 +18,18 @@
 	"dependencies": {
 		"@jscpd/core": "catalog:",
 		"@jscpd/tokenizer": "catalog:",
-		"@linear/sdk": "catalog:",
 		"@lightsout/shared": "workspace:*",
 		"@lightsout/standards-contracts": "workspace:*",
+		"@linear/sdk": "catalog:",
+		"picomatch": "catalog:",
+		"tinyglobby": "catalog:",
 		"yaml": "catalog:",
 		"zod": "catalog:"
 	},
 	"devDependencies": {
 		"@jest/globals": "catalog:",
 		"@types/node": "catalog:",
+		"@types/picomatch": "catalog:",
 		"typescript": "catalog:"
 	},
 	"scripts": {

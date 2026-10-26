@@ -12,23 +12,21 @@ const maxWriterGroupFiles = 12;
 
 interface Params {
 	run: PipelineRun;
-	/** resolveTestSubjects output: changed target → its public subjects. */
-	subjects: Map<string, string[]>;
+	/** Changed files with runtime code to cover (selectTestTargets' targets). */
+	targets: string[];
 	compiler: typeof ts | undefined;
 }
 
 /**
- * One writer per import-graph component, not per file: it is the only grouping
- * that puts a boundary and its internals in the same writer's hands. The
- * target→subject mapping counts as an edge beside the import edges, because the
- * walk's reachability may pass through unchanged intermediaries. Components
- * never cross packages.
+ * One writer per import-graph component of the changed files, so files that
+ * call each other are covered by one writer and unrelated files stay
+ * parallel. Only edges between changed files count: linking through an
+ * unchanged caller would pull unrelated changes into one writer wherever a
+ * single file calls many. Components never cross packages.
  */
-export const groupTestTargets = async ({ run, subjects, compiler }: Params): Promise<TestTargetGroup[]> => {
-	const targets = [...subjects.keys()];
-
+export const groupTestTargets = async ({ run, targets, compiler }: Params): Promise<TestTargetGroup[]> => {
 	if (!compiler) {
-		return targets.map((target) => ({ subjects: subjects.get(target) ?? [target], mustExecute: [target] }));
+		return [...targets].sort().map((target) => ({ files: [target] }));
 	}
 
 	const byPackage = partitionByPackage({ files: targets, packagesDir: run.config['packages-dir'] ?? defaultPackagesDir });
@@ -36,35 +34,17 @@ export const groupTestTargets = async ({ run, subjects, compiler }: Params): Pro
 
 	for (const partition of [...byPackage.keys()].sort()) {
 		const partitionTargets = byPackage.get(partition) ?? [];
-		const targetSet = new Set(partitionTargets);
-		const partitionSubjects = partitionTargets.flatMap((target) => subjects.get(target) ?? []);
-		const union = [...new Set([...partitionTargets, ...partitionSubjects])];
-		const edges = [
-			...(await collectImportEdges({ cwd: run.cwd, files: partitionTargets, compiler })),
-			...partitionTargets.flatMap((target) =>
-				(subjects.get(target) ?? []).filter((subject) => subject !== target).map((subject) => ({ from: target, to: subject })),
-			),
-		];
+		const edges = await collectImportEdges({ cwd: run.cwd, files: partitionTargets, compiler });
 
-		for (const component of groupConnectedFiles({ files: union, edges })) {
-			// Every subject that is not itself a target rides an explicit
-			// target -> subject edge, so every component holds at least one
-			// target and no empty-component guard is reachable here.
-			const componentTargets = component.filter((file) => targetSet.has(file));
-
-			if (componentTargets.length > maxWriterGroupFiles) {
+		for (const component of groupConnectedFiles({ files: partitionTargets, edges })) {
+			if (component.length > maxWriterGroupFiles) {
 				run.progress(
-					`write-tests: import component of ${componentTargets.length} files exceeds the ${maxWriterGroupFiles}-file writer cap — splitting into sorted chunks`,
+					`write-tests: import component of ${component.length} files exceeds the ${maxWriterGroupFiles}-file writer cap — splitting into sorted chunks`,
 				);
 			}
 
-			// Each chunk re-derives its subjects from its own members, so every
-			// writer holds the subjects for every file it must execute.
-			for (const chunk of chunkFileGroup({ files: componentTargets, max: maxWriterGroupFiles })) {
-				groups.push({
-					subjects: [...new Set(chunk.flatMap((target) => subjects.get(target) ?? []))].sort(),
-					mustExecute: [...chunk].sort(),
-				});
+			for (const chunk of chunkFileGroup({ files: component, max: maxWriterGroupFiles })) {
+				groups.push({ files: [...chunk].sort() });
 			}
 		}
 	}

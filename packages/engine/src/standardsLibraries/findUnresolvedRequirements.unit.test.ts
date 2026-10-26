@@ -25,6 +25,8 @@ const rule = ({ library, id, requires = [] }: { library: string; id: string; req
 const library = ({ name, rules }: { name: string; rules: LoadedStandardsRule[] }): LoadedStandardsLibrary => ({
 	name,
 	formatVersion: 2,
+	fixtureSourceFiles: [],
+	fixtureTestFiles: [],
 	rootPath: `/packages/${name}`,
 	documents: [],
 	rules,

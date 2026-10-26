@@ -12,6 +12,8 @@ import type { WorkOrderPlan } from '#src/contracts/workOrder/WorkOrderPlan.ts';
 import type { WorkOrderState } from '#src/contracts/workOrder/WorkOrderState.ts';
 import { updateLocalWorkOrderState } from '#src/workOrder/common/state/updateLocalWorkOrderState.ts';
 import { planExclusionFixtures } from '#tests/helpers/planExclusionFixtures.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 interface GateParams {
 	cwd: string;
@@ -56,7 +58,7 @@ interface Params {
 const { name, firstPlan, secondPlan, checkout, headCommit, checkoutConfig, planOf } = planExclusionFixtures;
 const gates: LightsoutConfig['gates'] = { check: 'true', test: 'true', 'test-coverage': false };
 /** No `ticket-tracker` block: this machine's record is the only copy, so no publish is in play. */
-const config: LightsoutConfig = { gates };
+const config: LightsoutConfig = { 'source-files': sourceFileGlobs, 'test-files': testFileGlobs, gates };
 const env: NodeJS.ProcessEnv = {};
 
 const recordOf = ({

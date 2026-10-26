@@ -1,5 +1,6 @@
 import { describe, expect, test } from '@jest/globals';
 import { getLedgerMovePaths } from '#src/pipeline/steps/buildSteps/getLedgerMovePaths.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 const setupCarriedTestFiles = () => {
 	const movePaths = [
@@ -27,7 +28,7 @@ describe('getLedgerMovePaths', () => {
 	test('getLedgerMovePaths: a ledger test file a folder move carries is paired with its source before the test-side filter', () => {
 		const { movePaths, folderMoves, testFiles } = setupCarriedTestFiles();
 
-		const pairs = getLedgerMovePaths({ movePaths, folderMoves, testFiles });
+		const pairs = getLedgerMovePaths({ movePaths, folderMoves, testFiles, testFileGlobs });
 
 		expect(pairs).toStrictEqual([
 			{ from: 'src/a.unit.test.ts', to: 'lib/a.unit.test.ts' },
@@ -39,7 +40,7 @@ describe('getLedgerMovePaths', () => {
 	test('getLedgerMovePaths: each carried test file is paired once', () => {
 		const { movePaths, folderMoves, testFiles } = setupRepeatedTestFiles();
 
-		const pairs = getLedgerMovePaths({ movePaths, folderMoves, testFiles });
+		const pairs = getLedgerMovePaths({ movePaths, folderMoves, testFiles, testFileGlobs });
 
 		expect(pairs).toStrictEqual([
 			{ from: 'src/old/x.unit.test.ts', to: 'src/new/x.unit.test.ts' },

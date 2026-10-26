@@ -36,6 +36,7 @@ export const runBatchPass = async ({ tools, batch, pass, workFindings, advisorie
 			planContent: standaloneBanner,
 			changedFiles: files,
 			standards,
+			testStandards,
 			findings: workFindings,
 			advisories,
 			reportAdvisoryOutcomes: true,

@@ -16,6 +16,8 @@ const setupLibrary = ({ prose, intro = '# Module API' }: { prose: string; intro?
 	const library: LoadedStandardsLibrary = {
 		name: 'acme',
 		formatVersion: 2,
+		fixtureSourceFiles: [],
+		fixtureTestFiles: [],
 		rootPath,
 		documents: [{ set: 'code', library: 'acme', path: 'code/module-api', intro, ruleIds: ['dead-export'] }],
 		rules: [

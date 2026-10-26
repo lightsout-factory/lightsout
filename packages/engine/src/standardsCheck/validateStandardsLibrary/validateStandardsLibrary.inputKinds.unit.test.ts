@@ -8,6 +8,7 @@ import type { LoadedStandardsRule } from '#src/common/types/LoadedStandardsRule.
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 import { validateStandardsLibrary } from '#src/standardsCheck/validateStandardsLibrary/validateStandardsLibrary.ts';
 import { duplicatedSources, sharedImportSources, writeSampleSources } from '#tests/helpers/duplicationSamples.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
 
 /** A ban on any file named `banned.ts`, asked of the files the engine could type rather than of the path list. */
 const bansTheBannedTypedFile: StandardsCheckFunction = ({ inputs }) =>
@@ -118,7 +119,17 @@ const rule = (overrides: Partial<LoadedStandardsRule> & { id: string; fixturesPa
 });
 
 const validate = ({ rules, built }: { rules: LoadedStandardsRule[]; built?: true }) => {
-	const pack: LoadedStandardsLibrary = { name: 'acme', formatVersion: 2, built, rootPath: '/packages/acme', documents: [], rules, packs: [] };
+	const pack: LoadedStandardsLibrary = {
+		name: 'acme',
+		formatVersion: 2,
+		built,
+		fixtureSourceFiles: sourceFileGlobs,
+		fixtureTestFiles: [],
+		rootPath: '/packages/acme',
+		documents: [],
+		rules,
+		packs: [],
+	};
 
 	return validateStandardsLibrary({ library: pack, libraries: [pack] });
 };

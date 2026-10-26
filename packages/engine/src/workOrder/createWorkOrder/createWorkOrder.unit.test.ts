@@ -13,6 +13,8 @@ import { updateLocalWorkOrderState } from '#src/workOrder/common/state/updateLoc
 import { createWorkOrder } from '#src/workOrder/createWorkOrder/createWorkOrder.ts';
 import { queueConfigBlock, ticketTrackerConfigBlock } from '#tests/helpers/queueConfigBlock.ts';
 import { recordingDriver } from '#tests/helpers/recordingDriver.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // Mocked Imports
 // -------------------------
@@ -62,7 +64,7 @@ const recordOf = ({ name, branch = name, ticketRef }: { name: string; branch?: s
 });
 
 const setupCreate = async ({
-	config = { gates },
+	config = { 'source-files': sourceFileGlobs, 'test-files': testFileGlobs, gates },
 	words = summarisedWords,
 	/** The reference the tracker spells back, whatever case the caller typed. */
 	identifier = 'LO-158',
@@ -114,7 +116,9 @@ const setupCreate = async ({
 const recordAt = ({ path }: { path: string }) => JSON.parse(readFileSync(path, 'utf8')) as WorkOrderState;
 
 test('createWorkOrder: --title with no tracker writes a record carrying the slugged name, the rendered branch and no ticket reference', async () => {
-	const { params, recordPathOf } = await setupCreate({ config: { gates, plan: { 'default-work-order-mode': WorkOrderMode.MultiplePlan } } });
+	const { params, recordPathOf } = await setupCreate({
+		config: { 'source-files': sourceFileGlobs, 'test-files': testFileGlobs, gates, plan: { 'default-work-order-mode': WorkOrderMode.MultiplePlan } },
+	});
 
 	const result = await createWorkOrder({ ...params, title: 'Give the name one author' });
 
@@ -132,7 +136,9 @@ test('createWorkOrder: --title with no tracker writes a record carrying the slug
 });
 
 test('createWorkOrder: refuses neither flag and both flags, naming the pair and leaving the work-orders directory untouched', async () => {
-	const { params, workOrdersFolder } = await setupCreate({ config: { gates, 'ticket-tracker': trackerBlock } });
+	const { params, workOrdersFolder } = await setupCreate({
+		config: { 'source-files': sourceFileGlobs, 'test-files': testFileGlobs, gates, 'ticket-tracker': trackerBlock },
+	});
 
 	const neither = await createWorkOrder(params);
 	const both = await createWorkOrder({ ...params, ticketRef: 'LO-158', title: 'Give the name one author' });
@@ -157,7 +163,7 @@ test('createWorkOrder: refuses words that hold nothing a label can be built from
 
 test('createWorkOrder: refuses a ticket reference a work order already carries, before composing a label', async () => {
 	const { params, workOrdersFolder, invocations } = await setupCreate({
-		config: { gates, 'ticket-tracker': trackerBlock },
+		config: { 'source-files': sourceFileGlobs, 'test-files': testFileGlobs, gates, 'ticket-tracker': trackerBlock },
 		existing: [recordOf({ name: 'lo-158-an-earlier-name', ticketRef: 'LO-158' })],
 	});
 
@@ -173,7 +179,9 @@ test('createWorkOrder: refuses a ticket reference a work order already carries, 
 });
 
 test('createWorkOrder: stores the reference as the tracker spells it, not as the caller typed it', async () => {
-	const { params, recordPathOf } = await setupCreate({ config: { gates, 'ticket-tracker': trackerBlock } });
+	const { params, recordPathOf } = await setupCreate({
+		config: { 'source-files': sourceFileGlobs, 'test-files': testFileGlobs, gates, 'ticket-tracker': trackerBlock },
+	});
 
 	const result = await createWorkOrder({ ...params, ticketRef: 'lo-158' });
 
@@ -182,7 +190,9 @@ test('createWorkOrder: stores the reference as the tracker spells it, not as the
 });
 
 test("createWorkOrder: the branch's slug is the summarised words, so the label and the branch agree under the default template", async () => {
-	const { params, recordPathOf } = await setupCreate({ config: { gates, 'ticket-tracker': trackerBlock } });
+	const { params, recordPathOf } = await setupCreate({
+		config: { 'source-files': sourceFileGlobs, 'test-files': testFileGlobs, gates, 'ticket-tracker': trackerBlock },
+	});
 
 	const result = await createWorkOrder({ ...params, ticketRef: 'LO-158' });
 
@@ -197,7 +207,7 @@ test("createWorkOrder: the branch's slug is the summarised words, so the label a
 
 test('createWorkOrder: refuses a label another work order holds, names it, and leaves that record untouched', async () => {
 	const { params, recordPathOf } = await setupCreate({
-		config: { gates, 'ticket-tracker': trackerBlock },
+		config: { 'source-files': sourceFileGlobs, 'test-files': testFileGlobs, gates, 'ticket-tracker': trackerBlock },
 		existing: [recordOf({ name: 'lo-158-give-the-name-one', ticketRef: 'LO-999' })],
 	});
 	const before = readFileSync(recordPathOf({ name: 'lo-158-give-the-name-one' }), 'utf8');
@@ -222,7 +232,13 @@ test('createWorkOrder: refuses while any work-order folder cannot be read, namin
 
 test('createWorkOrder: a prefixed branch template stores a branch that differs from the label, and the label keeps no slash', async () => {
 	const { params, workOrdersFolder, recordPathOf } = await setupCreate({
-		config: { gates, 'ticket-tracker': trackerBlock, queue: { ...queueConfigBlock, 'branch-template': 'feature/{ticket}-{slug}' } },
+		config: {
+			'source-files': sourceFileGlobs,
+			'test-files': testFileGlobs,
+			gates,
+			'ticket-tracker': trackerBlock,
+			queue: { ...queueConfigBlock, 'branch-template': 'feature/{ticket}-{slug}' },
+		},
 	});
 
 	const result = await createWorkOrder({ ...params, ticketRef: 'LO-158' });
@@ -238,7 +254,13 @@ test('createWorkOrder: a prefixed branch template stores a branch that differs f
 
 test('createWorkOrder: a handed mode is the mode written to the new record, and without one the repository default is', async () => {
 	const { params, recordPathOf } = await setupCreate({
-		config: { gates, 'ticket-tracker': trackerBlock, plan: { 'default-work-order-mode': WorkOrderMode.MultiplePlan } },
+		config: {
+			'source-files': sourceFileGlobs,
+			'test-files': testFileGlobs,
+			gates,
+			'ticket-tracker': trackerBlock,
+			plan: { 'default-work-order-mode': WorkOrderMode.MultiplePlan },
+		},
 	});
 
 	const handed = await createWorkOrder({ ...params, ticketRef: 'LO-158', mode: WorkOrderMode.SinglePlan });

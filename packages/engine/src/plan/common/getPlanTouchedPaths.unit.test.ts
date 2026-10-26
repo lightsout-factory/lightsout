@@ -2,6 +2,8 @@ import { describe, expect, test } from '@jest/globals';
 import { BuildMode } from '#src/common/constants/BuildMode.ts';
 import { getPlanTouchedPaths } from '#src/plan/common/getPlanTouchedPaths.ts';
 import type { PhaseFile } from '#src/plan/common/types/PhaseFile.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 interface PlanSpec {
 	create?: string[];
@@ -52,7 +54,7 @@ describe('getPlanTouchedPaths', () => {
 			move: [{ from: 'src/old/thing.ts', to: 'src/new/thing.ts' }],
 		});
 
-		const counts = getPlanTouchedPaths({ plan });
+		const counts = getPlanTouchedPaths({ plan, fileGlobs: { source: sourceFileGlobs, tests: testFileGlobs } });
 
 		expect(counts).toStrictEqual({
 			created: ['src/new.ts'],
@@ -63,7 +65,7 @@ describe('getPlanTouchedPaths', () => {
 	test('a move destination is touched but never created, because a moved file is already written', () => {
 		const { plan } = setupPlan({ move: Array.from({ length: 31 }, (_, index) => ({ from: `src/old/mod${index}.ts`, to: `src/new/mod${index}.ts` })) });
 
-		const counts = getPlanTouchedPaths({ plan });
+		const counts = getPlanTouchedPaths({ plan, fileGlobs: { source: sourceFileGlobs, tests: testFileGlobs } });
 
 		// counting a relocation as creation would block a mechanical 31-file move
 		// against a ceiling no `## File Budget` can raise
@@ -73,28 +75,37 @@ describe('getPlanTouchedPaths', () => {
 	test('a path named under two headings is counted once', () => {
 		const { plan } = setupPlan({ create: ['src/thing.ts'], modify: ['src/thing.ts'], remove: ['src/thing.ts'] });
 
-		const counts = getPlanTouchedPaths({ plan });
+		const counts = getPlanTouchedPaths({ plan, fileGlobs: { source: sourceFileGlobs, tests: testFileGlobs } });
 
 		expect(counts).toStrictEqual({ created: ['src/thing.ts'], touched: ['src/thing.ts'] });
 	});
 
-	test('tests, barrels and declaration files count toward neither number', () => {
+	test('files the test-files globs match, and files the source-files globs exclude, count toward neither number', () => {
 		const { plan } = setupPlan({
-			create: ['src/thing.unit.test.ts', 'src/index.ts', 'src/markdown.d.ts', 'src/thing.ts'],
+			create: ['src/thing.unit.test.ts', 'src/index.ts', 'src/markdown.d.ts', 'src/thing.ts', 'README.md'],
 			modify: ['src/plan/index.ts', 'tests/helpers/setup.ts'],
 		});
 
-		const counts = getPlanTouchedPaths({ plan });
+		const counts = getPlanTouchedPaths({ plan, fileGlobs: { source: sourceFileGlobs, tests: testFileGlobs } });
 
 		// the drafter is told to count exactly this set, so a second spelling here
-		// is a second answer to how big the phase is
-		expect(counts).toStrictEqual({ created: ['src/thing.ts'], touched: ['src/thing.ts'] });
+		// is a second answer to how big the phase is; sourceFileGlobs carries
+		// `!**/*.d.ts` and names no Markdown, while an index file is code like any other
+		expect(counts).toStrictEqual({ created: ['src/index.ts', 'src/thing.ts'], touched: ['src/index.ts', 'src/thing.ts', 'src/plan/index.ts'] });
+	});
+
+	test('a declaration file counts when the source-files globs do not exclude it', () => {
+		const { plan } = setupPlan({ create: ['src/markdown.d.ts'] });
+
+		const counts = getPlanTouchedPaths({ plan, fileGlobs: { source: ['src/**/*.ts'], tests: testFileGlobs } });
+
+		expect(counts).toStrictEqual({ created: ['src/markdown.d.ts'], touched: ['src/markdown.d.ts'] });
 	});
 
 	test('a plan naming no files at all is zero on both numbers', () => {
 		const { plan } = setupPlan();
 
-		const counts = getPlanTouchedPaths({ plan });
+		const counts = getPlanTouchedPaths({ plan, fileGlobs: { source: sourceFileGlobs, tests: testFileGlobs } });
 
 		expect(counts).toStrictEqual({ created: [], touched: [] });
 	});

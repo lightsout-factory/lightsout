@@ -2,6 +2,8 @@ import { describe, expect, jest, test } from '@jest/globals';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFinding.ts';
 import { createSiteChecker } from '#src/refactor/batch/runBatch/createBatchTools/createSiteChecker.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // Mocked Imports
 // -------------------------
@@ -28,7 +30,12 @@ jest.mock('#src/standardsCheck/runStandardsCheck/runStandardsCheck.ts', () => ({
 const setupSiteChecker = () => {
 	mockRunStandardsCheck.mockResolvedValue({ findings: [], notes: [] });
 
-	const config: LightsoutConfig = { gates: { check: 'true', test: 'true', 'test-coverage': false }, 'packages-dir': 'apps' };
+	const config: LightsoutConfig = {
+		'source-files': sourceFileGlobs,
+		'test-files': testFileGlobs,
+		gates: { check: 'true', test: 'true', 'test-coverage': false },
+		'packages-dir': 'apps',
+	};
 	const checker = createSiteChecker({ cwd: '/repo', config, checkPath: 'src/core', checkAll: true });
 
 	return { checker, config };

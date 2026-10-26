@@ -7,6 +7,7 @@ import type { LoadedStandardsLibrary } from '#src/common/types/LoadedStandardsLi
 import type { LoadedStandardsRule } from '#src/common/types/LoadedStandardsRule.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 import { validateStandardsLibrary } from '#src/standardsCheck/validateStandardsLibrary/validateStandardsLibrary.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
 
 /** A check for the rule `id` that objects to any file named `banned.ts` — small enough to reason about, real enough to fail. */
 const bansTheBannedFile =
@@ -80,7 +81,17 @@ const rule = (overrides: Partial<LoadedStandardsRule> & { id: string; fixturesPa
 });
 
 const validate = ({ rules, built }: { rules: LoadedStandardsRule[]; built?: true }) => {
-	const pack: LoadedStandardsLibrary = { name: 'acme', formatVersion: 2, built, rootPath: '/packages/acme', documents: [], rules, packs: [] };
+	const pack: LoadedStandardsLibrary = {
+		name: 'acme',
+		formatVersion: 2,
+		built,
+		fixtureSourceFiles: sourceFileGlobs,
+		fixtureTestFiles: [],
+		rootPath: '/packages/acme',
+		documents: [],
+		rules,
+		packs: [],
+	};
 
 	return validateStandardsLibrary({ library: pack, libraries: [pack] });
 };

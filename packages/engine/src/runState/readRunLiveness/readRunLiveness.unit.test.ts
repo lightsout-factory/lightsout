@@ -39,10 +39,8 @@ const manifestOf = (overrides: Partial<RunManifest> & { runId: string }): RunMan
 	commits: [],
 	packages: [],
 	baselineDirtyFiles: [],
-	testSubjects: [],
 	acceptanceTests: [],
 	approvedTests: [],
-	unreachableChangedFiles: [],
 	coverageExcludedChangedFiles: [],
 	...overrides,
 });

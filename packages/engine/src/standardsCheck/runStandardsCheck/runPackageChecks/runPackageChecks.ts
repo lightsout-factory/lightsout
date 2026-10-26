@@ -13,6 +13,7 @@ import { buildCheckInputs } from '#src/standardsCheck/common/buildCheckInputs.ts
 import { typescriptInputKinds } from '#src/standardsCheck/common/constants/typescriptInputKinds.ts';
 import { findFileStandardsGroup } from '#src/standardsCheck/common/findFileStandardsGroup.ts';
 import { runRuleCheck } from '#src/standardsCheck/common/runRuleCheck.ts';
+import { selectInputKinds } from '#src/standardsCheck/common/selectInputKinds.ts';
 import { findFoldersWithoutAliasSource } from '#src/standardsCheck/runStandardsCheck/runPackageChecks/findFoldersWithoutAliasSource.ts';
 
 interface Grader {
@@ -26,6 +27,7 @@ interface LiveRule {
 	/** The full `<library>/<rule-id>` name every finding carries. */
 	name: string;
 	inputKinds: StandardsInputKind[];
+	optionalInputKinds?: StandardsInputKind[];
 	run: StandardsCheckFunction;
 	options: Record<string, number>;
 	/** Each group running the rule at these options, with the severity it grades at. */
@@ -45,7 +47,15 @@ const selectLiveRules = ({ groups }: { groups: StandardsGroup[] }) => {
 			}
 
 			const key = canonicalJson({ value: [rule.name, state.options] });
-			const entry = live.get(key) ?? { id: rule.id, name: rule.name, inputKinds: rule.inputKinds, run: rule.run, options: state.options, graders: [] };
+			const entry = live.get(key) ?? {
+				id: rule.id,
+				name: rule.name,
+				inputKinds: rule.inputKinds,
+				...(rule.optionalInputKinds === undefined ? {} : { optionalInputKinds: rule.optionalInputKinds }),
+				run: rule.run,
+				options: state.options,
+				graders: [],
+			};
 
 			entry.graders.push({ group, severity: state.severity });
 			live.set(key, entry);
@@ -115,7 +125,8 @@ const runLiveRules = async ({
 			continue;
 		}
 
-		const inputs = await buildCheckInputs({ kinds: rule.inputKinds, inputFor: ({ kind }) => inputFor({ kind, options: rule.options }) });
+		const kinds = selectInputKinds({ inputKinds: rule.inputKinds, optionalInputKinds: rule.optionalInputKinds, hasTypescript: compiler !== undefined });
+		const inputs = await buildCheckInputs({ kinds, inputFor: ({ kind }) => inputFor({ kind, options: rule.options }) });
 		const raw = await runRuleCheck({ rule, run: rule.run, inputs, options: rule.options });
 
 		findings.push(...gradeFindings({ rule, raw, groupOfFile }));
@@ -134,6 +145,10 @@ interface Params {
 	path?: string;
 	/** Path prefixes to exclude (the config's `generated` list). */
 	exclude?: string[];
+	/** The repo's `source-files` globs — which files are code at all. */
+	sourceFileGlobs: string[];
+	/** The repo's `test-files` globs — how source and tests are told apart. */
+	testFileGlobs: string[];
 	onProgress?: (message: string) => void;
 }
 
@@ -158,13 +173,17 @@ export const runPackageChecks = async ({
 	packagesDir = defaultPackagesDir,
 	path,
 	exclude,
+	sourceFileGlobs,
+	testFileGlobs,
 	onProgress,
 }: Params): Promise<{ findings: StandardsFinding[]; notes: string[] }> => {
 	const progress = onProgress ?? (() => undefined);
-	const { files: repoFiles, standardsLibraries } = await listSourceFiles({ cwd, exclude });
+	const { files: repoFiles, standardsLibraries } = await listSourceFiles({ cwd, sourceFileGlobs, exclude });
 	const allFiles = repoFiles.filter((file) => !path || file.startsWith(path));
-	const source = allFiles.filter((file) => !isTestFile({ path: file, standardsLibraries }));
-	const tests = allFiles.filter((file) => isTestFile({ path: file, standardsLibraries }));
+	const isTest = (file: string) => isTestFile({ path: file, testFileGlobs });
+	const source = allFiles.filter((file) => !isTest(file));
+	const tests = allFiles.filter(isTest);
+	const referenceTests = repoFiles.filter(isTest);
 	const notes: string[] = [];
 
 	progress(`checking ${source.length} source file(s) and ${tests.length} test file(s)`);
@@ -176,7 +195,20 @@ export const runPackageChecks = async ({
 	const groupOfFile: GroupOfFile = (file) => findFileStandardsGroup({ file, groups, packagesDir, workspacePackages });
 
 	const buildInput: BuildInput = async ({ kind, options }) =>
-		buildCheckInput({ kind, cwd, source, tests, files: allFiles, referenceFiles: repoFiles, standardsLibraries, packagesDir, options, cache, compiler });
+		buildCheckInput({
+			kind,
+			cwd,
+			source,
+			tests,
+			files: allFiles,
+			referenceFiles: repoFiles,
+			referenceTests,
+			standardsLibraries,
+			packagesDir,
+			options,
+			cache,
+			compiler,
+		});
 
 	const { findings, skipped } = await runLiveRules({ live, buildInput, groupOfFile, compiler, progress });
 
@@ -193,7 +225,7 @@ export const runPackageChecks = async ({
 
 	if (uncovered.length > 0) {
 		notes.push(
-			`no package.json with imports and no tsconfig above ${uncovered.length} folder(s) — path aliases are unknown there, so the barrel and import rules stayed silent rather than guess: ${uncovered.slice(0, 5).join(', ')}${uncovered.length > 5 ? ', …' : ''}`,
+			`no package.json with imports and no tsconfig above ${uncovered.length} folder(s) — path aliases are unknown there, so checks that resolve import paths could not resolve aliases there and stayed silent rather than guess: ${uncovered.slice(0, 5).join(', ')}${uncovered.length > 5 ? ', …' : ''}`,
 		);
 	}
 

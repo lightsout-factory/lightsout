@@ -8,6 +8,8 @@ import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutCo
 import { PipelineRun } from '#src/pipeline/common/PipelineRun.ts';
 import { prepareRun } from '#src/pipeline/runImplementPipeline/prepareRun/prepareRun.ts';
 import { createRun } from '#src/runState/createRun.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // Mocked Imports
 // -------------------------
@@ -24,7 +26,11 @@ jest.mock('#src/standards/resolveStandardsGroups/resolveStandardsGroups.ts', () 
 }));
 // -------------------------
 
-const plainRepo: LightsoutConfig = { gates: { check: 'true', test: 'true', 'test-coverage': false } };
+const plainRepo: LightsoutConfig = {
+	'source-files': sourceFileGlobs,
+	'test-files': testFileGlobs,
+	gates: { check: 'true', test: 'true', 'test-coverage': false },
+};
 const monorepo: LightsoutConfig = {
 	...plainRepo,
 	'package-gates': { check: 'pnpm --filter {package} check', test: 'pnpm --filter {package} test' },

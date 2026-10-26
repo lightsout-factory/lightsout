@@ -14,8 +14,15 @@ import { readRunOwner } from '#src/runState/owner/readRunOwner.ts';
 import { getRejectionError } from '#tests/helpers/getRejectionError.ts';
 import { seedRunFolder } from '#tests/helpers/seedRunFolder.ts';
 import { setupConsumerRepo } from '#tests/helpers/setupConsumerRepo.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
-const config: LightsoutConfig = { gates: { check: 'true', test: 'true', 'test-coverage': false }, 'standards-pack': 'lightsout/standards' };
+const config: LightsoutConfig = {
+	'source-files': sourceFileGlobs,
+	'test-files': testFileGlobs,
+	gates: { check: 'true', test: 'true', 'test-coverage': false },
+	'standards-pack': 'lightsout/standards',
+};
 const driver: Driver = { name: 'stub', invoke: async () => ({ text: '', exitCode: 0 }) };
 
 const manifestWith = ({ pipeline }: { pipeline?: PipelineKind }): RunManifest => ({
@@ -33,10 +40,8 @@ const manifestWith = ({ pipeline }: { pipeline?: PipelineKind }): RunManifest =>
 	commits: [],
 	packages: [],
 	baselineDirtyFiles: [],
-	testSubjects: [],
 	acceptanceTests: [],
 	approvedTests: [],
-	unreachableChangedFiles: [],
 	coverageExcludedChangedFiles: [],
 });
 
@@ -90,7 +95,12 @@ const setupLoadedConfigRuns = () => {
 	const freshCwd = setupConsumerRepo();
 	const { cwd: resumeCwd } = setupParkedRefactorRun();
 	const loadedConfig: LoadedConfig = {
-		config: { harness: 'codex', gates: { check: 'pnpm check', test: 'true', 'test-coverage': false } },
+		config: {
+			harness: 'codex',
+			'source-files': sourceFileGlobs,
+			'test-files': testFileGlobs,
+			gates: { check: 'pnpm check', test: 'true', 'test-coverage': false },
+		},
 		path: join(freshCwd, 'lightsout.config.json'),
 	};
 	const existing = manifestWith({ pipeline: 'refactor' });
@@ -229,7 +239,12 @@ describe('initializeRun', () => {
 			freshConfigPath: fresh.manifest.configPath,
 			resumedManifest: resumed.manifest,
 		}).toStrictEqual({
-			freshConfig: { harness: 'codex', gates: { check: 'pnpm check', test: 'true', 'test-coverage': false } },
+			freshConfig: {
+				harness: 'codex',
+				'source-files': sourceFileGlobs,
+				'test-files': testFileGlobs,
+				gates: { check: 'pnpm check', test: 'true', 'test-coverage': false },
+			},
 			freshConfigPath: join(freshCwd, 'lightsout.config.json'),
 			resumedManifest: manifestWith({ pipeline: 'refactor' }),
 		});

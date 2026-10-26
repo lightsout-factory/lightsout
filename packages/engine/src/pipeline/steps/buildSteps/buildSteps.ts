@@ -1,7 +1,8 @@
+import { readRepoFileGlobs } from '#src/common/config/readRepoFileGlobs.ts';
 import { BuildMode } from '#src/common/constants/BuildMode.ts';
 import { buildSelfCheckCommand } from '#src/common/selfCheck/buildSelfCheckCommand.ts';
+import { isTestFile } from '#src/common/sourceFiles/isTestFile.ts';
 import type { PlanBuildMode } from '#src/common/types/PlanBuildMode.ts';
-import { isTestSideFile } from '#src/pipeline/common/isTestSideFile.ts';
 import type { PipelineRun } from '#src/pipeline/common/PipelineRun.ts';
 import type { PipelineStep } from '#src/pipeline/common/types/PipelineStep.ts';
 import { buildFeatureFix } from '#src/pipeline/steps/buildSteps/buildFeatureFix.ts';
@@ -68,8 +69,13 @@ export const buildSteps = ({ run, gitPrefix, planContent, overviewContent, stand
 	const ledgerGates = [...new Set(plan.ledger.map((row) => row.gate))];
 	// A move destination the ledger writer writes carries every case its source
 	// held, and a file the plan deletes is nowhere to put a named test.
-	const movePaths = getLedgerMovePaths({ movePaths: plan.movePaths, folderMoves: plan.folderMoves, testFiles: plan.ledger.map((row) => row.testFile) });
-	const deletePaths = plan.deletePaths.filter((path) => isTestSideFile({ path }));
+	const movePaths = getLedgerMovePaths({
+		movePaths: plan.movePaths,
+		folderMoves: plan.folderMoves,
+		testFiles: plan.ledger.map((row) => row.testFile),
+		testFileGlobs: readRepoFileGlobs({ config: run.config }).tests,
+	});
+	const deletePaths = plan.deletePaths.filter((path) => isTestFile({ path, testFileGlobs: readRepoFileGlobs({ config: run.config }).tests }));
 	const planBuildMode = planBuildModeOf(plan);
 	const mechanical = planBuildMode.buildMode !== BuildMode.Standard;
 	// Built once and given to the implement step's own spawn AND to every fix
@@ -116,6 +122,7 @@ export const buildSteps = ({ run, gitPrefix, planContent, overviewContent, stand
 			planContent,
 			overviewContent,
 			standards,
+			testStandards,
 			skipRefactor: leaveOutRefactor,
 			acceptanceTests,
 			planBuildMode,

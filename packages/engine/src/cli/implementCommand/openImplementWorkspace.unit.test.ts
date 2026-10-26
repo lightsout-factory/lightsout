@@ -5,6 +5,8 @@ import type { PlanTarget } from '#src/cli/implementCommand/common/types/PlanTarg
 import { openImplementWorkspace } from '#src/cli/implementCommand/openImplementWorkspace.ts';
 import type { CommandContext } from '#src/common/types/CommandContext.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // Mocked Imports
 // -------------------------
@@ -56,7 +58,11 @@ const launchedFrom = resolve('/tmp/lightsout-implement-checkout');
 const worktreePath = resolve('/tmp/lightsout-implement-worktrees/lo-152-one-commit');
 const branch = 'lo-152-one-commit';
 const planPath = join('.lightsout', 'plans', branch, '001-one-commit', 'plan.md');
-const config: LightsoutConfig = { gates: { check: 'true', test: 'true', 'test-coverage': false } };
+const config: LightsoutConfig = {
+	'source-files': sourceFileGlobs,
+	'test-files': testFileGlobs,
+	gates: { check: 'true', test: 'true', 'test-coverage': false },
+};
 
 /**
  * The command's own arguments, and what the mocked resolver, copier, target

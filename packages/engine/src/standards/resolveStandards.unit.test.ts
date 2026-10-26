@@ -5,8 +5,14 @@ import { describe, expect, test } from '@jest/globals';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { resolveStandards } from '#src/standards/resolveStandards.ts';
 import { getRejectionError } from '#tests/helpers/getRejectionError.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
-const baseConfig: LightsoutConfig = { gates: { check: 'true', test: 'true', 'test-coverage': false } };
+const baseConfig: LightsoutConfig = {
+	'source-files': sourceFileGlobs,
+	'test-files': testFileGlobs,
+	gates: { check: 'true', test: 'true', 'test-coverage': false },
+};
 
 /** A temp consumer repo holding the given repo-relative files. */
 const setupRepo = ({ files = {} }: { files?: Record<string, string> } = {}) => {
@@ -131,9 +137,11 @@ describe('resolveStandards', () => {
 		const resolved = await resolveStandards({ cwd, config });
 
 		// the declared pack replaces the bundled default rather than stacking under it
-		expect(resolved.standards).toBe("<!-- house: code/house-style -->\n# house code\n\nHow this house writes code.\n\nindent with tabs — the rule's prose.");
+		expect(resolved.standards).toBe(
+			"<!-- house: code/house-style -->\n# house code\n\nHow this house writes code.\n\nRule: house/house-tabs\n\nindent with tabs — the rule's prose.",
+		);
 		expect(resolved.testStandards).toBe(
-			"<!-- house: tests/house-tests -->\n# house tests\n\nHow this house writes tests.\n\none behaviour per test — the rule's prose.",
+			"<!-- house: tests/house-tests -->\n# house tests\n\nHow this house writes tests.\n\nRule: house/house-one-assert\n\none behaviour per test — the rule's prose.",
 		);
 	});
 
@@ -160,7 +168,7 @@ describe('resolveStandards', () => {
 		expect(resolved.standards ?? '').toContain('<!-- lint: code/lint-style -->');
 		// the tests set is the one library that carries it, with no separator left where the other would have gone
 		expect(resolved.testStandards).toBe(
-			"<!-- house: tests/house-tests -->\n# house tests\n\nHow this house writes tests.\n\none behaviour per test — the rule's prose.",
+			"<!-- house: tests/house-tests -->\n# house tests\n\nHow this house writes tests.\n\nRule: house/house-one-assert\n\none behaviour per test — the rule's prose.",
 		);
 	});
 

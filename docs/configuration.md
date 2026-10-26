@@ -22,6 +22,11 @@ To run lightsout, define the commands it should use to verify the work:
 }
 ```
 
+Lightsout reads JS/TS files as your code, and tells your tests apart by the
+names the common runners use (`*.test.*`, `*.spec.*`, `__tests__/` and the
+like). If your code or tests live elsewhere, set `source-files` and
+`test-files` to the same globs your test runner's own config lists.
+
 ## Common configurations
 
 ### Use lightsout’s code standards
@@ -362,6 +367,8 @@ is overwritten the next time `pnpm build:config-reference` runs.
 | `agent-commands` | no | Command prefixes working agents are granted (prefix match, arguments allowed) — for plan deliverables only a command can produce, such as a migration generator. Verification commands never belong here: the engine runs all gates itself. The one verification command an agent is handed is the engine’s own self-check, granted per spawn to the roles that write code rather than configured here. |
 | `generated` | no | Path prefixes of generated or derived files. Real files in the diff, but excluded from changed-file attribution — the source that generates them is the change. Also where a repo says its build output lands when the walk cannot guess it. In a phased plan each phase’s commit leaves those changes on disk so the next phase starts from current build output, and the sequence discards them once it passes; a repo whose checks read those paths should set `gates.generate` so every set of gates starts from current output. A worker’s commit never carries them — the pre-ship step at merge time is the one place they are committed. |
 | `vendored` | no | Path prefixes of third-party code the repo vendors in rather than writes, such as a shadcn/ui component folder. Excluded from the source walk exactly as `generated` is, so the standards never judge it, no test is written for it and no refactor pass touches it — with one difference: a vendored file IS attributed when it changes, because no source in the repo produced it. Excluding it from a coverage threshold is your test runner’s job, not the engine’s. |
+| `source-files` | no | Globs, from the repo root, of every code file lightsout reads — your tests included, since `test-files` says which of them are tests. A glob starting with `!` excludes. Inside a git repository the candidates are the files git lists, so whatever `.gitignore` already excludes, such as dependencies and build output, is never read. The standards checks, the test writer, coverage and a plan’s file counts all read this list. Defaults to the JS/TS files, `["**/*.{ts,tsx,mts,cts,js,jsx,mjs,cjs}", "!**/node_modules/**", "!**/*.d.ts"]`; set it for another language or to narrow it. |
+| `test-files` | no | Globs, from the repo root, of every test-side file: the tests, and the mocks, fixtures, helpers, snapshots and runner configuration that serve them — usually what your test runner’s own config already lists. The test writer, the coverage gate, the standards checks and the test-change reviewer all read this list to tell tests from source. Defaults to the names the common JS/TS runners use, `["**/*.test.*", "**/*.spec.*", "**/test/**", "**/tests/**", "**/__tests__/**", "**/__mocks__/**", "**/e2e/**"]`; set it when your runner is configured otherwise. |
 | `coverage-summary-path` | no | Path to the JSON coverage summary the coverage tooling writes — the `json-summary` reporter’s `coverage-summary.json`, which `lightsout test-coverage-to-threshold` reads for per-file percentages. Defaults to `coverage/coverage-summary.json`, repo-relative in single-package repos and package-relative in monorepo mode. The file is the tool-agnostic contract, so a printed coverage table changing format never breaks a run. |
 | `executor-file-limit` | no | How many source files one plan or phase may create or modify before the feature executor refuses it as out of scope. Defaults to 50. One key rather than a number per reader, so the plan lint, the scope estimate and the executor’s own stop rule agree by construction. A plan that is mostly mechanical edits raises its own allowance with a `## File Budget` section rather than moving this key, but a `## File Budget` cannot lift a plan or phase past the fixed touched-file ceiling of 70 source files unless that plan or phase is rename-only; the separate ceiling on files a plan creates is fixed and cannot be raised either way. A move-folders-and-files plan or phase is exempt from that touched-file ceiling as well, and from this limit and its own `## File Budget`: its size is bounded by the build-time move check instead. |
 | `packages-dir` | no | Directory holding workspace packages, for monorepo scoped gates. Defaults to `packages`. |
@@ -974,6 +981,12 @@ The following example shows how the optional configuration fields fit together:
 
   // Commands implementation agents may run
   "agent-commands": ["pnpm --filter api run prisma:migrate:dev:name"],
+
+  // Every code file lightsout reads, tests included; a ! glob excludes
+  "source-files": ["src/**/*.{ts,tsx}", "!**/*.d.ts"],
+
+  // Every test-side file: tests, their mocks and fixtures, the runner's config
+  "test-files": ["**/*.test.*", "**/__mocks__/**", "**/jest.config.*"],
 
   // Generated files excluded from changed-file attribution
   "generated": ["src/generated/", "src/schema.gql"],

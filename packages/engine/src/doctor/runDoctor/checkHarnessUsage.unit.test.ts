@@ -4,6 +4,8 @@ import type { DriverInvocation } from '#src/common/types/DriverInvocation.ts';
 import type { DriverResult } from '#src/common/types/DriverResult.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { checkHarnessUsage } from '#src/doctor/runDoctor/checkHarnessUsage.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 const gates: LightsoutConfig['gates'] = { check: 'true', test: 'true', 'test-coverage': false };
 
@@ -48,7 +50,7 @@ const setupProbe = ({ harness, usage, events = [], error }: SetupParams = {}) =>
 		},
 	};
 
-	const config: LightsoutConfig = { gates, harness };
+	const config: LightsoutConfig = { 'source-files': sourceFileGlobs, 'test-files': testFileGlobs, gates, harness };
 
 	return { config, driver, invocations };
 };

@@ -48,10 +48,8 @@ const manifestOf = (overrides: Partial<RunManifest> = {}): RunManifest => ({
 	commits: [],
 	packages: [],
 	baselineDirtyFiles: [],
-	testSubjects: [],
 	acceptanceTests: [],
 	approvedTests: [],
-	unreachableChangedFiles: [],
 	coverageExcludedChangedFiles: [],
 	...overrides,
 });

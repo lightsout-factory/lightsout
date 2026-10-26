@@ -2,7 +2,7 @@ import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
-import { checkJestReporter } from '#src/doctor/runDoctor/checkJestReporter.ts';
+import { checkJestReporter } from '#src/doctor/runDoctor/checkJestReporter/checkJestReporter.ts';
 import { writeRepoFile } from '#tests/helpers/writeRepoFile.ts';
 
 // The variable's name is written out rather than imported, so the test states

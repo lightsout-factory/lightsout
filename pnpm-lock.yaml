@@ -21,12 +21,21 @@ catalogs:
     '@types/node':
       specifier: ^22.10.0
       version: 22.20.1
+    '@types/picomatch':
+      specifier: ^4.0.3
+      version: 4.0.3
     esbuild:
       specifier: ^0.24.0
       version: 0.24.2
     jest:
       specifier: ^30.4.2
       version: 30.4.2
+    picomatch:
+      specifier: ^4.0.5
+      version: 4.0.5
+    tinyglobby:
+      specifier: ^0.2.17
+      version: 0.2.17
     ts-jest:
       specifier: ^29.4.12
       version: 29.4.12
@@ -92,6 +101,12 @@ importers:
       '@linear/sdk':
         specifier: 'catalog:'
         version: 92.0.0(graphql@17.0.2)
+      picomatch:
+        specifier: 'catalog:'
+        version: 4.0.5
+      tinyglobby:
+        specifier: 'catalog:'
+        version: 0.2.17
       yaml:
         specifier: 'catalog:'
         version: 2.9.0
@@ -105,6 +120,9 @@ importers:
       '@types/node':
         specifier: 'catalog:'
         version: 22.20.1
+      '@types/picomatch':
+        specifier: 'catalog:'
+        version: 4.0.3
       typescript:
         specifier: 'catalog:'
         version: 5.9.3
@@ -2666,6 +2684,9 @@ packages:
 
   '@types/normalize-package-data@2.4.4':
     resolution: {integrity: sha512-37i+OaWTh9qeK4LSHPsyRC7NahnGotNuZvjLSgcPzblpHB3rrCJxAOgI5gCdKm7coonsaX1Of0ILiTcnZjbfxA==}
+
+  '@types/picomatch@4.0.3':
+    resolution: {integrity: sha512-iG0T6+nYJ9FAPmx9SsUlnwcq1ZVRuCXcVEvWnntoPlrOpwtSTKNDC9uVAxTsC3PUvJ+99n4RpAcNgBbHX3JSnQ==}
 
   '@types/prismjs@1.26.6':
     resolution: {integrity: sha512-vqlvI7qlMvcCBbVe0AKAb4f97//Hy0EBTaiW8AalRnG/xAN5zOiWWyrNqNXeq8+KAuvRewjCVY1+IPxk4RdNYw==}
@@ -8982,6 +9003,8 @@ snapshots:
       undici-types: 6.21.0
 
   '@types/normalize-package-data@2.4.4': {}
+
+  '@types/picomatch@4.0.3': {}
 
   '@types/prismjs@1.26.6': {}
 

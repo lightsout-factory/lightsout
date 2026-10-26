@@ -3,6 +3,8 @@ import type { Driver } from '#src/common/types/Driver.ts';
 import type { DriverInvocation } from '#src/common/types/DriverInvocation.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { summarizeWorkOrderName } from '#src/workOrder/createWorkOrder/summarizeWorkOrderName.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 const gates: LightsoutConfig['gates'] = { check: 'true', test: 'true', 'test-coverage': false };
 
@@ -47,7 +49,7 @@ const setupSummarizer = ({ texts = [], error, harness }: SetupParams = {}) => {
 		},
 	};
 
-	const config: LightsoutConfig = { gates, ...(harness === undefined ? {} : { harness }) };
+	const config: LightsoutConfig = { 'source-files': sourceFileGlobs, 'test-files': testFileGlobs, gates, ...(harness === undefined ? {} : { harness }) };
 
 	const onProgress = (message: string) => {
 		progress.push(message);

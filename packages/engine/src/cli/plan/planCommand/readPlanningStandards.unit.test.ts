@@ -5,6 +5,8 @@ import { expect, test } from '@jest/globals';
 import { readPlanningStandards } from '#src/cli/plan/planCommand/readPlanningStandards.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { captureCommandOutput } from '#tests/helpers/captureCommandOutput.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 /** A one-rule standards library to write inside the repo, in the code tree unless told otherwise, with a `demo` pack that includes its one topic. */
 interface StandardsPackage {
@@ -54,7 +56,12 @@ const setupStandards = ({ dependencies, packages = [] }: { dependencies?: Record
 };
 
 /** The gate config every LightsoutConfig needs, so each case only states the standards keys it is about. */
-const configWith = (fields: Partial<LightsoutConfig>): LightsoutConfig => ({ gates: { check: 'true', test: 'true', 'test-coverage': false }, ...fields });
+const configWith = (fields: Partial<LightsoutConfig>): LightsoutConfig => ({
+	'source-files': sourceFileGlobs,
+	'test-files': testFileGlobs,
+	gates: { check: 'true', test: 'true', 'test-coverage': false },
+	...fields,
+});
 
 test('readPlanningStandards: with no config it loads nothing, whatever the consumer manifest declares', async () => {
 	const { cwd, logged } = setupStandards({ dependencies: { react: '^19.0.0' } });

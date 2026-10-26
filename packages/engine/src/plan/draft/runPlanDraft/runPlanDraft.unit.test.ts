@@ -264,7 +264,7 @@ test('plan draft: the overview\u2019s declared counts are re-stamped from what t
 
 	// the estimate the overview agent wrote is replaced by the count the phase
 	// file proves, so the consistency check never spends a repair on arithmetic
-	expect(overview).toContain('| 1 | `phase1-core.md` | the core | 1 | 1 |');
+	expect(overview).toContain('| 1 | `phase1-core.md` | the core | 1 | 2 |');
 });
 
 test('plan draft: an explicit scope flag overrides the estimate', async () => {

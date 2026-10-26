@@ -8,6 +8,8 @@ import type { ResolvedRuleState } from '#src/common/types/ResolvedRuleState.ts';
 import type { StandardsGroup } from '#src/common/types/StandardsGroup.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 import { runPackageChecks } from '#src/standardsCheck/runStandardsCheck/runPackageChecks/runPackageChecks.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 /** A repo that declares its path aliases nowhere: no tsconfig above anything, and a manifest only when one is asked for. */
 const setupUndeclaredRepo = ({ manifest, folders = ['src', 'src/feature'] }: { manifest?: string; folders?: string[] } = {}) => {
@@ -78,7 +80,7 @@ const runChecks = ({ rules, cwd }: { rules: LoadedStandardsRule[]; cwd: string }
 		states,
 	};
 
-	return runPackageChecks({ cwd, groups: [group] });
+	return runPackageChecks({ cwd, sourceFileGlobs, testFileGlobs, groups: [group] });
 };
 
 describe('runPackageChecks', () => {
@@ -88,7 +90,7 @@ describe('runPackageChecks', () => {
 		const { notes } = await runChecks({ cwd, rules: [rule({ id: 'multi-export', inputKinds: [StandardsInputKind.FileText] })] });
 
 		expect(notes).toStrictEqual([
-			'no package.json with imports and no tsconfig above 2 folder(s) — path aliases are unknown there, so the barrel and import rules stayed silent rather than guess: src, src/feature',
+			'no package.json with imports and no tsconfig above 2 folder(s) — path aliases are unknown there, so checks that resolve import paths could not resolve aliases there and stayed silent rather than guess: src, src/feature',
 		]);
 	});
 
@@ -110,7 +112,7 @@ describe('runPackageChecks', () => {
 		// counting a manifest's mere presence as an answer would report the whole
 		// repo covered and this note would never fire again
 		expect(notes).toStrictEqual([
-			'no package.json with imports and no tsconfig above 2 folder(s) — path aliases are unknown there, so the barrel and import rules stayed silent rather than guess: src, src/feature',
+			'no package.json with imports and no tsconfig above 2 folder(s) — path aliases are unknown there, so checks that resolve import paths could not resolve aliases there and stayed silent rather than guess: src, src/feature',
 		]);
 	});
 
@@ -130,7 +132,7 @@ describe('runPackageChecks', () => {
 		// answered the question; anything else is credited to nobody, so the
 		// folders stay uncovered rather than being reported as declared
 		expect(notes).toStrictEqual([
-			'no package.json with imports and no tsconfig above 2 folder(s) — path aliases are unknown there, so the barrel and import rules stayed silent rather than guess: src, src/feature',
+			'no package.json with imports and no tsconfig above 2 folder(s) — path aliases are unknown there, so checks that resolve import paths could not resolve aliases there and stayed silent rather than guess: src, src/feature',
 		]);
 	});
 
@@ -142,7 +144,7 @@ describe('runPackageChecks', () => {
 		// the manifest sits at the package root, not the repo root, so the answer
 		// has to be found by walking up from the file rather than read once
 		expect(notes).toStrictEqual([
-			'no package.json with imports and no tsconfig above 1 folder(s) — path aliases are unknown there, so the barrel and import rules stayed silent rather than guess: tools',
+			'no package.json with imports and no tsconfig above 1 folder(s) — path aliases are unknown there, so checks that resolve import paths could not resolve aliases there and stayed silent rather than guess: tools',
 		]);
 	});
 
@@ -161,7 +163,7 @@ describe('runPackageChecks', () => {
 		const { notes } = await runChecks({ cwd, rules: [rule({ id: 'multi-export', inputKinds: [StandardsInputKind.FileText] })] });
 
 		expect(notes).toStrictEqual([
-			'no package.json with imports and no tsconfig above 6 folder(s) — path aliases are unknown there, so the barrel and import rules stayed silent rather than guess: src/f1, src/f2, src/f3, src/f4, src/f5, …',
+			'no package.json with imports and no tsconfig above 6 folder(s) — path aliases are unknown there, so checks that resolve import paths could not resolve aliases there and stayed silent rather than guess: src/f1, src/f2, src/f3, src/f4, src/f5, …',
 		]);
 	});
 });

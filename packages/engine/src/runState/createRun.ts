@@ -90,10 +90,8 @@ export const createRun = async ({
 		commits: [],
 		packages: [],
 		baselineDirtyFiles: baselineDirtyFiles ?? [],
-		testSubjects: [],
 		acceptanceTests: [],
 		approvedTests: [],
-		unreachableChangedFiles: [],
 		coverageExcludedChangedFiles: [],
 	};
 

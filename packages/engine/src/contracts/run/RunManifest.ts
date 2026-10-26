@@ -60,13 +60,9 @@ export const RunManifest = z.object({
 	usage: RunUsage.optional(),
 	/** Paths already dirty when the run started, subtracted from every git snapshot so only the run's own changes are attributed to it. */
 	baselineDirtyFiles: z.array(z.string()).default([]),
-	/** What verify fix re-invocations hand back to test writers. */
-	testSubjects: z.array(z.string()).default([]),
 	/** One entry per plan ledger row. */
 	acceptanceTests: z.array(AcceptanceTestRecord).default([]),
 	approvedTests: z.array(ApprovedTestRecord).default([]),
-	/** Changed files the write-tests step skipped because nothing public reaches them; re-checked at run end. */
-	unreachableChangedFiles: z.array(z.string()).default([]),
 	/** Files the repo's coverage configuration does not collect, so verify fix re-invocations must not demand their execution. */
 	coverageExcludedChangedFiles: z.array(z.string()).default([]),
 });

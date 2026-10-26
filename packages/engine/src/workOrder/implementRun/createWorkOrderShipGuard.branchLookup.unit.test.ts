@@ -10,6 +10,8 @@ import type { WorkOrderPlan } from '#src/contracts/workOrder/WorkOrderPlan.ts';
 import type { WorkOrderState } from '#src/contracts/workOrder/WorkOrderState.ts';
 import { updateLocalWorkOrderState } from '#src/workOrder/common/state/updateLocalWorkOrderState.ts';
 import { createWorkOrderShipGuard } from '#src/workOrder/implementRun/createWorkOrderShipGuard.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 /** The work order's label: the folder its record sits in. */
 const name = 'lo-140-multi';
@@ -20,7 +22,11 @@ const planIds = ['001-search-basics', '002-fix-x'];
 const firstEvent = { at: '2026-01-01T00:00:00.000Z', kind: WorkOrderEventKind.PlanAdded, detail: 'added plan 001-search-basics' };
 
 /** No `ticket-tracker` block, so the record is local only and nothing is reached for. */
-const localConfig: LightsoutConfig = { gates: { check: 'true', test: 'true', 'test-coverage': false } };
+const localConfig: LightsoutConfig = {
+	'source-files': sourceFileGlobs,
+	'test-files': testFileGlobs,
+	gates: { check: 'true', test: 'true', 'test-coverage': false },
+};
 
 const implementedPlanOf = ({ id }: { id: string }): WorkOrderPlan => ({
 	id,

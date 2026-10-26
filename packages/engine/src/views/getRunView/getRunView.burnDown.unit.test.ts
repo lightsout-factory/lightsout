@@ -151,9 +151,6 @@ describe('getRunView', () => {
 					advisoryOutcomes: [],
 				},
 			],
-			// only the size and crowding rules are the sprawl story: three plus two
-			// sites, of which two still stand
-			overCap: { before: 5, after: 2 },
 		});
 	});
 
@@ -180,35 +177,6 @@ describe('getRunView', () => {
 					advisoryOutcomes: [],
 				},
 			],
-			overCap: { before: 2, after: 2 },
-		});
-	});
-
-	test('a work-list of nothing but other rules leaves the over-cap count off', async () => {
-		const { cwd } = await setupRefactorRun({
-			batches: [{ rule: 'lightsout/multi-export', blocking: 1, report: { outcome: 'resolved', remainingSiteKeys: [], rationale: [] } }],
-		});
-
-		const view = await getRunView({ cwd, runId: 'run-refactor' });
-
-		expect(view.burnDown).toStrictEqual({
-			before: 1,
-			after: 0,
-			batchesResolved: 1,
-			batchesDeclined: 0,
-			batches: [
-				{
-					id: 'batch-00:lightsout/multi-export:src',
-					rule: 'lightsout/multi-export',
-					folder: 'src',
-					blocking: 1,
-					outcome: 'resolved',
-					rationale: [],
-					advisoryOutcomes: [],
-				},
-			],
-			// no size or crowding batch ran, so there is no sprawl line to draw
-			overCap: undefined,
 		});
 	});
 

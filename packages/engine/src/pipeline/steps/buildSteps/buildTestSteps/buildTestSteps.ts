@@ -71,10 +71,7 @@ export const buildTestSteps = ({
 					: ({ errorContext }) =>
 							buildUnitTestWriterInvocation({
 								planContent,
-								subjects: run.current().testSubjects,
-								mustExecute: sourceFiles({ run }).filter(
-									(file) => !run.current().unreachableChangedFiles.includes(file) && !run.current().coverageExcludedChangedFiles.includes(file),
-								),
+								files: sourceFiles({ run }).filter((file) => !run.current().coverageExcludedChangedFiles.includes(file)),
 								standards: testStandards,
 								errorContext,
 								acceptanceTests: acceptanceTests(),

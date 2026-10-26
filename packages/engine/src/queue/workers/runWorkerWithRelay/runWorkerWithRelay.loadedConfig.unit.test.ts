@@ -18,6 +18,8 @@ import { runWorkerWithRelay } from '#src/queue/workers/runWorkerWithRelay/runWor
 import type { runWorkOrderBodyBuildLifecycle } from '#src/workOrder/implementRun/runWorkOrderBodyBuildLifecycle.ts';
 import type { pullWorkOrderState } from '#src/workOrder/pullWorkOrderState.ts';
 import { queueSettingsFixture } from '#tests/helpers/queueSettingsFixture.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 /**
  * The queue's loaded config — the config as it was read from disk at the
@@ -75,7 +77,12 @@ const receivers = {
 };
 
 /** The stamped config: the implement entry's harness written over the file's. */
-const config: LightsoutConfig = { harness: 'claude-code', gates: { check: 'true', test: 'true', 'test-coverage': false } };
+const config: LightsoutConfig = {
+	harness: 'claude-code',
+	'source-files': sourceFileGlobs,
+	'test-files': testFileGlobs,
+	gates: { check: 'true', test: 'true', 'test-coverage': false },
+};
 
 const driver: Driver = { name: 'claude-code', invoke: () => Promise.resolve({ text: '', exitCode: 0 }) };
 
@@ -98,7 +105,12 @@ const ticketRecord: WorkOrderState = {
 
 const setupWorker = ({ worker, record }: { worker: QueueWorker; record: WorkOrderState | undefined }) => {
 	const loadedConfig: LoadedConfig = {
-		config: { harness: 'codex', gates: { check: 'pnpm check', test: 'pnpm test', 'test-coverage': false } },
+		config: {
+			harness: 'codex',
+			'source-files': sourceFileGlobs,
+			'test-files': testFileGlobs,
+			gates: { check: 'pnpm check', test: 'pnpm test', 'test-coverage': false },
+		},
 		path: '/repo/lightsout.config.json',
 	};
 	const coordinatorRunDir = mkdtempSync(join(tmpdir(), 'lightsout-loaded-config-worker-'));
@@ -122,10 +134,8 @@ const setupWorker = ({ worker, record }: { worker: QueueWorker; record: WorkOrde
 			commits: [],
 			packages: [],
 			baselineDirtyFiles: [],
-			testSubjects: [],
 			acceptanceTests: [],
 			approvedTests: [],
-			unreachableChangedFiles: [],
 			coverageExcludedChangedFiles: [],
 		},
 	});
@@ -183,7 +193,12 @@ describe('runWorkerWithRelay', () => {
 			expect.objectContaining({
 				config,
 				loadedConfig: {
-					config: { harness: 'codex', gates: { check: 'pnpm check', test: 'pnpm test', 'test-coverage': false } },
+					config: {
+						harness: 'codex',
+						'source-files': sourceFileGlobs,
+						'test-files': testFileGlobs,
+						gates: { check: 'pnpm check', test: 'pnpm test', 'test-coverage': false },
+					},
 					path: '/repo/lightsout.config.json',
 				},
 			}),

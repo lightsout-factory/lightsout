@@ -37,10 +37,8 @@ const buildManifest = ({ pipeline, steps = [] }: { pipeline: PipelineKind; steps
 	commits: [],
 	packages: [],
 	baselineDirtyFiles: [],
-	testSubjects: [],
 	acceptanceTests: [],
 	approvedTests: [],
-	unreachableChangedFiles: [],
 	coverageExcludedChangedFiles: [],
 });
 
@@ -88,8 +86,6 @@ describe('buildRunBurnDown', () => {
 					advisoryOutcomes: [],
 				},
 			],
-			// only the size and crowding rules — the sprawl story, measured
-			overCap: { before: 2, after: 2 },
 		});
 	});
 
@@ -138,33 +134,6 @@ describe('buildRunBurnDown', () => {
 		});
 
 		expect(burnDown?.batches[0].advisoryOutcomes).toStrictEqual(advisoryOutcomes);
-	});
-
-	test('a work-list holding no size or crowding batch reports no over-cap count rather than a pair of zeroes', () => {
-		const batches = [buildBatch({ id: 'batch-01:lightsout/multi-export:engine' })];
-		const burnDown = buildRunBurnDown({ manifest: buildManifest({ pipeline: PipelineKind.Refactor }), worklist: frozen({ batches }) });
-
-		expect(burnDown?.overCap).toBe(undefined);
-	});
-
-	test('over-cap batches are recognised by full rule name', () => {
-		const batches = [
-			buildBatch({ id: 'batch-01:lightsout/file-size:engine', rule: 'lightsout/file-size', blocking: 2 }),
-			buildBatch({ id: 'batch-02:lightsout/naming:engine', rule: 'lightsout/naming', blocking: 3 }),
-		];
-		const burnDown = buildRunBurnDown({
-			manifest: buildManifest({
-				pipeline: PipelineKind.Refactor,
-				steps: [
-					{ id: batches[0].id, status: RunStatus.Passed, attempts: 1, report: { outcome: 'resolved', remainingSiteKeys: [], rationale: [] } },
-					{ id: batches[1].id, status: RunStatus.Passed, attempts: 1, report: { outcome: 'declined', remainingSiteKeys: ['a'], rationale: [] } },
-				],
-			}),
-			worklist: frozen({ batches }),
-		});
-
-		// only the file-size batch counts: its two findings before, none after
-		expect(burnDown?.overCap).toStrictEqual({ before: 2, after: 0 });
 	});
 
 	test('a refactor run whose frozen work-list is missing or unparseable gets no panel at all', () => {

@@ -3,11 +3,11 @@ import { setupImportGraphInput } from '@lightsout/standards-testkit';
 import { check } from './check.ts';
 
 /** Each `[from, to]` pair is one import. Every file is in scope unless `scope` narrows the run. */
-const setupImports = ({ imports, scope, standardsLibraries = [] }: { imports: Array<[string, string]>; scope?: string[]; standardsLibraries?: string[] }) => {
+const setupImports = ({ imports, scope, tests = [] }: { imports: Array<[string, string]>; scope?: string[]; tests?: string[] }) => {
 	const edges = imports.map(([from, to]) => ({ from, to }));
 	const paths = [...new Set(imports.flat())];
 
-	return setupImportGraphInput({ edges, source: scope ?? paths, files: scope ?? paths, referenceFiles: paths, standardsLibraries });
+	return setupImportGraphInput({ edges, source: scope ?? paths, files: scope ?? paths, referenceFiles: paths, referenceTests: tests });
 };
 
 const cycleGuidance = 'Move the piece these files share, usually a type, into a file each of them imports, so that the imports run one way.';
@@ -145,6 +145,7 @@ describe('circular-dependencies check', () => {
 				['tests/helpers/setupLabel.ts', 'tests/helpers/setupName.ts'],
 				['tests/helpers/setupName.ts', 'tests/helpers/setupLabel.ts'],
 			],
+			tests: ['src/getLabel.unit.test.ts', 'tests/helpers/setupLabel.ts', 'tests/helpers/setupName.ts'],
 		});
 
 		const findings = await check.run({ inputs: { 'import-graph': input }, options: {} });
@@ -152,13 +153,12 @@ describe('circular-dependencies check', () => {
 		expect(findings).toStrictEqual([]);
 	});
 
-	test('reports a cycle between rule files under a standards library’s `tests/` folder, which holds rules and not tests', async () => {
+	test('reports a cycle between files under a `tests/` folder the repo does not declare as tests, since only the declared tests are spared', async () => {
 		const input = setupImports({
 			imports: [
 				['standards/rules/tests/a/check.ts', 'standards/rules/tests/b/check.ts'],
 				['standards/rules/tests/b/check.ts', 'standards/rules/tests/a/check.ts'],
 			],
-			standardsLibraries: ['standards'],
 		});
 
 		const findings = await check.run({ inputs: { 'import-graph': input }, options: {} });

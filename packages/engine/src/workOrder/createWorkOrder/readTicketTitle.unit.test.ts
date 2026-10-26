@@ -4,6 +4,8 @@ import type { TrackerSettings } from '#src/common/types/TrackerSettings.ts';
 import type { TrackerTicket } from '#src/common/types/TrackerTicket.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { readTicketTitle } from '#src/workOrder/createWorkOrder/readTicketTitle.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // Mocked Imports
 // -------------------------
@@ -24,6 +26,8 @@ jest.mock('#src/ticketTracker/getTicketsByIdentifiers.ts', () => ({
  */
 const setupUnusableTracker = () => {
 	const config: LightsoutConfig = {
+		'source-files': sourceFileGlobs,
+		'test-files': testFileGlobs,
 		gates: { check: 'true', test: 'true', 'test-coverage': false },
 		'ticket-tracker': { provider: 'linear', team: 'LO', 'api-key-env': 'LINEAR_API_KEY' },
 	};

@@ -16,6 +16,7 @@ interface Params {
 	planContent: string;
 	overviewContent?: string;
 	standards?: string;
+	testStandards?: string;
 	skipRefactor?: boolean;
 	/** Read at every call rather than captured once, so a re-invocation names the ledger rows as they now stand. */
 	acceptanceTests: () => AcceptanceTestRecord[];
@@ -32,6 +33,7 @@ export const buildRefactorSteps = ({
 	planContent,
 	overviewContent,
 	standards,
+	testStandards,
 	skipRefactor,
 	acceptanceTests,
 	planBuildMode,
@@ -42,7 +44,7 @@ export const buildRefactorSteps = ({
 				{
 					id: 'refactor',
 					skip: () => (standardsScopeFiles({ run }).length === 0 ? 'no changed source files to review' : undefined),
-					run: refactorStep({ run, gitPrefix, planContent, overviewContent, standards }),
+					run: refactorStep({ run, gitPrefix, planContent, overviewContent, standards, testStandards }),
 				},
 				formatStep({ run, id: 'format-refactor' }),
 				{
@@ -67,6 +69,7 @@ export const buildRefactorSteps = ({
 								overviewContent,
 								changedFiles: standardsScopeFiles({ run }),
 								standards,
+								testStandards,
 								errorContext,
 								selfCheckCommand: buildSelfCheckCommand({ cwd: run.cwd, runId: run.current().runId }).command,
 							}),

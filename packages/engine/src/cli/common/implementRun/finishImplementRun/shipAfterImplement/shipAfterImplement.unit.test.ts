@@ -13,7 +13,9 @@ import { writeWorktreeRecord } from '#src/worktree/records/writeWorktreeRecord.t
 import { captureCommandOutput } from '#tests/helpers/captureCommandOutput.ts';
 import { setupBranchRepo } from '#tests/helpers/setupBranchRepo.ts';
 import { manifestOf } from '#tests/helpers/setupResume.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
 import { stubForgeOnPath } from '#tests/helpers/stubForgeOnPath.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // Mocked Imports
 // -------------------------
@@ -71,7 +73,12 @@ const setupChain = ({
 		},
 	});
 	const { cwd } = setupBranchRepo({ branch: 'lo-60-ship' });
-	const config = LightsoutConfig.parse({ gates: { check: 'true', test: 'true', 'test-coverage': false }, ...(ship === undefined ? {} : { ship }) });
+	const config = LightsoutConfig.parse({
+		'source-files': sourceFileGlobs,
+		'test-files': testFileGlobs,
+		gates: { check: 'true', test: 'true', 'test-coverage': false },
+		...(ship === undefined ? {} : { ship }),
+	});
 
 	return { config, cwd, readForgeLog, result: { ok, manifest: manifestOf({ status: ok ? RunStatus.Passed : RunStatus.Failed }) }, ...captured };
 };

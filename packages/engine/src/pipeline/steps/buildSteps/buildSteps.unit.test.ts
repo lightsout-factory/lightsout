@@ -12,6 +12,8 @@ import type { PipelineRun } from '#src/pipeline/common/PipelineRun.ts';
 import type { PipelineStep } from '#src/pipeline/common/types/PipelineStep.ts';
 import { buildSteps } from '#src/pipeline/steps/buildSteps/buildSteps.ts';
 import type { VerificationResult } from '#src/pipeline/steps/common/types/VerificationResult.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // Mocked Imports
 // -------------------------
@@ -138,7 +140,7 @@ const setupBuild = () => {
 	const manifest = { runId: 'run-1', acceptanceTests: [], changedFiles: ['src/widget.ts'] };
 	const run = {
 		cwd: '/tmp/lightsout-build-steps',
-		config: { gates: {} },
+		config: { 'source-files': sourceFileGlobs, 'test-files': testFileGlobs, gates: {} },
 		current: () => manifest,
 	} as unknown as PipelineRun;
 
@@ -196,7 +198,12 @@ const setupBuildSteps = ({ generated, dirtyFiles }: { generated: string[] | unde
 
 	const run = {
 		cwd: '/tmp/lightsout-build-steps',
-		config: { gates: {}, ...(generated === undefined ? {} : { generated }) } as unknown as LightsoutConfig,
+		config: {
+			'source-files': sourceFileGlobs,
+			'test-files': testFileGlobs,
+			gates: {},
+			...(generated === undefined ? {} : { generated }),
+		} as unknown as LightsoutConfig,
 		current: () => manifest,
 		progress: () => undefined,
 		nextRecord: ({ id }: { id: string }) => ({ id, status: RunStatus.Running, attempts: 1 }),

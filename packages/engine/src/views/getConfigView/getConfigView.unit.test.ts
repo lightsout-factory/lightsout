@@ -8,6 +8,8 @@ import { ConfigNotFoundError } from '#src/views/ConfigNotFoundError.ts';
 import { getConfigView } from '#src/views/getConfigView/getConfigView.ts';
 import { freshCwd } from '#tests/helpers/freshCwd.ts';
 import { seedConfiguredCwd } from '#tests/helpers/seedConfiguredCwd.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 /** This repo's own root — the config the view is read against, so the assertions describe a real file rather than a fixture of one. */
 const repoRoot = join(__dirname, '..', '..', '..', '..', '..');
@@ -167,6 +169,7 @@ describe('getConfigView', () => {
 		expect(view.sections.map((section) => section.title)).toStrictEqual([
 			'Harness',
 			'Gates',
+			'Source and test files',
 			'Standards',
 			'Agent commands',
 			'Generated',
@@ -181,6 +184,14 @@ describe('getConfigView', () => {
 			'Pricing',
 			'Docs',
 		]);
+	});
+
+	test('reads the source and test file lists side by side, since one says what is code and the other which of it is test', async () => {
+		const view = await getConfigView({ cwd: repoRoot });
+
+		const section = view.sections.find((candidate) => candidate.title === 'Source and test files');
+
+		expect(section?.fields.map((field) => field.key)).toStrictEqual(['source-files', 'test-files']);
 	});
 
 	test('carries the worktree block on its own row, so the page shows the shared preparation command the file named', async () => {
@@ -279,7 +290,9 @@ describe('getConfigView', () => {
 	});
 
 	test('a config the schema refuses names the key it refused, which is what the error boundary shows', async () => {
-		const { cwd } = await setupRawConfig({ raw: JSON.stringify({ gates: { check: 'pnpm check' } }) });
+		const { cwd } = await setupRawConfig({
+			raw: JSON.stringify({ 'source-files': sourceFileGlobs, 'test-files': testFileGlobs, gates: { check: 'pnpm check' } }),
+		});
 
 		await expect(getConfigView({ cwd })).rejects.toThrow(/gates\.test/);
 	});

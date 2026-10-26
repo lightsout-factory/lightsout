@@ -13,8 +13,8 @@ ${renderGlobalConstraints({ decisions: [] })}
 
 | # | File | Scope | Creates | Touches |
 |---|------|-------|---------|---------|
-| 1 | \`phase1-core.md\` | the core | 1 | 1 |
-| 2 | \`phase2-extra.md\` | the rest | 1 | 1 |
+| 1 | \`phase1-core.md\` | the core | 1 | 2 |
+| 2 | \`phase2-extra.md\` | the rest | 1 | 2 |
 
 ## Phase Declarations
 

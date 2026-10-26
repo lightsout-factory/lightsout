@@ -27,9 +27,11 @@ interface Params {
 	changedFiles: string[];
 	/** Optional consumer standards content (style card), inlined verbatim. */
 	standards?: string;
+	/** The standards for test files, inlined verbatim: a finding may sit on a test file the scope includes. */
+	testStandards?: string;
 	/** Deterministic standards findings on the changed files — the typed work-list. */
 	findings?: StandardsFinding[];
-	/** Judgment-carrying standards advisories (function/hook/component size) — fix unless a documented exemption applies. */
+	/** Judgment-carrying standards advisories — fix unless the rule's own guidance exempts the site. */
 	advisories?: StandardsFinding[];
 	/** Ask for an `advisoryOutcomes` entry per advisory shown. Only callers that PERSIST the answer switch this on — asking for a field nothing records is prompt noise. */
 	reportAdvisoryOutcomes?: boolean;
@@ -49,7 +51,7 @@ const advisoryOutcomesSection = [
 	"For every advisory listed above — from a deterministic check or an agent check — add one entry to the `advisoryOutcomes` array of your report: the finding's `rule` and `siteKey` copied exactly as given, an `outcome`, and for a decline a short `reason`.",
 	'The three outcomes: "applied" when you made the change; "declined" when you judged the advice wrong here; "already-met" when the end-state it asks for was already true and you edited nothing. Do not report "applied" for a change you did not have to make, and do not report "declined" for advice you did not actually reject — each reads as the opposite of what happened.',
 	'This is an account, never a gate: it is what tells a human which rules keep being declined and why. Reporting a decline honestly is always better than an entry that claims work you did not do.',
-	'```\n"advisoryOutcomes": [{ "rule": "lightsout/function-size", "siteKey": "lightsout/function-size:src/example.ts", "outcome": "declined", "reason": "orchestration exemption applies — every step delegates" }]\n```',
+	'```\n"advisoryOutcomes": [{ "rule": "acme/max-nesting", "siteKey": "acme/max-nesting:src/example.ts", "outcome": "declined", "reason": "each level mirrors one state of the protocol it parses" }]\n```',
 ].join('\n\n');
 
 const scopePrompt = ({ scope }: { scope: RefactorScope }) => (scope === RefactorScope.Standalone ? refactorScopeStandalonePrompt : refactorScopeFeaturePrompt);
@@ -85,6 +87,7 @@ export const buildRefactorExecutorInvocation = ({
 	overviewContent,
 	changedFiles,
 	standards,
+	testStandards,
 	findings,
 	advisories,
 	reportAdvisoryOutcomes,
@@ -104,7 +107,15 @@ export const buildRefactorExecutorInvocation = ({
 	roleSections.push(`# Plan (context for what these changes were for)\n\n${planContent}`);
 
 	if (standards) {
-		roleSections.push(`# Standards\n\nThese rules are binding:\n\n${standards}`);
+		roleSections.push(
+			`# Standards\n\nThese rules are binding on every edit you make. They say how each finding is fixed; they are not a second work-list:\n\n${standards}`,
+		);
+	}
+
+	if (testStandards) {
+		roleSections.push(
+			`# Test standards\n\nThese rules are binding on every test file you edit. They say how each finding on a test file is fixed; they are not a second work-list:\n\n${testStandards}`,
+		);
 	}
 
 	const selfCheck = selfCheckSection({ command: selfCheckCommand });
@@ -126,7 +137,7 @@ export const buildRefactorExecutorInvocation = ({
 
 		if (advisories && advisories.length > 0) {
 			parts.push(
-				`Advisory — judge each against the standards' documented exemptions (e.g. orchestration functions that only sequence step calls); fix it unless an exemption genuinely applies, and these never block the run:\n\n${advisories.map(advisoryLine).join('\n')}`,
+				`Advisory — judge each against its rule's own guidance and the exemptions the standards document; fix it unless an exemption genuinely applies, and these never block the run:\n\n${advisories.map(advisoryLine).join('\n')}`,
 			);
 		}
 

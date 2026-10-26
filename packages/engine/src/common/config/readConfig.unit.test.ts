@@ -5,6 +5,8 @@ import { expect, test } from '@jest/globals';
 import { readConfig } from '#src/common/config/readConfig.ts';
 import { readOptionalConfig } from '#src/common/config/readOptionalConfig.ts';
 import { getRejectionError } from '#tests/helpers/getRejectionError.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 const setupRepo = ({ raw }: { raw?: string } = {}) => {
 	const cwd = mkdtempSync(join(tmpdir(), 'lightsout-readconfig-'));
@@ -20,6 +22,8 @@ test('readConfig: a valid config at the repo root parses into the typed shape', 
 	const { cwd } = setupRepo({
 		raw: JSON.stringify({
 			harness: 'codex',
+			'source-files': sourceFileGlobs,
+			'test-files': testFileGlobs,
 			gates: { check: 'tsc --noEmit', test: 'node --test', 'test-coverage': false },
 			generated: ['plugin/dist/'],
 		}),
@@ -64,7 +68,12 @@ test('readOptionalConfig: no config at all is the absence a command may run thro
 
 test('readOptionalConfig: a config that is present and valid is returned, not defaulted away', async () => {
 	const { cwd } = setupRepo({
-		raw: JSON.stringify({ gates: { check: 'tsc --noEmit', test: 'node --test', 'test-coverage': false }, generated: ['plugin/dist/'] }),
+		raw: JSON.stringify({
+			'source-files': sourceFileGlobs,
+			'test-files': testFileGlobs,
+			gates: { check: 'tsc --noEmit', test: 'node --test', 'test-coverage': false },
+			generated: ['plugin/dist/'],
+		}),
 	});
 
 	const config = await readOptionalConfig({ cwd });
@@ -79,6 +88,8 @@ test('readOptionalConfig: an illegal scoped-gate key throws rather than falling 
 	// files as if they were source.
 	const { cwd } = setupRepo({
 		raw: JSON.stringify({
+			'source-files': sourceFileGlobs,
+			'test-files': testFileGlobs,
 			gates: { check: 'tsc --noEmit', test: 'node --test', 'test-coverage': false },
 			'package-gates': { check: 'pnpm --filter {package} run check', test: 'pnpm --filter {package} run test:unit', format: 'pnpm format' },
 		}),
@@ -103,6 +114,8 @@ test('readConfig: an override naming a gate the repo does not configure throws, 
 	// name outside both blocks would schedule a suite that never runs.
 	const { cwd } = setupRepo({
 		raw: JSON.stringify({
+			'source-files': sourceFileGlobs,
+			'test-files': testFileGlobs,
 			gates: { check: 'tsc --noEmit', test: 'node --test', 'test-coverage': false },
 			'gate-overrides': { 'verify-tests': ['check', 'test-e2e'] },
 		}),
@@ -117,6 +130,8 @@ test('readConfig: an override naming a gate the repo does not configure throws, 
 test("readConfig: a misspelled key fails with the file's path on the first line and one indented line per issue", async () => {
 	const { cwd, configPath } = setupRepo({
 		raw: JSON.stringify({
+			'source-files': sourceFileGlobs,
+			'test-files': testFileGlobs,
 			gates: { check: 'tsc --noEmit', test: 'node --test', 'test-coverage': false },
 			generatd: ['plugin/dist/'],
 		}),

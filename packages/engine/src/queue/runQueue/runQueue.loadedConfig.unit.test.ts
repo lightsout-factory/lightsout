@@ -20,7 +20,9 @@ import { queueTicketFixture as ticketOf } from '#tests/helpers/queueTicketFixtur
 import { runDirFor } from '#tests/helpers/runDirFor.ts';
 import { setupBranchRepo } from '#tests/helpers/setupBranchRepo.ts';
 import { shipSettingsFixture } from '#tests/helpers/shipSettingsFixture.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
 import { terminalRelayFixture } from '#tests/helpers/terminalRelayFixture.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 import { trackerSettingsFixture } from '#tests/helpers/trackerSettingsFixture.ts';
 
 // Mocked Imports
@@ -72,8 +74,18 @@ jest.mock('#src/queue/drainLanes/runDrainLanes/common/admitScanned/nameWaveWorkO
 const setupLoadedConfigDrain = ({ eligible }: { eligible: TicketSummary[] }) => {
 	const { cwd } = setupBranchRepo();
 	const configPath = join(cwd, 'lightsout.config.json');
-	const asRead: LightsoutConfig = { harness: 'codex', gates: { check: 'pnpm check', test: 'true', 'test-coverage': false } };
-	const rewritten: LightsoutConfig = { harness: 'codex', gates: { check: 'pnpm check:edited', test: 'true', 'test-coverage': false } };
+	const asRead: LightsoutConfig = {
+		harness: 'codex',
+		'source-files': sourceFileGlobs,
+		'test-files': testFileGlobs,
+		gates: { check: 'pnpm check', test: 'true', 'test-coverage': false },
+	};
+	const rewritten: LightsoutConfig = {
+		harness: 'codex',
+		'source-files': sourceFileGlobs,
+		'test-files': testFileGlobs,
+		gates: { check: 'pnpm check:edited', test: 'true', 'test-coverage': false },
+	};
 	const loadedConfig: LoadedConfig = { config: asRead, path: configPath };
 	const config: LightsoutConfig = { ...asRead, harness: 'claude-code', model: 'stamped-model' };
 	const driver: Driver = { name: 'claude-code', invoke: () => Promise.resolve({ text: '', exitCode: 0 }) };

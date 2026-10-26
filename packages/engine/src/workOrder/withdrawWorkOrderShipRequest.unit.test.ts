@@ -6,6 +6,8 @@ import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutCo
 import type { WorkOrderState } from '#src/contracts/workOrder/WorkOrderState.ts';
 import { updateLocalWorkOrderState } from '#src/workOrder/common/state/updateLocalWorkOrderState.ts';
 import { withdrawWorkOrderShipRequest } from '#src/workOrder/withdrawWorkOrderShipRequest.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 /** The work order's label, which is also the branch every record below names. */
 const name = 'lo-140-multi';
@@ -41,7 +43,7 @@ const setupShipRequest = async ({ pending = true }: { pending?: boolean } = {}) 
 
 	await updateLocalWorkOrderState({ cwd, name, change: () => recordOf({ pending }) });
 
-	return { recordPath, params: { cwd, name, config: { gates }, env: {} } };
+	return { recordPath, params: { cwd, name, config: { 'source-files': sourceFileGlobs, 'test-files': testFileGlobs, gates }, env: {} } };
 };
 
 describe('withdrawWorkOrderShipRequest', () => {

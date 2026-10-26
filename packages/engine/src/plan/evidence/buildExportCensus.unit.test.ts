@@ -1,15 +1,21 @@
+import { writeFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, expect, test } from '@jest/globals';
 import { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { buildExportCensus } from '#src/plan/evidence/buildExportCensus.ts';
 import { seedSourceRepo } from '#tests/helpers/seedSourceRepo.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // No mocks: the subject walks a repo off disk, so the arrangement is a temp
-// tree of one-export modules and the act is the real walk over it.
+// tree of modules each declaring one name, and the act is the real walk over it.
 
 /** A temp repo holding the given existing source files, with the config a test needs to declare generated output. */
 const setupCensusRepo = ({ existing, generated = [] }: { existing: string[]; generated?: string[] }) => {
 	const cwd = seedSourceRepo({ existing });
 	const config = LightsoutConfig.parse({
+		'source-files': sourceFileGlobs,
+		'test-files': testFileGlobs,
 		gates: { check: 'true', test: 'true', 'test-coverage': false },
 		generated,
 	});
@@ -18,7 +24,7 @@ const setupCensusRepo = ({ existing, generated = [] }: { existing: string[]; gen
 };
 
 describe('buildExportCensus', () => {
-	test('buildExportCensus: test files, index barrels and configured generated paths contribute no census entry', async () => {
+	test('buildExportCensus: test files, files that only re-export and configured generated paths contribute no census entry', async () => {
 		const { cwd, config } = setupCensusRepo({
 			// each excluded file shares a name key with an ordinary one, so a broken
 			// filter shows up as a second entry in that name's bucket rather than as
@@ -26,6 +32,8 @@ describe('buildExportCensus', () => {
 			existing: ['src/formatDate.ts', 'src/getUser.ts', 'src/tests/formatDate.ts', 'src/feature/index.ts', 'generated-src/getUser.ts'],
 			generated: ['generated-src/'],
 		});
+
+		writeFileSync(join(cwd, 'src/feature/index.ts'), "export { formatDate } from '../formatDate';\n");
 
 		const census = await buildExportCensus({ cwd, config });
 

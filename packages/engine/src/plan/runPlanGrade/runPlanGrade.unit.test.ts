@@ -18,6 +18,7 @@ import { advisoryPlanBody, plantAdvisoryTouchedFiles } from '#tests/helpers/advi
 import { cleanPlanBody } from '#tests/helpers/cleanPlanBody.ts';
 import { createGapCheckDriver } from '#tests/helpers/createGapCheckDriver.ts';
 import { expectStatus } from '#tests/helpers/expectStatus.ts';
+import { linkTypescript } from '#tests/helpers/linkTypescript.ts';
 import { planWorkspaceFolder } from '#tests/helpers/planWorkspaceFolder.ts';
 import { setupConsumerRepo } from '#tests/helpers/setupConsumerRepo.ts';
 import { writePlanDeliverable } from '#tests/helpers/writePlanDeliverable.ts';
@@ -72,6 +73,7 @@ const setupPriorArtCollision = () => {
 	// The plan creates `src/new-thing.ts`; an existing `thingNew` export is its
 	// word-order twin — the same tier-0 name key, and not a mere casing pair —
 	// so the detector still sees prior art.
+	linkTypescript({ dir: seeded.cwd });
 	writeFileSync(join(seeded.cwd, 'src', 'thingNew.ts'), 'export const thingNew = 1;\n');
 
 	return seeded;

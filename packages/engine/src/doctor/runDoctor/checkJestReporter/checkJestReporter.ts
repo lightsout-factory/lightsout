@@ -1,6 +1,6 @@
 import { createRequire } from 'node:module';
 import { testReporterEnv } from '#src/common/constants/testReporterEnv.ts';
-import { findJestConfigs } from '#src/doctor/runDoctor/common/findJestConfigs.ts';
+import { findJestConfigs } from '#src/doctor/runDoctor/checkJestReporter/findJestConfigs.ts';
 import type { DoctorCheck } from '#src/doctor/runDoctor/common/types/DoctorCheck.ts';
 import type { PackageDir } from '#src/doctor/runDoctor/common/types/PackageDir.ts';
 

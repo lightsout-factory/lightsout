@@ -65,11 +65,10 @@ const setupWriterRun = ({ respond }: { respond: (params: { file: string; onFirst
 	return { run: run as unknown as PipelineRun, log, gated };
 };
 
-/** One group per distinct subject file, so no group ever blocks another and only the warm-up gate can hold one back. */
+/** One group per file, so only the warm-up gate can hold one back. */
 const groupsOf = (count: number): TestTargetGroup[] =>
 	Array.from({ length: count }, (_, index) => ({
-		subjects: [`src/file${index}.ts`],
-		mustExecute: [`src/file${index}.ts`],
+		files: [`src/file${index}.ts`],
 	}));
 
 test('runWriterBatches: the held-back writers start as soon as the warm spawn streams its first event — not when it finishes', async () => {

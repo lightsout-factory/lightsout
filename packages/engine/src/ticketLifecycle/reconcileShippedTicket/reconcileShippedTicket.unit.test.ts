@@ -4,6 +4,8 @@ import type { TrackerSettings } from '#src/common/types/TrackerSettings.ts';
 import type { TrackerTicket } from '#src/common/types/TrackerTicket.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { reconcileShippedTicket } from '#src/ticketLifecycle/reconcileShippedTicket/reconcileShippedTicket.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // Mocked Imports
 // -------------------------
@@ -33,10 +35,12 @@ const gates: LightsoutConfig['gates'] = { check: 'true', test: 'true', 'test-cov
 /** Named inline rather than through the shared block, whose `provider` widens to `string` and would need a cast here. */
 const trackerBlock: LightsoutConfig['ticket-tracker'] = { provider: 'linear', team: 'LO', 'api-key-env': 'LINEAR_API_KEY' };
 
-const config: LightsoutConfig = { gates, 'ticket-tracker': trackerBlock };
+const config: LightsoutConfig = { 'source-files': sourceFileGlobs, 'test-files': testFileGlobs, gates, 'ticket-tracker': trackerBlock };
 
 /** A repo that calls its done status something other than the default. */
 const renamedDoneConfig: LightsoutConfig = {
+	'source-files': sourceFileGlobs,
+	'test-files': testFileGlobs,
 	gates,
 	'ticket-tracker': trackerBlock,
 	queue: { 'max-parallel': 1, 'done-status': 'Shipped' },
@@ -44,6 +48,8 @@ const renamedDoneConfig: LightsoutConfig = {
 
 /** Two planning statuses spelled with one label — the arrangement the lifecycle resolver refuses. */
 const duplicateLabelConfig: LightsoutConfig = {
+	'source-files': sourceFileGlobs,
+	'test-files': testFileGlobs,
 	gates,
 	'ticket-tracker': trackerBlock,
 	queue: { 'max-parallel': 1, 'planning-status-labels': { 'planning-complete': 'shaped', 'planning-not-needed': 'shaped' } },
@@ -126,7 +132,7 @@ describe('reconcileShippedTicket', () => {
 	});
 
 	test('does nothing at all for a repo with no tracker block, which never asked for reconciliation', async () => {
-		const { reconcile } = setupReconcile({ config: { gates } });
+		const { reconcile } = setupReconcile({ config: { 'source-files': sourceFileGlobs, 'test-files': testFileGlobs, gates } });
 
 		const failure = await reconcile({ ticketRef: undefined });
 

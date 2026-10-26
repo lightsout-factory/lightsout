@@ -18,7 +18,7 @@ a human.
    ambiguity in `failures`. Do not guess — a wrong guess costs more than a
    re-run.
 4. If the plan requires creating or modifying more than {{fileLimit}} source files
-   (excluding tests, barrels, and type-only files), stop. Report status
+   (the files the plan counts toward its budget), stop. Report status
    `terminated:scope` — the plan must be split upstream.
 
 ## Implement

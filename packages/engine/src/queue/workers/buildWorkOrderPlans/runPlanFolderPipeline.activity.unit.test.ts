@@ -12,6 +12,8 @@ import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import type { PipelineResult } from '#src/pipeline/PipelineResult.ts';
 import { runPlanFolderPipeline } from '#src/queue/workers/buildWorkOrderPlans/runPlanFolderPipeline.ts';
 import { freshCwd } from '#tests/helpers/freshCwd.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // What the queue's own in-process build leaves in the plan folder's activity
 // record. The two pipelines it chooses between are stubbed, because what this
@@ -47,7 +49,11 @@ jest.mock('#src/pipeline/runImplementPipeline/runImplementPipeline.ts', () => ({
 const workOrderName = 'lo-154-queue-owns-the-build';
 const name = `${workOrderName}/001-queue-build`;
 
-const config: LightsoutConfig = { gates: { check: 'true', test: 'true', 'test-coverage': false } };
+const config: LightsoutConfig = {
+	'source-files': sourceFileGlobs,
+	'test-files': testFileGlobs,
+	gates: { check: 'true', test: 'true', 'test-coverage': false },
+};
 const driver: Driver = { name: 'claude-code', invoke: () => Promise.resolve({ text: '', exitCode: 0 }) };
 
 const passedManifest: RunManifest = {
@@ -63,10 +69,8 @@ const passedManifest: RunManifest = {
 	commits: [],
 	packages: [],
 	baselineDirtyFiles: [],
-	testSubjects: [],
 	acceptanceTests: [],
 	approvedTests: [],
-	unreachableChangedFiles: [],
 	coverageExcludedChangedFiles: [],
 };
 

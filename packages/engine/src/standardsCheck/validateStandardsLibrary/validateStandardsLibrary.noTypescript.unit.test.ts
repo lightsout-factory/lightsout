@@ -7,6 +7,7 @@ import type { LoadedStandardsLibrary } from '#src/common/types/LoadedStandardsLi
 import type { LoadedStandardsRule } from '#src/common/types/LoadedStandardsRule.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 import { validateStandardsLibrary } from '#src/standardsCheck/validateStandardsLibrary/validateStandardsLibrary.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
 
 // Mocked Imports
 // -------------------------
@@ -72,6 +73,8 @@ const setupPack = () => {
 	const pack: LoadedStandardsLibrary = {
 		name: 'acme',
 		formatVersion: 2,
+		fixtureSourceFiles: sourceFileGlobs,
+		fixtureTestFiles: [],
 		rootPath: '/packages/acme',
 		documents: [],
 		packs: [],

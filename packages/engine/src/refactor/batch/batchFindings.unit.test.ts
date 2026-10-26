@@ -2,8 +2,8 @@ import { expect, test } from '@jest/globals';
 import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFinding.ts';
 import { batchFindings } from '#src/refactor/batch/batchFindings.ts';
 
-/** Every rule the shipped standards library names, by full name, in the order batching is meant to hand them to an agent. */
-const mechanicalFirstOrder = [
+/** A pack's rule order, as the standards check hands it over: batching follows it and knows nothing of what the rules are. */
+const packOrder = [
 	'lightsout/banned-folder-name',
 	'lightsout/common-folder-layout',
 	'lightsout/index-files',
@@ -33,7 +33,7 @@ const finding = ({ rule, path, siteKey }: { rule: StandardsFinding['rule']; path
 	detail: 'stub',
 });
 
-test('batchFindings: groups by rule × area, mechanical-first order', () => {
+test('batchFindings: groups by rule × area, in the pack rule order', () => {
 	const batches = batchFindings({
 		blocking: [
 			finding({ rule: 'lightsout/duplicate-code-block', path: 'packages/api/src/a.ts', siteKey: 'duplicate-code-block:1' }),
@@ -44,6 +44,7 @@ test('batchFindings: groups by rule × area, mechanical-first order', () => {
 		],
 		advisories: [],
 		packagesDir: 'packages',
+		ruleOrder: packOrder,
 	});
 
 	// boundary before multi-export before duplicate-code-block; package dirs, top segments, and
@@ -65,18 +66,18 @@ test('batchFindings: groups by rule × area, mechanical-first order', () => {
 	]);
 });
 
-test('batchFindings: every rule batches in the documented mechanical-first order', () => {
+test('batchFindings: every rule batches in the order its pack lists it', () => {
 	const batches = batchFindings({
-		// Fed alphabetically, which is NOT the priority order — so the result pins
-		// the priority table rather than the input, and a rule the table never
-		// named would fall to the end.
-		blocking: [...mechanicalFirstOrder].sort().map((rule) => finding({ rule, path: 'src/a.ts', siteKey: `${rule}:src/a.ts` })),
+		// Fed alphabetically, which is NOT the pack order — so the result pins the
+		// order handed in rather than the input order.
+		blocking: [...packOrder].sort().map((rule) => finding({ rule, path: 'src/a.ts', siteKey: `${rule}:src/a.ts` })),
 		advisories: [],
 		packagesDir: 'packages',
+		ruleOrder: packOrder,
 	});
 
-	// rules an agent can fix in place first, judgment-heavier duplication last
-	expect(batches.map((batch) => batch.rule)).toStrictEqual(mechanicalFirstOrder);
+	// exactly the pack's order, whatever order the findings arrived in
+	expect(batches.map((batch) => batch.rule)).toStrictEqual(packOrder);
 	// one batch per rule, numbered in that order — the ids an agent is handed
 	expect(batches.map((batch) => batch.id).slice(0, 2)).toStrictEqual([
 		'batch-01:lightsout/banned-folder-name:src',
@@ -84,29 +85,29 @@ test('batchFindings: every rule batches in the documented mechanical-first order
 	]);
 });
 
-test('batchFindings: a rule outside the priority list sorts after every listed one', () => {
+test('batchFindings: a rule outside the pack order sorts after every listed one', () => {
 	const batches = batchFindings({
 		blocking: [
-			// A rule id the priority list has never heard of — what a rule a
-			// standards package added without a priority entry looks like here.
+			// A rule id the pack order does not list — a finding left from a rule
+			// the repo's selection no longer includes.
 			finding({ rule: 'invented-rule', path: 'src/stale.ts', siteKey: 'invented:stale' }),
 			finding({ rule: 'lightsout/duplicate-code-block', path: 'src/a.ts', siteKey: 'duplicate-code-block:a' }),
 			finding({ rule: 'lightsout/index-files', path: 'src/b.ts', siteKey: 'boundary:b' }),
 		],
 		advisories: [],
 		packagesDir: 'packages',
+		ruleOrder: packOrder,
 	});
 
-	// an unlisted rule degrades to "after the known ones" — never to an error,
-	// and never ahead of the mechanical work
+	// an unlisted rule degrades to "after the listed ones" — never to an error,
+	// and never ahead of the pack's own work
 	expect(batches.map((batch) => batch.rule)).toStrictEqual(['lightsout/index-files', 'lightsout/duplicate-code-block', 'invented-rule']);
 });
 
-test('batchFindings: rules outside the priority list tie-break alphabetically, and their ids reach the batch id', () => {
+test('batchFindings: rules outside the pack order tie-break alphabetically, and their ids reach the batch id', () => {
 	const batches = batchFindings({
-		// Rule ids a loaded standards package names for itself — the priority
-		// list has no say over which ids exist, so several can share the
-		// unlisted priority at once and only the id breaks the tie.
+		// Several unlisted rules share the last place at once, so only the id
+		// breaks the tie.
 		blocking: [
 			finding({ rule: 'zeta-package-rule', path: 'src/z.ts', siteKey: 'zeta:z' }),
 			finding({ rule: 'alpha-package-rule', path: 'src/a.ts', siteKey: 'alpha:a' }),
@@ -114,6 +115,7 @@ test('batchFindings: rules outside the priority list tie-break alphabetically, a
 		],
 		advisories: [],
 		packagesDir: 'packages',
+		ruleOrder: packOrder,
 	});
 
 	// every listed rule first, then the unlisted ones in id order
@@ -128,7 +130,7 @@ test('batchFindings: an oversized group splits into sorted chunks of 12', () => 
 	const findings = Array.from({ length: 13 }, (_, index) =>
 		finding({ rule: 'duplicate-code-block', path: `src/file${index}.ts`, siteKey: `duplicate-code-block:${String(index).padStart(2, '0')}` }),
 	);
-	const batches = batchFindings({ blocking: findings, advisories: [], packagesDir: 'packages' });
+	const batches = batchFindings({ blocking: findings, advisories: [], packagesDir: 'packages', ruleOrder: packOrder });
 
 	expect(batches.length).toBe(2);
 	expect(batches[0]?.blocking.length).toBe(12);
@@ -142,7 +144,7 @@ test('batchFindings: each chunk of an oversized group takes its own batch number
 		finding({ rule: 'duplicate-code-block', path: `src/file${index}.ts`, siteKey: `duplicate-code-block:${String(index).padStart(2, '0')}` }),
 	);
 
-	const batches = batchFindings({ blocking: findings, advisories: [], packagesDir: 'packages' });
+	const batches = batchFindings({ blocking: findings, advisories: [], packagesDir: 'packages', ruleOrder: packOrder });
 
 	// one group, three chunks — the numbering runs across chunks, not per group,
 	// so no two jobs an agent is handed share an id
@@ -159,7 +161,7 @@ test('batchFindings: an advisory attaches only to the chunk holding its file', (
 	);
 	const advisory: StandardsFinding = { ...finding({ rule: 'file-size', path: 'src/file12.ts', siteKey: 'file-size:src/file12.ts' }), severity: 'advisory' };
 
-	const batches = batchFindings({ blocking: findings, advisories: [advisory], packagesDir: 'packages' });
+	const batches = batchFindings({ blocking: findings, advisories: [advisory], packagesDir: 'packages', ruleOrder: packOrder });
 
 	// the overlap is per chunk, not per group: file12 lands in the second chunk,
 	// so the first chunk carries none of its advisories
@@ -177,6 +179,7 @@ test('batchFindings: paths that name no package folder fall back to their top se
 		],
 		advisories: [],
 		packagesDir: 'packages',
+		ruleOrder: packOrder,
 	});
 
 	expect(batches.map((batch) => batch.id)).toStrictEqual(['batch-01:duplicate-code-block:(root)', 'batch-02:duplicate-code-block:packages']);
@@ -191,6 +194,7 @@ test('batchFindings: advisories attach to batches whose files overlap, never for
 		],
 		advisories: [advisory],
 		packagesDir: 'packages',
+		ruleOrder: packOrder,
 	});
 
 	expect(batches.length).toBe(2);
@@ -209,6 +213,7 @@ test('batchFindings: a finding spanning folders gets a dedicated cross batch wit
 		],
 		advisories: [],
 		packagesDir: 'packages',
+		ruleOrder: packOrder,
 	});
 
 	const cross = batches.find((batch) => batch.folder === '(cross)');
@@ -225,6 +230,7 @@ test('batchFindings: a finding naming no file still batches, under (root)', () =
 		blocking: [{ ...finding({ rule: 'folder-size', path: 'src/a.ts', siteKey: 'folder-size:src' }), files: [] }],
 		advisories: [],
 		packagesDir: 'packages',
+		ruleOrder: packOrder,
 	});
 
 	// a file-less finding has no area to group by — it degrades to (root) rather
@@ -232,25 +238,21 @@ test('batchFindings: a finding naming no file still batches, under (root)', () =
 	expect(batches.map((batch) => batch.id)).toStrictEqual(['batch-01:folder-size:(root)']);
 });
 
-test('batch priority follows the built-in rules by full name and puts any other name last', () => {
+test('a rule from any library takes the place its pack gives it, matched by full name', () => {
 	const batches = batchFindings({
-		// Fed with the lowest-priority built-in rule first, beside a bare short id
-		// that once held the top rank and a full name from another library.
+		// A pack that lists another library's rule between its own: the engine
+		// treats every library alike, and only an exact full name matches.
 		blocking: [
-			finding({ rule: 'lightsout/duplicate-export-name', path: 'src/a.ts', siteKey: 'lightsout/duplicate-export-name:src/a.ts' }),
-			finding({ rule: 'banned-folder-name', path: 'src/b.ts', siteKey: 'banned-folder-name:src/b.ts' }),
-			finding({ rule: 'acme/size', path: 'src/c.ts', siteKey: 'acme/size:src/c.ts' }),
-			finding({ rule: 'lightsout/banned-folder-name', path: 'src/d.ts', siteKey: 'lightsout/banned-folder-name:src/d.ts' }),
+			finding({ rule: 'house/last', path: 'src/a.ts', siteKey: 'house/last:src/a.ts' }),
+			finding({ rule: 'first', path: 'src/b.ts', siteKey: 'first:src/b.ts' }),
+			finding({ rule: 'acme/middle', path: 'src/c.ts', siteKey: 'acme/middle:src/c.ts' }),
+			finding({ rule: 'house/first', path: 'src/d.ts', siteKey: 'house/first:src/d.ts' }),
 		],
 		advisories: [],
 		packagesDir: 'packages',
+		ruleOrder: ['house/first', 'acme/middle', 'house/last'],
 	});
 
-	// the built-in rules in priority order, then every other name in name order
-	expect(batches.map((batch) => batch.rule)).toStrictEqual([
-		'lightsout/banned-folder-name',
-		'lightsout/duplicate-export-name',
-		'acme/size',
-		'banned-folder-name',
-	]);
+	// the pack's order by full name, then the bare short id the order never lists
+	expect(batches.map((batch) => batch.rule)).toStrictEqual(['house/first', 'acme/middle', 'house/last', 'first']);
 });

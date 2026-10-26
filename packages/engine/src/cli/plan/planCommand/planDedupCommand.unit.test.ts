@@ -1,14 +1,29 @@
 import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { dirname, join } from 'node:path';
+import { dirname, join, parse } from 'node:path';
 import { expect, test } from '@jest/globals';
 import { buildActivityTree } from '#src/activity/buildActivityTree/buildActivityTree.ts';
 import { readActivityMarks } from '#src/activity/readActivityMarks.ts';
 import { planDedupCommand } from '#src/cli/plan/planCommand/planDedupCommand.ts';
 import type { Driver } from '#src/common/types/Driver.ts';
+import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { captureCommandOutput } from '#tests/helpers/captureCommandOutput.ts';
+import { linkTypescript } from '#tests/helpers/linkTypescript.ts';
 import { minimalPlanBody } from '#tests/helpers/minimalPlanBody.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 import { writeEmptyDecisions } from '#tests/helpers/writeEmptyDecisions.ts';
+
+/**
+ * The repo's config, on disk and handed to the command alike: its
+ * `source-files` globs are what name the existing code a planned symbol can
+ * collide with.
+ */
+const config: LightsoutConfig = {
+	'source-files': sourceFileGlobs,
+	'test-files': testFileGlobs,
+	gates: { check: 'true', test: 'true', 'test-coverage': false },
+};
 
 /** The command's own output, with the progress printer's timestamped narration dropped. */
 const printedLines = ({ logged }: { logged: string[] }) => logged.filter((line) => !/^\[\+\d+:\d\d\]/.test(line));
@@ -29,7 +44,7 @@ const rateLimitedDriver = (): Driver => ({
 	invoke: async () => ({ text: '', exitCode: 1, rateLimited: true }),
 });
 
-// A temp repo holding the given existing source files and a plan that creates
+// A temp repo holding its config, the given existing source files and a plan that creates
 // the given paths — the same arrangement the deterministic prior-art detector
 // is exercised with, so the collisions the judge rules on are real ones.
 const setupDedup = ({ existing = [], creates = [], plan = true }: { existing?: string[]; creates?: string[]; plan?: boolean } = {}) => {
@@ -37,9 +52,12 @@ const setupDedup = ({ existing = [], creates = [], plan = true }: { existing?: s
 	const cwd = mkdtempSync(join(tmpdir(), 'lightsout-dedup-command-'));
 	const planDir = join(cwd, '.lightsout', 'work-orders', 'demo', 'plans');
 
+	linkTypescript({ dir: cwd });
+	writeFileSync(join(cwd, 'lightsout.config.json'), JSON.stringify(config));
+
 	for (const relative of existing) {
 		mkdirSync(dirname(join(cwd, relative)), { recursive: true });
-		writeFileSync(join(cwd, relative), 'export const x = 1;\n');
+		writeFileSync(join(cwd, relative), `export const ${parse(relative).name} = 1;\n`);
 	}
 
 	mkdirSync(planDir, { recursive: true });
@@ -56,9 +74,7 @@ test('planDedupCommand: a plan with no colliding symbols reports no duplication,
 	const { cwd, name, logged, errors, exitCodes } = setupDedup({ existing: ['src/index.ts'], creates: ['src/brandNewWidget.ts'] });
 	const calls = { count: 0 };
 
-	await expect(planDedupCommand({ cwd, driver: judgeDriver({ verdicts: [], calls }), name, standards: undefined, config: undefined })).rejects.toThrow(
-		/process\.exit/,
-	);
+	await expect(planDedupCommand({ cwd, driver: judgeDriver({ verdicts: [], calls }), name, standards: undefined, config })).rejects.toThrow(/process\.exit/);
 
 	const printed = printedLines({ logged });
 
@@ -75,9 +91,7 @@ test('planDedupCommand: a confirmed duplicate prints its recommendation, what it
 	const calls = { count: 0 };
 	const verdicts = [{ plannedSymbol: 'getUser', isDuplicate: true, recommendation: 'reuse', rationale: 'fetchUser already does this' }];
 
-	await expect(planDedupCommand({ cwd, driver: judgeDriver({ verdicts, calls }), name, standards: undefined, config: undefined })).rejects.toThrow(
-		/process\.exit/,
-	);
+	await expect(planDedupCommand({ cwd, driver: judgeDriver({ verdicts, calls }), name, standards: undefined, config })).rejects.toThrow(/process\.exit/);
 
 	const printed = printedLines({ logged });
 
@@ -97,9 +111,7 @@ test('planDedupCommand: a verdict that rules the collision distinct leaves no fi
 	const calls = { count: 0 };
 	const verdicts = [{ plannedSymbol: 'getUser', isDuplicate: false, recommendation: 'distinct', rationale: 'different concept' }];
 
-	await expect(planDedupCommand({ cwd, driver: judgeDriver({ verdicts, calls }), name, standards: undefined, config: undefined })).rejects.toThrow(
-		/process\.exit/,
-	);
+	await expect(planDedupCommand({ cwd, driver: judgeDriver({ verdicts, calls }), name, standards: undefined, config })).rejects.toThrow(/process\.exit/);
 
 	const printed = printedLines({ logged });
 
@@ -114,9 +126,7 @@ test('planDedupCommand: an unresolvable deliverable reports the error on stderr 
 	const { cwd, name, logged, errors, exitCodes } = setupDedup({ plan: false });
 	const calls = { count: 0 };
 
-	await expect(planDedupCommand({ cwd, driver: judgeDriver({ verdicts: [], calls }), name, standards: undefined, config: undefined })).rejects.toThrow(
-		/process\.exit/,
-	);
+	await expect(planDedupCommand({ cwd, driver: judgeDriver({ verdicts: [], calls }), name, standards: undefined, config })).rejects.toThrow(/process\.exit/);
 
 	expect(printedLines({ logged })).toStrictEqual([]);
 	expect(errors[0] ?? '').toMatch(/no plan found for 'demo'/);
@@ -126,7 +136,7 @@ test('planDedupCommand: an unresolvable deliverable reports the error on stderr 
 test('planDedupCommand: a rate-limited harness prints the exact re-run command and marks the partial scan incomplete rather than reporting an empty review', async () => {
 	const { cwd, name, logged, errors, exitCodes } = setupDedup({ existing: ['src/fetchUser.ts'], creates: ['src/getUser.ts'] });
 
-	await expect(planDedupCommand({ cwd, driver: rateLimitedDriver(), name, standards: undefined, config: undefined })).rejects.toThrow(/process\.exit/);
+	await expect(planDedupCommand({ cwd, driver: rateLimitedDriver(), name, standards: undefined, config })).rejects.toThrow(/process\.exit/);
 
 	const printed = printedLines({ logged });
 
@@ -142,9 +152,7 @@ test('records the dedup step as passed in the planning record before it exits 0'
 	const { cwd, name, exitCodes } = setupDedup({ existing: ['src/index.ts'], creates: ['src/brandNewWidget.ts'] });
 	const calls = { count: 0 };
 
-	await expect(planDedupCommand({ cwd, driver: judgeDriver({ verdicts: [], calls }), name, standards: undefined, config: undefined })).rejects.toThrow(
-		/process\.exit/,
-	);
+	await expect(planDedupCommand({ cwd, driver: judgeDriver({ verdicts: [], calls }), name, standards: undefined, config })).rejects.toThrow(/process\.exit/);
 
 	// the exit throws, so a record read afterwards was written before the command exited
 	const record = JSON.parse(readFileSync(join(cwd, '.lightsout', 'work-orders', 'demo', 'plans', 'planning-progress.json'), 'utf8')) as {
@@ -166,7 +174,7 @@ test.each([
 ])('records the dedup step as $status when $outcome exits 1', async ({ arrangement, driver, status }) => {
 	const { cwd, name, exitCodes } = setupDedup(arrangement);
 
-	await expect(planDedupCommand({ cwd, driver, name, standards: undefined, config: undefined })).rejects.toThrow(/process\.exit/);
+	await expect(planDedupCommand({ cwd, driver, name, standards: undefined, config })).rejects.toThrow(/process\.exit/);
 
 	// a rate limit is a pause to resume, not a failure — the record keeps the two apart
 	const record = JSON.parse(readFileSync(join(cwd, '.lightsout', 'work-orders', 'demo', 'plans', 'planning-progress.json'), 'utf8')) as { steps: unknown[] };
@@ -182,9 +190,9 @@ test('records the command run and the judge fan-out beneath it in the activity r
 	const { cwd, name, exitCodes } = setupDedup({ existing: ['src/fetchUser.ts'], creates: ['src/getUser.ts'] });
 	const verdicts = [{ plannedSymbol: 'getUser', isDuplicate: true, recommendation: 'reuse', rationale: 'fetchUser already does this' }];
 
-	await expect(
-		planDedupCommand({ cwd, driver: judgeDriver({ verdicts, calls: { count: 0 } }), name, standards: undefined, config: undefined }),
-	).rejects.toThrow(/process\.exit/);
+	await expect(planDedupCommand({ cwd, driver: judgeDriver({ verdicts, calls: { count: 0 } }), name, standards: undefined, config })).rejects.toThrow(
+		/process\.exit/,
+	);
 
 	const planDir = join(cwd, '.lightsout', 'work-orders', 'demo', 'plans');
 	const report = buildActivityTree({ plan: 'demo', marks: await readActivityMarks({ dir: planDir }) });
@@ -217,9 +225,9 @@ test('records the command run and the judge fan-out beneath it in the activity r
 test('records a command run with no child level when there is nothing for a judge to rule on', async () => {
 	const { cwd, name, exitCodes } = setupDedup({ existing: ['src/index.ts'], creates: ['src/brandNewWidget.ts'] });
 
-	await expect(
-		planDedupCommand({ cwd, driver: judgeDriver({ verdicts: [], calls: { count: 0 } }), name, standards: undefined, config: undefined }),
-	).rejects.toThrow(/process\.exit/);
+	await expect(planDedupCommand({ cwd, driver: judgeDriver({ verdicts: [], calls: { count: 0 } }), name, standards: undefined, config })).rejects.toThrow(
+		/process\.exit/,
+	);
 
 	const report = buildActivityTree({ plan: 'demo', marks: await readActivityMarks({ dir: join(cwd, '.lightsout', 'work-orders', 'demo', 'plans') }) });
 
@@ -241,7 +249,7 @@ test.each([
 ])('ends the command run as $status when $outcome exits 1', async ({ arrangement, driver, status }) => {
 	const { cwd, name, exitCodes } = setupDedup(arrangement);
 
-	await expect(planDedupCommand({ cwd, driver, name, standards: undefined, config: undefined })).rejects.toThrow(/process\.exit/);
+	await expect(planDedupCommand({ cwd, driver, name, standards: undefined, config })).rejects.toThrow(/process\.exit/);
 
 	const report = buildActivityTree({ plan: 'demo', marks: await readActivityMarks({ dir: join(cwd, '.lightsout', 'work-orders', 'demo', 'plans') }) });
 

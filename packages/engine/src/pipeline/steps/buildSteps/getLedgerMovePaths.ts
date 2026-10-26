@@ -1,6 +1,6 @@
 import { MoveDirection } from '#src/common/constants/MoveDirection.ts';
 import { mapPathThroughMoves } from '#src/common/paths/mapPathThroughMoves.ts';
-import { isTestSideFile } from '#src/pipeline/common/isTestSideFile.ts';
+import { isTestFile } from '#src/common/sourceFiles/isTestFile.ts';
 
 interface Params {
 	/** The plan's file moves. */
@@ -9,6 +9,8 @@ interface Params {
 	folderMoves: { from: string; to: string }[];
 	/** The ledger rows' test files. */
 	testFiles: string[];
+	/** The repo's `test-files` globs. */
+	testFileGlobs: string[];
 }
 
 /**
@@ -18,7 +20,7 @@ interface Params {
  * filter runs only after that mapping: a move destination the ledger writer
  * writes carries every case its source held.
  */
-export const getLedgerMovePaths = ({ movePaths, folderMoves, testFiles }: Params): { from: string; to: string }[] => {
+export const getLedgerMovePaths = ({ movePaths, folderMoves, testFiles, testFileGlobs }: Params): { from: string; to: string }[] => {
 	const pairs = [...movePaths];
 
 	for (const testFile of new Set(testFiles)) {
@@ -29,5 +31,5 @@ export const getLedgerMovePaths = ({ movePaths, folderMoves, testFiles }: Params
 		}
 	}
 
-	return pairs.filter(({ to }) => isTestSideFile({ path: to }));
+	return pairs.filter(({ to }) => isTestFile({ path: to, testFileGlobs }));
 };

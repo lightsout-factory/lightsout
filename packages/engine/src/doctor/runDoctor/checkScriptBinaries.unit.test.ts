@@ -2,8 +2,12 @@ import { describe, expect, test } from '@jest/globals';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { checkScriptBinaries } from '#src/doctor/runDoctor/checkScriptBinaries.ts';
 import { setupConsumerRepo } from '#tests/helpers/setupConsumerRepo.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 const configWith = (gates: Partial<LightsoutConfig['gates']>): LightsoutConfig => ({
+	'source-files': sourceFileGlobs,
+	'test-files': testFileGlobs,
 	gates: { check: 'true', test: 'true', 'test-coverage': false, ...gates },
 });
 

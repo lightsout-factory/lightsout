@@ -5,6 +5,7 @@ import { describe, expect, test } from '@jest/globals';
 import type { Driver } from '#src/common/types/Driver.ts';
 import type { DriverInvocation } from '#src/common/types/DriverInvocation.ts';
 import type { PhaseDeclaration } from '#src/common/types/PhaseDeclaration.ts';
+import { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { DecisionsRecord } from '#src/contracts/plan/decisions/DecisionsRecord.ts';
 import { PlanVariant } from '#src/contracts/plan/draft/PlanVariant.ts';
 import type { SourceEvidenceEntry } from '#src/contracts/plan/evidence/SourceEvidenceEntry.ts';
@@ -15,8 +16,18 @@ import type { PlanFacts } from '#src/contracts/plan/facts/PlanFacts.ts';
 import { authorFocusedPhaseFiles } from '#src/plan/draft/focused/draftFocusedPhasedPlan/authorFocusedPhaseFiles/authorFocusedPhaseFiles.ts';
 import { expectDefined } from '#tests/helpers/expectDefined.ts';
 import { expectStatus } from '#tests/helpers/expectStatus.ts';
+import { linkTypescript } from '#tests/helpers/linkTypescript.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 const decisions: DecisionsRecord = { planName: 'demo', decisions: [] };
+
+/** The temp repository's config: the code the prior-art census reads, and which of it is tests. */
+const config = LightsoutConfig.parse({
+	'source-files': sourceFileGlobs,
+	'test-files': testFileGlobs,
+	gates: { check: 'true', test: 'true', 'test-coverage': false },
+});
 
 /**
  * The environment a focused plan-writer spawn is meant to reach the harness in,
@@ -159,6 +170,7 @@ const setupFocusedFanOut = ({ declarations, areas = [], entries = [], repoFiles 
 	const workspaceDir = join(cwd, '.lightsout', 'work-orders', 'demo', 'plans');
 
 	mkdirSync(workspaceDir, { recursive: true });
+	linkTypescript({ dir: cwd });
 
 	for (const [path, contents] of Object.entries(repoFiles)) {
 		mkdirSync(join(cwd, dirname(path)), { recursive: true });
@@ -187,6 +199,7 @@ const setupFocusedFanOut = ({ declarations, areas = [], entries = [], repoFiles 
 			declarations,
 			evidence,
 			executorFileLimit: 50,
+			config,
 			timeoutMs: 60_000,
 			progress: (message: string) => messages.push(message),
 		},

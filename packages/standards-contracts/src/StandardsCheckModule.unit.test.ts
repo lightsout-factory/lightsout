@@ -135,4 +135,26 @@ describe('StandardsCheckModule', () => {
 		// silently honored
 		expect(parsed).toStrictEqual({ inputKinds: ['file-list'], run });
 	});
+
+	test('a check may list kinds it uses when the engine can build them, beside the ones it needs', () => {
+		const { checkModule } = setupModule({ extra: { inputKinds: ['clone-spans'], optionalInputKinds: ['syntax-tree'] } });
+
+		const parsed = StandardsCheckModule.parse(checkModule);
+
+		expect(parsed.optionalInputKinds).toStrictEqual(['syntax-tree']);
+	});
+
+	test('an input kind listed as both required and optional is refused', () => {
+		const { checkModule } = setupModule({ extra: { inputKinds: ['syntax-tree'], optionalInputKinds: ['syntax-tree'] } });
+
+		const result = StandardsCheckModule.safeParse(checkModule);
+
+		expect(result.error?.issues.map((issue) => issue.message)).toStrictEqual(['an input kind is either required or optional, never both']);
+	});
+
+	test('an optional input kind listed twice is refused', () => {
+		const { checkModule } = setupModule({ extra: { optionalInputKinds: ['syntax-tree', 'syntax-tree'] } });
+
+		expect(StandardsCheckModule.safeParse(checkModule).success).toBe(false);
+	});
 });

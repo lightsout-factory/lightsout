@@ -4,6 +4,8 @@ import { dirname, join } from 'node:path';
 import { expect, test } from '@jest/globals';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { checkChangedFilesExecuted } from '#src/coverage/checkChangedFilesExecuted.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // Runtime require rather than a static import: the CJS TypeScript compiler
 // probes __filename at load, so it has to be required at runtime rather than
@@ -11,7 +13,11 @@ import { checkChangedFilesExecuted } from '#src/coverage/checkChangedFilesExecut
 // `require` is already the local resolver — `import.meta` does not exist there.
 const ts = require('typescript') as typeof import('typescript');
 
-const rootConfig: LightsoutConfig = { gates: { check: 'true', test: 'true', 'test-coverage': 'npm run coverage' } };
+const rootConfig: LightsoutConfig = {
+	'source-files': sourceFileGlobs,
+	'test-files': testFileGlobs,
+	gates: { check: 'true', test: 'true', 'test-coverage': 'npm run coverage' },
+};
 
 const changedFiles = ['src/awaiting.ts', 'src/plain.ts'];
 
@@ -58,9 +64,7 @@ test('checkChangedFilesExecuted: a module-scope-await file is exempt when the sc
 
 	// src/awaiting.ts is a syntax error to this runner, so no test could ever
 	// execute a statement of it — only the plain sibling is held to the bar
-	expect(error).toBe(
-		"changed-file-execution: 1 changed file(s) never executed under the tests: src/plain.ts — cover each through its public subject's tests; a file no test can reach through a public surface is a wiring defect to fix in source.",
-	);
+	expect(error).toBe('changed-file-execution: 1 changed file(s) never executed under the tests: src/plain.ts — write tests that execute each.');
 });
 
 test('checkChangedFilesExecuted: a module-scope-await file is held to the bar when the scope’s Jest treats its extension as ESM', async () => {
@@ -70,7 +74,7 @@ test('checkChangedFilesExecuted: a module-scope-await file is held to the bar wh
 
 	// the same file loads normally under an ESM Jest, so it earns no exemption
 	expect(error).toBe(
-		"changed-file-execution: 2 changed file(s) never executed under the tests: src/awaiting.ts, src/plain.ts — cover each through its public subject's tests; a file no test can reach through a public surface is a wiring defect to fix in source.",
+		'changed-file-execution: 2 changed file(s) never executed under the tests: src/awaiting.ts, src/plain.ts — write tests that execute each.',
 	);
 });
 
@@ -82,7 +86,5 @@ test('checkChangedFilesExecuted: a scope whose Jest configuration cannot be read
 	// an unread configuration answers CommonJS, which is the shipped behaviour
 	// and the safe direction: a wrong ESM verdict would fail the run on a file
 	// no test could cover
-	expect(error).toBe(
-		"changed-file-execution: 1 changed file(s) never executed under the tests: src/plain.ts — cover each through its public subject's tests; a file no test can reach through a public surface is a wiring defect to fix in source.",
-	);
+	expect(error).toBe('changed-file-execution: 1 changed file(s) never executed under the tests: src/plain.ts — write tests that execute each.');
 });

@@ -4,6 +4,8 @@ import { dirname, join } from 'node:path';
 import { expect, test } from '@jest/globals';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { selectCollectedFiles } from '#src/coverage/selectCollectedFiles/selectCollectedFiles.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // The reader genuinely requires the consumer's Jest config, so every case
 // plants a real one on disk rather than stubbing the read.
@@ -20,12 +22,18 @@ const setupRepo = ({ files }: { files: Record<string, string> }) => {
 
 const jestConfig = ({ settings }: { settings: Record<string, unknown> }) => `module.exports = ${JSON.stringify(settings)};\n`;
 
-const commandConfig = ({ command }: { command: string }): LightsoutConfig => ({ gates: { check: 'true', test: 'true', 'test-coverage': command } });
+const commandConfig = ({ command }: { command: string }): LightsoutConfig => ({
+	'source-files': sourceFileGlobs,
+	'test-files': testFileGlobs,
+	gates: { check: 'true', test: 'true', 'test-coverage': command },
+});
 
 /** Root mode, with the coverage command naming its own config — the shape every package in this workspace uses. */
 const rootConfig = commandConfig({ command: 'jest -c jest.config.cjs --coverage' });
 
 const monorepoConfig: LightsoutConfig = {
+	'source-files': sourceFileGlobs,
+	'test-files': testFileGlobs,
 	gates: { check: 'true', test: 'true', 'test-coverage': false },
 	'package-gates': { check: 'true {package}', test: 'true {package}', 'test-coverage': 'pnpm --filter {package} run test:coverage' },
 };

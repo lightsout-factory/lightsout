@@ -6,6 +6,7 @@ import { messageOf } from '#src/common/messageOf.ts';
 import type { LoadedStandardsLibrary } from '#src/common/types/LoadedStandardsLibrary.ts';
 import { findMissingRequirements } from '#src/standards/findMissingRequirements.ts';
 import { typescriptInputKinds } from '#src/standardsCheck/common/constants/typescriptInputKinds.ts';
+import { selectInputKinds } from '#src/standardsCheck/common/selectInputKinds.ts';
 import { checkFixtureTree } from '#src/standardsCheck/validateStandardsLibrary/checkFixtureTree.ts';
 import { checkLibraryProse } from '#src/standardsCheck/validateStandardsLibrary/checkLibraryProse/checkLibraryProse.ts';
 import { checkRuleExample } from '#src/standardsCheck/validateStandardsLibrary/checkRuleExample.ts';
@@ -108,7 +109,9 @@ export const validateStandardsLibrary = async ({ library, libraries }: Params): 
 
 	// Resolving TypeScript means loading a multi-megabyte module; a library whose
 	// rules never ask for a parsed tree should not pay for it.
-	const hasParsingRule = library.rules.some((rule) => rule.inputKinds?.some((kind) => typescriptInputKinds.has(kind)) === true);
+	const hasParsingRule = library.rules.some((rule) =>
+		[...(rule.inputKinds ?? []), ...(rule.optionalInputKinds ?? [])].some((kind) => typescriptInputKinds.has(kind)),
+	);
 	const compiler = hasParsingRule ? getEngineTypescript() : undefined;
 	const problems: string[] = [];
 	const notes: string[] = [];
@@ -140,7 +143,17 @@ export const validateStandardsLibrary = async ({ library, libraries }: Params): 
 
 		for (const side of Object.values(FixtureSide)) {
 			try {
-				const found = await checkFixtureTree({ cwd: join(rule.fixturesPath, side), rule, inputKinds, run, label: `fixtures/${side}/`, compiler });
+				const kinds = selectInputKinds({ inputKinds, optionalInputKinds: rule.optionalInputKinds, hasTypescript: compiler !== undefined });
+				const found = await checkFixtureTree({
+					cwd: join(rule.fixturesPath, side),
+					rule,
+					inputKinds: kinds,
+					run,
+					label: `fixtures/${side}/`,
+					compiler,
+					sourceFileGlobs: library.fixtureSourceFiles,
+					testFileGlobs: library.fixtureTestFiles,
+				});
 
 				if (side === FixtureSide.Fail && found.length === 0) {
 					problems.push(`${rule.id}: the fail fixture produced no finding — the check does not catch what the rule describes`);

@@ -5,6 +5,8 @@ import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeveri
 import { runPackageChecks } from '#src/standardsCheck/runStandardsCheck/runPackageChecks/runPackageChecks.ts';
 import { getRejectionError } from '#tests/helpers/getRejectionError.ts';
 import { packageChecksFixtures } from '#tests/helpers/packageChecksFixtures.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 const { setupRepo, rule, recordingRun, groupOf, runChecks } = packageChecksFixtures;
 
@@ -205,7 +207,7 @@ describe('runPackageChecks', () => {
 	test('findings carry the full rule name and a site key prefixed with it', async () => {
 		const { cwd, groups } = setupFullNameRun();
 
-		const { findings } = await runPackageChecks({ cwd, groups });
+		const { findings } = await runPackageChecks({ cwd, sourceFileGlobs, testFileGlobs, groups });
 
 		expect(findings).toStrictEqual([
 			{ rule: 'acme/size', severity: StandardsSeverity.Advisory, siteKey: 'acme/size:src/alpha.ts', files: [{ path: 'src/alpha.ts' }], detail: 'too big' },

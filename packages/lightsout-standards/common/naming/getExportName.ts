@@ -6,10 +6,7 @@ interface Params {
 }
 
 /**
- * The engine keeps a copy of this that must AGREE, but cannot be identical: it
- * reaches for `node:path`, and a check runs against supplied strings on any
- * platform, so this one derives the base name itself. `scripts/checkMirrors.mjs`
- * therefore holds the pair by behaviour rather than by code — both copies are
- * run over the same inputs and their answers compared.
+ * Derives the base name itself rather than reaching for `node:path`: a check
+ * runs against supplied strings on any platform.
  */
 export const getExportName = ({ path }: Params): string => getBaseName({ path }).replace(/\.(m|c)?[jt]sx?$/, '');

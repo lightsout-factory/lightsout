@@ -4,10 +4,17 @@ import { join } from 'node:path';
 import { Effort } from '#src/contracts/Effort.ts';
 import { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { DecisionRow } from '#src/contracts/plan/decisions/DecisionRow.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 /** A parsed consumer config differing only in the one plan-relevant key each case varies. */
 export const gradeInputsConfig = ({ packagesDir = 'packages' }: { packagesDir?: string } = {}): LightsoutConfig =>
-	LightsoutConfig.parse({ gates: { check: 'true', test: 'true', 'test-coverage': false }, 'packages-dir': packagesDir });
+	LightsoutConfig.parse({
+		gates: { check: 'true', test: 'true', 'test-coverage': false },
+		'source-files': sourceFileGlobs,
+		'test-files': testFileGlobs,
+		'packages-dir': packagesDir,
+	});
 
 /**
  * A temp repo holding one changed source file and a three-file phased plan, plus

@@ -32,7 +32,6 @@ export const RunView = z.object({
 	rejectedReports: z.number(),
 	friction: z.array(FrictionRecord),
 	changedFiles: z.array(z.string()),
-	unreachableChangedFiles: z.array(z.string()),
 	/** Set on a phase's child run: the coordinator that spawned it. */
 	parent: z.object({ runId: z.string(), step: z.string(), title: z.string() }).optional(),
 	/** What a refactor or coverage run burned down; absent on implement and phases runs, which burn nothing down. */

@@ -4,13 +4,14 @@ import { cleanPlanBody } from '#tests/helpers/cleanPlanBody.ts';
 
 /**
  * The existing modules an advisory plan makes its mechanical edit in — 50 of
- * them, so with the skeleton's one created file the plan touches 51.
+ * them, so with the skeleton's created file and the module it modifies the
+ * plan touches 52.
  */
 export const advisoryTouchedPaths = Array.from({ length: 50 }, (_, index) => `src/bulk${index}.ts`);
 
 /**
  * The clean skeleton with a one-line edit planted in every `advisoryTouchedPaths`
- * file: 51 touched source files against the default 50-file executor limit, and
+ * file: 52 touched source files against the default 50-file executor limit, and
  * still only one created file.
  *
  * That is the shape the two size numbers exist to tell apart — a phase that

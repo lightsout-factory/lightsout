@@ -9,14 +9,11 @@ import { checkGenerateCommand } from '#src/doctor/runDoctor/checkGenerateCommand
 import { checkGitignore } from '#src/doctor/runDoctor/checkGitignore.ts';
 import { checkHarness } from '#src/doctor/runDoctor/checkHarness.ts';
 import { checkHarnessUsage } from '#src/doctor/runDoctor/checkHarnessUsage.ts';
-import { checkJestMocks } from '#src/doctor/runDoctor/checkJestMocks.ts';
-import { checkJestReporter } from '#src/doctor/runDoctor/checkJestReporter.ts';
-import { checkLintRules } from '#src/doctor/runDoctor/checkLintRules.ts';
+import { checkJestReporter } from '#src/doctor/runDoctor/checkJestReporter/checkJestReporter.ts';
 import { checkRuleRequirements } from '#src/doctor/runDoctor/checkRuleRequirements.ts';
 import { checkScriptBinaries } from '#src/doctor/runDoctor/checkScriptBinaries.ts';
-import { checkSourceWalk } from '#src/doctor/runDoctor/checkSourceWalk.ts';
+import { checkSourceFiles } from '#src/doctor/runDoctor/checkSourceFiles.ts';
 import { checkStandardsPack } from '#src/doctor/runDoctor/checkStandardsPack.ts';
-import { checkUserEvent } from '#src/doctor/runDoctor/checkUserEvent.ts';
 import type { DoctorCheck } from '#src/doctor/runDoctor/common/types/DoctorCheck.ts';
 import { resolvePackageDirs } from '#src/doctor/runDoctor/resolvePackageDirs.ts';
 
@@ -45,8 +42,8 @@ interface Params {
 }
 
 /**
- * The doctor never mutates: repo-wide changes such as `clearMocks: true` are a
- * human's decision to apply and verify.
+ * The doctor never mutates: a repo-wide change it reports is a human's decision
+ * to apply and verify.
  */
 export const runDoctor = async ({ cwd, probeHarness, usageProbe, usageDriver }: Params): Promise<DoctorCheck[]> => {
 	const checks: DoctorCheck[] = [];
@@ -82,16 +79,13 @@ export const runDoctor = async ({ cwd, probeHarness, usageProbe, usageDriver }: 
 	}
 
 	checks.push(await checkGitignore({ cwd }));
-	checks.push(await checkSourceWalk({ cwd, generated: config.generated }));
+	checks.push(await checkSourceFiles({ cwd, config }));
 
 	const { packageDirs, scopedGatesCheck } = await resolvePackageDirs({ cwd, config, packagesDir });
 
 	pushOptional({ checks, check: scopedGatesCheck });
-	pushOptional({ checks, check: await checkJestMocks({ cwd, packageDirs }) });
 	pushOptional({ checks, check: await checkJestReporter({ cwd, packageDirs }) });
-	pushOptional({ checks, check: await checkUserEvent({ packageDirs }) });
 	pushOptional({ checks, check: checkStandardsPack({ config }) });
-	pushOptional({ checks, check: await checkLintRules({ config, packageDirs }) });
 	pushOptional({ checks, check: await checkRuleRequirements({ cwd, config }) });
 
 	for (const audit of configuredPathAudits({ config })) {

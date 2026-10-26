@@ -5,6 +5,8 @@ import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutCo
 import { TestChangeKind } from '#src/pipeline/approvedTests/reviewTestChanges/common/constants/TestChangeKind.ts';
 import { consultTestChangeReviewer } from '#src/pipeline/approvedTests/reviewTestChanges/consultTestChangeReviewer.ts';
 import { outcomeFields } from '#tests/helpers/outcomeFields.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 /** A stub reviewer's final message: a valid TestChangeReview as bare JSON. */
 const reviewText = JSON.stringify({
@@ -38,6 +40,8 @@ const setupReviewer = ({ text = reviewText }: { text?: string } = {}) => {
 	};
 
 	const config: LightsoutConfig = {
+		'source-files': sourceFileGlobs,
+		'test-files': testFileGlobs,
 		gates: { check: 'true', test: 'true', 'test-coverage': 'true' },
 		permissions: 'full-access',
 		timeouts: { 'agent-minutes': 90, 'supervisor-minutes': 5 },

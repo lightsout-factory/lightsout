@@ -9,6 +9,8 @@ import { cleanOverviewBody } from '#tests/helpers/cleanOverviewBody.ts';
 import { cleanPlanBody } from '#tests/helpers/cleanPlanBody.ts';
 import { emptyDecisionsRecord } from '#tests/helpers/emptyDecisionsRecord.ts';
 import { setupConsumerRepo } from '#tests/helpers/setupConsumerRepo.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // The one required section `plan.contract` adds — `## Acceptance Tests`, asked
 // for on the implementable variants — and the ledger rule that runs whenever the
@@ -29,7 +31,12 @@ const writePlan = ({ cwd, name, body }: { cwd: string; name: string; body: strin
 
 /** The repository's config, writing contract plans or not. */
 const configWith = ({ contract }: { contract: boolean }) =>
-	LightsoutConfig.parse({ gates: { check: 'true', test: 'true', 'test-coverage': false }, ...(contract ? { plan: { contract: true } } : {}) });
+	LightsoutConfig.parse({
+		'source-files': sourceFileGlobs,
+		'test-files': testFileGlobs,
+		gates: { check: 'true', test: 'true', 'test-coverage': false },
+		...(contract ? { plan: { contract: true } } : {}),
+	});
 
 /** The clean plan body with an acceptance-test ledger covering the file it creates. `reference` is for the phase-file case, which carries the Decision Log pointer. */
 const contractPlanBody = ({ reference = false }: { reference?: boolean } = {}) =>

@@ -12,7 +12,7 @@ import { reachabilityRulesOff, setupConsumerRepo } from '#tests/helpers/setupCon
 import { withTestChangeReview } from '#tests/helpers/withTestChangeReview.ts';
 
 // The write-tests fan-out is the boundary the inert-file classifier lives
-// behind: a source file provably free of executable statements (a barrel, a
+// behind: a source file provably free of executable statements (a re-export file, a
 // type-only file) earns no test-writer; anything with runtime code does. Every
 // file kind is written by one implement stub in a single pipeline run, and the
 // observable contract is which files earned a writer vs. were narrated inert.
@@ -20,13 +20,13 @@ import { withTestChangeReview } from '#tests/helpers/withTestChangeReview.ts';
 // Files that PROVABLY hold no executable statement — every top-level statement
 // is an import, a re-export, or a pure type declaration.
 const inertFiles = {
-	// barrel: export * plus a named re-export
-	'src/barrelStar.ts': "export * from './add';\nexport { Thing } from './Thing';\n",
-	// type re-export barrel
+	// re-export file: export * plus a named re-export
+	'src/reexportStar.ts': "export * from './add';\nexport { Thing } from './Thing';\n",
+	// type re-export file
 	'src/typeReexport.ts': "export type { Feature } from './feature';\n",
 	// type-only file: import type + interface + type alias
 	'src/Shape.ts': "import type { Base } from './Base';\n\nexport interface Shape extends Base {\n\tid: number;\n}\n\nexport type Kind = 'a' | 'b';\n",
-	// import-then-export barrel
+	// import-then-export file
 	'src/importThenExport.ts': "import { add } from './add';\n\nexport { add };\n",
 	// empty file
 	'src/empty.ts': '',
@@ -53,7 +53,7 @@ const behavioralFiles = {
 	'src/Thing.ts': 'export class Thing {\n\tvalue = 1;\n}\n',
 };
 
-test('write-tests fan-out: every executable-code kind earns a writer; barrels and type-only files are inert-skipped', async () => {
+test('write-tests fan-out: every executable-code kind earns a writer; re-export and type-only files are inert-skipped', async () => {
 	const dir = setupConsumerRepo({
 		config: {
 			'standards-rule-settings': {
@@ -124,8 +124,8 @@ test('write-tests fan-out: every executable-code kind earns a writer; barrels an
 	// only behavioral files earned writers — got:\n${writerTargets.join('\n')}
 	expect([...writerTargets].sort()).toStrictEqual(Object.keys(behavioralFiles).sort());
 
-	// Every inert kind — export-* barrel, type re-export, type-only file,
-	// import-then-export barrel, empty file — was skipped and named in the narration.
+	// Every inert kind — export-* file, type re-export, type-only file,
+	// import-then-export file, empty file — was skipped and named in the narration.
 	const inertLine = progress.find((line) => line.includes('inert file(s) skipped'));
 	// inert count narrated — got:\n${progress.join('\n')}
 	expect(inertLine?.includes(`${Object.keys(inertFiles).length} inert file(s) skipped`)).toBeTruthy();
@@ -369,7 +369,6 @@ test('write-tests fan-out: a file the repo’s coverage configuration does not c
 
 	// the skip is narrated with the reason that actually applies — got:\n${progress.join('\n')}
 	expect(skipped?.includes('src/App.tsx')).toBeTruthy();
-	// and recorded apart from the orphan set, which means something else entirely
+	// and recorded, so a verify fix never asks a writer to execute it
 	expect(result.manifest.coverageExcludedChangedFiles).toStrictEqual(['src/App.tsx']);
-	expect(result.manifest.unreachableChangedFiles).toStrictEqual([]);
 });

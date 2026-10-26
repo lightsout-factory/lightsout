@@ -43,8 +43,6 @@ export const plantSequence = ({ dir, runId, plan, planName, updatedAt, status = 
 				changedFiles: [],
 				packages: [],
 				baselineDirtyFiles: [],
-				testSubjects: [],
-				unreachableChangedFiles: [],
 				coverageExcludedChangedFiles: [],
 			}),
 	);

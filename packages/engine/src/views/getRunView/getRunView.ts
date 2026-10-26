@@ -123,7 +123,6 @@ export const getRunView = async ({ cwd, runId }: Params): Promise<RunView> => {
 		rejectedReports: summary.rejectedReports,
 		friction: friction.filter((entry) => entry.runId === manifest.runId),
 		changedFiles: manifest.changedFiles,
-		unreachableChangedFiles: manifest.unreachableChangedFiles,
 		parent: await readParent({ cwd, runId: manifest.runId, parentRunId: manifest.parentRunId }),
 		burnDown: buildRunBurnDown({ manifest, worklist }),
 	};

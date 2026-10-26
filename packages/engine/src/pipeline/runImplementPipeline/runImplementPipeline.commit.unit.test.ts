@@ -163,10 +163,8 @@ const setupSilentResume = async () => {
 		commits: [],
 		packages: [],
 		baselineDirtyFiles: [],
-		testSubjects: [],
 		acceptanceTests: [],
 		approvedTests: [{ path: approvedPath, sha256: sha256({ content: approvedBody }), removed: false }],
-		unreachableChangedFiles: [],
 		coverageExcludedChangedFiles: [],
 	};
 

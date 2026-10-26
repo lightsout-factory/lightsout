@@ -7,6 +7,8 @@ import type { TrackerSettings } from '#src/common/types/TrackerSettings.ts';
 import type { TrackerTicket } from '#src/common/types/TrackerTicket.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { takeGateHold } from '#src/gates/gateHolds/takeGateHold.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 // Mocked Imports
 // -------------------------
@@ -37,7 +39,7 @@ jest.mock('#src/ticketTracker/setTicketLabel.ts', () => ({
 const gates: LightsoutConfig['gates'] = { check: 'true', test: 'true', 'test-coverage': false };
 /** Named inline rather than through the shared block, whose `provider` widens to `string` and would need a cast here. */
 const trackerBlock: LightsoutConfig['ticket-tracker'] = { provider: 'linear', team: 'LO', 'api-key-env': 'LINEAR_API_KEY' };
-const config: LightsoutConfig = { gates, 'ticket-tracker': trackerBlock };
+const config: LightsoutConfig = { 'source-files': sourceFileGlobs, 'test-files': testFileGlobs, gates, 'ticket-tracker': trackerBlock };
 const env = { LINEAR_API_KEY: 'lin_key' };
 
 const runId = 'gates-run-9';
@@ -245,7 +247,7 @@ describe('takeGateHold', () => {
 	test('takes no hold without a tracker or a ticket', async () => {
 		const { holdsDir, take } = setupHold();
 
-		const withoutTracker = await take({ config: { gates } });
+		const withoutTracker = await take({ config: { 'source-files': sourceFileGlobs, 'test-files': testFileGlobs, gates } });
 		const withoutTicket = await take({ noTicket: true });
 
 		// there is no label to write and no refusal site that could ever read one, so

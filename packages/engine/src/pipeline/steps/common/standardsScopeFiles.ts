@@ -1,4 +1,5 @@
-import { isTestableSourceFile } from '#src/common/sourceFiles/isTestableSourceFile.ts';
+import { readRepoFileGlobs } from '#src/common/config/readRepoFileGlobs.ts';
+import { isSourceFile } from '#src/common/sourceFiles/isSourceFile.ts';
 import type { PipelineRun } from '#src/pipeline/common/PipelineRun.ts';
 
 interface Params {
@@ -14,5 +15,10 @@ interface Params {
 export const standardsScopeFiles = ({ run }: Params): string[] => {
 	const vendored = run.config.vendored ?? [];
 
-	return run.current().changedFiles.filter((file) => isTestableSourceFile({ path: file }) && !vendored.some((prefix) => file.startsWith(prefix)));
+	return run
+		.current()
+		.changedFiles.filter(
+			(file) =>
+				isSourceFile({ path: file, sourceFileGlobs: readRepoFileGlobs({ config: run.config }).source }) && !vendored.some((prefix) => file.startsWith(prefix)),
+		);
 };

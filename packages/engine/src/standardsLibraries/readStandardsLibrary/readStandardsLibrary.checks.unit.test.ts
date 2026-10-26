@@ -53,6 +53,7 @@ const fileListInput = ({ files }: { files: string[] }): FileListInput => ({
 	tests: [],
 	files,
 	referenceFiles: [],
+	referenceTests: [],
 	dependencies: new Map(),
 	standardsLibraries: [],
 });

@@ -8,6 +8,8 @@ import type { WorktreeOwner } from '#src/contracts/worktree/WorktreeOwner.ts';
 import type { WorktreeRecord } from '#src/contracts/worktree/WorktreeRecord.ts';
 import { freshCwd } from '#tests/helpers/freshCwd.ts';
 import { seedWorkOrderRecord } from '#tests/helpers/seedWorkOrderRecord.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
 /**
  * Where a plan named by an address plans, and on which branch.
@@ -111,6 +113,8 @@ interface Tree {
 const flagsOf = (names: string[] = []) => new Map<string, string | true>(names.map((flag) => [flag, true]));
 
 const configOf = ({ planWorktree }: { planWorktree?: boolean } = {}): LightsoutConfig => ({
+	'source-files': sourceFileGlobs,
+	'test-files': testFileGlobs,
 	gates,
 	...(planWorktree === undefined ? {} : { plan: { worktree: planWorktree } }),
 });

@@ -117,7 +117,7 @@ test('plan lint: no deliverable on disk returns failed', async () => {
 	).toBeTruthy();
 });
 
-/** A structurally clean overview file — the overview variant's own required section set. Its phase rows must name exactly the phase files written beside it, or the declaration is inconsistent with the deliverable. */
+/** A structurally clean overview file — the overview variant's own required section set. Its phase rows must name exactly the phase files written beside it, or the declaration is inconsistent with the deliverable: each phase creates one file and touches two, its create and the `src/index.js` it modifies. */
 const cleanOverview = ({ phaseCount = 2 }: { phaseCount?: number } = {}) => `# Phased Plan — Overview
 
 ${renderDecisionLog({ decisions: [] })}
@@ -128,7 +128,7 @@ ${renderGlobalConstraints({ decisions: [] })}
 
 | # | File | Scope | Creates | Touches |
 |---|------|-------|---------|---------|
-| 1 | \`phase1-core.md\` | the core | 1 | 1 |${phaseCount > 1 ? '\n| 2 | `phase2-extra.md` | the rest | 1 | 1 |' : ''}
+| 1 | \`phase1-core.md\` | the core | 1 | 2 |${phaseCount > 1 ? '\n| 2 | `phase2-extra.md` | the rest | 1 | 2 |' : ''}
 
 ## Phase Declarations
 

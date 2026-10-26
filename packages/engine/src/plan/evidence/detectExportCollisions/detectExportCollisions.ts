@@ -17,10 +17,6 @@ export const detectExportCollisions = ({ census, symbols }: Params): ExportColli
 	const collisions: ExportCollision[] = [];
 
 	for (const symbol of symbols) {
-		if (symbol === 'index') {
-			continue;
-		}
-
 		const bucket = census.get(getNameKey({ name: symbol })) ?? [];
 		const collidesWith = bucket.filter((entry) => entry.name === symbol || collapseCasing({ name: entry.name }) !== collapseCasing({ name: symbol }));
 

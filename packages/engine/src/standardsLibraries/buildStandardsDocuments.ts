@@ -89,15 +89,18 @@ const renderTopic = ({ entry, rules, nested }: { entry: TopicEntry; rules: Map<s
 	const topicLabel = labelOf({ packages: entry.packages });
 	// A topic lists its rules by short id, which is unique inside the topic's own library.
 	const prose = topic.ruleIds.flatMap((id) => {
-		const rule = rules.get(`${topic.library}/${id}`);
+		const name = `${topic.library}/${id}`;
+		const rule = rules.get(name);
 
 		if (rule === undefined || rule.prose.length === 0) {
 			return [];
 		}
 
 		const ruleLabel = labelOf({ packages: rule.packages });
+		// The full name a finding carries, so an agent handed a finding finds its rule's prose exactly.
+		const named = `Rule: ${name}`;
 
-		return nested && ruleLabel !== topicLabel ? [`Applies only to: ${ruleLabel}\n\n${shape(rule.prose)}`] : [shape(rule.prose)];
+		return nested && ruleLabel !== topicLabel ? [`${named}\n\nApplies only to: ${ruleLabel}\n\n${shape(rule.prose)}`] : [`${named}\n\n${shape(rule.prose)}`];
 	});
 	const parts = [shape(topic.intro), ...prose].filter((part) => part.length > 0);
 

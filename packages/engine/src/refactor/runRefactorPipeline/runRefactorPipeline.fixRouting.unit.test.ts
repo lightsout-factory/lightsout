@@ -11,7 +11,9 @@ import { reviewReport } from '#tests/helpers/reviewReport.ts';
 import { roleOf } from '#tests/helpers/roleOf.ts';
 import { setupConsumerRepo } from '#tests/helpers/setupConsumerRepo.ts';
 import { setupMonorepo } from '#tests/helpers/setupMonorepo.ts';
+import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
 import { strictProfile } from '#tests/helpers/strictProfile.ts';
+import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 import { writeSource } from '#tests/helpers/writeSource.ts';
 
 /** Two exported consts in one file — a compiler-free structure Finding (multi-export). */
@@ -89,6 +91,8 @@ const setupMixedRed = async () => {
 	writeFileSync(
 		join(dir, 'lightsout.config.json'),
 		JSON.stringify({
+			'source-files': sourceFileGlobs,
+			'test-files': testFileGlobs,
 			gates: { check: 'true', test: 'true', 'test-coverage': 'true' },
 			'package-gates': {
 				check: packageGateCommand({ pkg: '@acme/api', flag: checkFlag }),
@@ -223,8 +227,7 @@ describe('buildBatchFixInvocation — via runRefactorPipeline', () => {
 		// a refactor batch has no upward subject resolution — the batch's finding
 		// files are handed over as the surfaces to test through AND the files that
 		// must execute, so the writer's assignment is self-consistent
-		expect(fixPrompt).toContain('# Test subjects — write tests through these public surfaces\n\n- src/multi.ts');
-		expect(fixPrompt).toContain('# Changed internals that must execute under those tests\n\n- src/multi.ts');
+		expect(fixPrompt).toContain('# Changed files your tests must execute\n\n- src/multi.ts');
 	});
 
 	test('routes a non-coverage red back to the refactor executor', async () => {
