@@ -33,13 +33,13 @@ describe('isPlanSourceFile', () => {
 		expect(counts).toBe(true);
 	});
 
-	test.each(['index.js', 'src/plan/index.ts', 'src/cli/index.tsx'])('a barrel counts like any other code file the globs name: %s', (path) => {
+	test.each(['index.js', 'src/plan/index.ts', 'src/cli/index.tsx'])('an index file counts like any other code file the globs name: %s', (path) => {
 		const counts = isPlanSourceFile({ path, fileGlobs: { source: sourceFileGlobs, tests: testFileGlobs } });
 
 		expect(counts).toBe(true);
 	});
 
-	test('a barrel does not count when the source-files globs exclude it', () => {
+	test('an index file does not count when the source-files globs exclude it', () => {
 		const counts = isPlanSourceFile({ path: 'src/plan/index.ts', fileGlobs: { source: [...sourceFileGlobs, '!**/index.*'], tests: testFileGlobs } });
 
 		expect(counts).toBe(false);

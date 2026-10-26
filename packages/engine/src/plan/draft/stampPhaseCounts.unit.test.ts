@@ -144,7 +144,7 @@ describe('stampPhaseCounts', () => {
 
 	test.each<{ case: string; spec: PhaseSpec; created: number; touched: number }>([
 		{
-			case: 'a barrel like any code file, but not a test file or a declaration file the globs exclude',
+			case: 'an index file like any code file, but not a test file or a declaration file the globs exclude',
 			spec: { create: ['src/a.ts', 'src/a.unit.test.ts', 'src/index.ts', 'src/b.d.ts'] },
 			created: 2,
 			touched: 2,

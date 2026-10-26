@@ -9,9 +9,9 @@ interface Params {
 }
 
 /**
- * Barrels and type-only files are the set the test standards exempt, and a
- * test writer given one only burns the spawn or writes implementation-coupled
- * noise. Conservative on purpose: anything else, even an enum or a constant
+ * A file that only imports, re-exports or declares types holds no executable
+ * code, so a test writer given one only burns the spawn or writes
+ * implementation-coupled noise. Conservative on purpose: anything else, even an enum or a constant
  * with a fallback expression, counts as logic and keeps its writer.
  */
 export const isInertSourceFile = ({ path, content, compiler }: Params): boolean => {

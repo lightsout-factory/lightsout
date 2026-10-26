@@ -225,7 +225,7 @@ export const runPackageChecks = async ({
 
 	if (uncovered.length > 0) {
 		notes.push(
-			`no package.json with imports and no tsconfig above ${uncovered.length} folder(s) — path aliases are unknown there, so the barrel and import rules stayed silent rather than guess: ${uncovered.slice(0, 5).join(', ')}${uncovered.length > 5 ? ', …' : ''}`,
+			`no package.json with imports and no tsconfig above ${uncovered.length} folder(s) — path aliases are unknown there, so checks that resolve import paths could not resolve aliases there and stayed silent rather than guess: ${uncovered.slice(0, 5).join(', ')}${uncovered.length > 5 ? ', …' : ''}`,
 		);
 	}
 

@@ -90,7 +90,7 @@ describe('getPlanTouchedPaths', () => {
 
 		// the drafter is told to count exactly this set, so a second spelling here
 		// is a second answer to how big the phase is; sourceFileGlobs carries
-		// `!**/*.d.ts` and names no Markdown, while a barrel is code like any other
+		// `!**/*.d.ts` and names no Markdown, while an index file is code like any other
 		expect(counts).toStrictEqual({ created: ['src/index.ts', 'src/thing.ts'], touched: ['src/index.ts', 'src/thing.ts', 'src/plan/index.ts'] });
 	});
 

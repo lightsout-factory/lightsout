@@ -58,7 +58,7 @@ describe('computePlanWeight', () => {
 		expect(weight.reasons).toStrictEqual(['names no pattern to mirror']);
 	});
 
-	test('test files and barrels are outside the created count, exactly as the size checks have them', () => {
+	test('test files and files the source-files globs exclude are outside the created count', () => {
 		const creates = ['packages/engine/src/a.ts', 'packages/engine/src/a.unit.test.ts', 'packages/engine/src/index.ts', 'packages/engine/src/b.d.ts'];
 
 		expect(weigh({ creates }).weight).toBe('light');
