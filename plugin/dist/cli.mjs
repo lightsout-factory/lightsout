@@ -126205,14 +126205,16 @@ var StandardsLibraryRoot = external_exports.object({
   /**
    * Globs, from each fixture tree's root, of the code files the library's
    * fixtures hold, their tests included — the `source-files` a fixture tree
-   * would declare if it were a repo. Absent, no fixture file is code.
+   * would declare if it were a repo. Absent, the engine's `source-files`
+   * defaults apply.
    */
   fixtureSourceFiles: external_exports.array(external_exports.string().min(1)).min(1).optional(),
   /**
    * Globs, from each fixture tree's root, of the test files the library's
    * fixtures hold. A fixture tree is a miniature repo with no config of its
    * own, so this is how the engine tells its tests from its source when it
-   * validates a rule against its fixtures. Absent, no fixture file is a test.
+   * validates a rule against its fixtures. Absent, the engine's `test-files`
+   * defaults apply.
    */
   fixtureTestFiles: external_exports.array(external_exports.string().min(1)).min(1).optional(),
   /** One line a pack page shows under its name. */
@@ -126238,6 +126240,12 @@ var StandardsSet = {
   /** The document tree handed to the test-writing role. */
   Tests: "tests"
 };
+
+// src/common/constants/defaultSourceFileGlobs.ts
+var defaultSourceFileGlobs = ["**/*.{ts,tsx,mts,cts,js,jsx,mjs,cjs}", "!**/node_modules/**", "!**/*.d.ts"];
+
+// src/common/constants/defaultTestFileGlobs.ts
+var defaultTestFileGlobs = ["**/*.test.*", "**/*.spec.*", "**/test/**", "**/tests/**", "**/__tests__/**", "**/__mocks__/**", "**/e2e/**"];
 
 // src/common/constants/standardsLibraryRootFile.ts
 var standardsLibraryRootFile = "lightsout-standards.json";
@@ -126651,8 +126659,8 @@ ${problems.map((problem) => `- ${problem}`).join("\n")}`);
     built: root.data.built,
     description: root.data.description,
     homepage: root.data.homepage,
-    fixtureSourceFiles: root.data.fixtureSourceFiles ?? [],
-    fixtureTestFiles: root.data.fixtureTestFiles ?? [],
+    fixtureSourceFiles: root.data.fixtureSourceFiles ?? defaultSourceFileGlobs,
+    fixtureTestFiles: root.data.fixtureTestFiles ?? defaultTestFileGlobs,
     rootPath: packPath,
     documents,
     rules: requirements.rules,
@@ -127075,12 +127083,6 @@ var checkScriptBinaries = async ({ cwd, config: config2 }) => {
     fix: "install the missing tool(s) \u2014 every gate depends on them"
   };
 };
-
-// src/common/constants/defaultSourceFileGlobs.ts
-var defaultSourceFileGlobs = ["**/*.{ts,tsx,mts,cts,js,jsx,mjs,cjs}", "!**/node_modules/**", "!**/*.d.ts"];
-
-// src/common/constants/defaultTestFileGlobs.ts
-var defaultTestFileGlobs = ["**/*.test.*", "**/*.spec.*", "**/test/**", "**/tests/**", "**/__tests__/**", "**/__mocks__/**", "**/e2e/**"];
 
 // src/common/config/readRepoFileGlobs.ts
 var readRepoFileGlobs = ({ config: config2 }) => ({
