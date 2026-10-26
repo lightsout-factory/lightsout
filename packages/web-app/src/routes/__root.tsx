@@ -6,6 +6,7 @@ import { DefaultCatchBoundary } from '#src/common/components/boundaries/DefaultC
 import { NotFound } from '#src/common/components/boundaries/NotFound.tsx';
 import { Theme } from '#src/common/constants/Theme.ts';
 import { themeStorageKey } from '#src/common/constants/themeStorageKey.ts';
+import { FeedbackWidget } from '#src/feedback/FeedbackWidget.tsx';
 import appCss from '#src/styles/app.css?url';
 import { ThemeProvider } from '#src/theme/ThemeProvider.tsx';
 
@@ -51,6 +52,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 		<RootDocument>
 			<ThemeProvider defaultTheme={Theme.Light}>
 				<Outlet />
+				<FeedbackWidget />
 			</ThemeProvider>
 		</RootDocument>
 	),
