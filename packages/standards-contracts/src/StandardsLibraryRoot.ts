@@ -25,14 +25,16 @@ export const StandardsLibraryRoot = z.object({
 	/**
 	 * Globs, from each fixture tree's root, of the code files the library's
 	 * fixtures hold, their tests included — the `source-files` a fixture tree
-	 * would declare if it were a repo. Absent, no fixture file is code.
+	 * would declare if it were a repo. Absent, the engine's `source-files`
+	 * defaults apply.
 	 */
 	fixtureSourceFiles: z.array(z.string().min(1)).min(1).optional(),
 	/**
 	 * Globs, from each fixture tree's root, of the test files the library's
 	 * fixtures hold. A fixture tree is a miniature repo with no config of its
 	 * own, so this is how the engine tells its tests from its source when it
-	 * validates a rule against its fixtures. Absent, no fixture file is a test.
+	 * validates a rule against its fixtures. Absent, the engine's `test-files`
+	 * defaults apply.
 	 */
 	fixtureTestFiles: z.array(z.string().min(1)).min(1).optional(),
 	/** One line a pack page shows under its name. */

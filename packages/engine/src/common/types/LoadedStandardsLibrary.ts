@@ -17,9 +17,9 @@ export interface LoadedStandardsLibrary {
 	description?: string;
 	/** Absolute URL for the library's own page or repository, from the root file. */
 	homepage?: string;
-	/** The root file's `fixtureSourceFiles` globs, empty when it declares none — only fixture validation reads them. */
+	/** The root file's `fixtureSourceFiles` globs, the engine's `source-files` defaults when it declares none — only fixture validation reads them. */
 	fixtureSourceFiles: string[];
-	/** The root file's `fixtureTestFiles` globs, empty when it declares none — only fixture validation reads them. */
+	/** The root file's `fixtureTestFiles` globs, the engine's `test-files` defaults when it declares none — only fixture validation reads them. */
 	fixtureTestFiles: string[];
 	/** Absolute library root. */
 	rootPath: string;

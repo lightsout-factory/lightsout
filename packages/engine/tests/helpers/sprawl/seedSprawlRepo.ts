@@ -1,13 +1,10 @@
 import { execFileSync } from 'node:child_process';
-import { cpSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { cpSync, mkdirSync, mkdtempSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { runDirFor } from '#tests/helpers/runDirFor.ts';
 
 const repoRoot = join(__dirname, '..', '..', '..', '..', '..');
-
-/** The one engine module the sprawl scripts import; the fixture needs it at the same repo-relative path. */
-const enginePredicate = join('packages', 'engine', 'src', 'common', 'sourceFiles', 'isTestFile.ts');
 
 /** A rule file's front matter, with prose under it so the options reader has somewhere to stop. */
 const frontMatter = ({ options }: { options: string[] }) => ['---', 'summary: "a rule"', 'options:', ...options, '---', '', 'prose below', ''].join('\n');
@@ -37,8 +34,8 @@ interface Params {
  * A throwaway git repository shaped the way the sprawl scripts read one: a
  * history under `packages/`, the standards pack's cap rule files, an `assets/`
  * folder for the dataset, and this working tree's `scripts/` copied in so the
- * scripts run against the fixture rather than against this repo — plus the one
- * engine module those scripts import, at the path they import it by.
+ * scripts run against the fixture rather than against this repo — plus a link
+ * to this repo's engine package, at the path those scripts import it by.
  *
  * Everything but the commits is written afterwards and left untracked, so the
  * rule files, the run markers and the output folder never appear in a git tree
@@ -72,10 +69,11 @@ export const seedSprawlRepo = ({ commits = [], rules, runs }: Params = {}): stri
 	// `readSprawlTrees.mjs` asks the engine what counts as a test rather than
 	// carrying its own copy of the answer, and it reaches for it by a path
 	// relative to itself — which, once the scripts are copied in here, is this
-	// fixture. Untracked like the rule files below, so no git tree the scripts
-	// measure ever sees it.
-	mkdirSync(join(cwd, 'packages', 'engine', 'src', 'common', 'sourceFiles'), { recursive: true });
-	cpSync(join(repoRoot, enginePredicate), join(cwd, enginePredicate));
+	// fixture. A link rather than a copy, so the engine's own imports and
+	// dependencies resolve as they do in this repo. Untracked like the rule
+	// files below, so no git tree the scripts measure ever sees it.
+	mkdirSync(join(cwd, 'packages'), { recursive: true });
+	symlinkSync(join(repoRoot, 'packages', 'engine'), join(cwd, 'packages', 'engine'), 'dir');
 	mkdirSync(join(cwd, 'assets'), { recursive: true });
 
 	const ruleFiles: Record<string, string | undefined> = { ...defaultRules, ...rules };
