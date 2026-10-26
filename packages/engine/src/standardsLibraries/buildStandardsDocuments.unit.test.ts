@@ -96,7 +96,7 @@ const groupOfLibrary = ({ library, settled = {} }: { library: LoadedStandardsLib
 	pack: {
 		name: `${library.name}/house`,
 		topics: library.documents,
-		rules: library.rules.map((rule) => ({ rule, severity: rule.defaultSeverity, options: rule.defaultOptions })),
+		rules: library.rules.map((rule) => ({ rule, severity: rule.defaultSeverity, options: rule.defaultOptions, exclude: [] })),
 		conditionalPacks: [],
 		inactiveRules: [],
 	},
@@ -108,13 +108,22 @@ const groupOfLibrary = ({ library, settled = {} }: { library: LoadedStandardsLib
 				options: rule.defaultOptions,
 				fromConfig: false,
 				reachesAgents: rule.defaultSeverity !== StandardsSeverity.Off,
+				packExclude: [],
+				repoExclude: [],
 			},
 		]),
 	),
 });
 
 /** The state of a rule the repo's `standards-rule-settings` named at `severity`, its prose reaching agents. */
-const namedState = ({ severity }: { severity: StandardsSeverity }): ResolvedRuleState => ({ severity, options: {}, fromConfig: true, reachesAgents: true });
+const namedState = ({ severity }: { severity: StandardsSeverity }): ResolvedRuleState => ({
+	severity,
+	options: {},
+	fromConfig: true,
+	reachesAgents: true,
+	packExclude: [],
+	repoExclude: [],
+});
 
 /** A rule of the built-in lightsout library, carrying its full name. */
 const buildLightsoutRule = ({ id, prose }: { id: string; prose: string }): LoadedStandardsRule => ({
@@ -141,14 +150,19 @@ const setupGroup = ({
 	pack: {
 		name: 'lightsout/fractal',
 		topics,
-		rules: rules.map(({ rule, severity = StandardsSeverity.Advisory, packSeverity = severity }) => ({ rule, severity: packSeverity, options: {} })),
+		rules: rules.map(({ rule, severity = StandardsSeverity.Advisory, packSeverity = severity }) => ({
+			rule,
+			severity: packSeverity,
+			options: {},
+			exclude: [],
+		})),
 		conditionalPacks: [],
 		inactiveRules: [],
 	},
 	states: new Map(
 		rules.map(({ rule, severity = StandardsSeverity.Advisory, reachesAgents = true }) => [
 			rule.name,
-			{ severity, options: {}, fromConfig: false, reachesAgents },
+			{ severity, options: {}, fromConfig: false, reachesAgents, packExclude: [], repoExclude: [] },
 		]),
 	),
 });

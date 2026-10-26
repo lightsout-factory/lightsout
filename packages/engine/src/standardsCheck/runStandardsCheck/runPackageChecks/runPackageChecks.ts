@@ -11,6 +11,7 @@ import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeveri
 import { buildCheckInput } from '#src/standardsCheck/common/buildCheckInput/buildCheckInput.ts';
 import { buildCheckInputs } from '#src/standardsCheck/common/buildCheckInputs.ts';
 import { typescriptInputKinds } from '#src/standardsCheck/common/constants/typescriptInputKinds.ts';
+import { dropExcludedFindings } from '#src/standardsCheck/common/dropExcludedFindings.ts';
 import { findFileStandardsGroup } from '#src/standardsCheck/common/findFileStandardsGroup.ts';
 import { runRuleCheck } from '#src/standardsCheck/common/runRuleCheck.ts';
 import { selectInputKinds } from '#src/standardsCheck/common/selectInputKinds.ts';
@@ -163,7 +164,8 @@ interface Params {
  * prefixed with that full name. Every check reads the whole repo as reference
  * files, and each finding is graded by the group holding its first file: a
  * finding in a file no group covers, or whose group runs the rule `off` or at
- * other options, is dropped.
+ * other options, is dropped. A finding whose every file the grading group's
+ * rule excludes is dropped after the check ran, and counted in a note.
  *
  * @throws {Error} When a check throws or returns something that is not a list of findings — a broken check is a pack bug, not a finding.
  */
@@ -210,11 +212,14 @@ export const runPackageChecks = async ({
 			compiler,
 		});
 
-	const { findings, skipped } = await runLiveRules({ live, buildInput, groupOfFile, compiler, progress });
+	const { findings: graded, skipped } = await runLiveRules({ live, buildInput, groupOfFile, compiler, progress });
+	const { findings, notes: excludeNotes } = dropExcludedFindings({ findings: graded, groupOfFile, packagesDir, workspacePackages });
 
 	if (skipped.length > 0) {
 		notes.push(`${skipped.join(', ')} skipped — no typescript resolvable from the target repo`);
 	}
+
+	notes.push(...excludeNotes);
 
 	// Gated on the rules rather than on whether the cache holds an alias
 	// declaration: a repo that declares aliases nowhere is precisely the case

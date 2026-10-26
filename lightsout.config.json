@@ -88,6 +88,7 @@
 		"index-file-contents": "blocking",
 		"class-inheritance": "blocking",
 		"common-folder-layout": "blocking",
+		"duplicate-export-name": { "exclude": ["packages/lightsout-standards/**/check.ts"] },
 		"file-size": "blocking",
 		"index-files": "blocking",
 		"folder-size": "blocking",

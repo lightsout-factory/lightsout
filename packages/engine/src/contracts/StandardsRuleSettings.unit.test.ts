@@ -75,7 +75,7 @@ test.each([
 	expect(StandardsRuleSettings.safeParse(overrides).success).toBe(false);
 });
 
-type ParseIssue = { code: string; keys?: string[]; errors?: ParseIssue[][] };
+type ParseIssue = { code: string; message: string; keys?: string[]; errors?: ParseIssue[][] };
 
 // a refusal inside a union sits among the per-branch errors, so walk them all
 const collectIssues = ({ issues }: { issues: ParseIssue[] }): ParseIssue[] =>
@@ -96,4 +96,42 @@ test('StandardsRuleSettings: the object form takes options, and a settings key i
 		settingsParsed: false,
 		unrecognizedKeys: [['settings']],
 	});
+});
+
+test('StandardsRuleSettings: an exclude list of globs parses beside severity and options, or alone', () => {
+	const settings = {
+		'common-placement': { severity: 'advisory', exclude: ['src/routes/**', '.storybook/**'] },
+		'file-size': { severity: 'blocking', options: { file: 200 }, exclude: ['src/generated/**'] },
+		'folder-size': { exclude: ['src/legacy/**'] },
+	};
+
+	const parsed = StandardsRuleSettings.parse(settings);
+	const stringParsed = StandardsRuleSettings.safeParse({ 'folder-size': { exclude: 'src/legacy/**' } }).success;
+	const numbersParsed = StandardsRuleSettings.safeParse({ 'folder-size': { exclude: [1, 2] } }).success;
+
+	// exclude sits beside severity and options in the one object form, and an
+	// exclude-only entry is a whole entry of its own; a bare string or a list of
+	// non-strings is not a glob list
+	expect({ parsed, stringParsed, numbersParsed }).toStrictEqual({ parsed: settings, stringParsed: false, numbersParsed: false });
+});
+
+test.each([
+	{ label: 'is empty', glob: '', refusal: 'an exclude glob cannot be empty' },
+	{ label: 'starts with !', glob: '!src/x/**', refusal: 'exclude glob "!src/x/**" starts with "!"' },
+	{ label: 'is an absolute path from /', glob: '/abs/**', refusal: 'exclude glob "/abs/**" is an absolute path' },
+	{ label: 'is an absolute path from a backslash', glob: '\\\\share\\x', refusal: 'exclude glob "\\\\share\\x" is an absolute path' },
+	{ label: 'is an absolute path from a drive letter', glob: 'C:/x/**', refusal: 'exclude glob "C:/x/**" is an absolute path' },
+	{ label: 'opens with a .. segment', glob: '../other/**', refusal: 'exclude glob "../other/**" steps outside with ".."' },
+	{ label: 'holds a .. segment inside it', glob: 'src/../x/**', refusal: 'exclude glob "src/../x/**" steps outside with ".."' },
+])('StandardsRuleSettings: an exclude glob that $label is refused with a message naming it', ({ glob, refusal }) => {
+	const parsed = StandardsRuleSettings.safeParse({ 'common-placement': { exclude: ['src/a/**', glob] } });
+
+	// the refusal names the bad glob, and the good glob beside it draws no refusal
+	const messages = collectIssues({ issues: (parsed.error?.issues ?? []) as ParseIssue[] }).map((issue) => issue.message);
+
+	expect({
+		parsed: parsed.success,
+		refused: messages.some((message) => message.includes(refusal)),
+		goodGlobRefused: messages.some((message) => message.includes('"src/a/**"')),
+	}).toStrictEqual({ parsed: false, refused: true, goodGlobRefused: false });
 });

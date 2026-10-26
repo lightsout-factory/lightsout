@@ -12,4 +12,6 @@ export interface ResolvedPackRule {
 	severity: StandardsSeverity;
 	/** The rule's default options with every explicit layer merged over them key by key. */
 	options: Record<string, number>;
+	/** Globs from every pack that set them for this rule, unioned in first-appearance order. Each matches a file's path relative to its own workspace package root, or the repo root for a file outside every package. */
+	exclude: string[];
 }

@@ -42,7 +42,7 @@ const frameworkFreeGroupOf = ({ pack }: { pack: LoadedStandardsLibrary }): Stand
 		states: new Map<string, ResolvedRuleState>(
 			resolved.rules.map(({ rule, severity, options }) => [
 				rule.name,
-				{ severity, options, fromConfig: false, reachesAgents: severity !== StandardsSeverity.Off },
+				{ severity, options, fromConfig: false, reachesAgents: severity !== StandardsSeverity.Off, packExclude: [], repoExclude: [] },
 			]),
 		),
 	};

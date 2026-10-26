@@ -64,7 +64,10 @@ Packs are grouped by what the rules are for, and the rule tree mirrors them:
 pack. `code-style` and the framework packs may refer to `fractal` rules.
 
 The shipped packs carry no `rule-settings`, so every rule keeps the severity
-and options its `rule.md` gives it. A new rule in an existing topic reaches
+and options its `rule.md` gives it. A pack's `rule-settings` entry may also
+carry `exclude`, globs relative to each package root, which a framework pack
+uses to drop a general rule's findings in files its framework owns; the shipped
+packs set none. A new rule in an existing topic reaches
 every pack that includes the topic. A new topic reaches no pack until a pack
 file's `include.topics` names it.
 

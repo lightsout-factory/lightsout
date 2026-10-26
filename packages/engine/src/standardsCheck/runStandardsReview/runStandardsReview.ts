@@ -11,6 +11,7 @@ import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFi
 import { StandardsReviewReport } from '#src/contracts/standardsCheck/StandardsReviewReport.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 import { invokeAgentWithContract } from '#src/invoke/invokeAgentWithContract/invokeAgentWithContract.ts';
+import { dropExcludedFindings } from '#src/standardsCheck/common/dropExcludedFindings.ts';
 import { findFileStandardsGroup } from '#src/standardsCheck/common/findFileStandardsGroup.ts';
 import { createAgentHeartbeat } from '#src/standardsCheck/runStandardsReview/createAgentHeartbeat/createAgentHeartbeat.ts';
 import { resolveRuleName } from '#src/standardsLibraries/resolveRuleName.ts';
@@ -85,7 +86,8 @@ const dropNotes = ({ unknownRules, unsited, ungrouped, notRun }: { unknownRules:
  * Everything dropped is counted and stated — a silent drop would read as a
  * clean review. The agent may write a rule's full name or a short id only one
  * rule in scope holds; either way the finding carries the full name. A finding
- * stands only where the group holding its file runs the rule.
+ * stands only where the group holding its file runs the rule, and is then
+ * subject to the rule's excludes.
  */
 const toFindings = ({
 	reported,
@@ -94,7 +96,7 @@ const toFindings = ({
 }: {
 	reported: StandardsReviewReport['findings'];
 	rules: LoadedStandardsRule[];
-	groupOfFile: (file: string) => StandardsGroup | undefined;
+	groupOfFile: (file: string | undefined) => StandardsGroup | undefined;
 }) => {
 	const findings: StandardsFinding[] = [];
 	const unknownRules: string[] = [];
@@ -200,15 +202,13 @@ export const runStandardsReview = async ({
 	}
 
 	const workspacePackages = await listWorkspacePackages({ cwd, packagesDir });
-	const result = toFindings({
-		reported: outcome.report.findings,
-		rules,
-		groupOfFile: (file) => findFileStandardsGroup({ file, groups, packagesDir, workspacePackages }),
-	});
-	const count = result.findings.length;
+	const groupOfFile = (file: string | undefined) => findFileStandardsGroup({ file, groups, packagesDir, workspacePackages });
+	const result = toFindings({ reported: outcome.report.findings, rules, groupOfFile });
+	const filtered = dropExcludedFindings({ findings: result.findings, groupOfFile, packagesDir, workspacePackages });
+	const count = filtered.findings.length;
 	const found = count === 0 ? 'nothing to report' : `${count} advisor${count === 1 ? 'y' : 'ies'} to look at`;
 
 	onProgress?.(`✓ Agent review finished in ${elapsed} — ${found}`);
 
-	return result;
+	return { findings: filtered.findings, notes: [...result.notes, ...filtered.notes.map((note) => `agent review: ${note}`)] };
 };

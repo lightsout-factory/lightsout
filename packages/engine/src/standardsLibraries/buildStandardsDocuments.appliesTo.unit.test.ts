@@ -87,12 +87,15 @@ const buildGroup = ({ packages, pack, off = [] }: { packages: string[]; pack: Pa
 		pack: {
 			name: pack.name,
 			topics: pack.topics,
-			rules: pack.rules.map((rule) => ({ rule, severity: severityOf(rule), options: {} })),
+			rules: pack.rules.map((rule) => ({ rule, severity: severityOf(rule), options: {}, exclude: [] })),
 			conditionalPacks: [],
 			inactiveRules: [],
 		},
 		states: new Map(
-			pack.rules.map((rule) => [rule.name, { severity: severityOf(rule), options: {}, fromConfig: false, reachesAgents: !off.includes(rule.name) }]),
+			pack.rules.map((rule) => [
+				rule.name,
+				{ severity: severityOf(rule), options: {}, fromConfig: false, reachesAgents: !off.includes(rule.name), packExclude: [], repoExclude: [] },
+			]),
 		),
 	};
 };

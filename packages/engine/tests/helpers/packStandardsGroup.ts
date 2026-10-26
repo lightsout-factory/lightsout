@@ -26,11 +26,14 @@ export const packStandardsGroup = ({ pack, rules, topicRuleIds }: Params): Stand
 				ruleIds: topicRuleIds,
 			},
 		],
-		rules: rules.map((entry) => ({ rule: entry, severity: entry.defaultSeverity, options: entry.defaultOptions })),
+		rules: rules.map((entry) => ({ rule: entry, severity: entry.defaultSeverity, options: entry.defaultOptions, exclude: [] })),
 		conditionalPacks: [],
 		inactiveRules: [],
 	},
 	states: new Map<string, ResolvedRuleState>(
-		rules.map((entry) => [entry.name, { severity: entry.defaultSeverity, options: entry.defaultOptions, fromConfig: false, reachesAgents: true }]),
+		rules.map((entry) => [
+			entry.name,
+			{ severity: entry.defaultSeverity, options: entry.defaultOptions, fromConfig: false, reachesAgents: true, packExclude: [], repoExclude: [] },
+		]),
 	),
 });

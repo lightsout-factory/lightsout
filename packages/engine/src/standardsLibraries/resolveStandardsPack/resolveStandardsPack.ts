@@ -18,8 +18,9 @@ interface Params {
 /**
  * Grades each rule once, at the top: its rule.md default, then every included
  * pack's explicit value in include order, then the pack's own `rule-settings`,
- * with options merged key by key at every step. A rule graded `off` stays
- * listed, so a repo's own settings can still turn it on.
+ * with options merged key by key at every step. Excludes from every pack that
+ * set them are unioned. A rule graded `off` stays listed, so a repo's own
+ * settings can still turn it on.
  *
  * @throws {Error} When an address, or any include or rule-settings entry reachable from one, cannot be resolved, or packs include each other in a cycle.
  */
@@ -32,7 +33,12 @@ export const resolveStandardsPack = ({ addresses, libraries, dependencies }: Par
 		rules: [...expansion.rules.values()].map((rule) => {
 			const setting = expansion.settings.get(rule.name);
 
-			return { rule, severity: setting?.severity ?? rule.defaultSeverity, options: { ...rule.defaultOptions, ...setting?.options } };
+			return {
+				rule,
+				severity: setting?.severity ?? rule.defaultSeverity,
+				options: { ...rule.defaultOptions, ...setting?.options },
+				exclude: setting?.exclude ?? [],
+			};
 		}),
 		conditionalPacks: [...expansion.conditionalPacks],
 		inactiveRules: [...expansion.inactiveRules.values()].filter((rule) => !expansion.rules.has(rule.name)),

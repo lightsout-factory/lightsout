@@ -20,6 +20,20 @@ const setupPackFiles = () => {
 	return { fullPack, packWithoutDescription, packWithUnknownKey };
 };
 
+const setupExcludePacks = () => {
+	const { fullPack } = setupPackFiles();
+	const packWithExclude = {
+		...fullPack,
+		'rule-settings': { 'file-size': { severity: 'advisory', exclude: ['src/routes/**'] } },
+	};
+	const packWithNegatedExclude = {
+		...fullPack,
+		'rule-settings': { 'file-size': { exclude: ['!src/routes/**'] } },
+	};
+
+	return { packWithExclude, packWithNegatedExclude };
+};
+
 describe('StandardsPackFile', () => {
 	test('StandardsPackFile accepts the full pack shape and rejects an unknown key or a missing description', () => {
 		const { fullPack, packWithoutDescription, packWithUnknownKey } = setupPackFiles();
@@ -44,5 +58,16 @@ describe('StandardsPackFile', () => {
 		const outcome = StandardsPackFile.safeParse({ ...fullPack, 'applies-when': appliesWhen });
 
 		expect(outcome.success).toBe(false);
+	});
+
+	test('StandardsPackFile: a rule-settings entry carries an exclude list under the same rules as standards-rule-settings', () => {
+		const { packWithExclude, packWithNegatedExclude } = setupExcludePacks();
+
+		const outcomes = [packWithExclude, packWithNegatedExclude].map((file) => StandardsPackFile.safeParse(file));
+
+		expect(outcomes.map(({ success, data }) => ({ success, data }))).toStrictEqual([
+			{ success: true, data: packWithExclude },
+			{ success: false, data: undefined },
+		]);
 	});
 });

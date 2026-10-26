@@ -19,7 +19,7 @@ const groupOf = ({ rules, states }: { rules: LoadedStandardsRule[]; states: Map<
 	pack: {
 		name: 'acme/house',
 		topics: [],
-		rules: rules.map((entry) => ({ rule: entry, severity: entry.defaultSeverity, options: entry.defaultOptions })),
+		rules: rules.map((entry) => ({ rule: entry, severity: entry.defaultSeverity, options: entry.defaultOptions, exclude: [] })),
 		conditionalPacks: [],
 		inactiveRules: [],
 	},
@@ -67,7 +67,7 @@ const setupDuplicationRun = ({ sources, typescript = false }: { sources: Record<
 		run,
 	};
 	const states = new Map<string, ResolvedRuleState>([
-		['acme/duplicate-code-block', { severity: StandardsSeverity.Advisory, options, fromConfig: false, reachesAgents: true }],
+		['acme/duplicate-code-block', { severity: StandardsSeverity.Advisory, options, fromConfig: false, reachesAgents: true, packExclude: [], repoExclude: [] }],
 	]);
 
 	return { cwd, handed, groups: [groupOf({ rules: [rule], states })] };
@@ -111,8 +111,14 @@ const setupThresholdRun = ({ lowMinTokens, highMinTokens }: { lowMinTokens: numb
 		buildRule({ id: 'duplicate-code-block-high', minTokens: highMinTokens, handed: highHanded }),
 	];
 	const states = new Map<string, ResolvedRuleState>([
-		['acme/duplicate-code-block-low', { severity: StandardsSeverity.Advisory, options: { minTokens: lowMinTokens }, fromConfig: false, reachesAgents: true }],
-		['acme/duplicate-code-block-high', { severity: StandardsSeverity.Advisory, options: { minTokens: highMinTokens }, fromConfig: false, reachesAgents: true }],
+		[
+			'acme/duplicate-code-block-low',
+			{ severity: StandardsSeverity.Advisory, options: { minTokens: lowMinTokens }, fromConfig: false, reachesAgents: true, packExclude: [], repoExclude: [] },
+		],
+		[
+			'acme/duplicate-code-block-high',
+			{ severity: StandardsSeverity.Advisory, options: { minTokens: highMinTokens }, fromConfig: false, reachesAgents: true, packExclude: [], repoExclude: [] },
+		],
 	]);
 
 	return { cwd, groups: [groupOf({ rules, states })], lowHanded, highHanded };

@@ -2,11 +2,11 @@ import type { LoadedStandardsLibrary } from '#src/common/types/LoadedStandardsLi
 import type { LoadedStandardsRule } from '#src/common/types/LoadedStandardsRule.ts';
 import type { LoadedStandardsTopic } from '#src/common/types/LoadedStandardsTopic.ts';
 import type { StandardsRuleSettings } from '#src/contracts/StandardsRuleSettings.ts';
-import type { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
 import { resolveRuleName } from '#src/standardsLibraries/resolveRuleName.ts';
 import { applyPackCondition } from '#src/standardsLibraries/resolveStandardsPack/expandPacks/applyPackCondition.ts';
 import { splitPackAddress } from '#src/standardsLibraries/resolveStandardsPack/expandPacks/common/splitPackAddress.ts';
 import type { PackExpansion } from '#src/standardsLibraries/resolveStandardsPack/expandPacks/common/types/PackExpansion.ts';
+import type { PackRuleSetting } from '#src/standardsLibraries/resolveStandardsPack/expandPacks/common/types/PackRuleSetting.ts';
 import { findPackFile } from '#src/standardsLibraries/resolveStandardsPack/expandPacks/findPackFile.ts';
 
 interface Params {
@@ -76,18 +76,14 @@ const findVisibleLibraries = ({
 	return visible;
 };
 
-const mergeSetting = ({
-	settings,
-	name,
-	setting,
-}: {
-	settings: PackExpansion['settings'];
-	name: string;
-	setting: { severity?: StandardsSeverity; options: Record<string, number> };
-}) => {
+const mergeSetting = ({ settings, name, setting }: { settings: PackExpansion['settings']; name: string; setting: PackRuleSetting }) => {
 	const current = settings.get(name);
 
-	settings.set(name, { severity: setting.severity ?? current?.severity, options: { ...current?.options, ...setting.options } });
+	settings.set(name, {
+		severity: setting.severity ?? current?.severity,
+		options: { ...current?.options, ...setting.options },
+		exclude: [...new Set([...(current?.exclude ?? []), ...setting.exclude])],
+	});
 };
 
 const addTopic = ({ expansion, topic }: { expansion: PackExpansion; topic: LoadedStandardsTopic }) => {
@@ -182,7 +178,10 @@ const applyRuleSettings = ({ address, expansion, ruleSettings, libraries }: Omit
 
 		// A rule only a conditional pack that did not apply would bring takes no setting for this package.
 		if (expansion.rules.has(name)) {
-			const setting = typeof value === 'string' ? { severity: value, options: {} } : { severity: value.severity, options: value.options ?? {} };
+			const setting: PackRuleSetting =
+				typeof value === 'string'
+					? { severity: value, options: {}, exclude: [] }
+					: { severity: value.severity, options: value.options ?? {}, exclude: value.exclude ?? [] };
 
 			mergeSetting({ settings: expansion.settings, name, setting });
 		}
@@ -224,7 +223,8 @@ const expandPack = ({ address, libraries, chain, dependencies }: OnePackParams):
  * Expands packs into their explicit layer, never their final grades: packs
  * merge in listed order, so the last listed wins only where it wrote a value;
  * topics and single rules add rules and carry no settings; a pack's own
- * `rule-settings` apply after everything it includes. A pack reached twice by
+ * `rule-settings` apply after everything it includes. Excludes union across
+ * every pack while severity and options stay last-wins. A pack reached twice by
  * two branches is no cycle — only one reached again inside itself is.
  *
  * @throws {Error} When a pack, or any include or rule-settings entry reachable from one, cannot be resolved, or packs include each other in a cycle.

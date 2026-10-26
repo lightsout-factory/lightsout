@@ -31,8 +31,14 @@ const setupConfiguredRun = () => {
 		rule({ id: 'file-size', inputKinds: [StandardsInputKind.FileList], run: recordOptions({ id: 'file-size' }), defaultOptions: { file: 250, tsxFile: 300 } }),
 	];
 	const states = new Map<string, ResolvedRuleState>([
-		['acme/folder-size', { severity: StandardsSeverity.Advisory, options: { cap: 2 }, fromConfig: true, reachesAgents: true }],
-		['acme/file-size', { severity: StandardsSeverity.Advisory, options: { file: 250, tsxFile: 300 }, fromConfig: false, reachesAgents: true }],
+		[
+			'acme/folder-size',
+			{ severity: StandardsSeverity.Advisory, options: { cap: 2 }, fromConfig: true, reachesAgents: true, packExclude: [], repoExclude: [] },
+		],
+		[
+			'acme/file-size',
+			{ severity: StandardsSeverity.Advisory, options: { file: 250, tsxFile: 300 }, fromConfig: false, reachesAgents: true, packExclude: [], repoExclude: [] },
+		],
 	]);
 
 	return { cwd, groups: [groupOf({ rules, states })], calls };
@@ -69,15 +75,15 @@ const setupGroupRun = () => {
 			name: 'acme/house',
 			topics: [topic],
 			rules: [
-				{ rule: size, severity: StandardsSeverity.Advisory, options: {} },
-				{ rule: muted, severity: StandardsSeverity.Blocking, options: {} },
+				{ rule: size, severity: StandardsSeverity.Advisory, options: {}, exclude: [] },
+				{ rule: muted, severity: StandardsSeverity.Blocking, options: {}, exclude: [] },
 			],
 			conditionalPacks: [],
 			inactiveRules: [],
 		},
 		states: new Map([
-			['acme/size', { severity: StandardsSeverity.Advisory, options: {}, fromConfig: false, reachesAgents: true }],
-			['acme/muted', { severity: StandardsSeverity.Off, options: {}, fromConfig: true, reachesAgents: true }],
+			['acme/size', { severity: StandardsSeverity.Advisory, options: {}, fromConfig: false, reachesAgents: true, packExclude: [], repoExclude: [] }],
+			['acme/muted', { severity: StandardsSeverity.Off, options: {}, fromConfig: true, reachesAgents: true, packExclude: [], repoExclude: [] }],
 		]),
 	};
 
@@ -146,7 +152,7 @@ describe('runPackageChecks', () => {
 		const calls: Array<{ inputs: StandardsCheckInputs; options: Record<string, number> }> = [];
 		const rules = [rule({ id: 'size', inputKinds: [StandardsInputKind.FileText], run: recordingRun({ id: 'size', calls }) })];
 		const states = new Map<string, ResolvedRuleState>([
-			['acme/size', { severity: StandardsSeverity.Advisory, options: {}, fromConfig: false, reachesAgents: true }],
+			['acme/size', { severity: StandardsSeverity.Advisory, options: {}, fromConfig: false, reachesAgents: true, packExclude: [], repoExclude: [] }],
 		]);
 
 		const { findings } = await runPackageChecks({ cwd, sourceFileGlobs, testFileGlobs, groups: [groupOf({ rules, states }), groupOf({ rules, states })] });

@@ -45,10 +45,13 @@ or reviews one, so every rule in every library has the same shape.
 - **Pack:** one JSON file in `packs/`, addressed as
   `<library>/<file name without .json>`. It holds a `description`;
   `include.packs`, `include.topics` and `include.rules`, which all add; and
-  `rule-settings`, which gives a rule in the pack a severity, or a `severity`
-  and `options` (`off` removes the rule). A pack changes which rules apply and
-  how they are graded, never a rule's text or check. When two included packs
-  disagree about a rule, the last one listed wins. A pack may declare
+  `rule-settings`, which gives a rule in the pack a severity, or a `severity`,
+  `options` and `exclude` (`off` removes the rule); `exclude` lists globs,
+  relative to each package root, whose findings for that rule are dropped.
+  Excludes from several packs combine, and a pack excludes only from rules it
+  includes. A pack changes which rules apply and how they are graded, never a
+  rule's text or check. When two included packs disagree about a rule's
+  severity or options, the last one listed wins. A pack may declare
   `applies-when` with a list of `dependencies`: it then reaches only the
   packages whose own `package.json` declares one of them, which is how a
   framework's rules stay out of packages that do not use it.

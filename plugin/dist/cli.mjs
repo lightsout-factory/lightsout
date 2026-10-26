@@ -124949,13 +124949,35 @@ var StandardsSeverity = {
 };
 
 // src/contracts/StandardsRuleSettings.ts
+var findExcludeGlobProblem = ({ glob: glob2 }) => {
+  if (glob2 === "") {
+    return "an exclude glob cannot be empty";
+  }
+  if (glob2.startsWith("!")) {
+    return `exclude glob "${glob2}" starts with "!" \u2014 an exclude only removes findings, so nothing can be un-excluded`;
+  }
+  if (glob2.startsWith("/") || glob2.startsWith("\\") || /^[A-Za-z]:/.test(glob2)) {
+    return `exclude glob "${glob2}" is an absolute path \u2014 write it relative to the package root in a pack, or to the repo root in standards-rule-settings`;
+  }
+  if (glob2.split(/[/\\]/).includes("..")) {
+    return `exclude glob "${glob2}" steps outside with ".." \u2014 an exclude names files inside the repository`;
+  }
+  return void 0;
+};
+var excludeGlob = external_exports.string().superRefine((glob2, ctx) => {
+  const problem = findExcludeGlobProblem({ glob: glob2 });
+  if (problem !== void 0) {
+    ctx.addIssue({ code: "custom", message: problem });
+  }
+});
 var StandardsRuleSettings = external_exports.record(
   external_exports.string(),
   external_exports.union([
     external_exports.enum(StandardsSeverity),
     external_exports.object({
       severity: external_exports.enum(StandardsSeverity).optional(),
-      options: external_exports.record(external_exports.string(), external_exports.number()).optional()
+      options: external_exports.record(external_exports.string(), external_exports.number()).optional(),
+      exclude: external_exports.array(excludeGlob).optional()
     }).strict()
   ])
 );
@@ -126079,8 +126101,11 @@ var resolveEntries = ({ packs, ruleSettings }) => {
 var stateOf = ({ packRule, setting }) => ({
   severity: setting?.severity ?? packRule.severity,
   options: { ...packRule.options, ...setting?.options },
-  fromConfig: setting !== void 0,
-  reachesAgents: packRule.severity !== StandardsSeverity.Off || setting?.severity !== void 0 && setting.severity !== StandardsSeverity.Off
+  fromConfig: setting?.severity !== void 0 || setting?.options !== void 0,
+  reachesAgents: packRule.severity !== StandardsSeverity.Off || setting?.severity !== void 0 && setting.severity !== StandardsSeverity.Off,
+  packExclude: packRule.exclude,
+  // The repo entry's own array, shared by every pack's state, so `matchesGlobs` compiles it once.
+  repoExclude: setting?.exclude ?? []
 });
 var resolveRuleStates = ({ packs, ruleSettings }) => {
   const settings = resolveEntries({ packs, ruleSettings: ruleSettings ?? {} });
@@ -126838,13 +126863,13 @@ var findVisibleLibraries = ({
   }
   return visible;
 };
-var mergeSetting = ({
-  settings,
-  name,
-  setting
-}) => {
+var mergeSetting = ({ settings, name, setting }) => {
   const current = settings.get(name);
-  settings.set(name, { severity: setting.severity ?? current?.severity, options: { ...current?.options, ...setting.options } });
+  settings.set(name, {
+    severity: setting.severity ?? current?.severity,
+    options: { ...current?.options, ...setting.options },
+    exclude: [.../* @__PURE__ */ new Set([...current?.exclude ?? [], ...setting.exclude])]
+  });
 };
 var addTopic = ({ expansion, topic }) => {
   const key = `${topic.library}/${topic.path}`;
@@ -126913,7 +126938,7 @@ var applyRuleSettings = ({ address, expansion, ruleSettings, libraries }) => {
       throw new Error(`pack ${address}: rule-settings entry "${key}" names ${name}, which the pack does not include`);
     }
     if (expansion.rules.has(name)) {
-      const setting = typeof value === "string" ? { severity: value, options: {} } : { severity: value.severity, options: value.options ?? {} };
+      const setting = typeof value === "string" ? { severity: value, options: {}, exclude: [] } : { severity: value.severity, options: value.options ?? {}, exclude: value.exclude ?? [] };
       mergeSetting({ settings: expansion.settings, name, setting });
     }
   }
@@ -126957,7 +126982,12 @@ var resolveStandardsPack = ({ addresses, libraries, dependencies }) => {
     topics: [...expansion.topics.values()],
     rules: [...expansion.rules.values()].map((rule) => {
       const setting = expansion.settings.get(rule.name);
-      return { rule, severity: setting?.severity ?? rule.defaultSeverity, options: { ...rule.defaultOptions, ...setting?.options } };
+      return {
+        rule,
+        severity: setting?.severity ?? rule.defaultSeverity,
+        options: { ...rule.defaultOptions, ...setting?.options },
+        exclude: setting?.exclude ?? []
+      };
     }),
     conditionalPacks: [...expansion.conditionalPacks],
     inactiveRules: [...expansion.inactiveRules.values()].filter((rule) => !expansion.rules.has(rule.name))
@@ -127100,8 +127130,8 @@ var compile = ({ globs }) => {
   const included = globs.filter((glob2) => !glob2.startsWith("!"));
   const excluded = globs.filter((glob2) => glob2.startsWith("!")).map((glob2) => glob2.slice(1));
   const isIncluded = included.length === 0 ? () => false : (0, import_picomatch.default)(included);
-  const isExcluded = excluded.length === 0 ? () => false : (0, import_picomatch.default)(excluded);
-  return (path) => isIncluded(path) && !isExcluded(path);
+  const isExcluded2 = excluded.length === 0 ? () => false : (0, import_picomatch.default)(excluded);
+  return (path) => isIncluded(path) && !isExcluded2(path);
 };
 var matchesGlobs = ({ path, globs }) => {
   const known = matchers.get(globs);
@@ -127933,8 +127963,8 @@ var listSourceFiles = async ({ cwd, sourceFileGlobs, exclude = [] }) => {
   const isLibraryFixture = (path) => standardsLibraries.some(
     (root) => (root === "" || path.startsWith(`${root}/`)) && path.slice(root === "" ? 0 : root.length + 1).split("/").includes("fixtures")
   );
-  const isExcluded = (path) => exclude.some((prefix) => path.startsWith(prefix.replace(/\/$/, "")));
-  const files = listed.filter((path) => isSourceFile({ path, sourceFileGlobs }) && !isLibraryFixture(path) && !isExcluded(path));
+  const isExcluded2 = (path) => exclude.some((prefix) => path.startsWith(prefix.replace(/\/$/, "")));
+  const files = listed.filter((path) => isSourceFile({ path, sourceFileGlobs }) && !isLibraryFixture(path) && !isExcluded2(path));
   return { files: [...new Set(files)].sort(), standardsLibraries };
 };
 
@@ -137320,15 +137350,52 @@ var StandardsReviewReport = external_exports.object({
   )
 });
 
-// src/standardsCheck/common/findFileStandardsGroup.ts
+// src/standardsCheck/common/findWorkspacePackage.ts
 var packageFolderOf = ({ file: file2, packagesDir }) => {
   const prefix = `${packagesDir}/`;
   const rest = file2.startsWith(prefix) ? file2.slice(prefix.length) : "";
   return rest !== "" && !rest.includes("/") ? rest : packageOf({ file: file2, packagesDir });
 };
+var findWorkspacePackage = ({ file: file2, packagesDir, workspacePackages }) => {
+  const name = packageFolderOf({ file: file2, packagesDir });
+  return name !== void 0 && workspacePackages.includes(name) ? name : void 0;
+};
+
+// src/standardsCheck/common/dropExcludedFindings.ts
+var packageRelativePath = ({ file: file2, packagesDir, workspacePackages }) => {
+  const name = findWorkspacePackage({ file: file2, packagesDir, workspacePackages });
+  if (name === void 0) {
+    return file2;
+  }
+  const root = `${packagesDir}/${name}`;
+  return file2 === root ? "" : file2.slice(root.length + 1);
+};
+var isExcluded = ({
+  file: file2,
+  state,
+  packagesDir,
+  workspacePackages
+}) => matchesGlobs({ path: packageRelativePath({ file: file2, packagesDir, workspacePackages }), globs: state.packExclude }) || matchesGlobs({ path: file2, globs: state.repoExclude });
+var dropExcludedFindings = ({ findings, groupOfFile, packagesDir, workspacePackages }) => {
+  const kept = [];
+  const dropped = /* @__PURE__ */ new Map();
+  for (const finding6 of findings) {
+    const state = groupOfFile(finding6.files[0]?.path)?.states.get(finding6.rule);
+    const excluded = state !== void 0 && finding6.files.length > 0 && finding6.files.every((file2) => isExcluded({ file: file2.path, state, packagesDir, workspacePackages }));
+    if (excluded) {
+      dropped.set(finding6.rule, (dropped.get(finding6.rule) ?? 0) + 1);
+    } else {
+      kept.push(finding6);
+    }
+  }
+  const rules = [...dropped.keys()].sort();
+  const notes = rules.map((rule) => `${dropped.get(rule)} finding(s) of ${rule} dropped \u2014 every file they name matches the rule's exclude list`);
+  return { findings: kept, notes };
+};
+
+// src/standardsCheck/common/findFileStandardsGroup.ts
 var findFileStandardsGroup = ({ file: file2, groups, packagesDir, workspacePackages }) => {
-  const name = file2 === void 0 ? void 0 : packageFolderOf({ file: file2, packagesDir });
-  const key = name !== void 0 && workspacePackages.includes(name) ? name : "";
+  const key = file2 === void 0 ? "" : findWorkspacePackage({ file: file2, packagesDir, workspacePackages }) ?? "";
   return groups.find((group) => group.packages.includes(key));
 };
 
@@ -137482,15 +137549,13 @@ var runStandardsReview = async ({
     return { findings: [], notes: [`agent review skipped \u2014 ${outcome.failure}`] };
   }
   const workspacePackages = await listWorkspacePackages({ cwd, packagesDir });
-  const result = toFindings({
-    reported: outcome.report.findings,
-    rules,
-    groupOfFile: (file2) => findFileStandardsGroup({ file: file2, groups, packagesDir, workspacePackages })
-  });
-  const count2 = result.findings.length;
+  const groupOfFile = (file2) => findFileStandardsGroup({ file: file2, groups, packagesDir, workspacePackages });
+  const result = toFindings({ reported: outcome.report.findings, rules, groupOfFile });
+  const filtered = dropExcludedFindings({ findings: result.findings, groupOfFile, packagesDir, workspacePackages });
+  const count2 = filtered.findings.length;
   const found = count2 === 0 ? "nothing to report" : `${count2} advisor${count2 === 1 ? "y" : "ies"} to look at`;
   onProgress?.(`\u2713 Agent review finished in ${elapsed} \u2014 ${found}`);
-  return result;
+  return { findings: filtered.findings, notes: [...result.notes, ...filtered.notes.map((note) => `agent review: ${note}`)] };
 };
 
 // src/pipeline/steps/refactorStep/reviewAdvisories.ts
@@ -150031,10 +150096,12 @@ var runPackageChecks = async ({
     cache,
     compiler
   });
-  const { findings, skipped } = await runLiveRules({ live: live2, buildInput, groupOfFile, compiler, progress });
+  const { findings: graded, skipped } = await runLiveRules({ live: live2, buildInput, groupOfFile, compiler, progress });
+  const { findings, notes: excludeNotes } = dropExcludedFindings({ findings: graded, groupOfFile, packagesDir, workspacePackages });
   if (skipped.length > 0) {
     notes.push(`${skipped.join(", ")} skipped \u2014 no typescript resolvable from the target repo`);
   }
+  notes.push(...excludeNotes);
   const uncovered = live2.some((rule) => rule.inputKinds.includes(StandardsInputKind.FileText)) ? findFoldersWithoutAliasSource({ files: allFiles, contents: cache }) : [];
   if (uncovered.length > 0) {
     notes.push(
@@ -154620,7 +154687,7 @@ var readDeclaredExports = ({ path, content, compiler }) => {
 // src/plan/evidence/buildExportCensus.ts
 var buildExportCensus = async ({ cwd, config: config2, exclude = [], excludeFolders = [] }) => {
   const excluded = new Set(exclude);
-  const isExcluded = (file2) => excluded.has(file2) || excludeFolders.some((folder) => file2 === folder || file2.startsWith(`${folder}/`));
+  const isExcluded2 = (file2) => excluded.has(file2) || excludeFolders.some((folder) => file2 === folder || file2.startsWith(`${folder}/`));
   const compiler = resolveConsumerTypescript({ cwd, packagesDir: config2?.["packages-dir"] ?? defaultPackagesDir });
   const buckets = /* @__PURE__ */ new Map();
   if (compiler === void 0) {
@@ -154629,7 +154696,7 @@ var buildExportCensus = async ({ cwd, config: config2, exclude = [], excludeFold
   const { files } = await listSourceFiles({ cwd, sourceFileGlobs: readRepoFileGlobs({ config: config2 }).source, exclude: excludedSourcePaths({ config: config2 }) });
   const testFileGlobs = readRepoFileGlobs({ config: config2 }).tests;
   for (const file2 of files) {
-    if (isTestFile({ path: file2, testFileGlobs }) || isExcluded(file2)) {
+    if (isTestFile({ path: file2, testFileGlobs }) || isExcluded2(file2)) {
       continue;
     }
     const content = await readFile40(join105(cwd, file2), "utf8").catch(() => void 0);

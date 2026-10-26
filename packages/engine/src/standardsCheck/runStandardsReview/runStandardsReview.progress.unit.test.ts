@@ -37,12 +37,15 @@ const groupOf = ({ ruleIds }: { ruleIds: string[] }): StandardsGroup => {
 		pack: {
 			name: 'acme/house',
 			topics: [],
-			rules: rules.map((rule) => ({ rule, severity: StandardsSeverity.Advisory, options: {} })),
+			rules: rules.map((rule) => ({ rule, severity: StandardsSeverity.Advisory, options: {}, exclude: [] })),
 			conditionalPacks: [],
 			inactiveRules: [],
 		},
 		states: new Map<string, ResolvedRuleState>(
-			rules.map((rule) => [rule.name, { severity: StandardsSeverity.Advisory, options: {}, fromConfig: false, reachesAgents: true }]),
+			rules.map((rule) => [
+				rule.name,
+				{ severity: StandardsSeverity.Advisory, options: {}, fromConfig: false, reachesAgents: true, packExclude: [], repoExclude: [] },
+			]),
 		),
 	};
 };
