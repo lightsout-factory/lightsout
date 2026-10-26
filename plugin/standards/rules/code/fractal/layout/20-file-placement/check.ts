@@ -2,7 +2,6 @@ import type { RawStandardsFinding, StandardsCheckModule } from '@lightsout/stand
 import { buildRawFinding } from '#common/findings/buildRawFinding.ts';
 import { getOwningPackage } from '#common/paths/getOwningPackage.ts';
 import { getPackageSourceRoot } from '#common/paths/getPackageSourceRoot.ts';
-import { isTestFile } from '#common/paths/isTestFile.ts';
 import { getFolderSegments } from './getFolderSegments.ts';
 import { isMainFile } from './isMainFile.ts';
 import { judgePlacement } from './judgePlacement.ts';
@@ -26,17 +25,15 @@ export const check: StandardsCheckModule = {
 			return [];
 		}
 
-		const { files, referenceFiles, edges, dependencies, standardsLibraries } = input;
+		const { files, referenceFiles, referenceTests, edges, dependencies } = input;
 		const scope = new Set(files);
+		const testFiles = new Set(referenceTests);
 		const packageDirectories = [...dependencies.keys()];
 		const importersOf = new Map<string, string[]>();
 		const moduleFolders = new Set([...files, ...referenceFiles].filter((path) => isMainFile({ path })).map((path) => getFolderSegments({ path }).join('/')));
 
 		for (const { from, to } of edges) {
-			if (
-				!isTestFile({ path: from, standardsLibraries }) &&
-				getOwningPackage({ path: from, packageDirectories }) === getOwningPackage({ path: to, packageDirectories })
-			) {
+			if (!testFiles.has(from) && getOwningPackage({ path: from, packageDirectories }) === getOwningPackage({ path: to, packageDirectories })) {
 				importersOf.set(to, [...new Set([...(importersOf.get(to) ?? []), from])].sort());
 			}
 		}
@@ -44,7 +41,7 @@ export const check: StandardsCheckModule = {
 		return referenceFiles.flatMap((path) => {
 			const importers = importersOf.get(path) ?? [];
 
-			if (importers.length === 0 || isTestFile({ path, standardsLibraries }) || ![path, ...importers].some((file) => scope.has(file))) {
+			if (importers.length === 0 || testFiles.has(path) || ![path, ...importers].some((file) => scope.has(file))) {
 				return [];
 			}
 

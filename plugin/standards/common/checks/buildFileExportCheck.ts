@@ -3,7 +3,6 @@ import { readFileTexts } from '../checkInput/readFileTexts/readFileTexts.ts';
 import { buildRawFinding } from '../findings/buildRawFinding.ts';
 import { readFileExports } from '../parsing/readFileExports.ts';
 import { isIndexFile } from '../paths/isIndexFile.ts';
-import { isTestFile } from '../paths/isTestFile.ts';
 import type { FileExport } from '../types/FileExport.ts';
 
 interface Params {
@@ -23,9 +22,11 @@ interface Params {
 export const buildFileExportCheck = ({ rule, detail, guidance }: Params): StandardsCheckModule => ({
 	inputKinds: ['file-text'],
 	run: ({ inputs }): RawStandardsFinding[] => {
-		const { files, contents, standardsLibraries } = readFileTexts({ input: inputs['file-text'] });
+		const { files, contents, tests } = readFileTexts({ input: inputs['file-text'] });
+		const testFiles = new Set(tests);
+
 		return files
-			.filter((file) => !isTestFile({ path: file, standardsLibraries }) && !isIndexFile({ path: file }))
+			.filter((file) => !testFiles.has(file) && !isIndexFile({ path: file }))
 			.map((file) => {
 				const text = contents.get(file) ?? '';
 				const violation = detail({ file, text, exports: readFileExports({ text }) });

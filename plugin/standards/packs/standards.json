@@ -1,6 +1,6 @@
 {
 	"description": "For a package with no framework pack of its own: one shape at every level, written in one style.",
 	"include": {
-		"packs": ["lightsout/fractal", "lightsout/code-style"]
+		"packs": ["lightsout/code-style", "lightsout/fractal"]
 	}
 }

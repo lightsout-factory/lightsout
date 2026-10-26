@@ -28,8 +28,6 @@ const soleExpressionOf = ({ body, compiler }: Params): ts.Node | undefined => {
  * Anything past a single forward — a second statement, a computation, a call
  * on anything but a `this`-held field — is not the mandated shape and stays a
  * duplicate candidate.
- *
- * @mirrors packages/engine/src/standardsCheck/common/buildCheckInput/buildCloneSpansInput/blankDelegationSpans/isDelegationForwardBody.ts
  */
 export const isDelegationForwardBody = ({ body, compiler }: Params): boolean => {
 	const sole = soleExpressionOf({ body, compiler });

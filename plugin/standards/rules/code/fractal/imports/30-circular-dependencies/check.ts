@@ -1,17 +1,18 @@
 import type { RawStandardsFinding, StandardsCheckModule } from '@lightsout/standards-contracts';
 import { buildRawFinding } from '#common/findings/buildRawFinding.ts';
-import { isTestFile } from '#common/paths/isTestFile.ts';
 
 /** What each source file imports, files and imports both in path order, so the same repo always yields the same findings. */
 const mapImportsBySource = ({
 	edges,
-	standardsLibraries,
+	tests,
 }: {
 	edges: Array<{ from: string; to: string }>;
-	standardsLibraries: string[];
+	/** Every test file in the repo: an import from or to a test is no cycle in the source. */
+	tests: string[];
 }): Map<string, string[]> => {
 	const targetsBySource = new Map<string, Set<string>>();
-	const isSource = (path: string) => !isTestFile({ path, standardsLibraries });
+	const testFiles = new Set(tests);
+	const isSource = (path: string) => !testFiles.has(path);
 
 	for (const { from, to } of edges) {
 		if (isSource(from) && isSource(to)) {
@@ -135,9 +136,9 @@ export const check: StandardsCheckModule = {
 			return [];
 		}
 
-		const { files, edges, standardsLibraries } = input;
+		const { files, edges, referenceTests } = input;
 		const scope = new Set(files);
-		const importsBySource = mapImportsBySource({ edges, standardsLibraries });
+		const importsBySource = mapImportsBySource({ edges, tests: referenceTests });
 
 		return findCycleGroups({ importsBySource })
 			.map((group) => ({ group, cycle: findShortestCycle({ group, importsBySource }) }))
