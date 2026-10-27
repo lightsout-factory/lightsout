@@ -44,7 +44,7 @@ describe('commandCatalog graphics', () => {
 
 		expect(ends).toStrictEqual([
 			['plan', 'CREATE THE PLAN WORKSPACE', 'GET THE PLAN TO AN A GRADE'],
-			['implement', 'START THE RUN', 'REPORT THE RESULT'],
+			['implement', 'START THE RUN', 'SHIP THE BRANCH'],
 			['refactor', 'START THE RUN', 'REVIEW AND COMMIT'],
 		]);
 	});

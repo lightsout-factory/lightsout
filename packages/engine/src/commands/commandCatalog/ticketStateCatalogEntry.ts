@@ -6,7 +6,7 @@ export const ticketStateCatalogEntry: CommandCatalogEntry = {
 	id: 'ticket-state',
 	cli: 'lightsout ticket-state',
 	group: CommandGroup.Build,
-	summary: "Write a ticket's planning status, its tracker workflow status, or both.",
+	summary: 'Set a ticket’s planning label and its tracker status (for example “Ready to Implement”) from the command line.',
 	whenToUse:
 		'Run it at a workflow transition — when brainstorming finishes, when a plan is approved, when implementation begins — so the ticket says what preparation it still owes and where implementation stands. The workflow skills call it at each of those moments, so the tracker says the same thing however the work was started.',
 	invocations: [{ id: 'ticket-state' }],

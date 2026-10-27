@@ -9,7 +9,7 @@ export const implementCatalogEntry: CommandCatalogEntry = {
 	slash: '/implement',
 	cli: 'lightsout implement',
 	group: CommandGroup.Build,
-	summary: 'Run the lightsout deterministic implementation pipeline on a plan file.',
+	summary: 'Build a finished plan unattended — agents write the code and tests, and the repo’s own checks must pass at every step before the run moves on.',
 	whenToUse:
 		'Run it when a plan is graded and you want the work done unattended. Every step is gated by the repo’s own tests, lint, types and coverage, and the run parks rather than pushing past a gate it cannot satisfy.',
 	invocations: [{ id: 'implement' }, { id: 'implement-folder', note: 'folder: overview.md runs all phases, else plan.md' }],
@@ -70,8 +70,8 @@ export const implementCatalogEntry: CommandCatalogEntry = {
 	related: ['auto-plan', 'brainstorm', 'plan', 'resume', 'stop', 'ship', 'implement-direct', 'queue', 'work-order', 'ticket-state', 'self-check'],
 	graphic: {
 		title: 'How /implement turns the spec into verified code',
-		subtitle: 'Ten steps, deterministic gates throughout, and a complete record saved to disk.',
+		subtitle: 'Eleven steps, deterministic gates throughout, and a complete record saved to disk.',
 		banner: 'The model can claim success. Lightsout requires evidence.',
-		columns: 5,
+		columns: 4,
 	},
 };

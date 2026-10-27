@@ -1,9 +1,9 @@
 import type { StandardsPackRuleView } from '@lightsout/engine';
+import { CodeSpans } from '#src/appUI/CodeSpans.tsx';
 import { severityDisplays } from '#src/common/constants/severityDisplays.ts';
 import { cn } from '#src/common/utils/cn.ts';
 import { toCheckKinds } from '#src/common/utils/toCheckKinds.ts';
 import { CheckKindTag } from '#src/features/packs/components/CheckKindTag.tsx';
-import { CodeSpans } from '#src/features/packs/components/CodeSpans.tsx';
 
 interface Props {
 	rule: StandardsPackRuleView;

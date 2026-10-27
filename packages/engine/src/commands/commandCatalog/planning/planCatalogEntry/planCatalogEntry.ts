@@ -8,7 +8,8 @@ export const planCatalogEntry: CommandCatalogEntry = {
 	slash: '/plan',
 	cli: 'lightsout plan',
 	group: CommandGroup.Build,
-	summary: 'Produce a rigorous, implementation-ready plan for a feature — one a fresh-context agent can implement without guessing.',
+	summary:
+		'Turn a feature idea into a plan detailed enough for an agent to build without guessing. It interviews you, stress-tests the plan, and grades it to an A.',
 	whenToUse:
 		'Use it when you know what you want and need a plan a fresh agent could implement without guessing. It interviews you, drafts, grills the draft for edge cases, and grades the result before anyone writes code.',
 	invocations: [

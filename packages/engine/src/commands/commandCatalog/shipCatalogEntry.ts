@@ -6,7 +6,7 @@ export const shipCatalogEntry: CommandCatalogEntry = {
 	id: 'ship',
 	cli: 'lightsout ship',
 	group: CommandGroup.Build,
-	summary: 'Take the current branch from committed work to merged and cleaned up, and write a typed result.',
+	summary: 'Take a finished branch to merged — bring in the latest main, re-run the checks, open the pull request, wait for CI, then merge and clean up.',
 	whenToUse:
 		'Run it when the branch is committed and you want it merged: it pushes the branch, opens or adopts the pull request, waits for the checks, merges, deletes the branch and syncs the default branch — then writes one JSON result a tracker skill can read. Pass --hand-built only when the person asks to ship work they built by hand.',
 	invocations: [{ id: 'ship' }],

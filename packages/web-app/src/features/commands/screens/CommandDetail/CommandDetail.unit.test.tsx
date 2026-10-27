@@ -57,8 +57,8 @@ describe('CommandDetail', () => {
 		expect(heading).toBeInTheDocument();
 	});
 
-	test('heads it with the CLI form instead for a command the plugin ships no skill for', () => {
-		setupCommandDetail({ entry: buildCommandCatalogEntry({ cli: 'lightsout doctor', overrides: { slash: undefined } }) });
+	test('heads it with the full CLI line instead for a command the plugin ships no skill for, as its row on the list does', () => {
+		setupCommandDetail({ entry: buildCommandCatalogEntry({ id: 'doctor', cli: 'lightsout doctor', overrides: { slash: undefined } }) });
 
 		const heading = screen.getByRole('heading', { level: 1, name: 'lightsout doctor' });
 
@@ -81,28 +81,28 @@ describe('CommandDetail', () => {
 		expect(summary).toBeInTheDocument();
 	});
 
-	test('badges what the command leaves behind, in the same words its card uses', () => {
+	test('tags what the command leaves behind, in the same words its card uses', () => {
 		setupCommandDetail({ entry: buildCommandCatalogEntry({ records: CommandRecordKind.Snapshots }) });
 
-		const badge = screen.getByText('records snapshots');
+		const tag = screen.getByText('Saves a findings snapshot');
 
-		expect(badge).toBeInTheDocument();
+		expect(tag).toBeInTheDocument();
 	});
 
-	test('tags both ways of invoking a command that has a skill and a command word', () => {
+	test('tags the CLI form under a skill’s title, and never repeats the title as a tag', () => {
 		setupCommandDetail({ entry: buildCommandCatalogEntry({ slash: '/implement', cli: 'lightsout implement' }) });
 
-		const tags = Array.from(document.querySelectorAll('span.font-mono')).map((tag) => tag.textContent);
+		const tags = Array.from(document.querySelectorAll('header span.font-mono')).map((tag) => tag.textContent);
 
-		expect(tags).toStrictEqual(['/implement', 'lightsout implement']);
+		expect(tags).toStrictEqual(['lightsout implement']);
 	});
 
-	test('tags only the command word when the plugin ships no skill for it', () => {
+	test('tags no CLI form when the title already is the CLI line, or the command has none', () => {
 		setupCommandDetail({ entry: buildCommandCatalogEntry({ cli: 'lightsout doctor', overrides: { slash: undefined } }) });
 
-		const tags = Array.from(document.querySelectorAll('span.font-mono')).map((tag) => tag.textContent);
+		const tags = Array.from(document.querySelectorAll('header span.font-mono')).map((tag) => tag.textContent);
 
-		expect(tags).toStrictEqual(['lightsout doctor']);
+		expect(tags).toStrictEqual([]);
 	});
 
 	test('answers when to reach for the command in the catalog’s own paragraph', () => {

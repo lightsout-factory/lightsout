@@ -7,7 +7,7 @@ export const testCoverageToThresholdCatalogEntry: CommandCatalogEntry = {
 	slash: '/test-coverage-to-threshold',
 	cli: 'lightsout test-coverage-to-threshold',
 	group: CommandGroup.BurnDown,
-	summary: 'Raise a repo’s unit-test coverage until its own coverage script passes, in verified, resumable batches via the lightsout coverage pipeline.',
+	summary: 'Write tests until the repo’s own coverage check passes, in small batches, each verified before the next. Stop and resume any time.',
 	whenToUse:
 		'Use it when the coverage gate is what stands between you and a green build. It writes tests in batches until your own coverage script passes, and stops there.',
 	invocations: [{ id: 'test-coverage-to-threshold' }, { id: 'test-coverage-to-threshold-resume', note: 'resume a parked coverage run' }],

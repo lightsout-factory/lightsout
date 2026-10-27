@@ -1,6 +1,6 @@
 ---
 name: test-coverage-to-threshold
-description: Raise a repo's unit-test coverage until its own coverage script passes, in verified, resumable batches via the lightsout coverage pipeline. Use when the user asks to raise test coverage, get coverage to the threshold, or make the coverage gate pass. Requires a lightsout.config.json (gates) and a clean git tree.
+description: Write tests until the repo’s own coverage check passes, in small batches, each verified before the next. Stop and resume any time. Use when the user asks to raise test coverage, get coverage to the threshold, or make the coverage gate pass. Requires a lightsout.config.json (gates) and a clean git tree.
 allowed-tools: Bash, Read
 ---
 

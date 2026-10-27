@@ -6,7 +6,7 @@ export const implementDirectCatalogEntry: CommandCatalogEntry = {
 	id: 'implement-direct',
 	cli: 'lightsout implement-direct',
 	group: CommandGroup.Build,
-	summary: "Build one ticket straight from its body, with the repo's own gates as the only bar, and commit what passes.",
+	summary: 'Build a small ticket straight from its description, with no plan. The repo’s own checks are the only bar, and what passes is committed.',
 	whenToUse:
 		'Run it on work small enough that a plan would cost more than the work: it reads the ticket body, builds from it, runs the repo’s gates, and commits. It refuses a dirty tree, because it commits everything in the tree when it is done.',
 	invocations: [{ id: 'implement-direct' }],

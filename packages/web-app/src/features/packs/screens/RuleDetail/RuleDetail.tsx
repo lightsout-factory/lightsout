@@ -1,10 +1,10 @@
 import type { StandardsPackView } from '@lightsout/engine';
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
-import type { ReactNode } from 'react';
 import { Markdown } from '#src/appUI/Markdown.tsx';
+import { SitePageFrame } from '#src/appUI/SitePageFrame.tsx';
+import { SiteSection } from '#src/appUI/SiteSection.tsx';
 import { toCheckKinds } from '#src/common/utils/toCheckKinds.ts';
-import { PackPageFrame } from '#src/features/packs/components/PackPageFrame.tsx';
 import { defaultPackQueryOptions } from '#src/features/packs/queries/defaultPackQueryOptions.ts';
 import { defaultPackRuleQueryOptions } from '#src/features/packs/queries/defaultPackRuleQueryOptions.ts';
 import { dropRepeatedTitle } from '#src/features/packs/screens/RuleDetail/internal/common/utils/dropRepeatedTitle.ts';
@@ -13,13 +13,6 @@ import { RuleConfiguration } from '#src/features/packs/screens/RuleDetail/intern
 import { RuleExamples } from '#src/features/packs/screens/RuleDetail/internal/components/RuleExamples.tsx';
 import { RuleHeader } from '#src/features/packs/screens/RuleDetail/internal/components/RuleHeader.tsx';
 import { RuleNeighbours } from '#src/features/packs/screens/RuleDetail/internal/components/RuleNeighbours.tsx';
-
-const Section = ({ title, children }: { title: string; children: ReactNode }) => (
-	<section className="flex flex-col gap-5 border-border border-t pt-8">
-		<h2 className="font-bold text-drop-navy text-xl">{title}</h2>
-		{children}
-	</section>
-);
 
 /** Every pack of the library that selects the rule, each linking to its page. */
 const RulePacks = ({ library, ruleName }: { library: StandardsPackView; ruleName: string }) => {
@@ -55,9 +48,9 @@ export const RuleDetail = ({ ruleId }: Props) => {
 	const prose = dropRepeatedTitle({ prose: rule.prose, ruleId: rule.id });
 
 	return (
-		<PackPageFrame crumbs={[{ label: 'Standards Packs', link: { to: '/standards-packs' } }, { label: library.name }, { label: rule.id }]}>
+		<SitePageFrame crumbs={[{ label: 'Standards Packs', link: { to: '/standards-packs' } }, { label: library.name }, { label: rule.id }]}>
 			<RuleHeader rule={rule} />
-			<Section title="The rule">
+			<SiteSection title="The rule">
 				{prose === '' ? (
 					<p className="text-muted-foreground text-sm">This rule states its summary and shows it with examples.</p>
 				) : (
@@ -66,17 +59,17 @@ export const RuleDetail = ({ ruleId }: Props) => {
 						<Markdown text={prose} />
 					</>
 				)}
-			</Section>
-			<Section title="Examples">
+			</SiteSection>
+			<SiteSection title="Examples">
 				<RuleExamples fixtures={rule.fixtures} kinds={toCheckKinds({ deterministic: rule.deterministic, agent: rule.agent })} example={rule.example} />
-			</Section>
-			<Section title="Configure">
+			</SiteSection>
+			<SiteSection title="Configure">
 				<RuleConfiguration rule={rule} />
-			</Section>
-			<Section title="Packs that select it">
+			</SiteSection>
+			<SiteSection title="Packs that select it">
 				<RulePacks library={library} ruleName={rule.name} />
-			</Section>
+			</SiteSection>
 			<RuleNeighbours library={library.name} {...findNeighbourRules({ topics: library.topics, rules: library.rules, ruleId: rule.id })} />
-		</PackPageFrame>
+		</SitePageFrame>
 	);
 };

@@ -6,7 +6,7 @@ export const frictionCatalogEntry: CommandCatalogEntry = {
 	id: 'friction',
 	cli: 'lightsout friction',
 	group: CommandGroup.Housekeeping,
-	summary: 'Collect what slowed the agents down across recent runs, so the next fix is the one that pays.',
+	summary: 'Collect what slowed agents down across recent runs, so you can fix the biggest problem first.',
 	whenToUse:
 		'Reach for it after a few runs, when you want the next improvement to be the one that pays. It collects what actually slowed the agents down instead of what you assume did.',
 	invocations: [{ id: 'friction' }],

@@ -6,7 +6,7 @@ export const standardsHealthCatalogEntry: CommandCatalogEntry = {
 	id: 'standards-health',
 	cli: 'lightsout standards-health',
 	group: CommandGroup.Standards,
-	summary: 'Report each rule’s coverage and how often agents decline it — which standards are actually holding.',
+	summary: 'Show, rule by rule, how much of the repo each standard covers and how often agents decline to follow it — which standards are actually holding.',
 	whenToUse:
 		'Reach for it when you suspect a standard is decorative — declared, but never enforced in practice. It shows per-rule coverage and how often agents decline the rule when asked to fix it.',
 	invocations: [{ id: 'standards-health', note: 'per-rule coverage and how often agents decline it' }],

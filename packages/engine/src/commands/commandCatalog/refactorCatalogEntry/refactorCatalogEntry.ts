@@ -10,7 +10,7 @@ export const refactorCatalogEntry: CommandCatalogEntry = {
 	cli: 'lightsout refactor',
 	group: CommandGroup.BurnDown,
 	summary:
-		'Burn down a repo’s standards-check findings (duplication, size, structure, boundary violations) in verified, resumable batches via the lightsout refactor pipeline.',
+		'Fix the problems the standards check already finds — duplicate code, oversized files, misplaced code — in small batches, each re-checked before the next. Stop and resume any time.',
 	whenToUse:
 		'Reach for it when standards-check has more findings than anyone will fix by hand. It burns them down in verified, resumable batches, each one gated before it lands.',
 	invocations: [{ id: 'refactor' }, { id: 'refactor-resume', note: 'resume a parked refactor run' }],

@@ -8,8 +8,8 @@ describe('renderWorkflowSpec', () => {
 		expect(spec).toEqual(
 			expect.objectContaining({
 				title: 'How /implement turns the spec into verified code',
-				subtitle: 'Ten steps, deterministic gates throughout, and a complete record saved to disk.',
-				columns: 5,
+				subtitle: 'Eleven steps, deterministic gates throughout, and a complete record saved to disk.',
+				columns: 4,
 				savedLabel: 'SAVED TO DISK',
 				theme: { from: '#35d6e8', to: '#b06bf5' },
 				banner: 'The model can claim success. Lightsout requires evidence.',
