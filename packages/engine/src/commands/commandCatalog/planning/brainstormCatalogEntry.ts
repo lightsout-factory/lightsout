@@ -4,7 +4,7 @@ import { CommandRecordKind } from '#src/contracts/commands/CommandRecordKind.ts'
 
 export const brainstormCatalogEntry: CommandCatalogEntry = {
 	id: 'brainstorm',
-	slash: '/brainstorm',
+	slash: '/lightsout:brainstorm',
 	cli: 'lightsout brainstorm',
 	group: CommandGroup.Build,
 	summary:

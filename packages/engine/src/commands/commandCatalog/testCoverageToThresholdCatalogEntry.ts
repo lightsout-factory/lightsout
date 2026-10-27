@@ -4,7 +4,7 @@ import { CommandRecordKind } from '#src/contracts/commands/CommandRecordKind.ts'
 
 export const testCoverageToThresholdCatalogEntry: CommandCatalogEntry = {
 	id: 'test-coverage-to-threshold',
-	slash: '/test-coverage-to-threshold',
+	slash: '/lightsout:test-coverage-to-threshold',
 	cli: 'lightsout test-coverage-to-threshold',
 	group: CommandGroup.BurnDown,
 	summary: 'Write tests until the repo’s own coverage check passes, in small batches, each verified before the next. Stop and resume any time.',

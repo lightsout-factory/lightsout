@@ -6,7 +6,7 @@ import { CommandRecordKind } from '#src/contracts/commands/CommandRecordKind.ts'
 /** `/implement` — one plan file or a whole plan workspace, which is why `--plan` appears twice with different placeholders. */
 export const implementCatalogEntry: CommandCatalogEntry = {
 	id: 'implement',
-	slash: '/implement',
+	slash: '/lightsout:implement',
 	cli: 'lightsout implement',
 	group: CommandGroup.Build,
 	summary: 'Build a finished plan unattended — agents write the code and tests, and the repo’s own checks must pass at every step before the run moves on.',

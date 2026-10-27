@@ -4,7 +4,7 @@ import { CommandRecordKind } from '#src/contracts/commands/CommandRecordKind.ts'
 
 export const queueCatalogEntry: CommandCatalogEntry = {
 	id: 'queue',
-	slash: '/queue',
+	slash: '/lightsout:queue',
 	cli: 'lightsout queue',
 	group: CommandGroup.Build,
 	summary:

@@ -6,7 +6,7 @@ import { CommandRecordKind } from '#src/contracts/commands/CommandRecordKind.ts'
 /** `/refactor` — a fresh burn-down or the resumption of a parked one, which is why `--run` belongs to only the second shape. */
 export const refactorCatalogEntry: CommandCatalogEntry = {
 	id: 'refactor',
-	slash: '/refactor',
+	slash: '/lightsout:refactor',
 	cli: 'lightsout refactor',
 	group: CommandGroup.BurnDown,
 	summary:

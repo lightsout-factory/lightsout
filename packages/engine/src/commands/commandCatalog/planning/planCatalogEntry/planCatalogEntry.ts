@@ -5,7 +5,7 @@ import { CommandRecordKind } from '#src/contracts/commands/CommandRecordKind.ts'
 
 export const planCatalogEntry: CommandCatalogEntry = {
 	id: 'plan',
-	slash: '/plan',
+	slash: '/lightsout:plan',
 	cli: 'lightsout plan',
 	group: CommandGroup.Build,
 	summary:

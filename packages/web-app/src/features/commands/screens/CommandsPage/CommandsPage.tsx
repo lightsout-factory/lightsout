@@ -66,7 +66,11 @@ export const CommandsPage = () => {
 					Every command lightsout offers — what it does, when to reach for it, and what it leaves behind.
 				</p>
 			</header>
-			<KindSection title="Skills" description="Run them in your coding harness once the lightsout plugin is installed." Icon={Sparkles}>
+			<KindSection
+				title="Skills"
+				description="Run them in your coding harness once the lightsout plugin is installed. Shown as Claude Code and OMP name them; in Pi drop the lightsout: prefix, and in Codex ask for the skill by name."
+				Icon={Sparkles}
+			>
 				<ul className={listClass}>
 					{skills.map((entry) => (
 						<CommandRow key={entry.id} entry={entry} title={entry.slash ?? entry.id} headingLevel={3} />
