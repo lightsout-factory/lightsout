@@ -12,7 +12,7 @@ export const implementSteps: CommandStep[] = [
 			'Create a repository lock so other lightsout runs cannot clash',
 		],
 		note: 'Isolates the agent’s changes and makes the run safely resumable',
-		saved: ['.lightsout/runs/<id>/manifest.json', '.lightsout/lock.json'],
+		saved: ['<run folder>/manifest.json', '.lightsout/lock.json'],
 	},
 	{
 		title: 'VERIFY THE REPO STARTS GREEN',
@@ -23,7 +23,7 @@ export const implementSteps: CommandStep[] = [
 			'Record files touched by setup or gates in the manifest',
 		],
 		note: 'Proves any later failure was introduced by this run, not inherited from the repository',
-		saved: ['manifest.json', '.lightsout/runs/<id>/commands.jsonl'],
+		saved: ['manifest.json', '<run folder>/commands.jsonl'],
 	},
 	{
 		title: 'WRITE THE ACCEPTANCE TESTS',
@@ -34,7 +34,7 @@ export const implementSteps: CommandStep[] = [
 			'Skip this step when the plan names no acceptance tests',
 		],
 		note: 'Fixes what done means before the code that has to meet it exists',
-		saved: ['.lightsout/runs/<id>/agents/', 'stream-NN-write-ledger-tests.jsonl'],
+		saved: ['<run folder>/agents/', 'stream-NN-write-ledger-tests.jsonl'],
 	},
 	{
 		title: 'IMPLEMENT THE PLAN',
@@ -45,7 +45,7 @@ export const implementSteps: CommandStep[] = [
 			'It can run only commands explicitly allowed in the config',
 		],
 		note: 'Executes the finished spec without reopening settled decisions',
-		saved: ['.lightsout/runs/<id>/agents/', 'stream-NN-implement.jsonl', 'rejected-*.txt'],
+		saved: ['<run folder>/agents/', 'stream-NN-implement.jsonl', 'rejected-*.txt'],
 	},
 	{
 		title: 'VERIFY THE IMPLEMENTATION',
@@ -67,7 +67,7 @@ export const implementSteps: CommandStep[] = [
 			'Skip this step when no eligible source files changed',
 		],
 		note: 'Makes sure the new behavior is covered by tests',
-		saved: ['.lightsout/runs/<id>/agents/', 'stream-NN-write-tests.jsonl'],
+		saved: ['<run folder>/agents/', 'stream-NN-write-tests.jsonl'],
 	},
 	{
 		title: 'VERIFY THE TESTS',
@@ -90,7 +90,7 @@ export const implementSteps: CommandStep[] = [
 			'Skip this step when requested or when nothing changed',
 		],
 		note: 'Removes duplication and keeps agent-written code aligned with your code standards',
-		saved: ['.lightsout/runs/<id>/agents/', 'stream-NN-refactor.jsonl'],
+		saved: ['<run folder>/agents/', 'stream-NN-refactor.jsonl'],
 	},
 	{
 		title: 'VERIFY THE REFACTOR',
@@ -100,15 +100,15 @@ export const implementSteps: CommandStep[] = [
 		saved: ['manifest.json', '.lightsout/friction.jsonl'],
 	},
 	{
-		title: 'REPORT THE RESULT',
+		title: 'COMMIT AND REPORT',
 		actor: CommandActor.Engine,
 		bullets: [
-			'Generate the final report from artifacts saved during the run',
-			'Record the final status, steps, retries, rejected reports, token cost, and friction',
-			'Keep the complete run history in one folder',
+			'Commit each unit that passed — a phase, or the whole run — as `<ticket>: <summary>`, naming the plan and the run in the body',
+			'Fail the run when its agents changed no files',
+			'Record the final status, steps, retries, rejected reports, token cost, and friction in the run folder',
 		],
-		note: 'Leaves an inspectable record of what happened and why the run passed or failed',
-		saved: ['.lightsout/runs/<id>/'],
+		note: 'Leaves the verified work in git history and an inspectable record of why the run passed or failed',
+		saved: ['<run folder>/'],
 	},
 	{
 		title: 'SHIP THE BRANCH',

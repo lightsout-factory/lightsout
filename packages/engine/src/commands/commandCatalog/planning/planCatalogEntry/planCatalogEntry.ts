@@ -11,7 +11,7 @@ export const planCatalogEntry: CommandCatalogEntry = {
 	summary:
 		'Turn a feature idea into a plan detailed enough for an agent to build without guessing. It interviews you, stress-tests the plan, and grades it to an A.',
 	whenToUse:
-		'Use it when you know what you want and need a plan a fresh agent could implement without guessing. It interviews you, drafts, grills the draft for edge cases, and grades the result before anyone writes code.',
+		'Use it when you know what you want and need a plan a fresh agent could implement without guessing. It interviews you, drafts, grills the draft for edge cases, and grades the result before anyone writes code. Decisions a brainstorm already settled are not asked again; one the planner believes is weak is flagged to you once, and stands until you change it. `publish` attaches the plan files and whichever of brainstorm-notes.md, decisions.json, grade.json and grade-memory.json exist, then a plan-attachments.json marker; transcripts stay local, and publishing again replaces the same-titled files.',
 	invocations: [
 		{ id: 'plan-workspace', positional: 'workspace' },
 		{ id: 'plan-verify-facts', positional: 'verify-facts' },

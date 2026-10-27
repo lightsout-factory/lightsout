@@ -7,11 +7,11 @@ export const refactorSteps: CommandStep[] = [
 		actor: CommandActor.Engine,
 		bullets: [
 			'Point `/refactor` at the whole repo or one folder, with an optional batch budget',
-			'Refuse to start without a config, without git, or with uncommitted changes',
+			'Refuse to start without a config or without git, and on uncommitted changes unless `--allow-dirty` records them as a baseline',
 			'Create a run ID and a repository lock so no other lightsout run touches the same tree',
 		],
 		note: 'Keeps the entire cleanup as one diff you can read, revert, or resume',
-		saved: ['.lightsout/runs/<id>/manifest.json', '.lightsout/lock.json'],
+		saved: ['.lightsout/refactor/runs/<id>/manifest.json', '.lightsout/lock.json'],
 	},
 	{
 		title: 'FIND THE WORK',
@@ -34,7 +34,7 @@ export const refactorSteps: CommandStep[] = [
 			'Freeze the list to disk and work from it — never recompute it midway',
 		],
 		note: 'Gives each agent a single coherent job instead of a pile of unrelated fixes',
-		saved: ['.lightsout/runs/<id>/worklist.json'],
+		saved: ['.lightsout/refactor/runs/<id>/worklist.json'],
 	},
 	{
 		title: 'VERIFY THE REPO STARTS GREEN',
@@ -45,7 +45,7 @@ export const refactorSteps: CommandStep[] = [
 			'Skip this on a resumed run when an earlier attempt already proved it green',
 		],
 		note: 'Proves any later failure was introduced by this run, not inherited from the repository',
-		saved: ['manifest.json', '.lightsout/runs/<id>/commands.jsonl'],
+		saved: ['manifest.json', '.lightsout/refactor/runs/<id>/commands.jsonl'],
 	},
 	{
 		title: 'SKIP WHAT IS ALREADY FIXED',
@@ -67,7 +67,7 @@ export const refactorSteps: CommandStep[] = [
 			'It may run only the commands your config allows, works under a time limit, and answers with one structured report',
 		],
 		note: 'Changes structure only — the behavior has to survive untouched',
-		saved: ['.lightsout/runs/<id>/agents/', 'stream-batch-NN-*.jsonl', 'rejected-*.txt'],
+		saved: ['.lightsout/refactor/runs/<id>/agents/', 'stream-batch-NN-*.jsonl', 'rejected-*.txt'],
 	},
 	{
 		title: 'VERIFY THE BATCH',
@@ -78,7 +78,7 @@ export const refactorSteps: CommandStep[] = [
 			'Send a coverage-only failure to a test-writing agent; a mixed failure goes back to the refactor agent first',
 		],
 		note: 'Stops a batch that broke the build from reaching the next one',
-		saved: ['manifest.json', '.lightsout/runs/<id>/commands.jsonl'],
+		saved: ['manifest.json', '.lightsout/refactor/runs/<id>/commands.jsonl'],
 	},
 	{
 		title: 'BRING IN A SUPERVISOR',
@@ -89,7 +89,7 @@ export const refactorSteps: CommandStep[] = [
 			'If the gates are still red after that, the run stops with the diagnosis attached as evidence',
 		],
 		note: 'Buys judgment exactly once, instead of retrying forever',
-		saved: ['.lightsout/runs/<id>/agents/', 'stream-batch-NN-supervisor.jsonl'],
+		saved: ['.lightsout/refactor/runs/<id>/agents/', 'stream-batch-NN-supervisor.jsonl'],
 	},
 	{
 		title: 'RULE ON THE BATCH',
@@ -122,7 +122,7 @@ export const refactorSteps: CommandStep[] = [
 			'Keep every batch outcome, retry, token cost, and point of friction in one folder',
 		],
 		note: 'Turns the cleanup into a number you can check rather than a claim',
-		saved: ['.lightsout/runs/<id>/', 'agents.jsonl', '.lightsout/friction.jsonl'],
+		saved: ['.lightsout/refactor/runs/<id>/', 'agents.jsonl', '.lightsout/friction.jsonl'],
 	},
 	{
 		title: 'REVIEW AND COMMIT',

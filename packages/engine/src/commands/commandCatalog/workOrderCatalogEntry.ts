@@ -21,7 +21,7 @@ export const workOrderCatalogEntry: CommandCatalogEntry = {
 	group: CommandGroup.Build,
 	summary: 'Manage the record that ties a ticket to its plans and branch — add plans, choose one plan or several, and say when the ticket should ship.',
 	whenToUse:
-		'Reach for it whenever work is started, gains a plan or changes shape. `new` is the one command that writes a work order’s name — give it `--ticket <ref>` and the engine reads that ticket’s title from the tracker and summarises it, or `--title <words>` and the words are taken as handed; the name is written once and never again. `add-plan` starts the next plan and prints its address; `mode` moves a ticket between one plan supplying the implementation and several implementing in numeric order; `request-ship` is how a human declares a multiple-plan ticket finished, and `exclude-plan` takes a plan out of that work for good; `retitle-plan` changes only what a plan is called; `show` reads the record, and `sync` settles a record that moved on two machines at once.',
+		'Reach for it whenever work is started, gains a plan or changes shape. `new` is the one command that writes a work order’s name — give it `--ticket <ref>` and the engine reads that ticket’s title from the tracker and summarises it, or `--title <words>` and the words are taken as handed; the name is written once and never again, and a label another work order already holds is refused rather than suffixed. `add-plan` starts the next plan and prints its address; `mode` moves a ticket between one plan supplying the implementation and several implementing in numeric order; `request-ship` is how a human declares a multiple-plan ticket finished, and `exclude-plan` takes a plan out of that work for good; `retitle-plan` changes only what a plan is called; `show` reads the record, and `sync` settles a record that moved on two machines at once. With a `ticket-tracker` block configured, every change is published to the ticket, so another machine restores the record and its plans.',
 	invocations: [
 		{ id: 'work-order-new', positional: 'new' },
 		{ id: 'work-order-add-plan', positional: 'add-plan' },
@@ -36,7 +36,8 @@ export const workOrderCatalogEntry: CommandCatalogEntry = {
 		{
 			name: 'ticket',
 			value: '<ref>',
-			meaning: "The tracker ticket this work is for. The engine reads that ticket's title and summarises it into the work order's name — nobody hands it one.",
+			meaning:
+				"The tracker ticket this work is for. The engine reads that ticket's title and summarises it into the work order's name — nobody hands it one. A harness that cannot answer leaves a mechanical cut of the title instead, and a repository with no `ticket-tracker` block refuses the flag.",
 			fallback: 'Nothing is read from a tracker; give --title instead to name the work yourself.',
 			shape: 'work-order-new',
 			required: false,

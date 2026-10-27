@@ -12,7 +12,13 @@ export const testCoverageToThresholdCatalogEntry: CommandCatalogEntry = {
 		'Use it when the coverage gate is what stands between you and a green build. It writes tests in batches until your own coverage script passes, and stops there.',
 	invocations: [{ id: 'test-coverage-to-threshold' }, { id: 'test-coverage-to-threshold-resume', note: 'resume a parked coverage run' }],
 	flags: [
-		{ name: 'run', value: '<id>', meaning: 'The parked coverage run to pick back up.', shape: 'test-coverage-to-threshold-resume', required: true },
+		{
+			name: 'run',
+			value: '<id>',
+			meaning: 'The parked coverage run to pick back up, on the configuration it recorded when it started; a run that recorded none is refused.',
+			shape: 'test-coverage-to-threshold-resume',
+			required: true,
+		},
 		{ name: 'cwd', value: '<path>', meaning: 'Repository to raise coverage in.', fallback: 'The process working directory.', required: false },
 		{
 			name: 'max-batches',

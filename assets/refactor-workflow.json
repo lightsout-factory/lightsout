@@ -17,12 +17,12 @@
       },
       "bullets": [
         "Point `/refactor` at the whole repo or one folder, with an optional batch budget",
-        "Refuse to start without a config, without git, or with uncommitted changes",
+        "Refuse to start without a config or without git, and on uncommitted changes unless `--allow-dirty` records them as a baseline",
         "Create a run ID and a repository lock so no other lightsout run touches the same tree"
       ],
       "note": "Keeps the entire cleanup as one diff you can read, revert, or resume",
       "saved": [
-        ".lightsout/runs/<id>/manifest.json",
+        ".lightsout/refactor/runs/<id>/manifest.json",
         ".lightsout/lock.json"
       ]
     },
@@ -56,7 +56,7 @@
       ],
       "note": "Gives each agent a single coherent job instead of a pile of unrelated fixes",
       "saved": [
-        ".lightsout/runs/<id>/worklist.json"
+        ".lightsout/refactor/runs/<id>/worklist.json"
       ]
     },
     {
@@ -73,7 +73,7 @@
       "note": "Proves any later failure was introduced by this run, not inherited from the repository",
       "saved": [
         "manifest.json",
-        ".lightsout/runs/<id>/commands.jsonl"
+        ".lightsout/refactor/runs/<id>/commands.jsonl"
       ]
     },
     {
@@ -105,7 +105,7 @@
       ],
       "note": "Changes structure only — the behavior has to survive untouched",
       "saved": [
-        ".lightsout/runs/<id>/agents/",
+        ".lightsout/refactor/runs/<id>/agents/",
         "stream-batch-NN-*.jsonl",
         "rejected-*.txt"
       ]
@@ -124,7 +124,7 @@
       "note": "Stops a batch that broke the build from reaching the next one",
       "saved": [
         "manifest.json",
-        ".lightsout/runs/<id>/commands.jsonl"
+        ".lightsout/refactor/runs/<id>/commands.jsonl"
       ]
     },
     {
@@ -140,7 +140,7 @@
       ],
       "note": "Buys judgment exactly once, instead of retrying forever",
       "saved": [
-        ".lightsout/runs/<id>/agents/",
+        ".lightsout/refactor/runs/<id>/agents/",
         "stream-batch-NN-supervisor.jsonl"
       ]
     },
@@ -190,7 +190,7 @@
       ],
       "note": "Turns the cleanup into a number you can check rather than a claim",
       "saved": [
-        ".lightsout/runs/<id>/",
+        ".lightsout/refactor/runs/<id>/",
         "agents.jsonl",
         ".lightsout/friction.jsonl"
       ]

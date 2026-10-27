@@ -82,7 +82,7 @@ describe('DocPage', () => {
 
 		const entries = readToc().getAllByRole('link');
 
-		expect(entries.slice(0, 3).map((entry) => entry.textContent)).toStrictEqual(['Minimal setup', 'Common configurations', 'Use lightsout’s code standards']);
+		expect(entries.slice(0, 3).map((entry) => entry.textContent)).toStrictEqual(['Minimal setup', 'Common configurations', 'Use the built-in code standards']);
 	});
 
 	test('indents a third-level heading under the second-level one it sits beneath', () => {

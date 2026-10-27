@@ -9,7 +9,7 @@ export const statusCatalogEntry: CommandCatalogEntry = {
 	group: CommandGroup.Housekeeping,
 	summary: 'See what lightsout is doing right now — a run, the queue, a plan being written or a branch being shipped — and every run it has recorded.',
 	whenToUse:
-		'Run it when you come back to a repo and need to know what lightsout thinks is going on. It names the config, the harness, the packs in play, and any run still parked. Name a run and it shows what is happening inside that run instead: its steps, their outcomes and durations, and what it is working on this moment. Name a branch with --shipping to follow it while it ships. Pass --queue while a queue drains to see every ticket on its board and what each active one is doing. Pass --now to see the run that is going right now, printed once.',
+		'Run it when you come back to a repo and need to know what lightsout thinks is going on. It names the config, the harness, the packs in play, and any run still parked. Name a run and it shows what is happening inside that run instead: its steps, their outcomes and durations, and what it is working on this moment. Name a branch with --shipping to follow it while it ships. Pass --queue while a queue drains to see every ticket on its board and what each active one is doing. Pass --now to see the run that is going right now, printed once. Those run screens end with a `config:` line naming the `lightsout.config.json` the run read when it started.',
 	invocations: [
 		{ id: 'status' },
 		{ id: 'status-run', note: 'one run in detail; --watch repaints it every two minutes, and without --run it follows the one run that is going' },

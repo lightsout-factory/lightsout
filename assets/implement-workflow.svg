@@ -70,7 +70,7 @@
 <text x="28" y="384" font-size="16.5" font-style="italic" fill="#c2d1e6">resumable</text>
 <line x1="28" y1="486" x2="472" y2="486" stroke="#35d6e8" stroke-opacity="0.22" stroke-width="1" stroke-dasharray="3 5"/>
 <text x="28" y="510" font-size="12.5" font-weight="600" letter-spacing="1.8" fill="#35d6e8" fill-opacity="1">SAVED TO DISK</text>
-<text x="28" y="536" font-family="Menlo, SF Mono, monospace" font-size="14.5" fill="#f6faff">.lightsout/runs/&lt;id&gt;/manifest.json</text>
+<text x="28" y="536" font-family="Menlo, SF Mono, monospace" font-size="14.5" fill="#f6faff">&lt;run folder&gt;/manifest.json</text>
 <text x="28" y="560" font-family="Menlo, SF Mono, monospace" font-size="14.5" fill="#f6faff">.lightsout/lock.json</text>
 </g>
 <g transform="translate(655,236)">
@@ -97,7 +97,7 @@
 <line x1="28" y1="486" x2="472" y2="486" stroke="#41cbe9" stroke-opacity="0.22" stroke-width="1" stroke-dasharray="3 5"/>
 <text x="28" y="510" font-size="12.5" font-weight="600" letter-spacing="1.8" fill="#41cbe9" fill-opacity="1">SAVED TO DISK</text>
 <text x="28" y="536" font-family="Menlo, SF Mono, monospace" font-size="14.5" fill="#f6faff">manifest.json</text>
-<text x="28" y="560" font-family="Menlo, SF Mono, monospace" font-size="14.5" fill="#f6faff">.lightsout/runs/&lt;id&gt;/commands.jsonl</text>
+<text x="28" y="560" font-family="Menlo, SF Mono, monospace" font-size="14.5" fill="#f6faff">&lt;run folder&gt;/commands.jsonl</text>
 </g>
 <g transform="translate(1220,236)">
 <rect x="0" y="0" width="500" height="612" rx="20" fill="#0a0f1a" fill-opacity="0.92" stroke="url(#edge2)" stroke-width="1.5"/>
@@ -122,7 +122,7 @@
 <text x="28" y="377" font-size="16.5" font-style="italic" fill="#c2d1e6">meet it exists</text>
 <line x1="28" y1="486" x2="472" y2="486" stroke="#4ec1eb" stroke-opacity="0.22" stroke-width="1" stroke-dasharray="3 5"/>
 <text x="28" y="510" font-size="12.5" font-weight="600" letter-spacing="1.8" fill="#4ec1eb" fill-opacity="1">SAVED TO DISK</text>
-<text x="28" y="536" font-family="Menlo, SF Mono, monospace" font-size="14.5" fill="#f6faff">.lightsout/runs/&lt;id&gt;/agents/</text>
+<text x="28" y="536" font-family="Menlo, SF Mono, monospace" font-size="14.5" fill="#f6faff">&lt;run folder&gt;/agents/</text>
 <text x="28" y="560" font-family="Menlo, SF Mono, monospace" font-size="14.5" fill="#f6faff">stream-NN-write-ledger-tests.jsonl</text>
 </g>
 <g transform="translate(1785,236)">
@@ -148,7 +148,7 @@
 <text x="28" y="377" font-size="16.5" font-style="italic" fill="#c2d1e6">decisions</text>
 <line x1="28" y1="486" x2="472" y2="486" stroke="#5ab6ec" stroke-opacity="0.22" stroke-width="1" stroke-dasharray="3 5"/>
 <text x="28" y="510" font-size="12.5" font-weight="600" letter-spacing="1.8" fill="#5ab6ec" fill-opacity="1">SAVED TO DISK</text>
-<text x="28" y="536" font-family="Menlo, SF Mono, monospace" font-size="14.5" fill="#f6faff">.lightsout/runs/&lt;id&gt;/agents/</text>
+<text x="28" y="536" font-family="Menlo, SF Mono, monospace" font-size="14.5" fill="#f6faff">&lt;run folder&gt;/agents/</text>
 <text x="28" y="560" font-family="Menlo, SF Mono, monospace" font-size="14.5" fill="#f6faff">stream-NN-implement.jsonl</text>
 <text x="28" y="584" font-family="Menlo, SF Mono, monospace" font-size="14.5" fill="#f6faff">rejected-*.txt</text>
 </g>
@@ -200,7 +200,7 @@
 <text x="28" y="352" font-size="16.5" font-style="italic" fill="#c2d1e6">Makes sure the new behavior is covered by tests</text>
 <line x1="28" y1="486" x2="472" y2="486" stroke="#72a0ee" stroke-opacity="0.22" stroke-width="1" stroke-dasharray="3 5"/>
 <text x="28" y="510" font-size="12.5" font-weight="600" letter-spacing="1.8" fill="#72a0ee" fill-opacity="1">SAVED TO DISK</text>
-<text x="28" y="536" font-family="Menlo, SF Mono, monospace" font-size="14.5" fill="#f6faff">.lightsout/runs/&lt;id&gt;/agents/</text>
+<text x="28" y="536" font-family="Menlo, SF Mono, monospace" font-size="14.5" fill="#f6faff">&lt;run folder&gt;/agents/</text>
 <text x="28" y="560" font-family="Menlo, SF Mono, monospace" font-size="14.5" fill="#f6faff">stream-NN-write-tests.jsonl</text>
 </g>
 <g transform="translate(1220,930)">
@@ -256,7 +256,7 @@
 <text x="28" y="440" font-size="16.5" font-style="italic" fill="#c2d1e6">aligned with your code standards</text>
 <line x1="28" y1="486" x2="472" y2="486" stroke="#8b8bf1" stroke-opacity="0.22" stroke-width="1" stroke-dasharray="3 5"/>
 <text x="28" y="510" font-size="12.5" font-weight="600" letter-spacing="1.8" fill="#8b8bf1" fill-opacity="1">SAVED TO DISK</text>
-<text x="28" y="536" font-family="Menlo, SF Mono, monospace" font-size="14.5" fill="#f6faff">.lightsout/runs/&lt;id&gt;/agents/</text>
+<text x="28" y="536" font-family="Menlo, SF Mono, monospace" font-size="14.5" fill="#f6faff">&lt;run folder&gt;/agents/</text>
 <text x="28" y="560" font-family="Menlo, SF Mono, monospace" font-size="14.5" fill="#f6faff">stream-NN-refactor.jsonl</text>
 </g>
 <g transform="translate(90,1624)">
@@ -291,21 +291,24 @@
 <rect x="350" y="32" width="124" height="28" rx="14" fill="#b06bf5" fill-opacity="0.10" stroke="#b06bf5" stroke-opacity="0.45" stroke-width="1"/>
 <circle cx="366" cy="46" r="4" fill="#b06bf5" fill-opacity="0.9"/>
 <text x="378" y="51" font-size="14.5" fill="#eef4fb" fill-opacity="0.92">the engine</text>
-<text x="28" y="112" font-size="26" font-weight="700" letter-spacing="0.6" fill="#f1f5fb">REPORT THE RESULT</text>
+<text x="28" y="112" font-size="26" font-weight="700" letter-spacing="0.6" fill="#f1f5fb">COMMIT AND REPORT</text>
 <rect x="28" y="126" width="150" height="2" fill="url(#rule9)"/>
 <circle cx="34" cy="159" r="3.4" fill="#a476f4" fill-opacity="0.9"/>
-<text x="50" y="164" font-size="19" font-weight="500" fill="#f0f5fd">Generate the final report from artifacts</text>
-<text x="50" y="192" font-size="19" font-weight="500" fill="#f0f5fd">saved during the run</text>
-<circle cx="34" cy="222" r="3.4" fill="#a476f4" fill-opacity="0.9"/>
-<text x="50" y="227" font-size="19" font-weight="500" fill="#f0f5fd">Record the final status, steps, retries,</text>
-<text x="50" y="255" font-size="19" font-weight="500" fill="#f0f5fd">rejected reports, token cost, and friction</text>
-<circle cx="34" cy="285" r="3.4" fill="#a476f4" fill-opacity="0.9"/>
-<text x="50" y="290" font-size="19" font-weight="500" fill="#f0f5fd">Keep the complete run history in one folder</text>
-<text x="28" y="324" font-size="16.5" font-style="italic" fill="#c2d1e6">Leaves an inspectable record of what happened and why</text>
-<text x="28" y="349" font-size="16.5" font-style="italic" fill="#c2d1e6">the run passed or failed</text>
+<text x="50" y="164" font-size="19" font-weight="500" fill="#f0f5fd">Commit each unit that passed — a phase, or</text>
+<text x="50" y="192" font-size="19" font-weight="500" fill="#f0f5fd">the whole run — as <tspan font-family="Menlo, SF Mono, monospace" fill="#cdf0fa">&lt;ticket&gt;: &lt;summary&gt;</tspan>,</text>
+<text x="50" y="220" font-size="19" font-weight="500" fill="#f0f5fd">naming the plan and the run in the body</text>
+<circle cx="34" cy="250" r="3.4" fill="#a476f4" fill-opacity="0.9"/>
+<text x="50" y="255" font-size="19" font-weight="500" fill="#f0f5fd">Fail the run when its agents changed no</text>
+<text x="50" y="283" font-size="19" font-weight="500" fill="#f0f5fd">files</text>
+<circle cx="34" cy="313" r="3.4" fill="#a476f4" fill-opacity="0.9"/>
+<text x="50" y="318" font-size="19" font-weight="500" fill="#f0f5fd">Record the final status, steps, retries,</text>
+<text x="50" y="346" font-size="19" font-weight="500" fill="#f0f5fd">rejected reports, token cost, and friction</text>
+<text x="50" y="374" font-size="19" font-weight="500" fill="#f0f5fd">in the run folder</text>
+<text x="28" y="408" font-size="16.5" font-style="italic" fill="#c2d1e6">Leaves the verified work in git history and an</text>
+<text x="28" y="433" font-size="16.5" font-style="italic" fill="#c2d1e6">inspectable record of why the run passed or failed</text>
 <line x1="28" y1="486" x2="472" y2="486" stroke="#a476f4" stroke-opacity="0.22" stroke-width="1" stroke-dasharray="3 5"/>
 <text x="28" y="510" font-size="12.5" font-weight="600" letter-spacing="1.8" fill="#a476f4" fill-opacity="1">SAVED TO DISK</text>
-<text x="28" y="536" font-family="Menlo, SF Mono, monospace" font-size="14.5" fill="#f6faff">.lightsout/runs/&lt;id&gt;/</text>
+<text x="28" y="536" font-family="Menlo, SF Mono, monospace" font-size="14.5" fill="#f6faff">&lt;run folder&gt;/</text>
 </g>
 <g transform="translate(1220,1624)">
 <rect x="0" y="0" width="500" height="612" rx="20" fill="#0a0f1a" fill-opacity="0.92" stroke="url(#edge10)" stroke-width="1.5"/>
