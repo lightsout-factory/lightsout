@@ -1,6 +1,6 @@
 ---
 name: brainstorm
-description: Shape a vague idea into a buildable direction through dialogue — checks whether it is one idea or several, offers the competing approaches worth building, with trade-offs and a recommendation, and converges on a design stated in plain words. Use when the user has a rough idea, wants to think through a feature before planning it, or asks to brainstorm. It decides its own outcome — ready to implement, or ready to auto-plan — and always writes the design write-up and the settled decisions, publishing both to the ticket.
+description: Talk a rough idea through until it’s a clear design — whether it’s one idea or several, the approaches worth building with a recommendation, and the final design in plain words. Use when the user has a rough idea, wants to think through a feature before planning it, or asks to brainstorm. It decides its own outcome — ready to implement, or ready to auto-plan — and always writes the design write-up and the settled decisions, publishing both to the ticket.
 allowed-tools: Bash, Read, Write, Grep, Glob, Task, WebSearch, WebFetch
 ---
 

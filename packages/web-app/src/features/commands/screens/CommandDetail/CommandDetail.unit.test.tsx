@@ -57,10 +57,10 @@ describe('CommandDetail', () => {
 		expect(heading).toBeInTheDocument();
 	});
 
-	test('heads it with the bare command word instead for a command the plugin ships no skill for, as its card does', () => {
+	test('heads it with the full CLI line instead for a command the plugin ships no skill for, as its row on the list does', () => {
 		setupCommandDetail({ entry: buildCommandCatalogEntry({ id: 'doctor', cli: 'lightsout doctor', overrides: { slash: undefined } }) });
 
-		const heading = screen.getByRole('heading', { level: 1, name: 'doctor' });
+		const heading = screen.getByRole('heading', { level: 1, name: 'lightsout doctor' });
 
 		expect(heading).toBeInTheDocument();
 	});
@@ -89,7 +89,7 @@ describe('CommandDetail', () => {
 		expect(tag).toBeInTheDocument();
 	});
 
-	test('tags the CLI form under the title, and never repeats the title as a tag', () => {
+	test('tags the CLI form under a skill’s title, and never repeats the title as a tag', () => {
 		setupCommandDetail({ entry: buildCommandCatalogEntry({ slash: '/implement', cli: 'lightsout implement' }) });
 
 		const tags = Array.from(document.querySelectorAll('header span.font-mono')).map((tag) => tag.textContent);
@@ -97,8 +97,8 @@ describe('CommandDetail', () => {
 		expect(tags).toStrictEqual(['lightsout implement']);
 	});
 
-	test('tags no CLI form for a command that has none', () => {
-		setupCommandDetail({ entry: buildCommandCatalogEntry({ slash: '/voice', overrides: { cli: undefined } }) });
+	test('tags no CLI form when the title already is the CLI line, or the command has none', () => {
+		setupCommandDetail({ entry: buildCommandCatalogEntry({ cli: 'lightsout doctor', overrides: { slash: undefined } }) });
 
 		const tags = Array.from(document.querySelectorAll('header span.font-mono')).map((tag) => tag.textContent);
 

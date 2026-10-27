@@ -1,5 +1,5 @@
 ---
-description: 'Show what lightsout is doing right now — the run that is going, the queue''s board and every active ticket on it, a plan being planned, a branch being shipped, or every recorded run. Use when the user asks how the queue is doing, what the run is up to, where a plan or a ship has got to, or simply for status.'
+description: 'See what lightsout is doing right now — a run, the queue, a plan being written or a branch being shipped — and every run it has recorded. Use when the user asks how the queue is doing, what the run is up to, where a plan or a ship has got to, or simply for status.'
 ---
 <!-- generated:lightsout-prompt -->
 

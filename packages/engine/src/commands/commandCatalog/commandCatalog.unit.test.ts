@@ -195,8 +195,10 @@ describe('commandCatalog', () => {
 			['plan', '/plan'],
 			['auto-plan', '/auto-plan'],
 			['implement', '/implement'],
+			['queue', '/queue'],
 			['refactor', '/refactor'],
 			['test-coverage-to-threshold', '/test-coverage-to-threshold'],
+			['status', '/lightsout:status'],
 			['voice', '/lightsout:voice'],
 		]);
 	});
@@ -246,7 +248,7 @@ describe('commandCatalog', () => {
 		const { byId } = setupCatalog();
 		const resume = byId.get('resume');
 
-		expect(resume?.summary).toEqual(expect.stringMatching(/workspace that run recorded/));
+		expect(resume?.summary).toEqual(expect.stringMatching(/exactly where it left off/));
 		expect(resume?.whenToUse).toEqual(expect.stringMatching(/returns to the checkout that run recorded/));
 		expect(resume?.whenToUse).toEqual(expect.stringMatching(/[Dd]irect run.*frozen beside the run/));
 	});

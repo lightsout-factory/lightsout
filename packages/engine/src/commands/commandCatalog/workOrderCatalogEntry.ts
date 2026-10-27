@@ -19,7 +19,7 @@ export const workOrderCatalogEntry: CommandCatalogEntry = {
 	id: 'work-order',
 	cli: 'lightsout work-order',
 	group: CommandGroup.Build,
-	summary: 'Create a work order, and change and show its record of the plans it holds, the mode they implement in, and its request to ship.',
+	summary: 'Manage the record that ties a ticket to its plans and branch — add plans, choose one plan or several, and say when the ticket should ship.',
 	whenToUse:
 		'Reach for it whenever work is started, gains a plan or changes shape. `new` is the one command that writes a work order’s name — give it `--ticket <ref>` and the engine reads that ticket’s title from the tracker and summarises it, or `--title <words>` and the words are taken as handed; the name is written once and never again. `add-plan` starts the next plan and prints its address; `mode` moves a ticket between one plan supplying the implementation and several implementing in numeric order; `request-ship` is how a human declares a multiple-plan ticket finished, and `exclude-plan` takes a plan out of that work for good; `retitle-plan` changes only what a plan is called; `show` reads the record, and `sync` settles a record that moved on two machines at once.',
 	invocations: [

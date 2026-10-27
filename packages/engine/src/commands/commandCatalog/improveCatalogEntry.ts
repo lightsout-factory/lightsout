@@ -6,7 +6,7 @@ export const improveCatalogEntry: CommandCatalogEntry = {
 	id: 'improve',
 	cli: 'lightsout improve',
 	group: CommandGroup.Housekeeping,
-	summary: 'Feed this repo’s friction back to the lightsout engine as a change proposal.',
+	summary: 'Turn this repo’s friction into a proposed change to lightsout itself.',
 	whenToUse:
 		'Use it when this repo’s friction is really the engine’s problem. It turns those findings into a change proposal against a lightsout checkout you point it at.',
 	invocations: [{ id: 'improve' }],

@@ -10,16 +10,16 @@ interface Props {
 	entry: CommandCatalogEntry;
 }
 
-/** Titled as its card is: the slash form a reader with the plugin would type, else the bare command word, with the CLI form tagged under it. */
+/** Titled as its row on the list is: what a reader types — the slash form for a skill, else the full CLI line. A skill that also has a CLI form tags it under the title. */
 export const CommandManual = ({ entry }: Props) => (
 	<>
 		<header className="flex flex-col gap-4">
-			<h1 className="break-words font-bold font-mono text-3xl text-drop-navy md:text-4xl">{entry.slash ?? entry.id}</h1>
+			<h1 className="break-words font-bold font-mono text-3xl text-drop-navy md:text-4xl">{entry.slash ?? entry.cli ?? entry.id}</h1>
 			<p className="max-w-3xl text-lg text-muted-foreground leading-relaxed">
 				<CodeSpans text={entry.summary} />
 			</p>
 			<div className="flex flex-wrap items-center gap-2">
-				{entry.cli === undefined ? null : (
+				{entry.slash === undefined || entry.cli === undefined ? null : (
 					<span className="rounded-md border border-border px-2 py-1 font-mono text-muted-foreground-strong text-xs">{entry.cli}</span>
 				)}
 				<RecordKindTag records={entry.records} />

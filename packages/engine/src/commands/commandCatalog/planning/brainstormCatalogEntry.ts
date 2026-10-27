@@ -8,7 +8,7 @@ export const brainstormCatalogEntry: CommandCatalogEntry = {
 	cli: 'lightsout brainstorm',
 	group: CommandGroup.Build,
 	summary:
-		'Shape a vague idea into a buildable direction through dialogue — checks whether it is one idea or several, offers the competing approaches worth building, with trade-offs and a recommendation, and converges on a design stated in plain words.',
+		'Talk a rough idea through until it’s a clear design — whether it’s one idea or several, the approaches worth building with a recommendation, and the final design in plain words.',
 	whenToUse:
 		'Reach for it when the idea is still a sentence and you are not sure it is one idea or three. It decides its own outcome — ready to implement, or ready to auto-plan — and publishes the design write-up and the settled decisions to the ticket.',
 	invocations: [{ id: 'brainstorm-publish', positional: 'publish' }],
