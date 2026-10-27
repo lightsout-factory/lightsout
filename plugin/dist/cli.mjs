@@ -123372,7 +123372,7 @@ var implementSteps = [
 // src/commands/commandCatalog/implementCatalogEntry/implementCatalogEntry.ts
 var implementCatalogEntry = {
   id: "implement",
-  slash: "/implement",
+  slash: "/lightsout:implement",
   cli: "lightsout implement",
   group: CommandGroup.Build,
   summary: "Build a finished plan unattended \u2014 agents write the code and tests, and the repo\u2019s own checks must pass at every step before the run moves on.",
@@ -123497,7 +123497,7 @@ var improveCatalogEntry = {
 // src/commands/commandCatalog/planning/autoPlanCatalogEntry.ts
 var autoPlanCatalogEntry = {
   id: "auto-plan",
-  slash: "/auto-plan",
+  slash: "/lightsout:auto-plan",
   group: CommandGroup.Build,
   summary: "Run the whole /plan process without you \u2014 the agent answers every question /plan would put to you, including the grill and stress-test questions, by taking its own recommendation; only a question that clears the escalation bar reaches you. It then shows you one proposal and rolls onward per the `auto-plan` config block.",
   whenToUse: 'Reach for it when the ticket is shaped enough that you would answer most of the interview with "you decide". It stops for the questions two reasonable engineers would answer differently, and for nothing else; the `auto-plan` config block says whether approval also starts the build.',
@@ -123511,7 +123511,7 @@ var autoPlanCatalogEntry = {
 // src/commands/commandCatalog/planning/brainstormCatalogEntry.ts
 var brainstormCatalogEntry = {
   id: "brainstorm",
-  slash: "/brainstorm",
+  slash: "/lightsout:brainstorm",
   cli: "lightsout brainstorm",
   group: CommandGroup.Build,
   summary: "Talk a rough idea through until it\u2019s a clear design \u2014 whether it\u2019s one idea or several, the approaches worth building with a recommendation, and the final design in plain words.",
@@ -123631,7 +123631,7 @@ var planSteps = [
 // src/commands/commandCatalog/planning/planCatalogEntry/planCatalogEntry.ts
 var planCatalogEntry = {
   id: "plan",
-  slash: "/plan",
+  slash: "/lightsout:plan",
   cli: "lightsout plan",
   group: CommandGroup.Build,
   summary: "Turn a feature idea into a plan detailed enough for an agent to build without guessing. It interviews you, stress-tests the plan, and grades it to an A.",
@@ -123707,7 +123707,7 @@ var planCatalogEntry = {
 // src/commands/commandCatalog/queueCatalogEntry.ts
 var queueCatalogEntry = {
   id: "queue",
-  slash: "/queue",
+  slash: "/lightsout:queue",
   cli: "lightsout queue",
   group: CommandGroup.Build,
   summary: "Build every ticket marked ready for automation, several at once, each on its own branch and pull request. Any question an agent can\u2019t answer comes back to you.",
@@ -123874,7 +123874,7 @@ var refactorSteps = [
 // src/commands/commandCatalog/refactorCatalogEntry/refactorCatalogEntry.ts
 var refactorCatalogEntry = {
   id: "refactor",
-  slash: "/refactor",
+  slash: "/lightsout:refactor",
   cli: "lightsout refactor",
   group: CommandGroup.BurnDown,
   summary: "Fix the problems the standards check already finds \u2014 duplicate code, oversized files, misplaced code \u2014 in small batches, each re-checked before the next. Stop and resume any time.",
@@ -124176,7 +124176,7 @@ var stopCatalogEntry = {
 // src/commands/commandCatalog/testCoverageToThresholdCatalogEntry.ts
 var testCoverageToThresholdCatalogEntry = {
   id: "test-coverage-to-threshold",
-  slash: "/test-coverage-to-threshold",
+  slash: "/lightsout:test-coverage-to-threshold",
   cli: "lightsout test-coverage-to-threshold",
   group: CommandGroup.BurnDown,
   summary: "Write tests until the repo\u2019s own coverage check passes, in small batches, each verified before the next. Stop and resume any time.",
