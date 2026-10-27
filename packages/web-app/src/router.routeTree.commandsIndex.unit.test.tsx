@@ -138,12 +138,12 @@ describe('routeTree', () => {
 			commands: [buildCommandCatalogEntry(), buildCommandCatalogEntry({ id: 'refactor', slash: '/refactor', group: CommandGroup.BurnDown })],
 		});
 
-		const link = screen.getByRole('link', { name: '/refactor' });
+		const link = screen.getByRole('heading', { level: 3, name: '/refactor' }).closest('a');
 
 		expect(link).toHaveAttribute('href', '/commands/refactor');
 	});
 
-	test('the commands route titles a card with the CLI form when the plugin ships no skill for it', () => {
+	test('the commands route titles a card with the bare command word when the plugin ships no skill for it', () => {
 		setupCommandsPage({
 			commands: [
 				buildCommandCatalogEntry({
@@ -156,7 +156,7 @@ describe('routeTree', () => {
 			],
 		});
 
-		const link = screen.getByRole('link', { name: 'lightsout doctor' });
+		const link = screen.getByRole('heading', { level: 3, name: 'doctor' }).closest('a');
 
 		expect(link).toHaveAttribute('href', '/commands/doctor');
 	});

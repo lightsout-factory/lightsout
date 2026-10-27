@@ -33,8 +33,11 @@ const setupCommandsPage = ({ commands = [buildCommandCatalogEntry()] }: { comman
 const readGroupCards = ({ heading }: { heading: string }): string[] => {
 	const section = screen.getByRole('heading', { level: 2, name: heading }).closest('section');
 
-	return Array.from(section?.querySelectorAll('article a') ?? []).map((link) => link.textContent ?? '');
+	return Array.from(section?.querySelectorAll('article h3') ?? []).map((title) => title.textContent ?? '');
 };
+
+/** The card titled `title`, as the link a reader clicks anywhere on. */
+const readCardLink = ({ title }: { title: string }) => screen.getByRole('heading', { level: 3, name: title }).closest('a');
 
 describe('CommandsPage', () => {
 	test('names the page and says what a reader will find on it', () => {
@@ -64,7 +67,7 @@ describe('CommandsPage', () => {
 		expect(readGroupCards({ heading: 'Build' })).toStrictEqual(['/plan']);
 		expect(readGroupCards({ heading: 'Burn down' })).toStrictEqual(['/refactor']);
 		expect(readGroupCards({ heading: 'Standards' })).toStrictEqual([]);
-		expect(readGroupCards({ heading: 'Housekeeping' })).toStrictEqual(['lightsout doctor']);
+		expect(readGroupCards({ heading: 'Housekeeping' })).toStrictEqual(['doctor']);
 	});
 
 	test('keeps the catalog’s own order inside a group, so the page never re-sorts what the engine stated', () => {
@@ -83,26 +86,32 @@ describe('CommandsPage', () => {
 });
 
 describe('CommandsPage command cards', () => {
-	test('titles a card with the slash form, which is what a reader with the plugin installed would type', () => {
+	test('titles a card with the slash form, which is what a reader with the plugin installed would type, and prints the CLI form under it', () => {
 		setupCommandsPage({ commands: [buildCommandCatalogEntry({ id: 'refactor', slash: '/refactor', cli: 'lightsout refactor' })] });
 
-		const link = screen.getByRole('link', { name: '/refactor' });
+		const card = within(screen.getByRole('article'));
 
-		expect(link).toBeInTheDocument();
+		expect({ title: card.getByRole('heading', { level: 3 }).textContent, cli: card.queryByText('lightsout refactor') }).toStrictEqual({
+			title: '/refactor',
+			cli: expect.anything(),
+		});
 	});
 
-	test('falls back to the CLI form for a command the plugin ships no skill for', () => {
+	test('titles a command the plugin ships no skill for by its bare command word, with the CLI form under it', () => {
 		setupCommandsPage({ commands: [buildCommandCatalogEntry({ id: 'doctor', cli: 'lightsout doctor', overrides: { slash: undefined } })] });
 
-		const link = screen.getByRole('link', { name: 'lightsout doctor' });
+		const card = within(screen.getByRole('article'));
 
-		expect(link).toBeInTheDocument();
+		expect({ title: card.getByRole('heading', { level: 3 }).textContent, cli: card.queryByText('lightsout doctor') }).toStrictEqual({
+			title: 'doctor',
+			cli: expect.anything(),
+		});
 	});
 
-	test('points the title at that command’s own page, addressed by its catalog id rather than its title', () => {
+	test('makes the whole card the link to that command’s own page, addressed by its catalog id rather than its title', () => {
 		setupCommandsPage({ commands: [buildCommandCatalogEntry({ id: 'test-coverage-to-threshold', slash: '/test-coverage-to-threshold' })] });
 
-		const link = screen.getByRole('link', { name: '/test-coverage-to-threshold' });
+		const link = readCardLink({ title: '/test-coverage-to-threshold' });
 
 		expect(link).toHaveAttribute('href', '/commands/test-coverage-to-threshold');
 	});
@@ -116,15 +125,30 @@ describe('CommandsPage command cards', () => {
 	});
 
 	test.each([
-		{ records: CommandRecordKind.Runs, label: 'records runs' },
-		{ records: CommandRecordKind.Plans, label: 'records plans' },
-		{ records: CommandRecordKind.Snapshots, label: 'records snapshots' },
-		{ records: CommandRecordKind.Nothing, label: 'records nothing' },
-	])('badges a $records command as "$label", which is what it leaves behind', ({ records, label }) => {
+		{ records: CommandRecordKind.Runs, label: 'Saves a run record' },
+		{ records: CommandRecordKind.Plans, label: 'Saves a plan' },
+		{ records: CommandRecordKind.Snapshots, label: 'Saves a findings snapshot' },
+	])('tags a $records command "$label", which is what it leaves behind', ({ records, label }) => {
 		setupCommandsPage({ commands: [buildCommandCatalogEntry({ records })] });
 
-		const badge = within(screen.getByRole('article')).getByText(label);
+		const tag = within(screen.getByRole('article')).getByText(label);
 
-		expect(badge).toBeInTheDocument();
+		expect(tag).toBeInTheDocument();
+	});
+
+	test('tags nothing on a command that leaves nothing behind, rather than saying so on most cards', () => {
+		setupCommandsPage({ commands: [buildCommandCatalogEntry({ records: CommandRecordKind.Nothing })] });
+
+		const tag = within(screen.getByRole('article')).queryByText(/^Saves /);
+
+		expect(tag).not.toBeInTheDocument();
+	});
+
+	test('renders inline code in a summary as code, never as raw backticks', () => {
+		setupCommandsPage({ commands: [buildCommandCatalogEntry({ summary: 'Rolls onward per the `auto-plan` config block.' })] });
+
+		const code = within(screen.getByRole('article')).getByText('auto-plan');
+
+		expect({ tag: code.tagName, backticks: screen.queryByText(/`/) }).toStrictEqual({ tag: 'CODE', backticks: null });
 	});
 });

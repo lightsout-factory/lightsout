@@ -1,11 +1,11 @@
 import type { StandardsPackListing } from '@lightsout/engine';
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
+import { CodeSpans } from '#src/appUI/CodeSpans.tsx';
+import { SitePageFrame } from '#src/appUI/SitePageFrame.tsx';
 import { CheckKind } from '#src/common/constants/CheckKind.ts';
 import { checkKindLabels } from '#src/common/constants/checkKindLabels.ts';
-import { CodeSpans } from '#src/features/packs/components/CodeSpans.tsx';
 import { PackCondition } from '#src/features/packs/components/PackCondition.tsx';
-import { PackPageFrame } from '#src/features/packs/components/PackPageFrame.tsx';
 import { groupRulesByTopic } from '#src/features/packs/internal/common/utils/groupRulesByTopic.ts';
 import { readDocumentTitle } from '#src/features/packs/internal/common/utils/readDocumentTitle.ts';
 import { defaultPackQueryOptions } from '#src/features/packs/queries/defaultPackQueryOptions.ts';
@@ -94,7 +94,7 @@ export const PackPage = ({ pack: packName, filters, onFiltersChange }: Props) =>
 	}).map((group) => ({ ...group, id: group.topic.path.replaceAll('/', '-') }));
 
 	return pack === undefined ? null : (
-		<PackPageFrame crumbs={[{ label: 'Standards Packs', link: { to: '/standards-packs' } }, { label: pack.address }]}>
+		<SitePageFrame crumbs={[{ label: 'Standards Packs', link: { to: '/standards-packs' } }, { label: pack.address }]}>
 			<PackHeader library={view.name} pack={pack} />
 			<div className="grid grid-cols-1 gap-10 lg:grid-cols-[14rem_1fr]">
 				<aside className="hidden lg:block">
@@ -125,6 +125,6 @@ export const PackPage = ({ pack: packName, filters, onFiltersChange }: Props) =>
 					)}
 				</div>
 			</div>
-		</PackPageFrame>
+		</SitePageFrame>
 	);
 };

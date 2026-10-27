@@ -1,7 +1,7 @@
 import { describe, expect, jest, test } from '@jest/globals';
 import type { CommandCatalogEntry } from '@lightsout/engine';
 import { CommandActor } from '@lightsout/engine/contracts';
-import { screen, within } from '@testing-library/react';
+import { screen } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { QueryKey } from '#src/common/constants/QueryKey.ts';
 import { CommandDetail } from '#src/features/commands/screens/CommandDetail/CommandDetail.tsx';
@@ -29,16 +29,19 @@ const setupCommandManual = ({ entry }: { entry: CommandCatalogEntry }) => {
 	});
 };
 
-/** Every row of the flag table, cell by cell, as a reader reads across it. */
+/** Every flag in the list, as a reader reads across it: what to type, what it means, what leaving it out does. */
 const readFlagRows = (): string[][] =>
-	screen
-		.getAllByRole('row')
-		.slice(1)
-		.map((row) =>
-			within(row)
-				.getAllByRole('cell')
-				.map((cell) => cell.textContent ?? ''),
-		);
+	Array.from(document.querySelector('dl[aria-label="Flags"]')?.children ?? []).map((row) => [
+		row.querySelector('dt')?.textContent ?? '',
+		row.querySelector('dd > span:first-child')?.textContent ?? '',
+		row.querySelector('dd > span:last-child')?.textContent ?? '',
+	]);
+
+/** Each step as numbered on the page, `<n>. <title>`. */
+const readStepTitles = (): string[] =>
+	Array.from(document.querySelectorAll('ol > li')).map(
+		(step) => `${step.querySelector(':scope > span:not([aria-hidden])')?.textContent}. ${step.querySelector('h3')?.textContent}`,
+	);
 
 describe('CommandDetail invocations', () => {
 	test('leaves the how-to-run card off a command with no invocation shape to show', () => {
@@ -75,16 +78,33 @@ describe('CommandDetail invocations', () => {
 		expect(note).toBeInTheDocument();
 	});
 
-	test('heads the flag table with what to type, what it means, and what leaving it out does', () => {
+	test('puts every flag a shape requires on its line, so the line can be pasted and filled in', () => {
 		setupCommandManual({
 			entry: buildCommandCatalogEntry({
-				overrides: { invocations: [{ id: 'fresh' }], flags: [{ name: 'cwd', value: '<path>', meaning: 'Repository to work in.', required: false }] },
+				cli: 'lightsout implement',
+				overrides: {
+					invocations: [{ id: 'single' }, { id: 'folder' }],
+					flags: [
+						{ name: 'plan', value: '<path>', meaning: 'One graded plan.', shape: 'single', required: true },
+						{ name: 'plan', value: '<folder>', meaning: 'A folder of phase plans.', shape: 'folder', required: true },
+						{ name: 'cwd', value: '<path>', meaning: 'Repository to work in.', required: false },
+					],
+				},
 			}),
 		});
+		const card = screen.getByRole('heading', { level: 2, name: 'How to run it' }).closest('section');
 
-		const headers = screen.getAllByRole('columnheader').map((header) => header.textContent);
+		const lines = Array.from(card?.querySelectorAll('code') ?? []).map((line) => line.textContent);
 
-		expect(headers).toStrictEqual(['flag', 'meaning', 'left out']);
+		expect(lines).toStrictEqual(['lightsout implement --plan <path>', 'lightsout implement --plan <folder>']);
+	});
+
+	test('offers each line to copy, named by the line it copies', () => {
+		setupCommandManual({ entry: buildCommandCatalogEntry({ cli: 'lightsout doctor', overrides: { invocations: [{ id: 'fresh' }], flags: [] } }) });
+
+		const button = screen.getByRole('button', { name: 'Copy lightsout doctor' });
+
+		expect(button).toBeInTheDocument();
 	});
 
 	test('spells a flag with its placeholder, and a boolean flag as the bare word', () => {
@@ -103,8 +123,8 @@ describe('CommandDetail invocations', () => {
 		const rows = readFlagRows();
 
 		expect(rows).toStrictEqual([
-			['--max-batches <n>', 'Stop after this many batches.', 'no ceiling'],
-			['--allow-dirty', 'Run against a tree with uncommitted work.', 'off'],
+			['--max-batches <n>', 'Stop after this many batches.', 'Left out: no ceiling'],
+			['--allow-dirty', 'Run against a tree with uncommitted work.', 'Left out: off'],
 		]);
 	});
 
@@ -117,7 +137,7 @@ describe('CommandDetail invocations', () => {
 
 		const rows = readFlagRows();
 
-		expect(rows).toStrictEqual([['--run <id>', 'The run to pick back up.', 'required']]);
+		expect(rows).toStrictEqual([['--run <id>', 'The run to pick back up.', 'Required']]);
 	});
 
 	test('lists one row per shape for a flag whose placeholder differs between them, rather than collapsing the two', () => {
@@ -136,16 +156,16 @@ describe('CommandDetail invocations', () => {
 		const rows = readFlagRows();
 
 		expect(rows).toStrictEqual([
-			['--plan <path>', 'One graded plan.', 'off'],
-			['--plan <folder>', 'A folder of phase plans.', 'off'],
+			['--plan <path>', 'One graded plan.', 'Left out: off'],
+			['--plan <folder>', 'A folder of phase plans.', 'Left out: off'],
 		]);
 	});
 
-	test('shows the shapes without a table for a command that takes no flags at all', () => {
+	test('shows the shapes without a flag list for a command that takes no flags at all', () => {
 		setupCommandManual({ entry: buildCommandCatalogEntry({ overrides: { invocations: [{ id: 'fresh' }], flags: [] } }) });
 
 		expect(screen.getByRole('heading', { level: 2, name: 'How to run it' })).toBeInTheDocument();
-		expect(screen.queryByRole('table')).not.toBeInTheDocument();
+		expect(document.querySelector('dl')).toBeNull();
 	});
 });
 
@@ -170,9 +190,9 @@ describe('CommandDetail steps', () => {
 			}),
 		});
 
-		const titles = screen.getAllByRole('heading', { level: 2 }).map((heading) => heading.textContent);
+		const titles = readStepTitles();
 
-		expect(titles).toStrictEqual(['When to reach for it', 'What happens', '1. START THE RUN', '2. READ THE PLAN']);
+		expect(titles).toStrictEqual(['1. START THE RUN', '2. READ THE PLAN']);
 	});
 
 	test('names who does each step, which is what the infographic draws as its tag', () => {
@@ -204,13 +224,13 @@ describe('CommandDetail steps', () => {
 			}),
 		});
 
-		const bullets = screen.getAllByRole('listitem').map((item) => item.textContent);
+		const bullets = Array.from(document.querySelectorAll('ol > li ul > li')).map((item) => item.textContent);
 
 		expect(bullets).toStrictEqual(['Run the repo’s own tests', 'Run lint and types']);
 		expect(screen.getByText('Stops a green claim over a red build.')).toBeInTheDocument();
 	});
 
-	test('names the files a step writes under a plain "writes" label', () => {
+	test('names the files a step writes under a plain "Files written" label, folded away until opened', () => {
 		setupCommandManual({
 			entry: buildCommandCatalogEntry({
 				overrides: {
@@ -225,9 +245,9 @@ describe('CommandDetail steps', () => {
 				},
 			}),
 		});
-		const line = screen.getByText('writes').closest('p');
+		const files = screen.getByText('Files written').closest('details');
 
-		const paths = Array.from(line?.querySelectorAll('span.font-mono') ?? []).map((tag) => tag.textContent);
+		const paths = Array.from(files?.querySelectorAll('div > *') ?? []).map((tag) => tag.textContent);
 
 		expect(paths).toStrictEqual(['.lightsout/runs/<id>/manifest.json', '.lightsout/runs/<id>/report.md']);
 	});
@@ -241,18 +261,19 @@ describe('CommandDetail steps', () => {
 			}),
 		});
 
-		expect(screen.getByText('HANDED BACK')).toBeInTheDocument();
-		expect(screen.queryByText('writes')).not.toBeInTheDocument();
+		// the catalog writes it in the infographic's capitals; the page reads it as a sentence
+		expect(screen.getByText('Handed back')).toBeInTheDocument();
+		expect(screen.queryByText('Files written')).not.toBeInTheDocument();
 	});
 
-	test('draws no writes line at all for a step that leaves nothing behind', () => {
+	test('draws no files line at all for a step that leaves nothing behind', () => {
 		setupCommandManual({
 			entry: buildCommandCatalogEntry({
 				overrides: { steps: [{ title: 'ASK THE QUESTIONS', actor: CommandActor.You, bullets: ['Answer the interview'], saved: [] }] },
 			}),
 		});
 
-		const label = screen.queryByText('writes');
+		const label = screen.queryByText('Files written');
 
 		expect(label).not.toBeInTheDocument();
 	});

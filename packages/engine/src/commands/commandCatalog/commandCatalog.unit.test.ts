@@ -111,7 +111,7 @@ describe('commandCatalog', () => {
 
 		expect(drawn.map((entry) => [entry.id, entry.steps.length])).toStrictEqual([
 			['plan', 8],
-			['implement', 10],
+			['implement', 11],
 			['refactor', 12],
 		]);
 		expect(drawn.every((entry) => entry.graphic !== undefined)).toBe(true);

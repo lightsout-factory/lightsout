@@ -26,6 +26,17 @@ export const implementSteps: CommandStep[] = [
 		saved: ['manifest.json', '.lightsout/runs/<id>/commands.jsonl'],
 	},
 	{
+		title: 'WRITE THE ACCEPTANCE TESTS',
+		actor: CommandActor.Agent,
+		bullets: [
+			'Write the tests the plan names as its acceptance tests, before any code',
+			'Later changes may correct a test the plan made stale, but never weaken or drop one',
+			'Skip this step when the plan names no acceptance tests',
+		],
+		note: 'Fixes what done means before the code that has to meet it exists',
+		saved: ['.lightsout/runs/<id>/agents/', 'stream-NN-write-ledger-tests.jsonl'],
+	},
+	{
 		title: 'IMPLEMENT THE PLAN',
 		actor: CommandActor.Agent,
 		bullets: [
@@ -40,7 +51,7 @@ export const implementSteps: CommandStep[] = [
 		title: 'VERIFY THE IMPLEMENTATION',
 		actor: CommandActor.Engine,
 		bullets: [
-			'Re-run lint, type checks, tests, build, and coverage',
+			'Run the configured formatter, then re-run lint, type checks, tests, build, and coverage',
 			'Try up to two lightweight repairs if a gate fails',
 			'If the gates remain red, park the run with all evidence',
 		],
@@ -61,7 +72,11 @@ export const implementSteps: CommandStep[] = [
 	{
 		title: 'VERIFY THE TESTS',
 		actor: CommandActor.Engine,
-		bullets: ['Re-run lint, type checks, tests, build, and coverage', 'Try up to two lightweight repairs if a gate fails'],
+		bullets: [
+			'Run the configured formatter, then re-run lint, type checks, tests, build, and coverage',
+			'Check that every acceptance test ran and passed',
+			'Try up to two lightweight repairs if a gate fails',
+		],
 		note: 'Confirms the new tests pass and coverage meets the configured threshold',
 		saved: ['manifest.json', '.lightsout/friction.jsonl'],
 	},
@@ -80,16 +95,9 @@ export const implementSteps: CommandStep[] = [
 	{
 		title: 'VERIFY THE REFACTOR',
 		actor: CommandActor.Engine,
-		bullets: ['Re-run lint, type checks, tests, build, and coverage', 'Try up to two lightweight repairs if a gate fails'],
+		bullets: ['Run the configured formatter, then re-run lint, type checks, tests, build, and coverage', 'Try up to two lightweight repairs if a gate fails'],
 		note: 'Confirms the refactor preserved behavior and passes every gate',
 		saved: ['manifest.json', '.lightsout/friction.jsonl'],
-	},
-	{
-		title: 'FORMAT THE CODE',
-		actor: CommandActor.Engine,
-		bullets: ['Run the configured formatter on all changed files', 'Re-run lint, type checks, tests, build, and coverage'],
-		note: 'Confirms formatting does not break a green run',
-		saved: ['.lightsout/runs/<id>/commands.jsonl'],
 	},
 	{
 		title: 'REPORT THE RESULT',
@@ -101,5 +109,16 @@ export const implementSteps: CommandStep[] = [
 		],
 		note: 'Leaves an inspectable record of what happened and why the run passed or failed',
 		saved: ['.lightsout/runs/<id>/'],
+	},
+	{
+		title: 'SHIP THE BRANCH',
+		actor: CommandActor.Engine,
+		bullets: [
+			'Only when asked: with `--ship`, or when the config sets `ship.after-implement`',
+			'Bring in the latest main and re-run the gates',
+			'Push, open the pull request, wait for its checks, then merge and clean up',
+		],
+		note: 'Takes a passed run all the way to merged without a second command',
+		saved: ['.lightsout/work-orders/<name>/ship.json'],
 	},
 ];

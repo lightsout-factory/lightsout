@@ -70,8 +70,8 @@ export const implementCatalogEntry: CommandCatalogEntry = {
 	related: ['auto-plan', 'brainstorm', 'plan', 'resume', 'stop', 'ship', 'implement-direct', 'queue', 'work-order', 'ticket-state', 'self-check'],
 	graphic: {
 		title: 'How /implement turns the spec into verified code',
-		subtitle: 'Ten steps, deterministic gates throughout, and a complete record saved to disk.',
+		subtitle: 'Eleven steps, deterministic gates throughout, and a complete record saved to disk.',
 		banner: 'The model can claim success. Lightsout requires evidence.',
-		columns: 5,
+		columns: 4,
 	},
 };

@@ -1,96 +1,61 @@
-import { spellFlag } from '@lightsout/engine/commands';
-import type { CommandCatalogEntry, CommandFlag, CommandStep } from '@lightsout/engine/contracts';
+import type { CommandCatalogEntry } from '@lightsout/engine/contracts';
 import { Link } from '@tanstack/react-router';
-import { Badge } from '#src/appUI/badges/Badge.tsx';
-import { MetadataTag } from '#src/appUI/badges/MetadataTag.tsx';
-import { DataTable } from '#src/appUI/DataTable.tsx';
-import { PageHeader } from '#src/appUI/headers/PageHeader.tsx';
-import { SectionHeader } from '#src/appUI/headers/SectionHeader.tsx';
-import { Card } from '#src/appUI/panels/Card.tsx';
-import type { DataTableColumn } from '#src/common/types/DataTableColumn.ts';
-import { recordKindLabels } from '#src/features/commands/internal/common/constants/recordKindLabels.ts';
-
-const flagColumns: Array<DataTableColumn<CommandFlag>> = [
-	{ key: 'name', header: 'flag', render: (flag) => <span className="font-mono">{spellFlag({ flag })}</span> },
-	{ key: 'meaning', header: 'meaning', render: (flag) => flag.meaning },
-	{ key: 'fallback', header: 'left out', render: (flag) => flag.fallback ?? (flag.required ? 'required' : 'off') },
-];
-
-/**
- * Deliberately not the bracketed one-liner `lightsout --help` prints:
- * re-deriving the usage line's rules here would be a second list the catalog
- * exists to prevent.
- */
-const InvocationSection = ({ entry }: { entry: CommandCatalogEntry }) => (
-	<Card title="How to run it">
-		<div className="flex flex-col gap-2">
-			{entry.invocations.map((invocation) => (
-				<div key={invocation.id} className="flex flex-wrap items-baseline gap-2">
-					<code className="font-mono text-sm">{[entry.cli, invocation.positional].filter((word) => word !== undefined).join(' ')}</code>
-					{invocation.note === undefined ? null : <span className="text-muted-foreground text-xs">{invocation.note}</span>}
-				</div>
-			))}
-			{entry.flags.length === 0 ? null : (
-				<DataTable className="mt-2" rows={entry.flags} columns={flagColumns} getRowKey={(flag) => `${flag.name}:${flag.shape ?? 'any'}`} />
-			)}
-		</div>
-	</Card>
-);
-
-const StepSection = ({ step, position }: { step: CommandStep; position: number }) => (
-	<div className="flex flex-col gap-2 border-border border-l-2 pl-4">
-		<SectionHeader title={`${position}. ${step.title}`} action={<Badge>{step.actor}</Badge>} />
-		<ul className="list-disc space-y-1 pl-5 text-sm">
-			{step.bullets.map((bullet) => (
-				<li key={bullet}>{bullet}</li>
-			))}
-		</ul>
-		{step.note === undefined ? null : <p className="text-muted-foreground text-sm italic">{step.note}</p>}
-		{step.saved.length === 0 ? null : (
-			<p className="flex flex-wrap items-center gap-1 text-muted-foreground text-xs">
-				<span>{step.savedLabel ?? 'writes'}</span>
-				{step.saved.map((path) => (
-					<MetadataTag key={path}>{path}</MetadataTag>
-				))}
-			</p>
-		)}
-	</div>
-);
+import { CodeSpans } from '#src/appUI/CodeSpans.tsx';
+import { SiteSection } from '#src/appUI/SiteSection.tsx';
+import { RecordKindTag } from '#src/features/commands/internal/components/RecordKindTag.tsx';
+import { CommandSteps } from '#src/features/commands/screens/CommandDetail/internal/components/CommandSteps.tsx';
+import { CommandUsage } from '#src/features/commands/screens/CommandDetail/internal/components/CommandUsage.tsx';
 
 interface Props {
 	entry: CommandCatalogEntry;
 }
 
+/** Titled as its card is: the slash form a reader with the plugin would type, else the bare command word, with the CLI form tagged under it. */
 export const CommandManual = ({ entry }: Props) => (
-	<div className="flex flex-col gap-6">
-		<PageHeader title={entry.slash ?? entry.cli ?? entry.id} description={entry.summary} action={<Badge>{recordKindLabels[entry.records]}</Badge>} />
-		<div className="flex flex-wrap gap-2">
-			{entry.slash === undefined ? null : <MetadataTag>{entry.slash}</MetadataTag>}
-			{entry.cli === undefined ? null : <MetadataTag>{entry.cli}</MetadataTag>}
-		</div>
-		<Card title="When to reach for it">
-			<p className="max-w-3xl text-sm leading-6">{entry.whenToUse}</p>
-		</Card>
-		{entry.invocations.length === 0 ? null : <InvocationSection entry={entry} />}
+	<>
+		<header className="flex flex-col gap-4">
+			<h1 className="break-words font-bold font-mono text-3xl text-drop-navy md:text-4xl">{entry.slash ?? entry.id}</h1>
+			<p className="max-w-3xl text-lg text-muted-foreground leading-relaxed">
+				<CodeSpans text={entry.summary} />
+			</p>
+			<div className="flex flex-wrap items-center gap-2">
+				{entry.cli === undefined ? null : (
+					<span className="rounded-md border border-border px-2 py-1 font-mono text-muted-foreground-strong text-xs">{entry.cli}</span>
+				)}
+				<RecordKindTag records={entry.records} />
+			</div>
+		</header>
+		<SiteSection title="When to reach for it">
+			<p className="max-w-3xl text-base leading-7">
+				<CodeSpans text={entry.whenToUse} />
+			</p>
+		</SiteSection>
+		{entry.invocations.length === 0 ? null : (
+			<SiteSection title="How to run it">
+				<CommandUsage entry={entry} />
+			</SiteSection>
+		)}
 		{entry.steps.length === 0 ? null : (
-			<Card title="What happens">
-				<div className="flex flex-col gap-6">
-					{entry.steps.map((step, index) => (
-						<StepSection key={step.title} step={step} position={index + 1} />
-					))}
-				</div>
-			</Card>
+			<SiteSection title="What happens">
+				<CommandSteps steps={entry.steps} />
+			</SiteSection>
 		)}
 		{entry.related.length === 0 ? null : (
-			<Card title="Related commands">
-				<div className="flex flex-wrap gap-3">
+			<SiteSection title="Related commands">
+				<ul className="flex flex-wrap gap-2">
 					{entry.related.map((id) => (
-						<Link key={id} to="/commands/$command" params={{ command: id }} className="font-mono text-brand-to text-sm underline underline-offset-4">
-							{id}
-						</Link>
+						<li key={id}>
+							<Link
+								to="/commands/$command"
+								params={{ command: id }}
+								className="inline-flex rounded-lg border border-border px-3 py-1.5 font-mono font-semibold text-drop-navy text-sm transition-colors hover:border-primary-tint-border hover:bg-muted/40"
+							>
+								{id}
+							</Link>
+						</li>
 					))}
-				</div>
-			</Card>
+				</ul>
+			</SiteSection>
 		)}
-	</div>
+	</>
 );
