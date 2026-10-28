@@ -1,6 +1,26 @@
 {
-	"description": "The rules written for TanStack Start: which of its files get unit tests.",
+	"description": "The rules written for TanStack Start: the React and base rules, the framework's own files left to it, and one shape for features, routes, screens, server functions and queries.",
 	"include": {
-		"topics": ["lightsout/tests/frameworks/tanstack-start"]
-	}
+		"packs": ["lightsout/react", "lightsout/code-style"],
+		"topics": [
+			"lightsout/code/fractal/layout",
+			"lightsout/code/fractal/imports",
+			"lightsout/code/fractal/duplication",
+			"lightsout/tests/fractal",
+			"lightsout/code/frameworks/tanstack-start",
+			"lightsout/tests/frameworks/tanstack-start"
+		],
+		"rules": ["lightsout/file-size", "lightsout/folder-size"]
+	},
+	"rule-settings": {
+		"explicit-return-type": { "exclude": ["**/*.tsx", "**/use[A-Z]*.ts", "**/*QueryOptions.ts"] },
+		"feature-layout": { "exclude": ["**/routes/**"] },
+		"file-placement": { "exclude": ["**/routes/**"] },
+		"file-size": { "exclude": ["**/routeTree.gen.ts"] },
+		"filename-mismatch": { "exclude": ["**/routes/**", "**/routeTree.gen.ts", "**/router.tsx", "**/client.tsx", "**/server.ts", "**/ssr.tsx", "**/start.ts"] },
+		"module-file-to-folder": { "exclude": ["**/routes/**"] },
+		"multi-export": { "exclude": ["**/routes/**", "**/routeTree.gen.ts", "**/router.tsx", "**/client.tsx", "**/server.ts", "**/ssr.tsx", "**/start.ts"] },
+		"named-string-values": { "exclude": ["**/routes/**", "**/routeTree.gen.ts"] }
+	},
+	"applies-when": { "dependencies": ["@tanstack/react-start"] }
 }

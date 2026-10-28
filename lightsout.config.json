@@ -79,7 +79,7 @@
 	},
 	"standards-pack": "lightsout/standards",
 	"package-standards-packs": {
-		"web-app": ["lightsout/react", "lightsout/tanstack-start"]
+		"web-app": "lightsout/tanstack-start"
 	},
 	"standards-rule-settings": {
 		"prefer-functions": "blocking",

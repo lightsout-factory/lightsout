@@ -15,9 +15,12 @@ const codeStyleTopics = [
 	'tests/code-style',
 ];
 const reactOwnTopics = ['code/frameworks/react', 'tests/frameworks/react'];
-const tanstackStartOwnTopics = ['tests/frameworks/tanstack-start'];
+const tanstackStartOwnTopics = ['code/frameworks/tanstack-start', 'tests/frameworks/tanstack-start'];
 const goalTopics = [...fractalTopics, ...codeStyleTopics];
 const frameworkTopics = [...reactOwnTopics, ...tanstackStartOwnTopics];
+/** The whole standard for a TanStack Start package: every goal topic but the size one, whose two file and folder rules it names one by one, plus both framework packs' own topics. */
+const tanstackStartTopics = [...goalTopics.filter((topic) => topic !== 'code/fractal/size'), ...frameworkTopics];
+const tanstackStartSizeRules = ['lightsout/file-size', 'lightsout/folder-size'];
 
 /**
  * The shipped built-in library, loaded from its authored folder — not the copy
@@ -64,18 +67,41 @@ describe('resolveStandardsPack on the shipped lightsout library', () => {
 		});
 	});
 
-	test.each([
-		{ address: 'lightsout/react', topicPaths: reactOwnTopics },
-		{ address: 'lightsout/tanstack-start', topicPaths: tanstackStartOwnTopics },
-	])('$address holds only the topics written for its framework, at rule defaults', async ({ address, topicPaths }) => {
+	test('lightsout/react holds only the topics written for its framework, at rule defaults', async () => {
 		const { library, libraries } = await setupDefaultLibrary();
 
-		const pack = resolveStandardsPack({ addresses: [address], libraries, dependencies: new Set() });
+		const pack = resolveStandardsPack({ addresses: ['lightsout/react'], libraries, dependencies: new Set() });
 
-		const expected = expectPackOf({ library, topicPaths });
+		const expected = expectPackOf({ library, topicPaths: reactOwnTopics });
 		// an empty rule list would make "exactly these rules" hold vacuously
 		expect(expected.rules.length).toBeGreaterThan(0);
 		expect({ conditionalPacks: pack.conditionalPacks, ...summarizePack({ pack }) }).toStrictEqual({ conditionalPacks: [], ...expected });
+	});
+
+	test('lightsout/tanstack-start is the whole standard for a package that declares the framework, with function-size left out for react-function-size', async () => {
+		const { library, libraries } = await setupDefaultLibrary();
+
+		const pack = resolveStandardsPack({ addresses: ['lightsout/tanstack-start'], libraries, dependencies: new Set(['@tanstack/react-start']) });
+
+		const sizeRules = library.rules
+			.filter((rule) => tanstackStartSizeRules.includes(rule.name))
+			.map((rule) => ({ name: rule.name, severity: rule.defaultSeverity, options: rule.defaultOptions }));
+		const expected = expectPackOf({ library, topicPaths: tanstackStartTopics });
+		expect(sizeRules).toHaveLength(tanstackStartSizeRules.length);
+		expect({ conditionalPacks: pack.conditionalPacks, ...summarizePack({ pack }) }).toStrictEqual({
+			conditionalPacks: ['lightsout/tanstack-start'],
+			// a rule named on its own brings its topic's background with it, so the size topic is read even though only two of its rules apply
+			topics: [...expected.topics, 'code/fractal/size'].sort(),
+			rules: [...expected.rules, ...sizeRules].sort((left, right) => left.name.localeCompare(right.name)),
+		});
+	});
+
+	test('lightsout/tanstack-start brings nothing to a package that does not declare the framework', async () => {
+		const { libraries } = await setupDefaultLibrary();
+
+		const pack = resolveStandardsPack({ addresses: ['lightsout/tanstack-start'], libraries, dependencies: new Set(['react']) });
+
+		expect({ conditionalPacks: pack.conditionalPacks, ...summarizePack({ pack }) }).toStrictEqual({ conditionalPacks: [], topics: [], rules: [] });
 	});
 
 	test('lightsout/standards is the two goal packs, and holds no framework topic', async () => {
@@ -92,15 +118,19 @@ describe('resolveStandardsPack on the shipped lightsout library', () => {
 		});
 	});
 
-	test('the lightsout library ships five packs, and its four topic packs cover each topic once', async () => {
+	test('the lightsout library ships five packs, and its three topic packs with tanstack-start’s own topics cover each topic once', async () => {
 		const { library, libraries } = await setupDefaultLibrary();
 
 		const resolved = library.packs.map((packFile) => resolveStandardsPack({ addresses: [`lightsout/${packFile.name}`], libraries, dependencies: undefined }));
 
-		const topicsAcrossPacks = resolved
-			.filter((pack) => pack.name !== 'lightsout/standards')
-			.flatMap((pack) => pack.topics.map((topic) => topic.path))
-			.sort();
+		// standards and tanstack-start are whole standards built from the topic
+		// packs, so the topics they repeat are counted through those packs instead
+		const topicsAcrossPacks = [
+			...resolved
+				.filter((pack) => pack.name !== 'lightsout/standards' && pack.name !== 'lightsout/tanstack-start')
+				.flatMap((pack) => pack.topics.map((topic) => topic.path)),
+			...tanstackStartOwnTopics,
+		].sort();
 		expect({
 			packFiles: library.packs.map((packFile) => packFile.name),
 			resolved: resolved.map((pack) => pack.name).sort(),

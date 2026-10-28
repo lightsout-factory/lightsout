@@ -86,6 +86,7 @@ const cwd = join(__dirname, '..', '..', '..', '..');
  * than its old name said.
  *
  * On 2026-10-05 `single-return` was retired with the rule it named.
+
  */
 const durableRuleIds = [
 	'prefer-functions',

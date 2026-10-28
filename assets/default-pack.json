@@ -1,16 +1,16 @@
 {
   "name": "lightsout",
-  "description": "The built-in TypeScript standards: rules that keep a repo the same shape at every level, correct what models get wrong by default and settle code style, 36 of them with a deterministic check.",
+  "description": "The built-in TypeScript standards: rules that keep a repo the same shape at every level, correct what models get wrong by default and settle code style, 37 of them with a deterministic check.",
   "homepage": "https://github.com/lightsout-factory/lightsout/tree/main/packages/lightsout-standards",
   "rootPath": "packages/lightsout-standards",
   "built": false,
   "totals": {
-    "rules": 47,
-    "deterministic": 33,
-    "agent": 18,
-    "topics": 13,
+    "rules": 54,
+    "deterministic": 37,
+    "agent": 25,
+    "topics": 14,
     "packs": 5,
-    "withFixtures": 47
+    "withFixtures": 54
   },
   "packs": [
     {
@@ -618,30 +618,333 @@
     {
       "name": "tanstack-start",
       "address": "lightsout/tanstack-start",
-      "description": "The rules written for TanStack Start: which of its files get unit tests.",
+      "description": "The rules written for TanStack Start: the React and base rules, the framework's own files left to it, and one shape for features, routes, screens, server functions and queries.",
+      "appliesWhen": {
+        "dependencies": [
+          "@tanstack/react-start"
+        ]
+      },
       "include": {
-        "packs": [],
+        "packs": [
+          "lightsout/react",
+          "lightsout/code-style"
+        ],
         "topics": [
+          "lightsout/code/fractal/layout",
+          "lightsout/code/fractal/imports",
+          "lightsout/code/fractal/duplication",
+          "lightsout/tests/fractal",
+          "lightsout/code/frameworks/tanstack-start",
           "lightsout/tests/frameworks/tanstack-start"
         ],
-        "rules": []
+        "rules": [
+          "lightsout/file-size",
+          "lightsout/folder-size"
+        ]
       },
       "topics": [
+        "lightsout/code/code-style/classes",
+        "lightsout/code/code-style/functions",
+        "lightsout/code/code-style/named-constants",
+        "lightsout/code/code-style/type-safety",
+        "lightsout/code/fractal/duplication",
+        "lightsout/code/fractal/imports",
+        "lightsout/code/fractal/layout",
+        "lightsout/code/fractal/size",
+        "lightsout/code/frameworks/react",
+        "lightsout/code/frameworks/tanstack-start",
+        "lightsout/tests/code-style",
+        "lightsout/tests/fractal",
+        "lightsout/tests/frameworks/react",
         "lightsout/tests/frameworks/tanstack-start"
       ],
       "rules": [
         {
+          "name": "lightsout/assertions-pin-contracts",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/banned-folder-name",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/case-collision",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/circular-dependencies",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/class-inheritance",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/common-folder-layout",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/component-test-rendering",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/constant-casing",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/dead-export",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/duplicate-code-block",
+          "severity": "advisory",
+          "options": {
+            "minTokens": 50
+          }
+        },
+        {
+          "name": "lightsout/duplicate-export-name",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/duplicate-function-body",
+          "severity": "blocking",
+          "options": {
+            "minBodyTokens": 40
+          }
+        },
+        {
+          "name": "lightsout/existing-tests",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/explicit-return-type",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/feature-layout",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/file-placement",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/file-size",
+          "severity": "advisory",
+          "options": {
+            "file": 250
+          }
+        },
+        {
+          "name": "lightsout/filename-mismatch",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/folder-size",
+          "severity": "advisory",
+          "options": {
+            "cap": 20
+          }
+        },
+        {
+          "name": "lightsout/import-path-alias",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/index-file-contents",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/index-files",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/inferred-return-types",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/loader-owns-first-paint",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/module-boundary-testing",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/module-file-to-folder",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/multi-export",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/named-string-values",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/no-any",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
           "name": "lightsout/no-route-file-tests",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/no-test-state-in-hooks",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/object-args",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/prefer-arrow-functions",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/prefer-functions",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/query-options-per-query",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/react-function-size",
+          "severity": "advisory",
+          "options": {
+            "function": 80,
+            "hook": 160,
+            "component": 200
+          }
+        },
+        {
+          "name": "lightsout/reuse-common-code",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/screen-test-under-router",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/server-function-boundary",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/shared-package-criteria",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/single-use-scalar",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-beside-subject",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-code-path-coverage",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-file-size",
+          "severity": "advisory",
+          "options": {
+            "testFile": 400
+          }
+        },
+        {
+          "name": "lightsout/test-jest-imports",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-manual-mock-cleanup",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-mock-prefix",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-mock-untyped",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-structure",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/test-support-in-src",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/thin-route-file",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/type-assertion",
+          "severity": "blocking",
+          "options": {}
+        },
+        {
+          "name": "lightsout/what-to-mock",
           "severity": "advisory",
           "options": {}
         }
       ],
       "totals": {
-        "rules": 1,
-        "deterministic": 0,
-        "agent": 1,
-        "topics": 1,
-        "tokens": 86
+        "rules": 53,
+        "deterministic": 36,
+        "agent": 25,
+        "topics": 14,
+        "tokens": 9534
       }
     }
   ],
@@ -741,6 +1044,19 @@
       ]
     },
     {
+      "set": "code",
+      "path": "code/frameworks/tanstack-start",
+      "intro": "# TanStack Start\n\nHow a TanStack Start app is laid out and how its data moves: the framework's own files, a feature's shape, routes, screens, server functions and queries.\n\nThe framework names the route files under `routes/`, the generated route tree and the entry files, and decides where they sit, so the layout and naming rules do not judge them. Everything else is laid out as the layout rules say, with these conventions on top:\n\n- A feature is a subject folder at the top of `src/`, such as `src/issues/`.\n- A screen is the component a route renders. Its name ends in `Screen`.\n- A query options factory's name ends in `QueryOptions`.\n- A server function lives in a `server/` folder.",
+      "ruleIds": [
+        "feature-layout",
+        "thin-route-file",
+        "query-options-per-query",
+        "loader-owns-first-paint",
+        "server-function-boundary",
+        "inferred-return-types"
+      ]
+    },
+    {
       "set": "tests",
       "path": "tests/code-style",
       "intro": "# Test Style\n\nHow unit tests are arranged, asserted and mocked.\n\n- A setup factory is a function named `setup…` that arranges one test and returns what the test needs.",
@@ -779,9 +1095,10 @@
     {
       "set": "tests",
       "path": "tests/frameworks/tanstack-start",
-      "intro": "# Testing a TanStack Start App\n\nWhich files of a TanStack Start application get unit tests.",
+      "intro": "# Testing a TanStack Start App\n\nWhich files of a TanStack Start application get unit tests, and how a screen test is set up.",
       "ruleIds": [
-        "no-route-file-tests"
+        "no-route-file-tests",
+        "screen-test-under-router"
       ]
     }
   ],
@@ -1439,6 +1756,81 @@
       }
     },
     {
+      "id": "feature-layout",
+      "name": "lightsout/feature-layout",
+      "set": "code",
+      "documentPath": "code/frameworks/tanstack-start",
+      "summary": "How a feature is laid out, and which folder names the framework adds.",
+      "deterministic": true,
+      "agent": true,
+      "defaultSeverity": "advisory",
+      "defaultOptions": {},
+      "fixtureCounts": {
+        "pass": 6,
+        "fail": 4
+      },
+      "prose": "## Feature Layout\n\nA feature is a subject folder at the top of `src/`, and it grows as every folder does: a module is a file until it needs a folder, a file sits where its users are, and siblings share through `common/`. The framework adds two folder names to the three kinds the layout rules allow, and no others:\n\n- `routes/`, at the top of `src/`, holds the route files the framework owns.\n- `server/`, inside a feature, holds its server functions.\n\nWhat a route or another feature imports sits at the feature's top level: its screens, named with a `Screen` suffix, and its query options factories, named with a `QueryOptions` suffix. A hook's name starts with `use`. Kind lives in the name, so no folder is named for one: no `features/`, `screens/`, `components/`, `hooks/` or `queries/`, at any depth.\n\nA feature imports another feature only from its top level, never from its `common/` or `server/`.\n\nThen one rule places every file at every depth, and a path reads subject, subject, subject rather than kind, kind, kind.",
+      "fixtures": [
+        {
+          "side": "pass",
+          "path": "src/issues/common/types/Issue.ts",
+          "text": "// Shared by the server function and the screen, so it sits in the feature's common/.\nexport interface Issue {\n\tid: number;\n\ttitle: string;\n}\n"
+        },
+        {
+          "side": "pass",
+          "path": "src/issues/issuesQueryOptions.ts",
+          "text": "import { queryOptions } from '@tanstack/react-query';\nimport { findIssues } from './server/findIssues.ts';\n\n// Correct: used by the route loader and the screen, so it sits at the feature's\n// top level, and its name says what it is.\nexport const issuesQueryOptions = () =>\n\tqueryOptions({\n\t\tqueryKey: ['issues'],\n\t\tqueryFn: () => findIssues(),\n\t});\n"
+        },
+        {
+          "side": "pass",
+          "path": "src/issues/IssuesScreen/IssueRow.tsx",
+          "text": "interface Params {\n\ttitle: string;\n}\n\n// Correct: used by the screen alone, so it sits beside it, with no folder between.\nexport const IssueRow = ({ title }: Params) => <li>{title}</li>;\n"
+        },
+        {
+          "side": "pass",
+          "path": "src/issues/IssuesScreen/IssuesScreen.tsx",
+          "text": "import { useSuspenseQuery } from '@tanstack/react-query';\nimport { issuesQueryOptions } from '../issuesQueryOptions.ts';\nimport { IssueRow } from './IssueRow.tsx';\n\n// Correct: a module folder named for its export, at the top of the feature\n// because the route imports it.\nexport const IssuesScreen = () => {\n\tconst { data: issues } = useSuspenseQuery(issuesQueryOptions());\n\n\treturn (\n\t\t<ul>\n\t\t\t{issues.map((issue) => (\n\t\t\t\t<IssueRow key={issue.id} title={issue.title} />\n\t\t\t))}\n\t\t</ul>\n\t);\n};\n"
+        },
+        {
+          "side": "pass",
+          "path": "src/issues/server/findIssues.ts",
+          "text": "import { createServerFn } from '@tanstack/react-start';\nimport type { Issue } from '../common/types/Issue.ts';\n\n// Correct: the one place in the feature that runs on the server.\nexport const findIssues = createServerFn({ method: 'GET' }).handler(async (): Promise<Issue[]> => [{ id: 1, title: 'Login fails' }]);\n"
+        },
+        {
+          "side": "pass",
+          "path": "src/routes/issues.tsx",
+          "text": "import { createFileRoute } from '@tanstack/react-router';\nimport { IssuesScreen } from '../issues/IssuesScreen/IssuesScreen.tsx';\nimport { issuesQueryOptions } from '../issues/issuesQueryOptions.ts';\n\n// The route imports from the feature's top level and nothing deeper.\nexport const Route = createFileRoute('/issues')({\n\tloader: ({ context }) => context.queryClient.ensureQueryData(issuesQueryOptions()),\n\tcomponent: IssuesScreen,\n});\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/features/issues/queries/issuesQueryOptions.ts",
+          "text": "import { queryOptions } from '@tanstack/react-query';\n\n// Incorrect: queries/ names a kind of code. The factory's own name already says\n// what it is, and placement puts it at the feature's top level.\nexport const issuesQueryOptions = () =>\n\tqueryOptions({\n\t\tqueryKey: ['issues'],\n\t\tqueryFn: async () => [{ id: 1, title: 'Login fails' }],\n\t});\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/features/issues/screens/IssuesScreen/components/IssueRow.tsx",
+          "text": "interface Params {\n\ttitle: string;\n}\n\n// Incorrect: features/, screens/ and components/ each name a kind of code, and\n// the file is four folders from the feature it belongs to.\nexport const IssueRow = ({ title }: Params) => <li>{title}</li>;\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/features/issues/screens/IssuesScreen/IssuesScreen.tsx",
+          "text": "import { useSuspenseQuery } from '@tanstack/react-query';\nimport { issuesQueryOptions } from '../../queries/issuesQueryOptions.ts';\nimport { IssueRow } from './components/IssueRow.tsx';\n\n// Incorrect: the screen reaches its query through a queries/ folder, and its\n// one private child through a components/ folder.\nexport const IssuesScreen = () => {\n\tconst { data: issues } = useSuspenseQuery(issuesQueryOptions());\n\n\treturn (\n\t\t<ul>\n\t\t\t{issues.map((issue) => (\n\t\t\t\t<IssueRow key={issue.id} title={issue.title} />\n\t\t\t))}\n\t\t</ul>\n\t);\n};\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/routes/issues.tsx",
+          "text": "import { createFileRoute } from '@tanstack/react-router';\nimport { issuesQueryOptions } from '../features/issues/queries/issuesQueryOptions.ts';\nimport { IssuesScreen } from '../features/issues/screens/IssuesScreen/IssuesScreen.tsx';\n\n// The route is wired as it should be; its imports show the folders in the way.\nexport const Route = createFileRoute('/issues')({\n\tloader: ({ context }) => context.queryClient.ensureQueryData(issuesQueryOptions()),\n\tcomponent: IssuesScreen,\n});\n"
+        }
+      ],
+      "example": {
+        "kind": "repo",
+        "focus": {
+          "fail": "src/features/issues/screens/IssuesScreen/components/IssueRow.tsx",
+          "pass": "src/issues/IssuesScreen/IssueRow.tsx"
+        }
+      }
+    },
+    {
       "id": "file-placement",
       "name": "lightsout/file-placement",
       "set": "code",
@@ -1991,6 +2383,117 @@
       }
     },
     {
+      "id": "inferred-return-types",
+      "name": "lightsout/inferred-return-types",
+      "set": "code",
+      "documentPath": "code/frameworks/tanstack-start",
+      "summary": "Which exports leave their return type to inference.",
+      "deterministic": false,
+      "agent": true,
+      "defaultSeverity": "advisory",
+      "defaultOptions": {},
+      "fixtureCounts": {
+        "pass": 1,
+        "fail": 1
+      },
+      "prose": "## Inferred Return Types\n\nLeave the return type to inference on three kinds of export, the one exception to `explicit-return-type`: a component, a query options factory, and a hook that returns a query. Write it out on every other export, as that rule says.\n\nA component's contract is its props, and the element type adds nothing a reader uses. A `queryOptions()` factory and a query hook return deep generic types that carry the key and the data type; an annotation either flattens them or copies a type nobody reads.",
+      "fixtures": [
+        {
+          "side": "pass",
+          "path": "src/issues/issuesQueryOptions.ts",
+          "text": "import { queryOptions } from '@tanstack/react-query';\nimport { findIssues } from './server/findIssues.ts';\n\n// Correct: inference keeps the key and the data type exactly as declared.\nexport const issuesQueryOptions = () =>\n\tqueryOptions({\n\t\tqueryKey: ['issues'],\n\t\tqueryFn: () => findIssues(),\n\t});\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/issues/issuesQueryOptions.ts",
+          "text": "import { queryOptions, type UseQueryOptions } from '@tanstack/react-query';\nimport type { Issue } from './common/types/Issue.ts';\nimport { findIssues } from './server/findIssues.ts';\n\n// Incorrect: the written type flattens what queryOptions() infers — the key's\n// literal type is gone, so a loader and a screen no longer share one key type.\nexport const issuesQueryOptions = (): UseQueryOptions<Issue[], Error, Issue[], string[]> =>\n\tqueryOptions({\n\t\tqueryKey: ['issues'],\n\t\tqueryFn: () => findIssues(),\n\t});\n"
+        }
+      ],
+      "example": {
+        "kind": "snippet"
+      }
+    },
+    {
+      "id": "loader-owns-first-paint",
+      "name": "lightsout/loader-owns-first-paint",
+      "set": "code",
+      "documentPath": "code/frameworks/tanstack-start",
+      "summary": "How a screen's data is fetched.",
+      "deterministic": true,
+      "agent": true,
+      "defaultSeverity": "advisory",
+      "defaultOptions": {},
+      "fixtureCounts": {
+        "pass": 5,
+        "fail": 6
+      },
+      "prose": "## Loader Owns First Paint\n\nFetch what a screen shows on its first render in the route loader, with `ensureQueryData` on the screen's query options, and read it in the screen with `useSuspenseQuery` on the same object. The screen then has no loading branch for that data.\n\nNever wrap a query in a hook that only calls it: a `useIssues` whose body is `useQuery(issuesQueryOptions())` is a second name for the same thing. Call the query where it is used, and write a hook only when it holds logic of its own.\n\nData a screen needs later, after an interaction or below the fold, is fetched where it is needed with `useQuery`.\n\nThen a route is complete when its loader resolves, and a reader finds the fetch in two places that name one object.",
+      "fixtures": [
+        {
+          "side": "pass",
+          "path": "src/issues/common/types/Issue.ts",
+          "text": "export interface Issue {\n\tid: number;\n\ttitle: string;\n}\n"
+        },
+        {
+          "side": "pass",
+          "path": "src/issues/issuesQueryOptions.ts",
+          "text": "import { queryOptions } from '@tanstack/react-query';\nimport { findIssues } from './server/findIssues.ts';\n\nexport const issuesQueryOptions = () =>\n\tqueryOptions({\n\t\tqueryKey: ['issues'],\n\t\tqueryFn: () => findIssues(),\n\t});\n"
+        },
+        {
+          "side": "pass",
+          "path": "src/issues/IssuesScreen/IssuesScreen.tsx",
+          "text": "import { useSuspenseQuery } from '@tanstack/react-query';\nimport { issuesQueryOptions } from '../issuesQueryOptions.ts';\n\n// Correct: the data is already in the cache, so the screen reads it and renders.\nexport const IssuesScreen = () => {\n\tconst { data: issues } = useSuspenseQuery(issuesQueryOptions());\n\n\treturn (\n\t\t<ul>\n\t\t\t{issues.map((issue) => (\n\t\t\t\t<li key={issue.id}>{issue.title}</li>\n\t\t\t))}\n\t\t</ul>\n\t);\n};\n"
+        },
+        {
+          "side": "pass",
+          "path": "src/issues/server/findIssues.ts",
+          "text": "import { createServerFn } from '@tanstack/react-start';\nimport type { Issue } from '../common/types/Issue.ts';\n\nexport const findIssues = createServerFn({ method: 'GET' }).handler(async (): Promise<Issue[]> => [{ id: 1, title: 'Login fails' }]);\n"
+        },
+        {
+          "side": "pass",
+          "path": "src/routes/issues.tsx",
+          "text": "import { createFileRoute } from '@tanstack/react-router';\nimport { IssuesScreen } from '../issues/IssuesScreen/IssuesScreen.tsx';\nimport { issuesQueryOptions } from '../issues/issuesQueryOptions.ts';\n\n// Correct: the loader fetches through the object the screen reads, so the\n// screen's first render has its data.\nexport const Route = createFileRoute('/issues')({\n\tloader: ({ context }) => context.queryClient.ensureQueryData(issuesQueryOptions()),\n\tcomponent: IssuesScreen,\n});\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/issues/common/types/Issue.ts",
+          "text": "export interface Issue {\n\tid: number;\n\ttitle: string;\n}\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/issues/issuesQueryOptions.ts",
+          "text": "import { queryOptions } from '@tanstack/react-query';\nimport { findIssues } from './server/findIssues.ts';\n\nexport const issuesQueryOptions = () =>\n\tqueryOptions({\n\t\tqueryKey: ['issues'],\n\t\tqueryFn: () => findIssues(),\n\t});\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/issues/IssuesScreen/IssuesScreen.tsx",
+          "text": "import { useIssues } from '../useIssues.ts';\n\n// Incorrect: nothing prefetched, so the screen paints a loading branch first,\n// and it reads the query through a hook that only renames it.\nexport const IssuesScreen = () => {\n\tconst { data: issues, isLoading } = useIssues();\n\n\tif (isLoading || issues === undefined) {\n\t\treturn <p>Loading…</p>;\n\t}\n\n\treturn (\n\t\t<ul>\n\t\t\t{issues.map((issue) => (\n\t\t\t\t<li key={issue.id}>{issue.title}</li>\n\t\t\t))}\n\t\t</ul>\n\t);\n};\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/issues/server/findIssues.ts",
+          "text": "import { createServerFn } from '@tanstack/react-start';\nimport type { Issue } from '../common/types/Issue.ts';\n\nexport const findIssues = createServerFn({ method: 'GET' }).handler(async (): Promise<Issue[]> => [{ id: 1, title: 'Login fails' }]);\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/issues/useIssues.ts",
+          "text": "import { useQuery } from '@tanstack/react-query';\nimport { issuesQueryOptions } from './issuesQueryOptions.ts';\n\n// Incorrect: a hook whose whole body is the query call is a second name for it.\nexport const useIssues = () => useQuery(issuesQueryOptions());\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/routes/issues.tsx",
+          "text": "import { createFileRoute } from '@tanstack/react-router';\nimport { IssuesScreen } from '../issues/IssuesScreen/IssuesScreen.tsx';\n\n// Incorrect: no loader, so the route is \"done\" before the screen has its data.\nexport const Route = createFileRoute('/issues')({ component: IssuesScreen });\n"
+        }
+      ],
+      "example": {
+        "kind": "repo",
+        "focus": {
+          "fail": "src/issues/IssuesScreen/IssuesScreen.tsx",
+          "pass": "src/routes/issues.tsx"
+        }
+      }
+    },
+    {
       "id": "module-boundary-testing",
       "name": "lightsout/module-boundary-testing",
       "set": "tests",
@@ -2271,37 +2774,52 @@
       "defaultSeverity": "advisory",
       "defaultOptions": {},
       "fixtureCounts": {
-        "pass": 2,
-        "fail": 2
+        "pass": 4,
+        "fail": 3
       },
-      "prose": "## No Route File Tests\n\nNever write a unit test for a route file under `routes/`. Test the screen the route renders instead.\n\nA route file is thin wiring: guards, layout and one screen render. The screen's own tests and the end-to-end tests cover it.",
+      "prose": "## No Route File Tests\n\nNever write a unit test for a route file under `routes/`. Test the screen the route renders instead.\n\nA route file is thin wiring: guards, a loader and one screen. The screen's own tests and the end-to-end tests cover it.",
       "fixtures": [
         {
           "side": "pass",
-          "path": "src/features/issues/screens/IssuesScreen.tsx",
-          "text": "// The screen the `/issues` route renders.\nexport const IssuesScreen = () => <h1>Issues</h1>;\n"
+          "path": "src/issues/common/types/Issue.ts",
+          "text": "export interface Issue {\n\tid: number;\n\ttitle: string;\n}\n"
         },
         {
           "side": "pass",
-          "path": "src/features/issues/screens/IssuesScreen.unit.test.tsx",
-          "text": "import { describe, expect, test } from '@jest/globals';\nimport { render, screen } from '@testing-library/react';\nimport { IssuesScreen } from './IssuesScreen';\n\nconst setupIssuesScreen = () => {\n\trender(<IssuesScreen />);\n};\n\n// Correct: the screen is tested, and the route that renders it is not.\ndescribe('IssuesScreen', () => {\n\ttest('renders the heading', () => {\n\t\tsetupIssuesScreen();\n\n\t\tconst heading = screen.getByRole('heading', { name: 'Issues' });\n\n\t\texpect(heading).toBeInTheDocument();\n\t});\n});\n"
+          "path": "src/issues/issuesQueryOptions.ts",
+          "text": "import { queryOptions } from '@tanstack/react-query';\nimport type { Issue } from './common/types/Issue.ts';\n\nexport const issuesQueryOptions = () =>\n\tqueryOptions({\n\t\tqueryKey: ['issues'],\n\t\tqueryFn: async (): Promise<Issue[]> => [{ id: 1, title: 'Login fails' }],\n\t});\n"
+        },
+        {
+          "side": "pass",
+          "path": "src/issues/IssuesScreen/IssuesScreen.tsx",
+          "text": "import { useSuspenseQuery } from '@tanstack/react-query';\nimport { issuesQueryOptions } from '../issuesQueryOptions.ts';\n\nexport const IssuesScreen = () => {\n\tconst { data: issues } = useSuspenseQuery(issuesQueryOptions());\n\n\treturn (\n\t\t<section>\n\t\t\t<h1>Issues</h1>\n\t\t\t<ul>\n\t\t\t\t{issues.map((issue) => (\n\t\t\t\t\t<li key={issue.id}>{issue.title}</li>\n\t\t\t\t))}\n\t\t\t</ul>\n\t\t</section>\n\t);\n};\n"
+        },
+        {
+          "side": "pass",
+          "path": "src/issues/IssuesScreen/IssuesScreen.unit.test.tsx",
+          "text": "import { describe, expect, test } from '@jest/globals';\nimport { QueryClient, QueryClientProvider } from '@tanstack/react-query';\nimport { RouterProvider, createMemoryHistory, createRootRoute, createRoute, createRouter } from '@tanstack/react-router';\nimport { render, screen } from '@testing-library/react';\nimport type { Issue } from '../common/types/Issue.ts';\nimport { issuesQueryOptions } from '../issuesQueryOptions.ts';\nimport { IssuesScreen } from './IssuesScreen.tsx';\n\n// Correct: the screen renders under a router whose one route is its own, with a\n// query client holding what the loader would have fetched.\nconst setupIssuesScreen = ({ issues = [{ id: 1, title: 'Login fails' }] }: { issues?: Issue[] } = {}) => {\n\tconst queryClient = new QueryClient();\n\tqueryClient.setQueryData(issuesQueryOptions().queryKey, issues);\n\tconst rootRoute = createRootRoute();\n\tconst issuesRoute = createRoute({ getParentRoute: () => rootRoute, path: '/issues', component: IssuesScreen });\n\tconst router = createRouter({ routeTree: rootRoute.addChildren([issuesRoute]), history: createMemoryHistory({ initialEntries: ['/issues'] }) });\n\n\trender(\n\t\t<QueryClientProvider client={queryClient}>\n\t\t\t<RouterProvider router={router} />\n\t\t</QueryClientProvider>,\n\t);\n};\n\ndescribe('IssuesScreen', () => {\n\ttest('lists each issue by title', async () => {\n\t\tsetupIssuesScreen();\n\n\t\tconst row = await screen.findByText('Login fails');\n\n\t\texpect(row).toBeInTheDocument();\n\t});\n});\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/issues/IssuesScreen/IssuesScreen.tsx",
+          "text": "import { useSuspenseQuery } from '@tanstack/react-query';\nimport { issuesQueryOptions } from '../issuesQueryOptions.ts';\n\nexport const IssuesScreen = () => {\n\tconst { data: issues } = useSuspenseQuery(issuesQueryOptions());\n\n\treturn (\n\t\t<section>\n\t\t\t<h1>Issues</h1>\n\t\t\t<ul>\n\t\t\t\t{issues.map((issue) => (\n\t\t\t\t\t<li key={issue.id}>{issue.title}</li>\n\t\t\t\t))}\n\t\t\t</ul>\n\t\t</section>\n\t);\n};\n"
         },
         {
           "side": "fail",
           "path": "src/routes/issues.tsx",
-          "text": "import { createFileRoute } from '@tanstack/react-router';\nimport { IssuesScreen } from '../features/issues/screens/IssuesScreen';\n\n// The route only wires the screen to its path.\nexport const Route = createFileRoute('/issues')({ component: IssuesScreen });\n"
+          "text": "import { createFileRoute } from '@tanstack/react-router';\nimport { IssuesScreen } from '../issues/IssuesScreen/IssuesScreen.tsx';\n\n// The route only wires the screen to its path.\nexport const Route = createFileRoute('/issues')({ component: IssuesScreen });\n"
         },
         {
           "side": "fail",
           "path": "src/routes/issues.unit.test.tsx",
-          "text": "import { describe, expect, test } from '@jest/globals';\nimport { Route } from './issues';\n\n// Incorrect: a unit test for a route file, which holds nothing but wiring.\ndescribe('issues route', () => {\n\ttest('renders the issues screen', () => {\n\t\tconst component = Route.options.component;\n\n\t\texpect(component).toBeDefined();\n\t});\n});\n"
+          "text": "import { describe, expect, test } from '@jest/globals';\nimport { Route } from './issues.tsx';\n\n// Incorrect: a test of the wiring, which the end-to-end tests already walk.\ndescribe('issues route', () => {\n\ttest('renders the issues screen', () => {\n\t\texpect(Route.options.component).toBeDefined();\n\t});\n});\n"
         }
       ],
       "example": {
         "kind": "repo",
         "focus": {
           "fail": "src/routes/issues.unit.test.tsx",
-          "pass": "src/features/issues/screens/IssuesScreen.unit.test.tsx"
+          "pass": "src/issues/IssuesScreen/IssuesScreen.unit.test.tsx"
         }
       }
     },
@@ -2454,6 +2972,76 @@
       }
     },
     {
+      "id": "query-options-per-query",
+      "name": "lightsout/query-options-per-query",
+      "set": "code",
+      "documentPath": "code/frameworks/tanstack-start",
+      "summary": "Where a query is declared, and where its key lives.",
+      "deterministic": true,
+      "agent": true,
+      "defaultSeverity": "advisory",
+      "defaultOptions": {},
+      "fixtureCounts": {
+        "pass": 5,
+        "fail": 4
+      },
+      "prose": "## Query Options Per Query\n\nDeclare every query once, as a `queryOptions()` factory in a file of its own named with a `QueryOptions` suffix, and give it its key there. A route loader, a screen and a mutation's invalidation all read that one object. None writes a `queryKey` of its own, and no file collects the keys of several queries.\n\nLeave the factory's return type to inference, as `inferred-return-types` says.\n\nA key written once is found, invalidated and changed from that one place. A key spelled in two places drifts, and a shared list of keys is a file every feature has to edit.",
+      "fixtures": [
+        {
+          "side": "pass",
+          "path": "src/issues/common/types/Issue.ts",
+          "text": "export interface Issue {\n\tid: number;\n\ttitle: string;\n}\n"
+        },
+        {
+          "side": "pass",
+          "path": "src/issues/issuesQueryOptions.ts",
+          "text": "// Correct: the query and its key are declared once, and every reader imports this.\nimport { queryOptions } from '@tanstack/react-query';\nimport { findIssues } from './server/findIssues.ts';\n\nexport const issuesQueryOptions = () =>\n\tqueryOptions({\n\t\tqueryKey: ['issues'],\n\t\tqueryFn: () => findIssues(),\n\t});\n"
+        },
+        {
+          "side": "pass",
+          "path": "src/issues/IssuesScreen/IssuesScreen.tsx",
+          "text": "import { useSuspenseQuery } from '@tanstack/react-query';\nimport { issuesQueryOptions } from '../issuesQueryOptions.ts';\n\n// Correct: the screen reads the one options object and writes no key.\nexport const IssuesScreen = () => {\n\tconst { data: issues } = useSuspenseQuery(issuesQueryOptions());\n\n\treturn (\n\t\t<ul>\n\t\t\t{issues.map((issue) => (\n\t\t\t\t<li key={issue.id}>{issue.title}</li>\n\t\t\t))}\n\t\t</ul>\n\t);\n};\n"
+        },
+        {
+          "side": "pass",
+          "path": "src/issues/server/findIssues.ts",
+          "text": "import { createServerFn } from '@tanstack/react-start';\nimport type { Issue } from '../common/types/Issue.ts';\n\nexport const findIssues = createServerFn({ method: 'GET' }).handler(async (): Promise<Issue[]> => [{ id: 1, title: 'Login fails' }]);\n"
+        },
+        {
+          "side": "pass",
+          "path": "src/routes/issues.tsx",
+          "text": "import { createFileRoute } from '@tanstack/react-router';\nimport { IssuesScreen } from '../issues/IssuesScreen/IssuesScreen.tsx';\nimport { issuesQueryOptions } from '../issues/issuesQueryOptions.ts';\n\n// The loader prefetches through the same object the screen reads.\nexport const Route = createFileRoute('/issues')({\n\tloader: ({ context }) => context.queryClient.ensureQueryData(issuesQueryOptions()),\n\tcomponent: IssuesScreen,\n});\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/issues/common/types/Issue.ts",
+          "text": "export interface Issue {\n\tid: number;\n\ttitle: string;\n}\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/issues/IssuesScreen/IssuesScreen.tsx",
+          "text": "import { useQuery } from '@tanstack/react-query';\nimport { findIssues } from '../server/findIssues.ts';\n\n// Incorrect: the screen spells the query and its key itself, so the loader\n// below has to spell them again, and the two can drift.\nexport const IssuesScreen = () => {\n\tconst { data: issues = [] } = useQuery({ queryKey: ['issues'], queryFn: () => findIssues() });\n\n\treturn (\n\t\t<ul>\n\t\t\t{issues.map((issue) => (\n\t\t\t\t<li key={issue.id}>{issue.title}</li>\n\t\t\t))}\n\t\t</ul>\n\t);\n};\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/issues/server/findIssues.ts",
+          "text": "import { createServerFn } from '@tanstack/react-start';\nimport type { Issue } from '../common/types/Issue.ts';\n\nexport const findIssues = createServerFn({ method: 'GET' }).handler(async (): Promise<Issue[]> => [{ id: 1, title: 'Login fails' }]);\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/routes/issues.tsx",
+          "text": "import { createFileRoute } from '@tanstack/react-router';\nimport { IssuesScreen } from '../issues/IssuesScreen/IssuesScreen.tsx';\nimport { findIssues } from '../issues/server/findIssues.ts';\n\n// Incorrect: a second copy of the key and the fetch, written by hand.\nexport const Route = createFileRoute('/issues')({\n\tloader: ({ context }) => context.queryClient.ensureQueryData({ queryKey: ['issues'], queryFn: () => findIssues() }),\n\tcomponent: IssuesScreen,\n});\n"
+        }
+      ],
+      "example": {
+        "kind": "repo",
+        "focus": {
+          "fail": "src/issues/IssuesScreen/IssuesScreen.tsx",
+          "pass": "src/issues/issuesQueryOptions.ts"
+        }
+      }
+    },
+    {
       "id": "react-function-size",
       "name": "lightsout/react-function-size",
       "set": "code",
@@ -2540,6 +3128,92 @@
         "focus": {
           "fail": "src/getInvoiceLabel.ts",
           "pass": "src/getInvoiceLabel.ts"
+        }
+      }
+    },
+    {
+      "id": "screen-test-under-router",
+      "name": "lightsout/screen-test-under-router",
+      "set": "tests",
+      "documentPath": "tests/frameworks/tanstack-start",
+      "summary": "How a screen test is set up.",
+      "deterministic": false,
+      "agent": true,
+      "defaultSeverity": "advisory",
+      "defaultOptions": {},
+      "fixtureCounts": {
+        "pass": 1,
+        "fail": 1
+      },
+      "prose": "## Screen Test Under Router\n\nRender a screen inside a memory-history router whose one route renders it, with a query client seeded with what its loader would have fetched: `queryClient.setQueryData(issuesQueryOptions().queryKey, issues)`. Never mock the router's hooks or the query hooks.\n\nA screen rendered free of its router and query client is not the one the route renders. Under them it is, which is why the route itself gets no test.",
+      "fixtures": [
+        {
+          "side": "pass",
+          "path": "src/issues/IssuesScreen/IssuesScreen.unit.test.tsx",
+          "text": "import { describe, expect, test } from '@jest/globals';\nimport { QueryClient, QueryClientProvider } from '@tanstack/react-query';\nimport { RouterProvider, createMemoryHistory, createRootRoute, createRoute, createRouter } from '@tanstack/react-router';\nimport { render, screen } from '@testing-library/react';\nimport type { Issue } from '../common/types/Issue.ts';\nimport { issuesQueryOptions } from '../issuesQueryOptions.ts';\nimport { IssuesScreen } from './IssuesScreen.tsx';\n\n// Correct: the screen renders under a router whose one route is its own, with a\n// query client holding what the loader would have fetched.\nconst setupIssuesScreen = ({ issues = [{ id: 1, title: 'Login fails' }] }: { issues?: Issue[] } = {}) => {\n\tconst queryClient = new QueryClient();\n\tqueryClient.setQueryData(issuesQueryOptions().queryKey, issues);\n\tconst rootRoute = createRootRoute();\n\tconst issuesRoute = createRoute({ getParentRoute: () => rootRoute, path: '/issues', component: IssuesScreen });\n\tconst router = createRouter({ routeTree: rootRoute.addChildren([issuesRoute]), history: createMemoryHistory({ initialEntries: ['/issues'] }) });\n\n\trender(\n\t\t<QueryClientProvider client={queryClient}>\n\t\t\t<RouterProvider router={router} />\n\t\t</QueryClientProvider>,\n\t);\n};\n\ndescribe('IssuesScreen', () => {\n\ttest('lists each issue by title', async () => {\n\t\tsetupIssuesScreen();\n\n\t\tconst row = await screen.findByText('Login fails');\n\n\t\texpect(row).toBeInTheDocument();\n\t});\n});\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/issues/IssuesScreen/IssuesScreen.unit.test.tsx",
+          "text": "import { describe, expect, jest, test } from '@jest/globals';\nimport { render, screen } from '@testing-library/react';\nimport { IssuesScreen } from './IssuesScreen.tsx';\n\nconst mockUseSuspenseQuery = jest.fn<() => { data: Array<{ id: number; title: string }> }>();\n\n// Incorrect: with the query hook and the router mocked away, the screen under\n// test is not the one the route renders — its key, loader and links are gone.\njest.mock('@tanstack/react-query', () => ({ useSuspenseQuery: () => mockUseSuspenseQuery() }));\njest.mock('@tanstack/react-router', () => ({ Link: ({ children }: { children: string }) => children }));\n\nconst setupIssuesScreen = () => {\n\tmockUseSuspenseQuery.mockReturnValue({ data: [{ id: 1, title: 'Login fails' }] });\n\trender(<IssuesScreen />);\n};\n\ndescribe('IssuesScreen', () => {\n\ttest('lists each issue by title', () => {\n\t\tsetupIssuesScreen();\n\n\t\tconst row = screen.getByText('Login fails');\n\n\t\texpect(row).toBeInTheDocument();\n\t});\n});\n"
+        }
+      ],
+      "example": {
+        "kind": "snippet"
+      }
+    },
+    {
+      "id": "server-function-boundary",
+      "name": "lightsout/server-function-boundary",
+      "set": "code",
+      "documentPath": "code/frameworks/tanstack-start",
+      "summary": "Where a server function lives, and what one file of it holds.",
+      "deterministic": true,
+      "agent": true,
+      "defaultSeverity": "advisory",
+      "defaultOptions": {},
+      "fixtureCounts": {
+        "pass": 3,
+        "fail": 3
+      },
+      "prose": "## Server Function Boundary\n\nPut every `createServerFn` in a feature's `server/` folder, one per file, named for what it does. A server function that takes input declares its validator. A document or helper only that function uses sits beside it, as `module-file-to-folder` says, and nothing outside `server/` imports a server-only dependency.\n\n`server/` is the one place a feature's code runs on the server, so the client/server line is read from the tree, and a server dependency reaching the client shows as a wrong import path.",
+      "fixtures": [
+        {
+          "side": "pass",
+          "path": "src/issues/common/types/Issue.ts",
+          "text": "export interface Issue {\n\tid: number;\n\ttitle: string;\n}\n"
+        },
+        {
+          "side": "pass",
+          "path": "src/issues/server/closeIssue.ts",
+          "text": "import { createServerFn } from '@tanstack/react-start';\nimport type { Issue } from '../common/types/Issue.ts';\n\n// Correct: input is declared before the handler reads it.\nexport const closeIssue = createServerFn({ method: 'POST' })\n\t.inputValidator((data: { issueId: number }) => data)\n\t.handler(async ({ data }): Promise<Issue> => ({ id: data.issueId, title: 'Login fails' }));\n"
+        },
+        {
+          "side": "pass",
+          "path": "src/issues/server/findIssues.ts",
+          "text": "import { createServerFn } from '@tanstack/react-start';\nimport type { Issue } from '../common/types/Issue.ts';\n\n// Correct: one server function, in server/, named for what it does.\nexport const findIssues = createServerFn({ method: 'GET' }).handler(async (): Promise<Issue[]> => [{ id: 1, title: 'Login fails' }]);\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/issues/common/types/Issue.ts",
+          "text": "export interface Issue {\n\tid: number;\n\ttitle: string;\n}\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/issues/issueCommands.ts",
+          "text": "import { createServerFn } from '@tanstack/react-start';\nimport type { Issue } from './common/types/Issue.ts';\n\n// Incorrect: two server functions in one file, outside server/, and the update\n// takes input it never validates.\nexport const findOneIssue = createServerFn({ method: 'GET' }).handler(async (): Promise<Issue> => ({ id: 1, title: 'Login fails' }));\n\nexport const closeIssue = createServerFn({ method: 'POST' }).handler(async ({ data }): Promise<Issue> => ({ id: Number(data), title: 'Login fails' }));\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/issues/IssuesScreen/findIssues.ts",
+          "text": "import { createServerFn } from '@tanstack/react-start';\nimport type { Issue } from '../common/types/Issue.ts';\n\n// Incorrect: a server function beside the screen, so nothing in the tree says\n// where the client stops and the server begins.\nexport const findIssues = createServerFn({ method: 'GET' }).handler(async (): Promise<Issue[]> => [{ id: 1, title: 'Login fails' }]);\n"
+        }
+      ],
+      "example": {
+        "kind": "repo",
+        "focus": {
+          "fail": "src/issues/IssuesScreen/findIssues.ts",
+          "pass": "src/issues/server/findIssues.ts"
         }
       }
     },
@@ -2982,6 +3656,76 @@
         "focus": {
           "fail": "src/feature/fixtures/sampleLabel.ts",
           "pass": "src/feature/getLabel.ts"
+        }
+      }
+    },
+    {
+      "id": "thin-route-file",
+      "name": "lightsout/thin-route-file",
+      "set": "code",
+      "documentPath": "code/frameworks/tanstack-start",
+      "summary": "What a route file holds.",
+      "deterministic": false,
+      "agent": true,
+      "defaultSeverity": "advisory",
+      "defaultOptions": {},
+      "fixtureCounts": {
+        "pass": 5,
+        "fail": 4
+      },
+      "prose": "## Thin Route File\n\nA route file holds route wiring and nothing else: the loader, `beforeLoad` guards, `validateSearch`, `head`, and the one `Screen` it renders, imported from a feature's top level. Read params and search through the route's own hooks, `Route.useParams()` and `Route.useSearch()`, never the untyped ones.\n\nA component written in the route file may only turn params into the screen's props. Markup, state, a fetch, and anything that deserves a test of its own belong in the screen.\n\nA route file is named by its URL, so nobody searching for a name finds the code in it.",
+      "fixtures": [
+        {
+          "side": "pass",
+          "path": "src/issues/common/types/Issue.ts",
+          "text": "export interface Issue {\n\tid: number;\n\ttitle: string;\n\tsummary: string;\n}\n"
+        },
+        {
+          "side": "pass",
+          "path": "src/issues/issueDetailQueryOptions.ts",
+          "text": "import { queryOptions } from '@tanstack/react-query';\nimport { findOneIssue } from './server/findOneIssue.ts';\n\ninterface Params {\n\tissueId: number;\n}\n\nexport const issueDetailQueryOptions = ({ issueId }: Params) =>\n\tqueryOptions({\n\t\tqueryKey: ['issues', issueId],\n\t\tqueryFn: () => findOneIssue({ data: { issueId } }),\n\t});\n"
+        },
+        {
+          "side": "pass",
+          "path": "src/issues/IssueDetailScreen/IssueDetailScreen.tsx",
+          "text": "import { useSuspenseQuery } from '@tanstack/react-query';\nimport { issueDetailQueryOptions } from '../issueDetailQueryOptions.ts';\n\ninterface Params {\n\tissueId: number;\n}\n\n// The screen holds the markup and reads what the route's loader fetched.\nexport const IssueDetailScreen = ({ issueId }: Params) => {\n\tconst { data: issue } = useSuspenseQuery(issueDetailQueryOptions({ issueId }));\n\n\treturn (\n\t\t<article>\n\t\t\t<h1>{issue.title}</h1>\n\t\t\t<p>{issue.summary}</p>\n\t\t</article>\n\t);\n};\n"
+        },
+        {
+          "side": "pass",
+          "path": "src/issues/server/findOneIssue.ts",
+          "text": "import { createServerFn } from '@tanstack/react-start';\nimport type { Issue } from '../common/types/Issue.ts';\n\nexport const findOneIssue = createServerFn({ method: 'GET' })\n\t.inputValidator((data: { issueId: number }) => data)\n\t.handler(async ({ data }): Promise<Issue> => ({ id: data.issueId, title: 'Login fails', summary: 'The form posts twice.' }));\n"
+        },
+        {
+          "side": "pass",
+          "path": "src/routes/issues.$issueId.tsx",
+          "text": "import { createFileRoute } from '@tanstack/react-router';\nimport { IssueDetailScreen } from '../issues/IssueDetailScreen/IssueDetailScreen.tsx';\nimport { issueDetailQueryOptions } from '../issues/issueDetailQueryOptions.ts';\n\n// Correct: the route prefetches, names the tab and hands typed params to one\n// screen. Everything with a test of its own lives in the screen.\nconst IssueDetailRoute = () => {\n\tconst { issueId } = Route.useParams();\n\n\treturn <IssueDetailScreen issueId={Number(issueId)} />;\n};\n\nexport const Route = createFileRoute('/issues/$issueId')({\n\tloader: ({ context, params }) => context.queryClient.ensureQueryData(issueDetailQueryOptions({ issueId: Number(params.issueId) })),\n\thead: ({ params }) => ({ meta: [{ title: `Issue ${params.issueId}` }] }),\n\tcomponent: IssueDetailRoute,\n});\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/issues/common/types/Issue.ts",
+          "text": "export interface Issue {\n\tid: number;\n\ttitle: string;\n\tsummary: string;\n}\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/issues/issueDetailQueryOptions.ts",
+          "text": "import { queryOptions } from '@tanstack/react-query';\nimport { findOneIssue } from './server/findOneIssue.ts';\n\ninterface Params {\n\tissueId: number;\n}\n\nexport const issueDetailQueryOptions = ({ issueId }: Params) =>\n\tqueryOptions({\n\t\tqueryKey: ['issues', issueId],\n\t\tqueryFn: () => findOneIssue({ data: { issueId } }),\n\t});\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/issues/server/findOneIssue.ts",
+          "text": "import { createServerFn } from '@tanstack/react-start';\nimport type { Issue } from '../common/types/Issue.ts';\n\nexport const findOneIssue = createServerFn({ method: 'GET' })\n\t.inputValidator((data: { issueId: number }) => data)\n\t.handler(async ({ data }): Promise<Issue> => ({ id: data.issueId, title: 'Login fails', summary: 'The form posts twice.' }));\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/routes/issues.$issueId.tsx",
+          "text": "import { useQuery } from '@tanstack/react-query';\nimport { createFileRoute, useParams } from '@tanstack/react-router';\nimport { issueDetailQueryOptions } from '../issues/issueDetailQueryOptions.ts';\n\n// Incorrect: the screen lives in the route file — a fetch, a loading branch and\n// markup under a URL for a name — and reads its params through the untyped hook.\nconst IssueDetailPage = () => {\n\tconst { issueId } = useParams({ strict: false });\n\tconst { data: issue, isLoading } = useQuery(issueDetailQueryOptions({ issueId: Number(issueId) }));\n\n\tif (isLoading || issue === undefined) {\n\t\treturn <p>Loading…</p>;\n\t}\n\n\treturn (\n\t\t<article>\n\t\t\t<h1>{issue.title}</h1>\n\t\t\t<p>{issue.summary}</p>\n\t\t</article>\n\t);\n};\n\nexport const Route = createFileRoute('/issues/$issueId')({ component: IssueDetailPage });\n"
+        }
+      ],
+      "example": {
+        "kind": "repo",
+        "focus": {
+          "fail": "src/routes/issues.$issueId.tsx",
+          "pass": "src/routes/issues.$issueId.tsx"
         }
       }
     },
