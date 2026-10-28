@@ -101,11 +101,11 @@ describe('renderConfigKeyReference', () => {
 		expect(named).toStrictEqual({ optional: true, ceiling: true, renameOnly: true, moveFoldersAndFiles: true, fileBudget: true });
 	});
 
-	test('the generated row says a phased plan carries build output between phases, discards it once the sequence passes, and why to set gates.generate', () => {
+	test('the generated row says a phased plan carries build output between phases, discards it once the sequence passes, and when to set gates.generate', () => {
 		const generatedRow = findRow({ key: 'generated' });
 
 		expect(generatedRow).toMatch(
-			/^\| `generated` \| no \| .*phased plan.*next phase starts from current build output.*discards them once it passes.*`gates\.generate`.*pre-ship step/,
+			/^\| `generated` \| no \| .*phased plan.*next phase starts from current build output.*discards them once it passes.*`gates\.generate`/,
 		);
 	});
 

@@ -11,7 +11,7 @@ describe('getCommandCatalogEntry', () => {
 	test('answers the one skill that has no command word, since the page addresses it by the same id', () => {
 		const entry = getCommandCatalogEntry({ id: 'brainstorm' });
 
-		expect(entry?.slash).toBe('/brainstorm');
+		expect(entry?.slash).toBe('/lightsout:brainstorm');
 	});
 
 	test('a word no command answers to is undefined rather than an error — the route turns that into a not-found', () => {

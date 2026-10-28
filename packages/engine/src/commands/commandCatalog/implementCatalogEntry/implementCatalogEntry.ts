@@ -6,12 +6,12 @@ import { CommandRecordKind } from '#src/contracts/commands/CommandRecordKind.ts'
 /** `/implement` — one plan file or a whole plan workspace, which is why `--plan` appears twice with different placeholders. */
 export const implementCatalogEntry: CommandCatalogEntry = {
 	id: 'implement',
-	slash: '/implement',
+	slash: '/lightsout:implement',
 	cli: 'lightsout implement',
 	group: CommandGroup.Build,
 	summary: 'Build a finished plan unattended — agents write the code and tests, and the repo’s own checks must pass at every step before the run moves on.',
 	whenToUse:
-		'Run it when a plan is graded and you want the work done unattended. Every step is gated by the repo’s own tests, lint, types and coverage, and the run parks rather than pushing past a gate it cannot satisfy.',
+		'Run it when a plan is graded and you want the work done unattended. Every step is gated by the repo’s own tests, lint, types and coverage, and the run parks rather than pushing past a gate it cannot satisfy. A plan folder missing from this machine is restored from the ticket’s attachments, and a plan its work order’s record does not let run — a lower plan unfinished, say, or the plan already implemented — is refused in one sentence naming what is in the way. The run’s records sit in the primary checkout, in its run folder: `.lightsout/work-orders/<work-order>/runs/<id>/` for a plan of a work order, `.lightsout/implement/runs/<id>/` otherwise.',
 	invocations: [{ id: 'implement' }, { id: 'implement-folder', note: 'folder: overview.md runs all phases, else plan.md' }],
 	flags: [
 		{ name: 'plan', value: '<path>', meaning: 'The plan file to implement.', shape: 'implement', required: true },
@@ -54,13 +54,18 @@ export const implementCatalogEntry: CommandCatalogEntry = {
 			fallback: 'The `implement.worktree` config key, which defaults to on.',
 			required: false,
 		},
-		{ name: 'no-worktree', meaning: 'Build in the checkout this was launched from rather than a worktree of its own.', required: false },
+		{
+			name: 'no-worktree',
+			meaning:
+				'Build in the checkout this was launched from rather than a worktree of its own. The run commits everything in that checkout, so it refuses to start while the checkout holds uncommitted changes and lists them; a phased plan checks again before each phase, not counting `generated` paths.',
+			required: false,
+		},
 		{ name: 'ship', meaning: 'Ship the branch after the run passes: open or adopt the PR, wait for checks, merge, clean up.', required: false },
 		{ name: 'no-ship', meaning: 'End on the run result even when the config’s `ship.after-implement` asks to chain into ship.', required: false },
 		{
 			name: 'detach',
 			meaning:
-				'Run in a background engine process that outlives this terminal or session. The command returns once the run has started and prints its id; the engine’s output goes to the run’s launch log in the launches folder of the shared state dir (.lightsout/launches/<id>.log in the primary checkout).',
+				'Run in a background engine process that outlives this terminal or session. The command returns once the run has started and prints its id; the engine’s output goes to the run’s launch log in the launches folder of the shared state dir (.lightsout/launches/<id>.log in the primary checkout). It needs macOS or Linux.',
 			fallback: 'The run happens in the foreground, printing as it goes, and Ctrl-C stops it.',
 			required: false,
 		},

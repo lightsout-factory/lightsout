@@ -33,8 +33,8 @@
 <rect width="2375" height="2493" fill="url(#bg)"/>
 <rect x="0" y="0" width="260" height="180" fill="url(#dots)"/>
 <rect x="2115" y="2313" width="260" height="180" fill="url(#dots)"/>
-<text x="1187.5" y="106" text-anchor="middle" font-size="62" font-weight="700" letter-spacing="-0.5" fill="url(#title)">How /refactor turns scan findings into verified cleanup</text>
-<text x="1187.5" y="152" text-anchor="middle" font-size="25" fill="#c3d3e8">Twelve steps, one batch at a time, every fix re-scanned and re-gated before the next begins.</text>
+<text x="1187.5" y="106" text-anchor="middle" font-size="62" font-weight="700" letter-spacing="-0.5" fill="url(#title)">How /refactor turns standards findings into verified cleanup</text>
+<text x="1187.5" y="152" text-anchor="middle" font-size="25" fill="#c3d3e8">Twelve steps, one batch at a time, every fix re-checked and re-gated before the next begins.</text>
 <rect x="857.5" y="180" width="660" height="2" fill="url(#rail)"/>
 <g><line x1="599" y1="552.5" x2="637" y2="552.5" stroke="#3bd1e9" stroke-opacity="0.55" stroke-width="2"/><path d="M633,546.5 L645,552.5 L633,558.5" fill="none" stroke="#3bd1e9" stroke-opacity="0.85" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g>
 <g><line x1="1164" y1="552.5" x2="1202" y2="552.5" stroke="#46c7ea" stroke-opacity="0.55" stroke-width="2"/><path d="M1198,546.5 L1210,552.5 L1198,558.5" fill="none" stroke="#46c7ea" stroke-opacity="0.85" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g>
@@ -63,16 +63,17 @@
 <text x="50" y="164" font-size="19" font-weight="500" fill="#f0f5fd">Point <tspan font-family="Menlo, SF Mono, monospace" fill="#cdf0fa">/refactor</tspan> at the whole repo or one</text>
 <text x="50" y="192" font-size="19" font-weight="500" fill="#f0f5fd">folder, with an optional batch budget</text>
 <circle cx="34" cy="222" r="3.4" fill="#35d6e8" fill-opacity="0.9"/>
-<text x="50" y="227" font-size="19" font-weight="500" fill="#f0f5fd">Refuse to start without a config, without</text>
-<text x="50" y="255" font-size="19" font-weight="500" fill="#f0f5fd">git, or with uncommitted changes</text>
-<circle cx="34" cy="285" r="3.4" fill="#35d6e8" fill-opacity="0.9"/>
-<text x="50" y="290" font-size="19" font-weight="500" fill="#f0f5fd">Create a run ID and a repository lock so no</text>
-<text x="50" y="318" font-size="19" font-weight="500" fill="#f0f5fd">other lightsout run touches the same tree</text>
-<text x="28" y="352" font-size="16.5" font-style="italic" fill="#c2d1e6">Keeps the entire cleanup as one diff you can read,</text>
-<text x="28" y="377" font-size="16.5" font-style="italic" fill="#c2d1e6">revert, or resume</text>
+<text x="50" y="227" font-size="19" font-weight="500" fill="#f0f5fd">Refuse to start without a config or without</text>
+<text x="50" y="255" font-size="19" font-weight="500" fill="#f0f5fd">git, and on uncommitted changes unless</text>
+<text x="50" y="283" font-size="19" font-weight="500" fill="#f0f5fd"><tspan font-family="Menlo, SF Mono, monospace" fill="#cdf0fa">--allow-dirty</tspan> records them as a baseline</text>
+<circle cx="34" cy="313" r="3.4" fill="#35d6e8" fill-opacity="0.9"/>
+<text x="50" y="318" font-size="19" font-weight="500" fill="#f0f5fd">Create a run ID and a repository lock so no</text>
+<text x="50" y="346" font-size="19" font-weight="500" fill="#f0f5fd">other lightsout run touches the same tree</text>
+<text x="28" y="380" font-size="16.5" font-style="italic" fill="#c2d1e6">Keeps the entire cleanup as one diff you can read,</text>
+<text x="28" y="405" font-size="16.5" font-style="italic" fill="#c2d1e6">revert, or resume</text>
 <line x1="28" y1="507" x2="472" y2="507" stroke="#35d6e8" stroke-opacity="0.22" stroke-width="1" stroke-dasharray="3 5"/>
 <text x="28" y="531" font-size="12.5" font-weight="600" letter-spacing="1.8" fill="#35d6e8" fill-opacity="1">SAVED TO DISK</text>
-<text x="28" y="557" font-family="Menlo, SF Mono, monospace" font-size="14.5" fill="#f6faff">.lightsout/runs/&lt;id&gt;/manifest.json</text>
+<text x="28" y="557" font-family="Menlo, SF Mono, monospace" font-size="14.5" fill="#f6faff">.lightsout/refactor/runs/&lt;id&gt;/manifest.json</text>
 <text x="28" y="581" font-family="Menlo, SF Mono, monospace" font-size="14.5" fill="#f6faff">.lightsout/lock.json</text>
 </g>
 <g transform="translate(655,236)">
@@ -101,7 +102,7 @@
 <text x="28" y="461" font-size="16.5" font-style="italic" fill="#c2d1e6">asked to go find problems</text>
 <line x1="28" y1="507" x2="472" y2="507" stroke="#40cce9" stroke-opacity="0.22" stroke-width="1" stroke-dasharray="3 5"/>
 <text x="28" y="531" font-size="12.5" font-weight="600" letter-spacing="1.8" fill="#40cce9" fill-opacity="1">READ FROM DISK</text>
-<text x="28" y="557" font-family="Menlo, SF Mono, monospace" font-size="14.5" fill="#f6faff">lightsout.scan-baseline.json</text>
+<text x="28" y="557" font-family="Menlo, SF Mono, monospace" font-size="14.5" fill="#f6faff">lightsout.standards-baseline.json</text>
 </g>
 <g transform="translate(1220,236)">
 <rect x="0" y="0" width="500" height="633" rx="20" fill="#0a0f1a" fill-opacity="0.92" stroke="url(#edge2)" stroke-width="1.5"/>
@@ -128,7 +129,7 @@
 <text x="28" y="433" font-size="16.5" font-style="italic" fill="#c2d1e6">pile of unrelated fixes</text>
 <line x1="28" y1="507" x2="472" y2="507" stroke="#4bc3ea" stroke-opacity="0.22" stroke-width="1" stroke-dasharray="3 5"/>
 <text x="28" y="531" font-size="12.5" font-weight="600" letter-spacing="1.8" fill="#4bc3ea" fill-opacity="1">SAVED TO DISK</text>
-<text x="28" y="557" font-family="Menlo, SF Mono, monospace" font-size="14.5" fill="#f6faff">.lightsout/runs/&lt;id&gt;/worklist.json</text>
+<text x="28" y="557" font-family="Menlo, SF Mono, monospace" font-size="14.5" fill="#f6faff">.lightsout/refactor/runs/&lt;id&gt;/worklist.json</text>
 </g>
 <g transform="translate(1785,236)">
 <rect x="0" y="0" width="500" height="633" rx="20" fill="#0a0f1a" fill-opacity="0.92" stroke="url(#edge3)" stroke-width="1.5"/>
@@ -154,7 +155,7 @@
 <line x1="28" y1="507" x2="472" y2="507" stroke="#57b9ec" stroke-opacity="0.22" stroke-width="1" stroke-dasharray="3 5"/>
 <text x="28" y="531" font-size="12.5" font-weight="600" letter-spacing="1.8" fill="#57b9ec" fill-opacity="1">SAVED TO DISK</text>
 <text x="28" y="557" font-family="Menlo, SF Mono, monospace" font-size="14.5" fill="#f6faff">manifest.json</text>
-<text x="28" y="581" font-family="Menlo, SF Mono, monospace" font-size="14.5" fill="#f6faff">.lightsout/runs/&lt;id&gt;/commands.jsonl</text>
+<text x="28" y="581" font-family="Menlo, SF Mono, monospace" font-size="14.5" fill="#f6faff">.lightsout/refactor/runs/&lt;id&gt;/commands.jsonl</text>
 </g>
 <g transform="translate(90,951)">
 <rect x="0" y="0" width="500" height="633" rx="20" fill="#0a0f1a" fill-opacity="0.92" stroke="url(#edge4)" stroke-width="1.5"/>
@@ -167,7 +168,7 @@
 <text x="28" y="112" font-size="26" font-weight="700" letter-spacing="0.6" fill="#f1f5fb">SKIP WHAT IS ALREADY FIXED</text>
 <rect x="28" y="126" width="150" height="2" fill="url(#rule4)"/>
 <circle cx="34" cy="159" r="3.4" fill="#62afed" fill-opacity="0.9"/>
-<text x="50" y="164" font-size="19" font-weight="500" fill="#f0f5fd">Scan again immediately before each batch</text>
+<text x="50" y="164" font-size="19" font-weight="500" fill="#f0f5fd">Check again immediately before each batch</text>
 <text x="50" y="192" font-size="19" font-weight="500" fill="#f0f5fd">starts</text>
 <circle cx="34" cy="222" r="3.4" fill="#62afed" fill-opacity="0.9"/>
 <text x="50" y="227" font-size="19" font-weight="500" fill="#f0f5fd">If earlier batches already cleared these</text>
@@ -208,7 +209,7 @@
 <text x="28" y="461" font-size="16.5" font-style="italic" fill="#c2d1e6">untouched</text>
 <line x1="28" y1="507" x2="472" y2="507" stroke="#6da5ee" stroke-opacity="0.22" stroke-width="1" stroke-dasharray="3 5"/>
 <text x="28" y="531" font-size="12.5" font-weight="600" letter-spacing="1.8" fill="#6da5ee" fill-opacity="1">SAVED TO DISK</text>
-<text x="28" y="557" font-family="Menlo, SF Mono, monospace" font-size="14.5" fill="#f6faff">.lightsout/runs/&lt;id&gt;/agents/</text>
+<text x="28" y="557" font-family="Menlo, SF Mono, monospace" font-size="14.5" fill="#f6faff">.lightsout/refactor/runs/&lt;id&gt;/agents/</text>
 <text x="28" y="581" font-family="Menlo, SF Mono, monospace" font-size="14.5" fill="#f6faff">stream-batch-NN-*.jsonl</text>
 <text x="28" y="605" font-family="Menlo, SF Mono, monospace" font-size="14.5" fill="#f6faff">rejected-*.txt</text>
 </g>
@@ -237,7 +238,7 @@
 <line x1="28" y1="507" x2="472" y2="507" stroke="#789cef" stroke-opacity="0.22" stroke-width="1" stroke-dasharray="3 5"/>
 <text x="28" y="531" font-size="12.5" font-weight="600" letter-spacing="1.8" fill="#789cef" fill-opacity="1">SAVED TO DISK</text>
 <text x="28" y="557" font-family="Menlo, SF Mono, monospace" font-size="14.5" fill="#f6faff">manifest.json</text>
-<text x="28" y="581" font-family="Menlo, SF Mono, monospace" font-size="14.5" fill="#f6faff">.lightsout/runs/&lt;id&gt;/commands.jsonl</text>
+<text x="28" y="581" font-family="Menlo, SF Mono, monospace" font-size="14.5" fill="#f6faff">.lightsout/refactor/runs/&lt;id&gt;/commands.jsonl</text>
 </g>
 <g transform="translate(1785,951)">
 <rect x="0" y="0" width="500" height="633" rx="20" fill="#0a0f1a" fill-opacity="0.92" stroke="url(#edge7)" stroke-width="1.5"/>
@@ -263,7 +264,7 @@
 <text x="28" y="405" font-size="16.5" font-style="italic" fill="#c2d1e6">forever</text>
 <line x1="28" y1="507" x2="472" y2="507" stroke="#8392f0" stroke-opacity="0.22" stroke-width="1" stroke-dasharray="3 5"/>
 <text x="28" y="531" font-size="12.5" font-weight="600" letter-spacing="1.8" fill="#8392f0" fill-opacity="1">SAVED TO DISK</text>
-<text x="28" y="557" font-family="Menlo, SF Mono, monospace" font-size="14.5" fill="#f6faff">.lightsout/runs/&lt;id&gt;/agents/</text>
+<text x="28" y="557" font-family="Menlo, SF Mono, monospace" font-size="14.5" fill="#f6faff">.lightsout/refactor/runs/&lt;id&gt;/agents/</text>
 <text x="28" y="581" font-family="Menlo, SF Mono, monospace" font-size="14.5" fill="#f6faff">stream-batch-NN-supervisor.jsonl</text>
 </g>
 <g transform="translate(90,1666)">
@@ -277,7 +278,7 @@
 <text x="28" y="112" font-size="26" font-weight="700" letter-spacing="0.6" fill="#f1f5fb">RULE ON THE BATCH</text>
 <rect x="28" y="126" width="150" height="2" fill="url(#rule8)"/>
 <circle cx="34" cy="159" r="3.4" fill="#8e88f1" fill-opacity="0.9"/>
-<text x="50" y="164" font-size="19" font-weight="500" fill="#f0f5fd">Scan again — the code rules, and a copied</text>
+<text x="50" y="164" font-size="19" font-weight="500" fill="#f0f5fd">Check again — the code rules, and a copied</text>
 <text x="50" y="192" font-size="19" font-weight="500" fill="#f0f5fd">block that merely moved is not gone</text>
 <circle cx="34" cy="222" r="3.4" fill="#8e88f1" fill-opacity="0.9"/>
 <text x="50" y="227" font-size="19" font-weight="500" fill="#f0f5fd">Gone counts as resolved; still there with</text>
@@ -331,7 +332,7 @@
 <text x="28" y="112" font-size="26" font-weight="700" letter-spacing="0.6" fill="#f1f5fb">MEASURE THE BURN-DOWN</text>
 <rect x="28" y="126" width="150" height="2" fill="url(#rule10)"/>
 <circle cx="34" cy="159" r="3.4" fill="#a575f4" fill-opacity="0.9"/>
-<text x="50" y="164" font-size="19" font-weight="500" fill="#f0f5fd">Scan the whole scope once more and report</text>
+<text x="50" y="164" font-size="19" font-weight="500" fill="#f0f5fd">Check the whole scope once more and report</text>
 <text x="50" y="192" font-size="19" font-weight="500" fill="#f0f5fd">findings before and after, one line per kind</text>
 <circle cx="34" cy="222" r="3.4" fill="#a575f4" fill-opacity="0.9"/>
 <text x="50" y="227" font-size="19" font-weight="500" fill="#f0f5fd">A parked run reports no burn-down — resume</text>
@@ -343,7 +344,7 @@
 <text x="28" y="377" font-size="16.5" font-style="italic" fill="#c2d1e6">than a claim</text>
 <line x1="28" y1="507" x2="472" y2="507" stroke="#a575f4" stroke-opacity="0.22" stroke-width="1" stroke-dasharray="3 5"/>
 <text x="28" y="531" font-size="12.5" font-weight="600" letter-spacing="1.8" fill="#a575f4" fill-opacity="1">SAVED TO DISK</text>
-<text x="28" y="557" font-family="Menlo, SF Mono, monospace" font-size="14.5" fill="#f6faff">.lightsout/runs/&lt;id&gt;/</text>
+<text x="28" y="557" font-family="Menlo, SF Mono, monospace" font-size="14.5" fill="#f6faff">.lightsout/refactor/runs/&lt;id&gt;/</text>
 <text x="28" y="581" font-family="Menlo, SF Mono, monospace" font-size="14.5" fill="#f6faff">agents.jsonl</text>
 <text x="28" y="605" font-family="Menlo, SF Mono, monospace" font-size="14.5" fill="#f6faff">.lightsout/friction.jsonl</text>
 </g>
@@ -369,7 +370,7 @@
 <text x="28" y="352" font-size="16.5" font-style="italic" fill="#c2d1e6">Leaves the last call on unfixed debt with a human</text>
 <line x1="28" y1="507" x2="472" y2="507" stroke="#b06bf5" stroke-opacity="0.22" stroke-width="1" stroke-dasharray="3 5"/>
 <text x="28" y="531" font-size="12.5" font-weight="600" letter-spacing="1.8" fill="#b06bf5" fill-opacity="1">SAVED TO DISK</text>
-<text x="28" y="557" font-family="Menlo, SF Mono, monospace" font-size="14.5" fill="#f6faff">lightsout.scan-baseline.json</text>
+<text x="28" y="557" font-family="Menlo, SF Mono, monospace" font-size="14.5" fill="#f6faff">lightsout.standards-baseline.json</text>
 </g>
 <g filter="url(#lift)"><rect x="500.5" y="2387" width="1374" height="76" rx="38.0" fill="#0a0f1a" stroke="url(#rail)" stroke-width="1.6"/></g>
 <circle cx="552.5" cy="2425.0" r="11" fill="none" stroke="#35d6e8" stroke-width="1.8"/>

@@ -191,13 +191,13 @@ describe('commandCatalog', () => {
 		const slashed = commandCatalog.filter((entry) => entry.slash !== undefined).map((entry) => [entry.id, entry.slash]);
 
 		expect(slashed).toStrictEqual([
-			['brainstorm', '/brainstorm'],
-			['plan', '/plan'],
-			['auto-plan', '/auto-plan'],
-			['implement', '/implement'],
-			['queue', '/queue'],
-			['refactor', '/refactor'],
-			['test-coverage-to-threshold', '/test-coverage-to-threshold'],
+			['brainstorm', '/lightsout:brainstorm'],
+			['plan', '/lightsout:plan'],
+			['auto-plan', '/lightsout:auto-plan'],
+			['implement', '/lightsout:implement'],
+			['queue', '/lightsout:queue'],
+			['refactor', '/lightsout:refactor'],
+			['test-coverage-to-threshold', '/lightsout:test-coverage-to-threshold'],
 			['status', '/lightsout:status'],
 			['voice', '/lightsout:voice'],
 		]);

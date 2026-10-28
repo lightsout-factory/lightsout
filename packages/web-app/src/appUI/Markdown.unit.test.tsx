@@ -191,3 +191,31 @@ describe('Markdown', () => {
 		expect(heading.className).toContain('text-lg');
 	});
 });
+
+describe('Markdown article', () => {
+	const setupArticle = ({ text, resolveHref }: { text: string; resolveHref?: (href: string) => string | undefined }) => {
+		render(<Markdown text={text} variant="article" resolveHref={resolveHref} />);
+	};
+
+	test('never shows an HTML comment, which is a note to whoever edits the source', () => {
+		setupArticle({ text: 'Before.\n\n<!-- generated:marker -->\n\nAfter.\n' });
+
+		expect(screen.queryByText(/generated:marker/)).not.toBeInTheDocument();
+	});
+
+	test('follows a link the page rewrites to its own address in the same tab', () => {
+		setupArticle({ text: 'See [Monorepos](monorepos.md).', resolveHref: (href) => (href === 'monorepos.md' ? '/docs/monorepos' : undefined) });
+
+		const link = screen.getByRole('link', { name: 'Monorepos' });
+
+		expect({ href: link.getAttribute('href'), target: link.getAttribute('target') }).toStrictEqual({ href: '/docs/monorepos', target: null });
+	});
+
+	test('keeps a link the page leaves alone exactly as written', () => {
+		setupArticle({ text: 'See [the site](https://example.com).', resolveHref: () => undefined });
+
+		const link = screen.getByRole('link', { name: 'the site' });
+
+		expect({ href: link.getAttribute('href'), target: link.getAttribute('target') }).toStrictEqual({ href: 'https://example.com', target: '_blank' });
+	});
+});

@@ -27,7 +27,7 @@ import { describe, expect, test } from '@jest/globals';
 
 const repoRoot = join(__dirname, '..', '..', '..');
 
-/** The thirteen documents this phase rewrites — the tour, the configuration reference, the repository's own instructions, the seven engine skills, the two tracker skills and the generated router. */
+/** The thirteen documents this phase rewrites — the README, the configuration reference, the repository's own instructions, the seven engine skills, the two tracker skills and the generated router. */
 const documentPaths = [
 	'README.md',
 	'docs/configuration.md',
@@ -102,7 +102,8 @@ describe('document vocabulary', () => {
 
 	test('no document spells the retired lightsout ticket command word, and ticket-state still passes', () => {
 		const offences = findRetiredCommandWord();
-		const trackerCommandDocuments = findDocumentsMissing({ phrase: 'lightsout ticket-state', paths: ['README.md'] });
+		// the README is a short tour that links to the Commands page, so the workflow skill is where ticket-state is spelled out
+		const trackerCommandDocuments = findDocumentsMissing({ phrase: 'lightsout ticket-state', paths: ['plugin/skills/ticket-workflow/SKILL.md'] });
 
 		expect(offences).toStrictEqual([]);
 		expect(trackerCommandDocuments).toStrictEqual([]);
@@ -120,8 +121,8 @@ describe('document vocabulary', () => {
 		expect(offences).toStrictEqual([]);
 	});
 
-	test('the tour and the workflow skill both document lightsout work-order new', () => {
-		const missing = findDocumentsMissing({ phrase: 'lightsout work-order new', paths: ['README.md', 'plugin/skills/ticket-workflow/SKILL.md'] });
+	test('the configuration reference and the workflow skill both document lightsout work-order new', () => {
+		const missing = findDocumentsMissing({ phrase: 'lightsout work-order new', paths: ['docs/configuration.md', 'plugin/skills/ticket-workflow/SKILL.md'] });
 
 		expect(missing).toStrictEqual([]);
 	});

@@ -22,11 +22,11 @@ test('GateOverrides: generate and format are refused as checkpoint gates', () =>
 
 	const format = GateOverrides.safeParse({ 'verify-implement': ['check', 'format'] });
 
-	// `format` runs once at the very end of the pipeline, so naming it here would
+	// `format` runs after every stage that writes code, so naming it here would
 	// have the author believe formatting was scheduled when nothing would run it
 	expect(format.success).toBe(false);
 	expect(format.error?.message ?? '').toMatch(/'format' is not a checkpoint gate/);
-	expect(format.error?.message ?? '').toMatch(/runs once at the very end of the pipeline/);
+	expect(format.error?.message ?? '').toMatch(/runs after every stage that writes code/);
 });
 
 test('GateOverrides: a gate named twice in one list is refused, naming the repeat', () => {
