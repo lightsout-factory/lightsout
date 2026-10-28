@@ -6,9 +6,9 @@ export const reportCatalogEntry: CommandCatalogEntry = {
 	id: 'report',
 	cli: 'lightsout report',
 	group: CommandGroup.Housekeeping,
-	summary: "Show where a plan's hours and money went: every level of the run down to each harness process, with its time, tokens and cost.",
+	summary: 'Show where a run’s time and money went, step by step down to each agent call, with time, tokens and cost.',
 	whenToUse:
-		'Reach for it after planning a ticket, when you want to know which step burned the hours, how many harness processes it took and what it cost. It reads what the plan commands recorded, so it spends nothing and can be run as often as you like. Name a ticket folder rather than one plan to see what the whole ticket cost.',
+		'Reach for it after planning or building a ticket, when you want to know which step burned the hours, how many harness processes it took and what it cost. It reads what the plan commands, implementation runs and their resumes recorded, so it spends nothing and can be run as often as you like. Every level shows wall time beside summed agent time, the most harness processes running at once, and a row for time no agent was running; a closing section names the slowest and most expensive calls, and a cost appears only where the harness reported one. Name a ticket folder rather than one plan to see what the whole ticket cost.',
 	invocations: [{ id: 'report' }],
 	flags: [
 		{

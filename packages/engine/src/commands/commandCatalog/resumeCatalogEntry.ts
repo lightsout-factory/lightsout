@@ -7,9 +7,9 @@ export const resumeCatalogEntry: CommandCatalogEntry = {
 	id: 'resume',
 	cli: 'lightsout resume',
 	group: CommandGroup.Build,
-	summary: 'Pick a parked run back up where it stopped, in the workspace that run recorded — same manifest, same work list, nothing repeated.',
+	summary: 'Restart a stopped or paused run exactly where it left off, without redoing finished steps.',
 	whenToUse:
-		'Use it when a run parked — a rate limit, a batch ceiling, an escalation you have now answered. It restarts from the manifest, so finished work is never redone, and it returns to the checkout that run recorded rather than the one you happen to be standing in. A direct run built from a ticket is continued here too: it picks its unfinished stage back up from the ticket frozen beside the run, rather than being re-run from the ticket file.',
+		'Use it when a run parked — a rate limit, a batch ceiling, an escalation you have now answered. It restarts from the manifest, so finished work is never redone, and it returns to the checkout that run recorded rather than the one you happen to be standing in. A direct run built from a ticket is continued here too: it picks its unfinished stage back up from the ticket frozen beside the run, rather than being re-run from the ticket file. It continues on the configuration the run recorded when it started, not `lightsout.config.json` as it reads now, and refuses a run that recorded none.',
 	invocations: [{ id: 'resume' }],
 	flags: [
 		{ name: 'run', value: '<id>', meaning: 'The parked run to pick back up.', required: true },
@@ -20,7 +20,7 @@ export const resumeCatalogEntry: CommandCatalogEntry = {
 		{
 			name: 'detach',
 			meaning:
-				'Pick the run back up in a background engine process that outlives this terminal or session. The command returns once the run has resumed; the engine’s output goes to the run’s launch log in the launches folder of the shared state dir (.lightsout/launches/<id>.log in the primary checkout).',
+				'Pick the run back up in a background engine process that outlives this terminal or session. The command returns once the run has resumed; the engine’s output goes to the run’s launch log in the launches folder of the shared state dir (.lightsout/launches/<id>.log in the primary checkout). It needs macOS or Linux.',
 			fallback: 'The run is resumed in the foreground, printing as it goes, and Ctrl-C stops it.',
 			required: false,
 		},

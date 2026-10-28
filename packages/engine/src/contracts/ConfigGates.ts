@@ -40,7 +40,7 @@ export const ConfigGates = z
 		generate: z.string().optional(),
 		/** Opt-in build gate, run last in every verify. Omit when nothing compiles. */
 		build: z.string().optional(),
-		/** Opt-in formatter, run once at the very end of the pipeline (gates re-verify after). */
+		/** Opt-in formatter, run after every stage that writes code, before that stage’s gates verify it. */
 		format: z.string().optional(),
 	})
 	.catchall(z.unknown())

@@ -123214,13 +123214,13 @@ var doctorCatalogEntry = {
   cli: "lightsout doctor",
   group: CommandGroup.Housekeeping,
   summary: "Check the install end to end \u2014 config, harness, gates, standards \u2014 and name what is missing.",
-  whenToUse: "Run it first, on a repo where something is not working. It checks config, harness, gates and standards in order and names the first thing that is missing.",
+  whenToUse: "Run it first, on a repo where something is not working. It runs every check \u2014 config, harness, gates and standards \u2014 and prints one line for each, with the exact change that clears any warning or failure. It never edits anything.",
   invocations: [{ id: "doctor" }],
   flags: [
     { name: "cwd", value: "<path>", meaning: "Repository to check the install of.", fallback: "The process working directory.", required: false },
     {
       name: "usage-probe",
-      meaning: "Spend one throwaway agent call on the configured harness to confirm its token fields still parse. Real money on your own subscription.",
+      meaning: "Spend one throwaway agent call on the configured harness to confirm its token fields still parse. Real money on your own subscription. Codex is never probed: its driver reads no usage.",
       required: false
     }
   ],
@@ -123234,7 +123234,7 @@ var frictionCatalogEntry = {
   id: "friction",
   cli: "lightsout friction",
   group: CommandGroup.Housekeeping,
-  summary: "Collect what slowed the agents down across recent runs, so the next fix is the one that pays.",
+  summary: "Collect what slowed agents down across recent runs, so you can fix the biggest problem first.",
   whenToUse: "Reach for it after a few runs, when you want the next improvement to be the one that pays. It collects what actually slowed the agents down instead of what you assume did.",
   invocations: [{ id: "friction" }],
   flags: [{ name: "cwd", value: "<path>", meaning: "Repository whose runs are read.", fallback: "The process working directory.", required: false }],
@@ -123258,7 +123258,7 @@ var implementSteps = [
       "Create a repository lock so other lightsout runs cannot clash"
     ],
     note: "Isolates the agent\u2019s changes and makes the run safely resumable",
-    saved: [".lightsout/runs/<id>/manifest.json", ".lightsout/lock.json"]
+    saved: ["<run folder>/manifest.json", ".lightsout/lock.json"]
   },
   {
     title: "VERIFY THE REPO STARTS GREEN",
@@ -123269,7 +123269,18 @@ var implementSteps = [
       "Record files touched by setup or gates in the manifest"
     ],
     note: "Proves any later failure was introduced by this run, not inherited from the repository",
-    saved: ["manifest.json", ".lightsout/runs/<id>/commands.jsonl"]
+    saved: ["manifest.json", "<run folder>/commands.jsonl"]
+  },
+  {
+    title: "WRITE THE ACCEPTANCE TESTS",
+    actor: CommandActor.Agent,
+    bullets: [
+      "Write the tests the plan names as its acceptance tests, before any code",
+      "Later changes may correct a test the plan made stale, but never weaken or drop one",
+      "Skip this step when the plan names no acceptance tests"
+    ],
+    note: "Fixes what done means before the code that has to meet it exists",
+    saved: ["<run folder>/agents/", "stream-NN-write-ledger-tests.jsonl"]
   },
   {
     title: "IMPLEMENT THE PLAN",
@@ -123280,13 +123291,13 @@ var implementSteps = [
       "It can run only commands explicitly allowed in the config"
     ],
     note: "Executes the finished spec without reopening settled decisions",
-    saved: [".lightsout/runs/<id>/agents/", "stream-NN-implement.jsonl", "rejected-*.txt"]
+    saved: ["<run folder>/agents/", "stream-NN-implement.jsonl", "rejected-*.txt"]
   },
   {
     title: "VERIFY THE IMPLEMENTATION",
     actor: CommandActor.Engine,
     bullets: [
-      "Re-run lint, type checks, tests, build, and coverage",
+      "Run the configured formatter, then re-run lint, type checks, tests, build, and coverage",
       "Try up to two lightweight repairs if a gate fails",
       "If the gates remain red, park the run with all evidence"
     ],
@@ -123302,12 +123313,16 @@ var implementSteps = [
       "Skip this step when no eligible source files changed"
     ],
     note: "Makes sure the new behavior is covered by tests",
-    saved: [".lightsout/runs/<id>/agents/", "stream-NN-write-tests.jsonl"]
+    saved: ["<run folder>/agents/", "stream-NN-write-tests.jsonl"]
   },
   {
     title: "VERIFY THE TESTS",
     actor: CommandActor.Engine,
-    bullets: ["Re-run lint, type checks, tests, build, and coverage", "Try up to two lightweight repairs if a gate fails"],
+    bullets: [
+      "Run the configured formatter, then re-run lint, type checks, tests, build, and coverage",
+      "Check that every acceptance test ran and passed",
+      "Try up to two lightweight repairs if a gate fails"
+    ],
     note: "Confirms the new tests pass and coverage meets the configured threshold",
     saved: ["manifest.json", ".lightsout/friction.jsonl"]
   },
@@ -123321,43 +123336,47 @@ var implementSteps = [
       "Skip this step when requested or when nothing changed"
     ],
     note: "Removes duplication and keeps agent-written code aligned with your code standards",
-    saved: [".lightsout/runs/<id>/agents/", "stream-NN-refactor.jsonl"]
+    saved: ["<run folder>/agents/", "stream-NN-refactor.jsonl"]
   },
   {
     title: "VERIFY THE REFACTOR",
     actor: CommandActor.Engine,
-    bullets: ["Re-run lint, type checks, tests, build, and coverage", "Try up to two lightweight repairs if a gate fails"],
+    bullets: ["Run the configured formatter, then re-run lint, type checks, tests, build, and coverage", "Try up to two lightweight repairs if a gate fails"],
     note: "Confirms the refactor preserved behavior and passes every gate",
     saved: ["manifest.json", ".lightsout/friction.jsonl"]
   },
   {
-    title: "FORMAT THE CODE",
-    actor: CommandActor.Engine,
-    bullets: ["Run the configured formatter on all changed files", "Re-run lint, type checks, tests, build, and coverage"],
-    note: "Confirms formatting does not break a green run",
-    saved: [".lightsout/runs/<id>/commands.jsonl"]
-  },
-  {
-    title: "REPORT THE RESULT",
+    title: "COMMIT AND REPORT",
     actor: CommandActor.Engine,
     bullets: [
-      "Generate the final report from artifacts saved during the run",
-      "Record the final status, steps, retries, rejected reports, token cost, and friction",
-      "Keep the complete run history in one folder"
+      "Commit each unit that passed \u2014 a phase, or the whole run \u2014 as `<ticket>: <summary>`, naming the plan and the run in the body",
+      "Fail the run when its agents changed no files",
+      "Record the final status, steps, retries, rejected reports, token cost, and friction in the run folder"
     ],
-    note: "Leaves an inspectable record of what happened and why the run passed or failed",
-    saved: [".lightsout/runs/<id>/"]
+    note: "Leaves the verified work in git history and an inspectable record of why the run passed or failed",
+    saved: ["<run folder>/"]
+  },
+  {
+    title: "SHIP THE BRANCH",
+    actor: CommandActor.Engine,
+    bullets: [
+      "Only when asked: with `--ship`, or when the config sets `ship.after-implement`",
+      "Bring in the latest main and re-run the gates",
+      "Push, open the pull request, wait for its checks, then merge and clean up"
+    ],
+    note: "Takes a passed run all the way to merged without a second command",
+    saved: [".lightsout/work-orders/<name>/ship.json"]
   }
 ];
 
 // src/commands/commandCatalog/implementCatalogEntry/implementCatalogEntry.ts
 var implementCatalogEntry = {
   id: "implement",
-  slash: "/implement",
+  slash: "/lightsout:implement",
   cli: "lightsout implement",
   group: CommandGroup.Build,
-  summary: "Run the lightsout deterministic implementation pipeline on a plan file.",
-  whenToUse: "Run it when a plan is graded and you want the work done unattended. Every step is gated by the repo\u2019s own tests, lint, types and coverage, and the run parks rather than pushing past a gate it cannot satisfy.",
+  summary: "Build a finished plan unattended \u2014 agents write the code and tests, and the repo\u2019s own checks must pass at every step before the run moves on.",
+  whenToUse: "Run it when a plan is graded and you want the work done unattended. Every step is gated by the repo\u2019s own tests, lint, types and coverage, and the run parks rather than pushing past a gate it cannot satisfy. A plan folder missing from this machine is restored from the ticket\u2019s attachments, and a plan its work order\u2019s record does not let run \u2014 a lower plan unfinished, say, or the plan already implemented \u2014 is refused in one sentence naming what is in the way. The run\u2019s records sit in the primary checkout, in its run folder: `.lightsout/work-orders/<work-order>/runs/<id>/` for a plan of a work order, `.lightsout/implement/runs/<id>/` otherwise.",
   invocations: [{ id: "implement" }, { id: "implement-folder", note: "folder: overview.md runs all phases, else plan.md" }],
   flags: [
     { name: "plan", value: "<path>", meaning: "The plan file to implement.", shape: "implement", required: true },
@@ -123400,12 +123419,16 @@ var implementCatalogEntry = {
       fallback: "The `implement.worktree` config key, which defaults to on.",
       required: false
     },
-    { name: "no-worktree", meaning: "Build in the checkout this was launched from rather than a worktree of its own.", required: false },
+    {
+      name: "no-worktree",
+      meaning: "Build in the checkout this was launched from rather than a worktree of its own. The run commits everything in that checkout, so it refuses to start while the checkout holds uncommitted changes and lists them; a phased plan checks again before each phase, not counting `generated` paths.",
+      required: false
+    },
     { name: "ship", meaning: "Ship the branch after the run passes: open or adopt the PR, wait for checks, merge, clean up.", required: false },
     { name: "no-ship", meaning: "End on the run result even when the config\u2019s `ship.after-implement` asks to chain into ship.", required: false },
     {
       name: "detach",
-      meaning: "Run in a background engine process that outlives this terminal or session. The command returns once the run has started and prints its id; the engine\u2019s output goes to the run\u2019s launch log in the launches folder of the shared state dir (.lightsout/launches/<id>.log in the primary checkout).",
+      meaning: "Run in a background engine process that outlives this terminal or session. The command returns once the run has started and prints its id; the engine\u2019s output goes to the run\u2019s launch log in the launches folder of the shared state dir (.lightsout/launches/<id>.log in the primary checkout). It needs macOS or Linux.",
       fallback: "The run happens in the foreground, printing as it goes, and Ctrl-C stops it.",
       required: false
     }
@@ -123415,9 +123438,9 @@ var implementCatalogEntry = {
   related: ["auto-plan", "brainstorm", "plan", "resume", "stop", "ship", "implement-direct", "queue", "work-order", "ticket-state", "self-check"],
   graphic: {
     title: "How /implement turns the spec into verified code",
-    subtitle: "Ten steps, deterministic gates throughout, and a complete record saved to disk.",
+    subtitle: "Eleven steps, deterministic gates throughout, and a complete record saved to disk.",
     banner: "The model can claim success. Lightsout requires evidence.",
-    columns: 5
+    columns: 4
   }
 };
 
@@ -123426,7 +123449,7 @@ var implementDirectCatalogEntry = {
   id: "implement-direct",
   cli: "lightsout implement-direct",
   group: CommandGroup.Build,
-  summary: "Build one ticket straight from its body, with the repo's own gates as the only bar, and commit what passes.",
+  summary: "Build a small ticket straight from its description, with no plan. The repo\u2019s own checks are the only bar, and what passes is committed.",
   whenToUse: "Run it on work small enough that a plan would cost more than the work: it reads the ticket body, builds from it, runs the repo\u2019s gates, and commits. It refuses a dirty tree, because it commits everything in the tree when it is done.",
   invocations: [{ id: "implement-direct" }],
   flags: [
@@ -123459,7 +123482,7 @@ var improveCatalogEntry = {
   id: "improve",
   cli: "lightsout improve",
   group: CommandGroup.Housekeeping,
-  summary: "Feed this repo\u2019s friction back to the lightsout engine as a change proposal.",
+  summary: "Turn this repo\u2019s friction into a proposed change to lightsout itself.",
   whenToUse: "Use it when this repo\u2019s friction is really the engine\u2019s problem. It turns those findings into a change proposal against a lightsout checkout you point it at.",
   invocations: [{ id: "improve" }],
   flags: [
@@ -123474,9 +123497,9 @@ var improveCatalogEntry = {
 // src/commands/commandCatalog/planning/autoPlanCatalogEntry.ts
 var autoPlanCatalogEntry = {
   id: "auto-plan",
-  slash: "/auto-plan",
+  slash: "/lightsout:auto-plan",
   group: CommandGroup.Build,
-  summary: "Plan a ticket alone \u2014 self-answers every question below a written escalation bar, shows you one proposal, and rolls onward per the `auto-plan` config block.",
+  summary: "Run the whole /plan process without you \u2014 the agent answers every question /plan would put to you, including the grill and stress-test questions, by taking its own recommendation; only a question that clears the escalation bar reaches you. It then shows you one proposal and rolls onward per the `auto-plan` config block.",
   whenToUse: 'Reach for it when the ticket is shaped enough that you would answer most of the interview with "you decide". It stops for the questions two reasonable engineers would answer differently, and for nothing else; the `auto-plan` config block says whether approval also starts the build.',
   invocations: [],
   flags: [],
@@ -123488,11 +123511,11 @@ var autoPlanCatalogEntry = {
 // src/commands/commandCatalog/planning/brainstormCatalogEntry.ts
 var brainstormCatalogEntry = {
   id: "brainstorm",
-  slash: "/brainstorm",
+  slash: "/lightsout:brainstorm",
   cli: "lightsout brainstorm",
   group: CommandGroup.Build,
-  summary: "Shape a vague idea into a buildable direction through dialogue \u2014 checks whether it is one idea or several, offers the competing approaches worth building, with trade-offs and a recommendation, and converges on a design stated in plain words.",
-  whenToUse: "Reach for it when the idea is still a sentence and you are not sure it is one idea or three. It decides its own outcome \u2014 ready to implement, or ready to auto-plan \u2014 and publishes the design write-up and the settled decisions to the ticket.",
+  summary: "Talk a rough idea through until it\u2019s a clear design \u2014 whether it\u2019s one idea or several, the approaches worth building with a recommendation, and the final design in plain words.",
+  whenToUse: "Reach for it when the idea is still a sentence and you are not sure it is one idea or three. It decides its own outcome \u2014 ready to implement, or ready to auto-plan \u2014 and publishes the design write-up and the settled decisions to the ticket. `publish` attaches brainstorm-notes.md, brainstorm-decisions.json when there is one, and a brainstorm-attachments.json marker written last; publishing again replaces the same-titled files.",
   invocations: [{ id: "brainstorm-publish", positional: "publish" }],
   flags: [
     {
@@ -123608,11 +123631,11 @@ var planSteps = [
 // src/commands/commandCatalog/planning/planCatalogEntry/planCatalogEntry.ts
 var planCatalogEntry = {
   id: "plan",
-  slash: "/plan",
+  slash: "/lightsout:plan",
   cli: "lightsout plan",
   group: CommandGroup.Build,
-  summary: "Produce a rigorous, implementation-ready plan for a feature \u2014 one a fresh-context agent can implement without guessing.",
-  whenToUse: "Use it when you know what you want and need a plan a fresh agent could implement without guessing. It interviews you, drafts, grills the draft for edge cases, and grades the result before anyone writes code.",
+  summary: "Turn a feature idea into a plan detailed enough for an agent to build without guessing. It interviews you, stress-tests the plan, and grades it to an A.",
+  whenToUse: "Use it when you know what you want and need a plan a fresh agent could implement without guessing. It interviews you, drafts, grills the draft for edge cases, and grades the result before anyone writes code. Decisions a brainstorm already settled are not asked again; one the planner believes is weak is flagged to you once, and stands until you change it. `publish` attaches the plan files and whichever of brainstorm-notes.md, decisions.json, grade.json and grade-memory.json exist, then a plan-attachments.json marker; transcripts stay local, and publishing again replaces the same-titled files.",
   invocations: [
     { id: "plan-workspace", positional: "workspace" },
     { id: "plan-verify-facts", positional: "verify-facts" },
@@ -123684,10 +123707,11 @@ var planCatalogEntry = {
 // src/commands/commandCatalog/queueCatalogEntry.ts
 var queueCatalogEntry = {
   id: "queue",
+  slash: "/lightsout:queue",
   cli: "lightsout queue",
   group: CommandGroup.Build,
-  summary: "Drain the tracker of automatable tickets in parallel worktrees, relaying any question to this terminal or to a mailbox directory.",
-  whenToUse: "Run it when the tracker holds tickets you have labelled for automation and you want them built without picking them up one at a time: it makes a worktree and branch per ticket, runs the worker its label names, puts any question it cannot answer to this terminal \u2014 or, with `--file-relay`, to a mailbox directory an agent session or an editor can answer from \u2014 then ships the ready branches one at a time, each rebased onto fresh main with the gates re-run. A mailbox question nobody answers parks its ticket once `queue.question-timeout` elapses. It stops when nothing is left to do; running it again resumes whatever parked.",
+  summary: "Build every ticket marked ready for automation, several at once, each on its own branch and pull request. Any question an agent can\u2019t answer comes back to you.",
+  whenToUse: "Run it when the tracker holds tickets you have labelled for automation and you want them built without picking them up one at a time: it makes a worktree and branch per ticket, runs the worker its label names, puts any question it cannot answer to this terminal \u2014 or, with `--file-relay`, to a mailbox directory an agent session or an editor can answer from \u2014 then ships the ready branches one at a time, each with the latest default branch merged in and the gates re-run. A ticket blocked by an unfinished ticket is left behind with the blocker named. A mailbox question nobody answers parks its ticket once `queue.question-timeout` elapses. It stops when nothing is left to do; running it again resumes whatever parked. It exits 0 when everything eligible shipped, 2 when parked or left-behind work remains for a re-run, and 1 when it refused to start.",
   invocations: [{ id: "queue" }],
   flags: [
     {
@@ -123700,7 +123724,7 @@ var queueCatalogEntry = {
     { name: "cwd", value: "<path>", meaning: "Repository to drain into.", fallback: "The process working directory.", required: false },
     {
       name: "detach",
-      meaning: "Drain in a background engine process that outlives this terminal or session. Implies `--file-relay`, on the default mailbox unless a directory is given. The command returns once the queue run has started and prints its run id, the engine pid and the mailbox; the engine\u2019s output goes to the run\u2019s launch log in the launches folder of the shared state dir (.lightsout/launches/<id>.log in the primary checkout).",
+      meaning: "Drain in a background engine process that outlives this terminal or session. Implies `--file-relay`, on the default mailbox unless a directory is given. The command returns once the queue run has started and prints its run id, the engine pid and the mailbox; the engine\u2019s output goes to the run\u2019s launch log in the launches folder of the shared state dir (.lightsout/launches/<id>.log in the primary checkout). It needs macOS or Linux.",
       fallback: "The drain runs in the foreground, asking questions on this terminal unless `--file-relay` is given.",
       required: false
     }
@@ -123717,11 +123741,11 @@ var refactorSteps = [
     actor: CommandActor.Engine,
     bullets: [
       "Point `/refactor` at the whole repo or one folder, with an optional batch budget",
-      "Refuse to start without a config, without git, or with uncommitted changes",
+      "Refuse to start without a config or without git, and on uncommitted changes unless `--allow-dirty` records them as a baseline",
       "Create a run ID and a repository lock so no other lightsout run touches the same tree"
     ],
     note: "Keeps the entire cleanup as one diff you can read, revert, or resume",
-    saved: [".lightsout/runs/<id>/manifest.json", ".lightsout/lock.json"]
+    saved: [".lightsout/refactor/runs/<id>/manifest.json", ".lightsout/lock.json"]
   },
   {
     title: "FIND THE WORK",
@@ -123744,7 +123768,7 @@ var refactorSteps = [
       "Freeze the list to disk and work from it \u2014 never recompute it midway"
     ],
     note: "Gives each agent a single coherent job instead of a pile of unrelated fixes",
-    saved: [".lightsout/runs/<id>/worklist.json"]
+    saved: [".lightsout/refactor/runs/<id>/worklist.json"]
   },
   {
     title: "VERIFY THE REPO STARTS GREEN",
@@ -123755,7 +123779,7 @@ var refactorSteps = [
       "Skip this on a resumed run when an earlier attempt already proved it green"
     ],
     note: "Proves any later failure was introduced by this run, not inherited from the repository",
-    saved: ["manifest.json", ".lightsout/runs/<id>/commands.jsonl"]
+    saved: ["manifest.json", ".lightsout/refactor/runs/<id>/commands.jsonl"]
   },
   {
     title: "SKIP WHAT IS ALREADY FIXED",
@@ -123777,7 +123801,7 @@ var refactorSteps = [
       "It may run only the commands your config allows, works under a time limit, and answers with one structured report"
     ],
     note: "Changes structure only \u2014 the behavior has to survive untouched",
-    saved: [".lightsout/runs/<id>/agents/", "stream-batch-NN-*.jsonl", "rejected-*.txt"]
+    saved: [".lightsout/refactor/runs/<id>/agents/", "stream-batch-NN-*.jsonl", "rejected-*.txt"]
   },
   {
     title: "VERIFY THE BATCH",
@@ -123788,7 +123812,7 @@ var refactorSteps = [
       "Send a coverage-only failure to a test-writing agent; a mixed failure goes back to the refactor agent first"
     ],
     note: "Stops a batch that broke the build from reaching the next one",
-    saved: ["manifest.json", ".lightsout/runs/<id>/commands.jsonl"]
+    saved: ["manifest.json", ".lightsout/refactor/runs/<id>/commands.jsonl"]
   },
   {
     title: "BRING IN A SUPERVISOR",
@@ -123799,7 +123823,7 @@ var refactorSteps = [
       "If the gates are still red after that, the run stops with the diagnosis attached as evidence"
     ],
     note: "Buys judgment exactly once, instead of retrying forever",
-    saved: [".lightsout/runs/<id>/agents/", "stream-batch-NN-supervisor.jsonl"]
+    saved: [".lightsout/refactor/runs/<id>/agents/", "stream-batch-NN-supervisor.jsonl"]
   },
   {
     title: "RULE ON THE BATCH",
@@ -123832,7 +123856,7 @@ var refactorSteps = [
       "Keep every batch outcome, retry, token cost, and point of friction in one folder"
     ],
     note: "Turns the cleanup into a number you can check rather than a claim",
-    saved: [".lightsout/runs/<id>/", "agents.jsonl", ".lightsout/friction.jsonl"]
+    saved: [".lightsout/refactor/runs/<id>/", "agents.jsonl", ".lightsout/friction.jsonl"]
   },
   {
     title: "REVIEW AND COMMIT",
@@ -123850,14 +123874,20 @@ var refactorSteps = [
 // src/commands/commandCatalog/refactorCatalogEntry/refactorCatalogEntry.ts
 var refactorCatalogEntry = {
   id: "refactor",
-  slash: "/refactor",
+  slash: "/lightsout:refactor",
   cli: "lightsout refactor",
   group: CommandGroup.BurnDown,
-  summary: "Burn down a repo\u2019s standards-check findings (duplication, size, structure, boundary violations) in verified, resumable batches via the lightsout refactor pipeline.",
-  whenToUse: "Reach for it when standards-check has more findings than anyone will fix by hand. It burns them down in verified, resumable batches, each one gated before it lands.",
+  summary: "Fix the problems the standards check already finds \u2014 duplicate code, oversized files, misplaced code \u2014 in small batches, each re-checked before the next. Stop and resume any time.",
+  whenToUse: "Reach for it when standards-check has more findings than anyone will fix by hand. It burns them down in verified, resumable batches, each one gated before it lands. The run\u2019s records sit in `.lightsout/refactor/runs/<id>/` in the primary checkout.",
   invocations: [{ id: "refactor" }, { id: "refactor-resume", note: "resume a parked refactor run" }],
   flags: [
-    { name: "run", value: "<id>", meaning: "The parked refactor run to pick back up.", shape: "refactor-resume", required: true },
+    {
+      name: "run",
+      value: "<id>",
+      meaning: "The parked refactor run to pick back up, on the configuration it recorded when it started; a run that recorded none is refused.",
+      shape: "refactor-resume",
+      required: true
+    },
     { name: "cwd", value: "<path>", meaning: "Repository to burn down.", fallback: "The process working directory.", required: false },
     { name: "path", value: "<subdir>", meaning: "Burn down only this subdirectory.", fallback: "The whole repository.", shape: "refactor", required: false },
     { name: "all", meaning: "Include findings the baseline has already accepted as known debt.", shape: "refactor", required: false },
@@ -123875,7 +123905,13 @@ var refactorCatalogEntry = {
       shape: "refactor",
       required: false
     },
-    { name: "allow-dirty", meaning: "Start even though the git tree has uncommitted changes.", shape: "refactor", required: false }
+    {
+      name: "allow-dirty",
+      meaning: "Start even though the git tree has uncommitted changes. They are recorded as the run\u2019s baseline and never attributed to a batch, so runs can stack before you commit.",
+      fallback: "The run refuses to start on a tree with uncommitted changes, so the ending diff is entirely its own.",
+      shape: "refactor",
+      required: false
+    }
   ],
   steps: refactorSteps,
   records: CommandRecordKind.Runs,
@@ -123893,8 +123929,8 @@ var reportCatalogEntry = {
   id: "report",
   cli: "lightsout report",
   group: CommandGroup.Housekeeping,
-  summary: "Show where a plan's hours and money went: every level of the run down to each harness process, with its time, tokens and cost.",
-  whenToUse: "Reach for it after planning a ticket, when you want to know which step burned the hours, how many harness processes it took and what it cost. It reads what the plan commands recorded, so it spends nothing and can be run as often as you like. Name a ticket folder rather than one plan to see what the whole ticket cost.",
+  summary: "Show where a run\u2019s time and money went, step by step down to each agent call, with time, tokens and cost.",
+  whenToUse: "Reach for it after planning or building a ticket, when you want to know which step burned the hours, how many harness processes it took and what it cost. It reads what the plan commands, implementation runs and their resumes recorded, so it spends nothing and can be run as often as you like. Every level shows wall time beside summed agent time, the most harness processes running at once, and a row for time no agent was running; a closing section names the slowest and most expensive calls, and a cost appears only where the harness reported one. Name a ticket folder rather than one plan to see what the whole ticket cost.",
   invocations: [{ id: "report" }],
   flags: [
     {
@@ -123921,8 +123957,8 @@ var resumeCatalogEntry = {
   id: "resume",
   cli: "lightsout resume",
   group: CommandGroup.Build,
-  summary: "Pick a parked run back up where it stopped, in the workspace that run recorded \u2014 same manifest, same work list, nothing repeated.",
-  whenToUse: "Use it when a run parked \u2014 a rate limit, a batch ceiling, an escalation you have now answered. It restarts from the manifest, so finished work is never redone, and it returns to the checkout that run recorded rather than the one you happen to be standing in. A direct run built from a ticket is continued here too: it picks its unfinished stage back up from the ticket frozen beside the run, rather than being re-run from the ticket file.",
+  summary: "Restart a stopped or paused run exactly where it left off, without redoing finished steps.",
+  whenToUse: "Use it when a run parked \u2014 a rate limit, a batch ceiling, an escalation you have now answered. It restarts from the manifest, so finished work is never redone, and it returns to the checkout that run recorded rather than the one you happen to be standing in. A direct run built from a ticket is continued here too: it picks its unfinished stage back up from the ticket frozen beside the run, rather than being re-run from the ticket file. It continues on the configuration the run recorded when it started, not `lightsout.config.json` as it reads now, and refuses a run that recorded none.",
   invocations: [{ id: "resume" }],
   flags: [
     { name: "run", value: "<id>", meaning: "The parked run to pick back up.", required: true },
@@ -123932,7 +123968,7 @@ var resumeCatalogEntry = {
     { name: "no-ship", meaning: "End on the run result even when the config\u2019s `ship.after-implement` asks to chain into ship.", required: false },
     {
       name: "detach",
-      meaning: "Pick the run back up in a background engine process that outlives this terminal or session. The command returns once the run has resumed; the engine\u2019s output goes to the run\u2019s launch log in the launches folder of the shared state dir (.lightsout/launches/<id>.log in the primary checkout).",
+      meaning: "Pick the run back up in a background engine process that outlives this terminal or session. The command returns once the run has resumed; the engine\u2019s output goes to the run\u2019s launch log in the launches folder of the shared state dir (.lightsout/launches/<id>.log in the primary checkout). It needs macOS or Linux.",
       fallback: "The run is resumed in the foreground, printing as it goes, and Ctrl-C stops it.",
       required: false
     }
@@ -123947,7 +123983,7 @@ var selfCheckCatalogEntry = {
   id: "self-check",
   cli: "lightsout self-check",
   group: CommandGroup.Build,
-  summary: "The engine's own check of a writing agent's change, run by that agent before it reports.",
+  summary: "The check a coding agent runs on its own change before saying it\u2019s done. You don\u2019t run this yourself.",
   whenToUse: "Nothing a human reaches for. The engine grants it to the feature executor, the refactor executor and the direct worker inside their own spawns, so an agent sees the cheap gates it is about to be judged on while its context is still loaded. It takes the live run id and reads everything else from that run \u2014 and it decides nothing: the engine's own gates run afterwards over the full scope and are the only verdict.",
   invocations: [{ id: "self-check" }],
   flags: [
@@ -123964,13 +124000,13 @@ var shipCatalogEntry = {
   id: "ship",
   cli: "lightsout ship",
   group: CommandGroup.Build,
-  summary: "Take the current branch from committed work to merged and cleaned up, and write a typed result.",
-  whenToUse: "Run it when the branch is committed and you want it merged: it pushes the branch, opens or adopts the pull request, waits for the checks, merges, deletes the branch and syncs the default branch \u2014 then writes one JSON result a tracker skill can read. Pass --hand-built only when the person asks to ship work they built by hand.",
+  summary: "Take a finished branch to merged \u2014 bring in the latest main, re-run the checks, open the pull request, wait for CI, then merge and clean up.",
+  whenToUse: "Run it when the branch is committed and you want it merged: it pushes the branch, opens or adopts the pull request, waits for the checks, merges, deletes the branch and syncs the default branch \u2014 then writes one JSON result a tracker skill can read. Nothing is committed or pushed until the default branch is merged in and your gates pass; a conflict or a red gate gets a bounded agent recovery, and when that runs out the branch is put back where ship found it. A merge refused because the default branch moved, or a failed check on the pushed commit, earns another attempt, up to three. Pass --hand-built only when the person asks to ship work they built by hand.",
   invocations: [{ id: "ship" }],
   flags: [
     {
       name: "hand-built",
-      meaning: "Record the person's authorization to ship work built outside the engine on a single-plan work order holding no plan 001, saved on the record with who and when.",
+      meaning: "Record the person\u2019s authorization to ship work built outside the engine on a single-plan work order holding no plan 001, saved on the record with who (git\u2019s user.name and user.email) and when. Adding plan 001, starting a build from the ticket body, or switching to multiple-plan mode withdraws it.",
       fallback: "Such a work order ships only once its build from the ticket body passed.",
       required: false
     },
@@ -124008,7 +124044,7 @@ var standardsHealthCatalogEntry = {
   id: "standards-health",
   cli: "lightsout standards-health",
   group: CommandGroup.Standards,
-  summary: "Report each rule\u2019s coverage and how often agents decline it \u2014 which standards are actually holding.",
+  summary: "Show, rule by rule, how much of the repo each standard covers and how often agents decline to follow it \u2014 which standards are actually holding.",
   whenToUse: "Reach for it when you suspect a standard is decorative \u2014 declared, but never enforced in practice. It shows per-rule coverage and how often agents decline the rule when asked to fix it.",
   invocations: [{ id: "standards-health", note: "per-rule coverage and how often agents decline it" }],
   flags: [{ name: "cwd", value: "<path>", meaning: "Repository to report on.", fallback: "The process working directory.", required: false }],
@@ -124022,7 +124058,7 @@ var standardsValidateCatalogEntry = {
   id: "standards-validate",
   cli: "lightsout standards-validate",
   group: CommandGroup.Standards,
-  summary: "Run every rule\u2019s check against its own fixtures, so a rule that no longer detects what it claims fails loudly.",
+  summary: "Test each rule in a standards library against its own good and bad examples, so a rule that stops catching what it should fails loudly.",
   whenToUse: "Run it after writing or editing a rule or a pack file, and in CI for a library you ship. It proves each check still passes its own pass fixtures and still fails its fail fixtures, and that every pack file resolves: its include entries exist, its rule-settings name rules in the pack, and no packs include each other in a cycle.",
   invocations: [{ id: "standards-validate", note: "run every check against its own fixtures" }],
   flags: [
@@ -124043,10 +124079,11 @@ var standardsValidateCatalogEntry = {
 // src/commands/commandCatalog/statusCatalogEntry.ts
 var statusCatalogEntry = {
   id: "status",
+  slash: "/lightsout:status",
   cli: "lightsout status",
   group: CommandGroup.Housekeeping,
-  summary: "Show what lightsout sees in this repo: config, harness, packs, any run still parked \u2014 and, for one run, what it is doing right now.",
-  whenToUse: "Run it when you come back to a repo and need to know what lightsout thinks is going on. It names the config, the harness, the packs in play, and any run still parked. Name a run and it shows what is happening inside that run instead: its steps, their outcomes and durations, and what it is working on this moment. Name a branch with --shipping to follow it while it ships. Pass --queue while a queue drains to see every ticket on its board and what each active one is doing. Pass --now to see the run that is going right now, printed once.",
+  summary: "See what lightsout is doing right now \u2014 a run, the queue, a plan being written or a branch being shipped \u2014 and every run it has recorded.",
+  whenToUse: "Run it when you come back to a repo and need to know what lightsout thinks is going on. It names the config, the harness, the packs in play, and any run still parked. Name a run and it shows what is happening inside that run instead: its steps, their outcomes and durations, and what it is working on this moment. Name a branch with --shipping to follow it while it ships. Pass --queue while a queue drains to see every ticket on its board and what each active one is doing. Pass --now to see the run that is going right now, printed once. Those run screens end with a `config:` line naming the `lightsout.config.json` the run read when it started.",
   invocations: [
     { id: "status" },
     { id: "status-run", note: "one run in detail; --watch repaints it every two minutes, and without --run it follows the one run that is going" },
@@ -124124,8 +124161,8 @@ var stopCatalogEntry = {
   id: "stop",
   cli: "lightsout stop",
   group: CommandGroup.Build,
-  summary: "Stop the engine process behind a run, from any terminal or session, and leave the run resumable.",
-  whenToUse: "Use it on a detached run, or any run whose launching terminal you cannot reach. Any run id of its family works, the short id a report printed included. The engine is asked to shut down first, which stops its own agents and gates; if it is still running after ten seconds it is killed outright, its agents may remain, and you must make sure no agent is still working in the run\u2019s worktree before you resume it. A queue worker\u2019s run lives inside the queue\u2019s process, so it is stopped by stopping its queue. Stopping a run that has nothing running behind it is not an error. After a clean stop, resume the run with the command the stop prints. It needs macOS or Linux, and refuses on Windows.",
+  summary: "Stop a run in progress from any terminal. It can be resumed later.",
+  whenToUse: "Use it on a detached run, or any run whose launching terminal you cannot reach. Any run id of its family works, the short id a report printed included. The engine is asked to shut down first, which stops its own agents and gates; if it is still running after ten seconds it is killed outright, its agents may remain, and you must make sure no agent is still working in the run\u2019s worktree before you resume it. A queue worker\u2019s run lives inside the queue\u2019s process, so it is stopped by stopping its queue. Stopping a run that has nothing running behind it is not an error. After a clean stop, resume the run with the command the stop prints. It needs macOS or Linux, and refuses on Windows. It exits 0 after a clean stop or when nothing was running, and 1 when the engine had to be killed, its pid now belongs to another process, or the stop was refused.",
   invocations: [{ id: "stop" }],
   flags: [
     { name: "run", value: "<id>", meaning: "The run to stop: any run of its family, short id included.", required: true },
@@ -124139,14 +124176,20 @@ var stopCatalogEntry = {
 // src/commands/commandCatalog/testCoverageToThresholdCatalogEntry.ts
 var testCoverageToThresholdCatalogEntry = {
   id: "test-coverage-to-threshold",
-  slash: "/test-coverage-to-threshold",
+  slash: "/lightsout:test-coverage-to-threshold",
   cli: "lightsout test-coverage-to-threshold",
   group: CommandGroup.BurnDown,
-  summary: "Raise a repo\u2019s unit-test coverage until its own coverage script passes, in verified, resumable batches via the lightsout coverage pipeline.",
+  summary: "Write tests until the repo\u2019s own coverage check passes, in small batches, each verified before the next. Stop and resume any time.",
   whenToUse: "Use it when the coverage gate is what stands between you and a green build. It writes tests in batches until your own coverage script passes, and stops there.",
   invocations: [{ id: "test-coverage-to-threshold" }, { id: "test-coverage-to-threshold-resume", note: "resume a parked coverage run" }],
   flags: [
-    { name: "run", value: "<id>", meaning: "The parked coverage run to pick back up.", shape: "test-coverage-to-threshold-resume", required: true },
+    {
+      name: "run",
+      value: "<id>",
+      meaning: "The parked coverage run to pick back up, on the configuration it recorded when it started; a run that recorded none is refused.",
+      shape: "test-coverage-to-threshold-resume",
+      required: true
+    },
     { name: "cwd", value: "<path>", meaning: "Repository to raise coverage in.", fallback: "The process working directory.", required: false },
     {
       name: "max-batches",
@@ -124168,7 +124211,7 @@ var ticketStateCatalogEntry = {
   id: "ticket-state",
   cli: "lightsout ticket-state",
   group: CommandGroup.Build,
-  summary: "Write a ticket's planning status, its tracker workflow status, or both.",
+  summary: "Set a ticket\u2019s planning label and its tracker status (for example \u201CReady to Implement\u201D) from the command line.",
   whenToUse: "Run it at a workflow transition \u2014 when brainstorming finishes, when a plan is approved, when implementation begins \u2014 so the ticket says what preparation it still owes and where implementation stands. The workflow skills call it at each of those moments, so the tracker says the same thing however the work was started.",
   invocations: [{ id: "ticket-state" }],
   flags: [
@@ -124224,8 +124267,8 @@ var workOrderCatalogEntry = {
   id: "work-order",
   cli: "lightsout work-order",
   group: CommandGroup.Build,
-  summary: "Create a work order, and change and show its record of the plans it holds, the mode they implement in, and its request to ship.",
-  whenToUse: "Reach for it whenever work is started, gains a plan or changes shape. `new` is the one command that writes a work order\u2019s name \u2014 give it `--ticket <ref>` and the engine reads that ticket\u2019s title from the tracker and summarises it, or `--title <words>` and the words are taken as handed; the name is written once and never again. `add-plan` starts the next plan and prints its address; `mode` moves a ticket between one plan supplying the implementation and several implementing in numeric order; `request-ship` is how a human declares a multiple-plan ticket finished, and `exclude-plan` takes a plan out of that work for good; `retitle-plan` changes only what a plan is called; `show` reads the record, and `sync` settles a record that moved on two machines at once.",
+  summary: "Manage the record that ties a ticket to its plans and branch \u2014 add plans, choose one plan or several, and say when the ticket should ship.",
+  whenToUse: "Reach for it whenever work is started, gains a plan or changes shape. `new` is the one command that writes a work order\u2019s name \u2014 give it `--ticket <ref>` and the engine reads that ticket\u2019s title from the tracker and summarises it, or `--title <words>` and the words are taken as handed; the name is written once and never again, and a label another work order already holds is refused rather than suffixed. `add-plan` starts the next plan and prints its address; `mode` moves a ticket between one plan supplying the implementation and several implementing in numeric order; `request-ship` is how a human declares a multiple-plan ticket finished, and `exclude-plan` takes a plan out of that work for good; `retitle-plan` changes only what a plan is called; `show` reads the record, and `sync` settles a record that moved on two machines at once. With a `ticket-tracker` block configured, every change is published to the ticket, so another machine restores the record and its plans.",
   invocations: [
     { id: "work-order-new", positional: "new" },
     { id: "work-order-add-plan", positional: "add-plan" },
@@ -124240,7 +124283,7 @@ var workOrderCatalogEntry = {
     {
       name: "ticket",
       value: "<ref>",
-      meaning: "The tracker ticket this work is for. The engine reads that ticket's title and summarises it into the work order's name \u2014 nobody hands it one.",
+      meaning: "The tracker ticket this work is for. The engine reads that ticket's title and summarises it into the work order's name \u2014 nobody hands it one. A harness that cannot answer leaves a mechanical cut of the title instead, and a repository with no `ticket-tracker` block refuses the flag.",
       fallback: "Nothing is read from a tracker; give --title instead to name the work yourself.",
       shape: "work-order-new",
       required: false,
@@ -124632,7 +124675,7 @@ var ConfigGates = external_exports.object({
   generate: external_exports.string().optional(),
   /** Opt-in build gate, run last in every verify. Omit when nothing compiles. */
   build: external_exports.string().optional(),
-  /** Opt-in formatter, run once at the very end of the pipeline (gates re-verify after). */
+  /** Opt-in formatter, run after every stage that writes code, before that stage’s gates verify it. */
   format: external_exports.string().optional()
 }).catchall(external_exports.unknown()).superRefine((gates, ctx) => {
   validateCustomTestGates({
@@ -124840,7 +124883,7 @@ var ConfigWorktree = external_exports.object({
 // src/contracts/common/constants/uncheckpointableGateKeys.ts
 var uncheckpointableGateKeys = {
   generate: `'generate' is not a checkpoint gate \u2014 gates.generate runs before an override's gates automatically, and not at all when the checkpoint is "off"`,
-  format: "'format' is not a checkpoint gate \u2014 gates.format runs once at the very end of the pipeline"
+  format: "'format' is not a checkpoint gate \u2014 gates.format runs after every stage that writes code, before that stage's gates"
 };
 
 // src/contracts/GateOverride.ts

@@ -1,9 +1,10 @@
-import { createElement, isValidElement, type ReactNode } from 'react';
+import { type ReactNode, useMemo } from 'react';
 import ReactMarkdown, { type Components } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { DefinitionList } from '#src/appUI/DefinitionList.tsx';
+import { articleComponents, articleLinkClass } from '#src/appUI/markdownArticleComponents.tsx';
+import { anchored, styled } from '#src/appUI/markdownParts.tsx';
 import type { DefinitionEntry } from '#src/common/types/DefinitionEntry.ts';
-import { slugifyHeading } from '#src/common/utils/slugifyHeading.ts';
 
 /** Where a plan may link: the web, a repo-relative path, or an anchor in the document itself. */
 const safeHref = /^(https?:\/\/|\/|\.{1,2}\/|#)/;
@@ -41,58 +42,40 @@ const splitFrontMatter = ({ text }: { text: string }) => {
 	return split;
 };
 
-const styled = ({ tag, className }: { tag: string; className: string }) => {
-	const Styled = ({ children }: { children?: ReactNode }) => createElement(tag, { className }, children);
-
-	return Styled;
-};
+type ResolveHref = (href: string) => string | undefined;
 
 /**
- * A heading spelling one word in backticks arrives as an array with an element
- * in the middle, and the id has to come out the same either way.
+ * An href outside `safeHref` renders as plain text rather than as a link nobody
+ * vetted. `resolveHref` runs first, so a page can turn a link the document
+ * wrote for another reader — `monorepos.md` — into its own address.
  */
-const flattenText = ({ node }: { node: ReactNode }): string => {
-	let text = '';
+const buildMarkdownLink = ({ resolveHref, className }: { resolveHref: ResolveHref | undefined; className: string }) => {
+	const MarkdownLink = ({ href, children }: { href?: string; children?: ReactNode }) => {
+		const resolved = href === undefined ? undefined : (resolveHref?.(href) ?? href);
 
-	if (typeof node === 'string' || typeof node === 'number') {
-		text = String(node);
-	} else if (Array.isArray(node)) {
-		text = node.map((child) => flattenText({ node: child })).join('');
-	} else if (isValidElement<{ children?: ReactNode }>(node)) {
-		text = flattenText({ node: node.props.children });
-	}
+		if (resolved === undefined || !safeHref.test(resolved)) {
+			return <span className="text-muted-foreground-strong">{children}</span>;
+		}
 
-	return text;
-};
+		// An anchor, or an address this page rewrote to one of its own, stays in
+		// the tab; anything else is somewhere the reader is visiting, not leaving for.
+		const sameTab = resolved.startsWith('#') || resolved !== href;
 
-/** Only h2 and h3 get an anchor id — those are the levels `DocToc` lists. */
-const anchored = ({ tag, className }: { tag: string; className: string }) => {
-	const Anchored = ({ children }: { children?: ReactNode }) =>
-		createElement(tag, { className, id: slugifyHeading({ text: flattenText({ node: children }) }) }, children);
+		return (
+			<a href={resolved} target={sameTab ? undefined : '_blank'} rel={sameTab ? undefined : 'noreferrer'} className={className}>
+				{children}
+			</a>
+		);
+	};
 
-	return Anchored;
-};
-
-/** An href outside `safeHref` renders as plain text rather than as a link nobody vetted. */
-const MarkdownLink = ({ href, children }: { href?: string; children?: ReactNode }) => {
-	if (href === undefined || !safeHref.test(href)) {
-		return <span className="text-muted-foreground-strong">{children}</span>;
-	}
-
-	const samePage = href.startsWith('#');
-
-	return (
-		<a href={href} target={samePage ? undefined : '_blank'} rel={samePage ? undefined : 'noreferrer'} className="text-brand-to underline underline-offset-4">
-			{children}
-		</a>
-	);
+	return MarkdownLink;
 };
 
 /**
  * Raw HTML in a plan is never rendered — `react-markdown` drops it unless a
  * `rehype-raw` plugin is added, and none is.
  */
-const components: Components = {
+const compactComponents: Components = {
 	h1: styled({ tag: 'h1', className: 'mt-6 mb-3 font-semibold text-foreground text-xl first:mt-0' }),
 	h2: anchored({ tag: 'h2', className: 'mt-6 mb-2 font-semibold text-foreground text-lg first:mt-0' }),
 	h3: anchored({ tag: 'h3', className: 'mt-5 mb-2 font-semibold text-base text-foreground' }),
@@ -110,20 +93,33 @@ const components: Components = {
 	th: styled({ tag: 'th', className: 'px-2 py-1.5 font-semibold' }),
 	td: styled({ tag: 'td', className: 'px-2 py-1.5 align-top' }),
 	hr: styled({ tag: 'hr', className: 'my-6 border-border border-t' }),
-	a: MarkdownLink,
 };
 
 interface Props {
 	/** The document's raw markdown, front matter included. */
 	text: string;
+	/** `compact` for a plan or a rule inside a page of its own; `article` for a document that is the page, read at length. */
+	variant?: 'compact' | 'article';
+	/** Rewrites a link before it is vetted; an answer of undefined keeps the link as written. */
+	resolveHref?: ResolveHref;
 }
 
 /**
  * Front matter is lifted out before the library sees the text, so a YAML block
  * shows as metadata rather than rendering as a heading.
  */
-export const Markdown = ({ text }: Props) => {
-	const { frontMatter, body } = splitFrontMatter({ text });
+export const Markdown = ({ text, variant = 'compact', resolveHref }: Props) => {
+	const { frontMatter, body: withComments } = splitFrontMatter({ text });
+	// An HTML comment is a note to whoever edits the source — a generator's
+	// marker, say — and is never part of what a reader sees.
+	const body = withComments.replace(/<!--[\s\S]*?-->\n?/g, '');
+	const components = useMemo<Components>(
+		() =>
+			variant === 'article'
+				? { ...articleComponents, a: buildMarkdownLink({ resolveHref, className: articleLinkClass }) }
+				: { ...compactComponents, a: buildMarkdownLink({ resolveHref, className: 'text-brand-to underline underline-offset-4' }) },
+		[variant, resolveHref],
+	);
 	const entries: DefinitionEntry[] = Object.entries(frontMatter).map(([name, value]) => [
 		name,
 		<span key={name} className="font-mono">

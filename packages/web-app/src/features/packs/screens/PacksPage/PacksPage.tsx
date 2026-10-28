@@ -1,5 +1,5 @@
 import { useSuspenseQuery } from '@tanstack/react-query';
-import { PackPageFrame } from '#src/features/packs/components/PackPageFrame.tsx';
+import { SitePageFrame } from '#src/appUI/SitePageFrame.tsx';
 import { sortPacksForDisplay } from '#src/features/packs/internal/common/utils/sortPacksForDisplay.ts';
 import { defaultPackQueryOptions } from '#src/features/packs/queries/defaultPackQueryOptions.ts';
 import { CheckKindKey } from '#src/features/packs/screens/PacksPage/internal/components/CheckKindKey.tsx';
@@ -14,7 +14,7 @@ export const PacksPage = () => {
 	const { data: library } = useSuspenseQuery(defaultPackQueryOptions());
 
 	return (
-		<PackPageFrame>
+		<SitePageFrame>
 			<header className="flex flex-col gap-5">
 				<h1 className="font-extrabold text-4xl text-drop-navy tracking-tight md:text-5xl">Standards Packs</h1>
 				<p className="max-w-2xl text-lg text-muted-foreground leading-relaxed">
@@ -31,6 +31,6 @@ export const PacksPage = () => {
 					<YourPackCard />
 				</div>
 			</section>
-		</PackPageFrame>
+		</SitePageFrame>
 	);
 };

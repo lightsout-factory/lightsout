@@ -111,7 +111,7 @@ describe('commandCatalog', () => {
 
 		expect(drawn.map((entry) => [entry.id, entry.steps.length])).toStrictEqual([
 			['plan', 8],
-			['implement', 10],
+			['implement', 11],
 			['refactor', 12],
 		]);
 		expect(drawn.every((entry) => entry.graphic !== undefined)).toBe(true);
@@ -191,12 +191,14 @@ describe('commandCatalog', () => {
 		const slashed = commandCatalog.filter((entry) => entry.slash !== undefined).map((entry) => [entry.id, entry.slash]);
 
 		expect(slashed).toStrictEqual([
-			['brainstorm', '/brainstorm'],
-			['plan', '/plan'],
-			['auto-plan', '/auto-plan'],
-			['implement', '/implement'],
-			['refactor', '/refactor'],
-			['test-coverage-to-threshold', '/test-coverage-to-threshold'],
+			['brainstorm', '/lightsout:brainstorm'],
+			['plan', '/lightsout:plan'],
+			['auto-plan', '/lightsout:auto-plan'],
+			['implement', '/lightsout:implement'],
+			['queue', '/lightsout:queue'],
+			['refactor', '/lightsout:refactor'],
+			['test-coverage-to-threshold', '/lightsout:test-coverage-to-threshold'],
+			['status', '/lightsout:status'],
 			['voice', '/lightsout:voice'],
 		]);
 	});
@@ -246,7 +248,7 @@ describe('commandCatalog', () => {
 		const { byId } = setupCatalog();
 		const resume = byId.get('resume');
 
-		expect(resume?.summary).toEqual(expect.stringMatching(/workspace that run recorded/));
+		expect(resume?.summary).toEqual(expect.stringMatching(/exactly where it left off/));
 		expect(resume?.whenToUse).toEqual(expect.stringMatching(/returns to the checkout that run recorded/));
 		expect(resume?.whenToUse).toEqual(expect.stringMatching(/[Dd]irect run.*frozen beside the run/));
 	});

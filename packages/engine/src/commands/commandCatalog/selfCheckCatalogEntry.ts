@@ -6,7 +6,7 @@ export const selfCheckCatalogEntry: CommandCatalogEntry = {
 	id: 'self-check',
 	cli: 'lightsout self-check',
 	group: CommandGroup.Build,
-	summary: "The engine's own check of a writing agent's change, run by that agent before it reports.",
+	summary: 'The check a coding agent runs on its own change before saying it’s done. You don’t run this yourself.',
 	whenToUse:
 		"Nothing a human reaches for. The engine grants it to the feature executor, the refactor executor and the direct worker inside their own spawns, so an agent sees the cheap gates it is about to be judged on while its context is still loaded. It takes the live run id and reads everything else from that run — and it decides nothing: the engine's own gates run afterwards over the full scope and are the only verdict.",
 	invocations: [{ id: 'self-check' }],

@@ -1,5 +1,5 @@
 ---
-description: 'Produce a rigorous, implementation-ready plan for a feature — one a fresh-context agent can implement without guessing. Explores the codebase, interviews you to drain what you know, drafts the plan, grills it for edge cases, and grades it to A. Use when the user wants to plan a feature, write an implementation plan, or get a plan graded before implementing. Input is a feature description or a rough-notes file path. Output feeds the `implement` skill.'
+description: 'Turn a feature idea into a plan detailed enough for an agent to build without guessing. It interviews you, stress-tests the plan, and grades it to an A. Use when the user wants to plan a feature, write an implementation plan, or get a plan graded before implementing. Input is a feature description or a rough-notes file path. Output feeds the `implement` skill.'
 ---
 <!-- generated:lightsout-prompt -->
 

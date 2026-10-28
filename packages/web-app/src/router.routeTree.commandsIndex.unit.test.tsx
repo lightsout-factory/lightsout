@@ -113,7 +113,7 @@ describe('routeTree', () => {
 		expect(heading).toBeInTheDocument();
 	});
 
-	test('the commands route shelves each command under the group it belongs to', () => {
+	test('the commands route lists skills apart from terminal commands', () => {
 		setupCommandsPage({
 			commands: [
 				buildCommandCatalogEntry(),
@@ -128,22 +128,22 @@ describe('routeTree', () => {
 			],
 		});
 
-		const groups = screen.getAllByRole('heading', { level: 2 }).map((heading) => heading.textContent);
+		const sections = screen.getAllByRole('heading', { level: 2 }).map((heading) => heading.textContent);
 
-		expect(groups).toStrictEqual(['Build', 'Burn down', 'Standards', 'Housekeeping']);
+		expect(sections).toStrictEqual(['Skills', 'CLI']);
 	});
 
-	test('the commands route gives every card a link to that command’s own page', () => {
+	test('the commands route gives every row a link to that command’s own page', () => {
 		setupCommandsPage({
 			commands: [buildCommandCatalogEntry(), buildCommandCatalogEntry({ id: 'refactor', slash: '/refactor', group: CommandGroup.BurnDown })],
 		});
 
-		const link = screen.getByRole('link', { name: '/refactor' });
+		const link = screen.getByText('/refactor', { selector: 'h3' }).closest('a');
 
 		expect(link).toHaveAttribute('href', '/commands/refactor');
 	});
 
-	test('the commands route titles a card with the CLI form when the plugin ships no skill for it', () => {
+	test('the commands route titles a terminal command with the full line a reader types', () => {
 		setupCommandsPage({
 			commands: [
 				buildCommandCatalogEntry({
@@ -156,7 +156,7 @@ describe('routeTree', () => {
 			],
 		});
 
-		const link = screen.getByRole('link', { name: 'lightsout doctor' });
+		const link = screen.getByText('lightsout doctor', { selector: 'h4' }).closest('a');
 
 		expect(link).toHaveAttribute('href', '/commands/doctor');
 	});

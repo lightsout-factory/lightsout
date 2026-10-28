@@ -55,8 +55,8 @@ describe('getConfigView', () => {
 		// the sentence is the one the config reference document is rendered from,
 		// so the page and that document cannot say different things about the key —
 		// and a vendored edit is the worker's own change, which a worker still commits
-		expect(findField({ sections: view.sections, key: 'generated' })?.description).toEqual(expect.stringContaining('pre-ship step at merge time'));
-		expect(findField({ sections: view.sections, key: 'vendored' })?.description).toEqual(expect.not.stringContaining('pre-ship'));
+		expect(findField({ sections: view.sections, key: 'generated' })?.description).toEqual(expect.stringContaining('a run’s own commit leave them out'));
+		expect(findField({ sections: view.sections, key: 'vendored' })?.description).toEqual(expect.not.stringContaining('commit'));
 	});
 
 	test('states on the generated row that a phased plan carries the output between phases, and that checks reading it want gates.generate', async () => {
@@ -64,7 +64,7 @@ describe('getConfigView', () => {
 
 		const view = await getConfigView({ cwd });
 
-		expect(findField({ sections: view.sections, key: 'generated' })?.description).toMatch(/phased plan.*leaves those changes on disk.*`gates\.generate`/);
+		expect(findField({ sections: view.sections, key: 'generated' })?.description).toMatch(/phased plan.*leaves them on disk.*`gates\.generate`/);
 	});
 
 	test('puts generated and vendored together in the Generated area, in the order the page reads them', async () => {

@@ -29,12 +29,21 @@ const setupCommandsPage = ({ commands = [buildCommandCatalogEntry()] }: { comman
 	});
 };
 
-/** The cards sitting under one group's heading, by the name each one is titled with. */
-const readGroupCards = ({ heading }: { heading: string }): string[] => {
-	const section = screen.getByRole('heading', { level: 2, name: heading }).closest('section');
+/** The titles listed under one section — Skills or CLI — in page order. */
+const readSectionTitles = ({ section }: { section: string }): string[] =>
+	Array.from(screen.getByRole('region', { name: section }).querySelectorAll('li h3, li h4')).map((title) => title.textContent ?? '');
 
-	return Array.from(section?.querySelectorAll('article a') ?? []).map((link) => link.textContent ?? '');
-};
+/** The CLI group sub-headings, in page order. */
+const readCliGroups = (): string[] =>
+	within(screen.getByRole('region', { name: 'CLI' }))
+		.getAllByRole('heading', { level: 3 })
+		.map((heading) => heading.textContent ?? '');
+
+/** The row titled `title`, as the link a reader clicks anywhere on. */
+const readRowLink = ({ title }: { title: string }) => screen.getByText(title, { selector: 'h3, h4' }).closest('a');
+
+const cliOnly = ({ id, group = CommandGroup.Housekeeping }: { id: string; group?: CommandGroup }) =>
+	buildCommandCatalogEntry({ id, cli: `lightsout ${id}`, group, overrides: { slash: undefined } });
 
 describe('CommandsPage', () => {
 	test('names the page and says what a reader will find on it', () => {
@@ -44,70 +53,62 @@ describe('CommandsPage', () => {
 		expect(screen.getByText(/Every command lightsout offers/)).toBeInTheDocument();
 	});
 
-	test('heads the four groups in the order a reader works through them, building before housekeeping', () => {
+	test('lists skills first and terminal commands after, each under its own heading', () => {
 		setupCommandsPage();
 
 		const headings = screen.getAllByRole('heading', { level: 2 }).map((heading) => heading.textContent);
 
-		expect(headings).toStrictEqual(['Build', 'Burn down', 'Standards', 'Housekeeping']);
+		expect(headings).toStrictEqual(['Skills', 'CLI']);
 	});
 
-	test('files each command under its own group rather than listing them all in one place', () => {
+	test('lists a command the plugin ships a skill for under Skills, once, even when it also has a CLI form', () => {
+		setupCommandsPage({
+			commands: [buildCommandCatalogEntry({ id: 'implement', slash: '/implement', cli: 'lightsout implement' }), cliOnly({ id: 'doctor' })],
+		});
+
+		expect({ skills: readSectionTitles({ section: 'Skills' }), cli: readSectionTitles({ section: 'CLI' }) }).toStrictEqual({
+			skills: ['/implement'],
+			cli: ['lightsout doctor'],
+		});
+	});
+
+	test('files each terminal command under its group, in the order a reader works through them, leaving out a group with none', () => {
+		setupCommandsPage({
+			commands: [cliOnly({ id: 'doctor', group: CommandGroup.Housekeeping }), cliOnly({ id: 'resume', group: CommandGroup.Build })],
+		});
+
+		expect(readCliGroups()).toStrictEqual(['Build', 'Housekeeping']);
+	});
+
+	test('keeps the catalog’s own order inside a list, so the page never re-sorts what the engine stated', () => {
 		setupCommandsPage({
 			commands: [
-				buildCommandCatalogEntry({ id: 'plan', slash: '/plan', group: CommandGroup.Build }),
-				buildCommandCatalogEntry({ id: 'doctor', cli: 'lightsout doctor', group: CommandGroup.Housekeeping, overrides: { slash: undefined } }),
-				buildCommandCatalogEntry({ id: 'refactor', slash: '/refactor', group: CommandGroup.BurnDown }),
+				buildCommandCatalogEntry({ id: 'plan', slash: '/plan' }),
+				buildCommandCatalogEntry({ id: 'brainstorm', slash: '/brainstorm' }),
+				buildCommandCatalogEntry({ id: 'implement', slash: '/implement' }),
 			],
 		});
 
-		expect(readGroupCards({ heading: 'Build' })).toStrictEqual(['/plan']);
-		expect(readGroupCards({ heading: 'Burn down' })).toStrictEqual(['/refactor']);
-		expect(readGroupCards({ heading: 'Standards' })).toStrictEqual([]);
-		expect(readGroupCards({ heading: 'Housekeeping' })).toStrictEqual(['lightsout doctor']);
-	});
-
-	test('keeps the catalog’s own order inside a group, so the page never re-sorts what the engine stated', () => {
-		setupCommandsPage({
-			commands: [
-				buildCommandCatalogEntry({ id: 'plan', slash: '/plan', group: CommandGroup.Build }),
-				buildCommandCatalogEntry({ id: 'brainstorm', slash: '/brainstorm', group: CommandGroup.Build }),
-				buildCommandCatalogEntry({ id: 'implement', slash: '/implement', group: CommandGroup.Build }),
-			],
-		});
-
-		const titles = readGroupCards({ heading: 'Build' });
-
-		expect(titles).toStrictEqual(['/plan', '/brainstorm', '/implement']);
+		expect(readSectionTitles({ section: 'Skills' })).toStrictEqual(['/plan', '/brainstorm', '/implement']);
 	});
 });
 
-describe('CommandsPage command cards', () => {
-	test('titles a card with the slash form, which is what a reader with the plugin installed would type', () => {
-		setupCommandsPage({ commands: [buildCommandCatalogEntry({ id: 'refactor', slash: '/refactor', cli: 'lightsout refactor' })] });
+describe('CommandsPage rows', () => {
+	test('titles a terminal command with the full line a reader types', () => {
+		setupCommandsPage({ commands: [cliOnly({ id: 'doctor' })] });
 
-		const link = screen.getByRole('link', { name: '/refactor' });
-
-		expect(link).toBeInTheDocument();
+		expect(readSectionTitles({ section: 'CLI' })).toStrictEqual(['lightsout doctor']);
 	});
 
-	test('falls back to the CLI form for a command the plugin ships no skill for', () => {
-		setupCommandsPage({ commands: [buildCommandCatalogEntry({ id: 'doctor', cli: 'lightsout doctor', overrides: { slash: undefined } })] });
-
-		const link = screen.getByRole('link', { name: 'lightsout doctor' });
-
-		expect(link).toBeInTheDocument();
-	});
-
-	test('points the title at that command’s own page, addressed by its catalog id rather than its title', () => {
+	test('makes the whole row the link to that command’s own page, addressed by its catalog id rather than its title', () => {
 		setupCommandsPage({ commands: [buildCommandCatalogEntry({ id: 'test-coverage-to-threshold', slash: '/test-coverage-to-threshold' })] });
 
-		const link = screen.getByRole('link', { name: '/test-coverage-to-threshold' });
+		const link = readRowLink({ title: '/test-coverage-to-threshold' });
 
 		expect(link).toHaveAttribute('href', '/commands/test-coverage-to-threshold');
 	});
 
-	test('prints the catalog’s one-line summary, so a reader can choose without opening the page', () => {
+	test('prints the catalog’s one-line summary in full, so a reader can choose without opening the page', () => {
 		setupCommandsPage({ commands: [buildCommandCatalogEntry({ summary: 'Pick a parked run back up where it stopped.' })] });
 
 		const summary = screen.getByText('Pick a parked run back up where it stopped.');
@@ -116,15 +117,30 @@ describe('CommandsPage command cards', () => {
 	});
 
 	test.each([
-		{ records: CommandRecordKind.Runs, label: 'records runs' },
-		{ records: CommandRecordKind.Plans, label: 'records plans' },
-		{ records: CommandRecordKind.Snapshots, label: 'records snapshots' },
-		{ records: CommandRecordKind.Nothing, label: 'records nothing' },
-	])('badges a $records command as "$label", which is what it leaves behind', ({ records, label }) => {
+		{ records: CommandRecordKind.Runs, label: 'Saves a run record' },
+		{ records: CommandRecordKind.Plans, label: 'Saves a plan' },
+		{ records: CommandRecordKind.Snapshots, label: 'Saves a findings snapshot' },
+	])('tags a $records command "$label", which is what it leaves behind', ({ records, label }) => {
 		setupCommandsPage({ commands: [buildCommandCatalogEntry({ records })] });
 
-		const badge = within(screen.getByRole('article')).getByText(label);
+		const tag = within(screen.getByRole('listitem')).getByText(label);
 
-		expect(badge).toBeInTheDocument();
+		expect(tag).toBeInTheDocument();
+	});
+
+	test('tags nothing on a command that leaves nothing behind, rather than saying so on most rows', () => {
+		setupCommandsPage({ commands: [buildCommandCatalogEntry({ records: CommandRecordKind.Nothing })] });
+
+		const tag = within(screen.getByRole('listitem')).queryByText(/^Saves /);
+
+		expect(tag).not.toBeInTheDocument();
+	});
+
+	test('renders inline code in a summary as code, never as raw backticks', () => {
+		setupCommandsPage({ commands: [buildCommandCatalogEntry({ summary: 'Rolls onward per the `auto-plan` config block.' })] });
+
+		const code = within(screen.getByRole('listitem')).getByText('auto-plan');
+
+		expect({ tag: code.tagName, backticks: screen.queryByText(/`/) }).toStrictEqual({ tag: 'CODE', backticks: null });
 	});
 });

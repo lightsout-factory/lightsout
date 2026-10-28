@@ -1,6 +1,6 @@
 import type { StandardsTopicView } from '@lightsout/engine';
 import { StandardsSet } from '@lightsout/engine/contracts';
-import { CodeSpans } from '#src/features/packs/components/CodeSpans.tsx';
+import { CodeSpans } from '#src/appUI/CodeSpans.tsx';
 import { readDocumentTitle } from '#src/features/packs/internal/common/utils/readDocumentTitle.ts';
 
 interface Group {

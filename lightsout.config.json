@@ -58,7 +58,7 @@
 	"ticket-tracker": {
 		"provider": "linear",
 		"team": "LO",
-		"api-key-env": "LINEAR_API_KEY"
+		"api-key-env": "LIGHTSOUT_LINEAR_API_KEY"
 	},
 	"worktree": {
 		"setup": "pnpm install"

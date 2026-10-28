@@ -2,11 +2,11 @@ import type { StandardsPackRuleListing } from '@lightsout/engine';
 import type { StandardsSeverity } from '@lightsout/engine/contracts';
 import { Link } from '@tanstack/react-router';
 import { ChevronRight } from 'lucide-react';
+import { CodeSpans } from '#src/appUI/CodeSpans.tsx';
 import { severityDisplays } from '#src/common/constants/severityDisplays.ts';
 import { cn } from '#src/common/utils/cn.ts';
 import { toCheckKinds } from '#src/common/utils/toCheckKinds.ts';
 import { CheckKindTag } from '#src/features/packs/components/CheckKindTag.tsx';
-import { CodeSpans } from '#src/features/packs/components/CodeSpans.tsx';
 
 interface Props {
 	rule: StandardsPackRuleListing;

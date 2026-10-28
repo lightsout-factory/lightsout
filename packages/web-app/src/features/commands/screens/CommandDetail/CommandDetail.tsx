@@ -1,5 +1,5 @@
 import { useSuspenseQuery } from '@tanstack/react-query';
-import { ContentHeader } from '#src/appUI/headers/ContentHeader.tsx';
+import { SitePageFrame } from '#src/appUI/SitePageFrame.tsx';
 import { commandsQueryOptions } from '#src/features/commands/queries/commandsQueryOptions.ts';
 import { CommandManual } from '#src/features/commands/screens/CommandDetail/internal/components/CommandManual.tsx';
 
@@ -13,9 +13,8 @@ export const CommandDetail = ({ commandId }: Props) => {
 	const entry = commands.find((candidate) => candidate.id === commandId);
 
 	return entry === undefined ? null : (
-		<div className="flex flex-col gap-6 p-6">
-			<ContentHeader crumbs={[{ label: 'Commands', link: { to: '/commands' } }, { label: entry.id }]} />
+		<SitePageFrame crumbs={[{ label: 'Commands', link: { to: '/commands' } }, { label: entry.id }]}>
 			<CommandManual entry={entry} />
-		</div>
+		</SitePageFrame>
 	);
 };

@@ -6,16 +6,22 @@ import { CommandRecordKind } from '#src/contracts/commands/CommandRecordKind.ts'
 /** `/refactor` — a fresh burn-down or the resumption of a parked one, which is why `--run` belongs to only the second shape. */
 export const refactorCatalogEntry: CommandCatalogEntry = {
 	id: 'refactor',
-	slash: '/refactor',
+	slash: '/lightsout:refactor',
 	cli: 'lightsout refactor',
 	group: CommandGroup.BurnDown,
 	summary:
-		'Burn down a repo’s standards-check findings (duplication, size, structure, boundary violations) in verified, resumable batches via the lightsout refactor pipeline.',
+		'Fix the problems the standards check already finds — duplicate code, oversized files, misplaced code — in small batches, each re-checked before the next. Stop and resume any time.',
 	whenToUse:
-		'Reach for it when standards-check has more findings than anyone will fix by hand. It burns them down in verified, resumable batches, each one gated before it lands.',
+		'Reach for it when standards-check has more findings than anyone will fix by hand. It burns them down in verified, resumable batches, each one gated before it lands. The run’s records sit in `.lightsout/refactor/runs/<id>/` in the primary checkout.',
 	invocations: [{ id: 'refactor' }, { id: 'refactor-resume', note: 'resume a parked refactor run' }],
 	flags: [
-		{ name: 'run', value: '<id>', meaning: 'The parked refactor run to pick back up.', shape: 'refactor-resume', required: true },
+		{
+			name: 'run',
+			value: '<id>',
+			meaning: 'The parked refactor run to pick back up, on the configuration it recorded when it started; a run that recorded none is refused.',
+			shape: 'refactor-resume',
+			required: true,
+		},
 		{ name: 'cwd', value: '<path>', meaning: 'Repository to burn down.', fallback: 'The process working directory.', required: false },
 		{ name: 'path', value: '<subdir>', meaning: 'Burn down only this subdirectory.', fallback: 'The whole repository.', shape: 'refactor', required: false },
 		{ name: 'all', meaning: 'Include findings the baseline has already accepted as known debt.', shape: 'refactor', required: false },
@@ -33,7 +39,14 @@ export const refactorCatalogEntry: CommandCatalogEntry = {
 			shape: 'refactor',
 			required: false,
 		},
-		{ name: 'allow-dirty', meaning: 'Start even though the git tree has uncommitted changes.', shape: 'refactor', required: false },
+		{
+			name: 'allow-dirty',
+			meaning:
+				'Start even though the git tree has uncommitted changes. They are recorded as the run’s baseline and never attributed to a batch, so runs can stack before you commit.',
+			fallback: 'The run refuses to start on a tree with uncommitted changes, so the ending diff is entirely its own.',
+			shape: 'refactor',
+			required: false,
+		},
 	],
 	steps: refactorSteps,
 	records: CommandRecordKind.Runs,
