@@ -222,7 +222,7 @@ for, so a repository can take one goal without the others:
 | `lightsout/code-style` | Makes code read the same whoever wrote it: one way to write a function, a class, a named value and a unit test. |
 | `lightsout/standards` | Both of the above: the rules for any JavaScript or TypeScript code, whatever its framework. |
 | `lightsout/react` | The rules written for React: size caps for hooks and components, and one way to write a component test. |
-| `lightsout/tanstack-start` | The rules written for TanStack Start: which of its files get unit tests. |
+| `lightsout/tanstack-start` | The rules written for TanStack Start: the React and base rules, the framework's own files left to it, and one shape for features, routes, screens, server functions and queries. |
 
 `standards-pack` takes one pack address or a list of them. Listed packs apply
 in order, and the last listed wins where two grade one rule differently:

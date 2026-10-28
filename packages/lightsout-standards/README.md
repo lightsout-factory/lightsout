@@ -52,22 +52,30 @@ Packs are grouped by what the rules are for, and the rule tree mirrors them:
   a type-safe value and a unit test.
 - `standards` — both packs above. It is the pack the docs tell a repository to
   opt into, and the one this repo runs for every package but the web app.
-- `react`, `tanstack-start` — the rules written for one framework, under
-  `rules/code/frameworks/` and `rules/tests/frameworks/`, and nothing else. A
-  package selects them through `package-standards-packs`. The general rules
-  know nothing about a framework, so a framework pack is where a framework's
-  differences live. Neither holds a general rule yet: which of those a
-  framework package also runs is still to be decided, and `react-function-size`
+- `react` — the rules written for React, under `rules/code/frameworks/react/`
+  and `rules/tests/frameworks/react/`, and nothing else. `react-function-size`
   replaces `function-size`, so the two never go to one package together.
+- `tanstack-start` — the whole standard for a TanStack Start package: it
+  includes `react` and `code-style`, the `fractal` topics with `file-size` and
+  `folder-size` named one by one so `function-size` stays out, and its own
+  topics under `rules/code/frameworks/tanstack-start/` and
+  `rules/tests/frameworks/tanstack-start/`. Its `rule-settings` drop the layout
+  and naming findings on the files the framework owns — `routes/`, the
+  generated route tree and the entry files — and the `explicit-return-type`
+  findings on the exports its `inferred-return-types` rule leaves to inference.
+  It declares `applies-when` on `@tanstack/react-start`, so it reaches only a
+  package that uses the framework. A package selects a framework pack through
+  `package-standards-packs`. The general rules know nothing about a framework,
+  so a framework pack is where a framework's differences live.
 
 `fractal` stands alone: no rule in it names, or `requires`, a rule in another
 pack. `code-style` and the framework packs may refer to `fractal` rules.
 
-The shipped packs carry no `rule-settings`, so every rule keeps the severity
-and options its `rule.md` gives it. A pack's `rule-settings` entry may also
-carry `exclude`, globs relative to each package root, which a framework pack
-uses to drop a general rule's findings in files its framework owns; the shipped
-packs set none. A new rule in an existing topic reaches
+The shipped packs set no severity or options in `rule-settings`, so every rule
+keeps the severity and options its `rule.md` gives it. A pack's `rule-settings`
+entry may also carry `exclude`, globs relative to each package root, which a
+framework pack uses to drop a general rule's findings in files its framework
+owns; `tanstack-start` is the one shipped pack that does. A new rule in an existing topic reaches
 every pack that includes the topic. A new topic reaches no pack until a pack
 file's `include.topics` names it.
 

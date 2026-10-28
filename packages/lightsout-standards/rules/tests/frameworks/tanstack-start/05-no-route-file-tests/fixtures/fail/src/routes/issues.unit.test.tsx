@@ -1,11 +1,9 @@
 import { describe, expect, test } from '@jest/globals';
-import { Route } from './issues';
+import { Route } from './issues.tsx';
 
-// Incorrect: a unit test for a route file, which holds nothing but wiring.
+// Incorrect: a test of the wiring, which the end-to-end tests already walk.
 describe('issues route', () => {
 	test('renders the issues screen', () => {
-		const component = Route.options.component;
-
-		expect(component).toBeDefined();
+		expect(Route.options.component).toBeDefined();
 	});
 });
