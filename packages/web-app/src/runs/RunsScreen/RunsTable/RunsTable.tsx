@@ -15,12 +15,12 @@ import { EmptyState } from '#src/common/panels/EmptyState.tsx';
 import { DataTable } from '#src/common/tables/DataTable/DataTable.tsx';
 import { DataTableRow } from '#src/common/tables/DataTableRow/DataTableRow.tsx';
 import type { DataTableColumn } from '#src/common/types/DataTableColumn.ts';
+import { RunsSortKey } from '#src/runs/common/constants/RunsSortKey.ts';
 import { getRunCommand } from '#src/runs/getRunCommand.ts';
 import type { RunFilters } from '#src/runs/RunsScreen/common/types/RunFilters.ts';
 import type { RunGroup } from '#src/runs/RunsScreen/RunsTable/common/types/RunGroup.ts';
 import { filterRuns } from '#src/runs/RunsScreen/RunsTable/filterRuns.ts';
 import { foldPhaseChildren } from '#src/runs/RunsScreen/RunsTable/foldPhaseChildren.ts';
-import { RunsSortKey } from '#src/runs/RunsSortKey.ts';
 
 const RunLink = ({ run }: { run: RunListing }) => (
 	<Link to="/app/runs/$runId" params={{ runId: run.runId }} className="font-medium hover:underline hover:underline-offset-2">

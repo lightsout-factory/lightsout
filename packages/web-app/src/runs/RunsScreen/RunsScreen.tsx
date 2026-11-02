@@ -4,10 +4,10 @@ import { ScrollText } from 'lucide-react';
 import { SortDirection } from '#src/common/constants/SortDirection.ts';
 import { formatCount } from '#src/common/formatCount.ts';
 import { PageHeader } from '#src/common/headers/PageHeader.tsx';
+import { RunsSortKey } from '#src/runs/common/constants/RunsSortKey.ts';
 import type { RunFilters } from '#src/runs/RunsScreen/common/types/RunFilters.ts';
 import { RunsFilterBar } from '#src/runs/RunsScreen/RunsFilterBar.tsx';
 import { RunsTable } from '#src/runs/RunsScreen/RunsTable/RunsTable.tsx';
-import { RunsSortKey } from '#src/runs/RunsSortKey.ts';
 import { runsQueryOptions } from '#src/runs/runsQueryOptions.ts';
 
 const readSortKey = ({ key }: { key?: string }) => Object.values(RunsSortKey).find((candidate) => candidate === key);

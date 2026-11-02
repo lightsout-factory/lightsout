@@ -1,6 +1,11 @@
 import { createElement, type ReactNode } from 'react';
 
-export const styled = ({ tag, className }: { tag: string; className: string }) => {
+interface Params {
+	tag: string;
+	className: string;
+}
+
+export const styled = ({ tag, className }: Params) => {
 	const Styled = ({ children }: { children?: ReactNode }) => createElement(tag, { className }, children);
 
 	return Styled;

@@ -19,8 +19,13 @@ const flattenText = ({ node }: { node: ReactNode }): string => {
 	return text;
 };
 
+interface Params {
+	tag: string;
+	className: string;
+}
+
 /** Only h2 and h3 get an anchor id — those are the levels `DocToc` lists. */
-export const anchored = ({ tag, className }: { tag: string; className: string }) => {
+export const anchored = ({ tag, className }: Params) => {
 	const Anchored = ({ children }: { children?: ReactNode }) =>
 		createElement(tag, { className, id: slugifyHeading({ text: flattenText({ node: children }) }) }, children);
 

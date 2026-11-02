@@ -1,5 +1,5 @@
 import { PipelineKind } from '@lightsout/engine/contracts';
-import { RunCommand } from '#src/runs/RunCommand.ts';
+import { RunCommand } from '#src/runs/common/constants/RunCommand.ts';
 
 const commandsByPipeline: Record<string, RunCommand> = {
 	[PipelineKind.Implement]: RunCommand.Implement,
