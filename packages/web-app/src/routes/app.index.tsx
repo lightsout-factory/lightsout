@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { RepoHealth } from '#src/features/repo/screens/RepoHealth/RepoHealth.tsx';
-import { runsQueryOptions } from '#src/features/runs/queries/runsQueryOptions.ts';
+import { RepoHealthScreen } from '#src/repo/RepoHealthScreen/RepoHealthScreen.tsx';
+import { runsQueryOptions } from '#src/runs/runsQueryOptions.ts';
 
 export const Route = createFileRoute('/app/')({
 	head: () => ({ meta: [{ title: 'Health' }] }),
@@ -10,5 +10,5 @@ export const Route = createFileRoute('/app/')({
 	loader: async ({ context }) => {
 		await context.queryClient.ensureQueryData(runsQueryOptions());
 	},
-	component: RepoHealth,
+	component: RepoHealthScreen,
 });

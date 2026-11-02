@@ -1,8 +1,8 @@
 import { createFileRoute, notFound, useNavigate } from '@tanstack/react-router';
-import { AddressNotFound } from '#src/common/components/boundaries/AddressNotFound.tsx';
+import { AddressNotFound } from '#src/common/boundaries/AddressNotFound.tsx';
 import { CheckKind } from '#src/common/constants/CheckKind.ts';
-import { defaultPackQueryOptions } from '#src/features/packs/queries/defaultPackQueryOptions.ts';
-import { PackPage } from '#src/features/packs/screens/PackPage/PackPage.tsx';
+import { defaultPackQueryOptions } from '#src/packs/defaultPackQueryOptions.ts';
+import { PackScreen } from '#src/packs/PackScreen/PackScreen.tsx';
 
 interface PackSearch {
 	check?: CheckKind;
@@ -32,7 +32,7 @@ const PackRoutePage = () => {
 	const navigate = useNavigate({ from: Route.fullPath });
 
 	return (
-		<PackPage
+		<PackScreen
 			pack={pack}
 			filters={{ check: search.check, text: search.text }}
 			onFiltersChange={(filters) => {

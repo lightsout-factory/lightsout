@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { runQueryOptions } from '#src/features/runDetail/queries/runQueryOptions.ts';
-import { RunDetail } from '#src/features/runDetail/screens/RunDetail/RunDetail.tsx';
+import { RunDetailScreen } from '#src/runDetail/RunDetailScreen/RunDetailScreen.tsx';
+import { runQueryOptions } from '#src/runDetail/runQueryOptions.ts';
 
 // The trailing underscore on `runs_` stops the file router nesting this page
 // inside the runs list; the URL is still /app/runs/$runId.
@@ -22,7 +22,7 @@ const RunNotFound = () => {
 const RunDetailPage = () => {
 	const { runId } = Route.useParams();
 
-	return <RunDetail runId={runId} />;
+	return <RunDetailScreen runId={runId} />;
 };
 
 export const Route = createFileRoute('/app/runs_/$runId')({

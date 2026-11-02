@@ -20,7 +20,7 @@ import { renderWithQueryClient } from '#tests/helpers/renderWithQueryClient.tsx'
 const mockGetFriction = jest.fn<() => Promise<FrictionRecord[]>>();
 const mockListRuns = jest.fn<() => Promise<RunListing[]>>();
 
-jest.mock('#src/lightsout/getReader.ts', () => ({ getReader: () => ({ getFriction: () => mockGetFriction(), listRuns: () => mockListRuns() }) }));
+jest.mock('#src/common/server/getReader/getReader.ts', () => ({ getReader: () => ({ getFriction: () => mockGetFriction(), listRuns: () => mockListRuns() }) }));
 // -------------------------
 // Only the piece that needs a live router around it is stood in for, so this one
 // route's component can be rendered on its own. Everything else — above all

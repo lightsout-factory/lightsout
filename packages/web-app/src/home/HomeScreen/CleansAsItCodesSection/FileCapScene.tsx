@@ -1,0 +1,110 @@
+import { FileCode, FolderTree } from 'lucide-react';
+import { cn } from '#src/common/cn.ts';
+import { Appear } from '#src/home/HomeScreen/CleansAsItCodesSection/common/Appear.tsx';
+import { CapScene } from '#src/home/HomeScreen/CleansAsItCodesSection/common/CapScene.tsx';
+import { codeCaps } from '#src/home/HomeScreen/CleansAsItCodesSection/common/constants/codeCaps.ts';
+import { SceneStatus } from '#src/home/HomeScreen/CleansAsItCodesSection/common/constants/SceneStatus.ts';
+import { StatusChip } from '#src/home/HomeScreen/CleansAsItCodesSection/common/StatusChip.tsx';
+import type { CapSceneDefinition } from '#src/home/HomeScreen/CleansAsItCodesSection/common/types/CapSceneDefinition.ts';
+import type { SceneProps } from '#src/home/HomeScreen/CleansAsItCodesSection/common/types/SceneProps.ts';
+
+const pxPerLine = 1;
+
+/** Far enough past the cap that the overflow reads at a glance, and a split rather than a trim is the obvious fix. */
+const finalLines = codeCaps.fileLines + 40;
+
+const splitFiles = [
+	{ folder: 'runReport/', name: 'runReport.ts', lines: 118 },
+	{ folder: 'runReport/common/utils/', name: 'summarizeSteps.ts', lines: 96 },
+	{ folder: 'runReport/common/utils/', name: 'formatCost.ts', lines: finalLines - 118 - 96 },
+];
+
+const frames = [
+	...[180, codeCaps.fileLines].map((lines) => ({ lines, status: SceneStatus.Working })),
+	{ lines: finalLines, status: SceneStatus.Over },
+	{ lines: finalLines, status: SceneStatus.Fixing },
+	...[1, 2, 3].map(() => ({ lines: finalLines, status: SceneStatus.Clean })),
+];
+
+/** More lines than any file here needs, so the box's height alone decides how many show. */
+const codeLineWidths = [72, 54, 88, 40, 66, 80, 48, 92, 58, 70, 36, 84, 62, 76, 44, 90, 52, 68, 38, 86];
+
+const CodeBlock = ({ lines, className }: { lines: number; className?: string }) => (
+	<div
+		aria-hidden="true"
+		className={cn('flex flex-col gap-2 overflow-hidden rounded-lg border border-border bg-muted/50 p-3 transition-[height] duration-700 ease-out', className)}
+		style={{ height: `${lines * pxPerLine}px` }}
+	>
+		{codeLineWidths.map((width) => (
+			<span key={width} className="h-1.5 shrink-0 rounded-full bg-border" style={{ width: `${width}%` }} />
+		))}
+	</div>
+);
+
+const LimitLine = () => (
+	<div
+		aria-hidden="true"
+		className="absolute inset-x-0 z-10 border-drop-navy/40 border-t-2 border-dashed"
+		style={{ top: `${codeCaps.fileLines * pxPerLine}px` }}
+	>
+		<span className="absolute right-0 -top-5 font-mono text-[11px] text-subtle-foreground">{codeCaps.fileLines}-line limit</span>
+	</div>
+);
+
+const GrowingFile = ({ lines, status }: { lines: number; status: SceneStatus }) => (
+	<div className="flex flex-col gap-4">
+		<div className="flex flex-wrap items-center justify-between gap-3">
+			<p className="flex items-center gap-2.5 font-medium font-mono text-drop-navy text-sm">
+				<FileCode aria-hidden="true" className="size-5 text-muted-foreground" />
+				runReport.ts
+			</p>
+			<StatusChip status={status}>{status === SceneStatus.Fixing ? 'Refactoring' : `${lines} / ${codeCaps.fileLines} lines`}</StatusChip>
+		</div>
+		<div className="relative" style={{ height: `${finalLines * pxPerLine}px` }}>
+			<LimitLine />
+			<CodeBlock lines={lines} className="absolute inset-x-0 top-0" />
+			<div
+				aria-hidden="true"
+				className="absolute inset-x-0 rounded-b-lg border-status-failed-border border-x border-b bg-status-failed/10 transition-[height] duration-700 ease-out"
+				style={{ top: `${codeCaps.fileLines * pxPerLine}px`, height: `${Math.max(lines - codeCaps.fileLines, 0) * pxPerLine}px` }}
+			/>
+		</div>
+	</div>
+);
+
+const SplitFiles = () => (
+	<Appear className="flex flex-col gap-4">
+		<div className="flex flex-wrap items-center justify-between gap-3">
+			<p className="flex items-center gap-2.5 font-medium font-mono text-drop-navy text-sm">
+				<FolderTree aria-hidden="true" className="size-5 text-primary" />
+				runReport/
+			</p>
+			<StatusChip status={SceneStatus.Clean}>Clean · every file under the cap</StatusChip>
+		</div>
+		<ul className="grid grid-cols-3 gap-4 pt-2">
+			{splitFiles.map((file) => (
+				<li key={file.name} className="flex min-w-0 flex-col gap-3">
+					<div aria-hidden="true" className="flex h-36 flex-col gap-2 rounded-xl border border-border bg-card p-4 shadow-sm">
+						{codeLineWidths.slice(0, 7).map((width) => (
+							<span key={width} className="h-1.5 shrink-0 rounded-full bg-border" style={{ width: `${width}%` }} />
+						))}
+					</div>
+					<p className="flex min-w-0 flex-col font-mono text-xs">
+						<span className="truncate font-medium text-drop-navy">{file.name}</span>
+						<span className="truncate text-subtle-foreground">{file.folder}</span>
+						<span className="text-muted-foreground">{file.lines} lines</span>
+					</p>
+				</li>
+			))}
+		</ul>
+	</Appear>
+);
+
+const fileScene: CapSceneDefinition<(typeof frames)[number]> = {
+	title: `Standards Pack / file-size · max ${codeCaps.fileLines} lines per file`,
+	frames,
+	renderGrowing: (frame) => <GrowingFile lines={frame.lines} status={frame.status} />,
+	renderClean: () => <SplitFiles />,
+};
+
+export const FileCapScene = ({ onFinish }: SceneProps) => <CapScene scene={fileScene} onFinish={onFinish} />;

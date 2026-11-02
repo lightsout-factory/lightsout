@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { commandsQueryOptions } from '#src/features/commands/queries/commandsQueryOptions.ts';
-import { CommandsPage } from '#src/features/commands/screens/CommandsPage/CommandsPage.tsx';
+import { CommandsScreen } from '#src/commands/CommandsScreen/CommandsScreen.tsx';
+import { commandsQueryOptions } from '#src/commands/commandsQueryOptions.ts';
 
 export const Route = createFileRoute('/_site/commands/')({
 	// The catalog is engine source rather than repo state, so this resolves on a
@@ -9,5 +9,5 @@ export const Route = createFileRoute('/_site/commands/')({
 		await context.queryClient.ensureQueryData(commandsQueryOptions());
 	},
 	head: () => ({ meta: [{ title: 'Commands' }] }),
-	component: CommandsPage,
+	component: CommandsScreen,
 });

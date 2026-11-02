@@ -1,6 +1,6 @@
 import { useContext } from 'react';
-import type { ThemeContextValue } from '#src/theme/internal/common/types/ThemeContextValue.ts';
-import { ThemeContext } from '#src/theme/internal/ThemeContext.ts';
+import { ThemeContext } from '#src/theme/common/ThemeContext.ts';
+import type { ThemeContextValue } from '#src/theme/common/types/ThemeContextValue.ts';
 
 /**
  * @throws {Error} When called outside a `ThemeProvider`.

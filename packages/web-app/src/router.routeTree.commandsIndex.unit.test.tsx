@@ -16,7 +16,7 @@ import { renderWithQueryClient } from '#tests/helpers/renderWithQueryClient.tsx'
 // the catalog answered and the loader's cache can be checked against it.
 const mockListCommands = jest.fn<() => Promise<CommandCatalogEntry[]>>();
 
-jest.mock('#src/features/commands/internal/serverFns/listCommandsServerFn.ts', () => ({ listCommandsServerFn: () => mockListCommands() }));
+jest.mock('#src/commands/server/listCommandsServerFn.ts', () => ({ listCommandsServerFn: () => mockListCommands() }));
 // -------------------------
 // Only the piece that needs a live router around it is stood in for, so the
 // route's own component can be rendered on its own. Everything else — above all

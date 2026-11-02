@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { standardsQueryOptions } from '#src/features/standards/queries/standardsQueryOptions.ts';
-import { StandardsPage } from '#src/features/standards/screens/StandardsPage/StandardsPage.tsx';
+import { StandardsScreen } from '#src/standards/StandardsScreen/StandardsScreen.tsx';
+import { standardsQueryOptions } from '#src/standards/standardsQueryOptions.ts';
 
 interface StandardsSearch {
 	rule?: string;
@@ -16,5 +16,5 @@ export const Route = createFileRoute('/app/standards')({
 		await context.queryClient.ensureQueryData(standardsQueryOptions());
 	},
 	head: () => ({ meta: [{ title: 'Standards' }] }),
-	component: StandardsPage,
+	component: StandardsScreen,
 });

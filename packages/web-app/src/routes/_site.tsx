@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { SiteShell } from '#src/features/app/components/SiteShell.tsx';
+import { SiteShell } from '#src/shell/SiteShell/SiteShell.tsx';
 
 /**
  * Pathless, so every page under it keeps its own URL, and a page belongs to the

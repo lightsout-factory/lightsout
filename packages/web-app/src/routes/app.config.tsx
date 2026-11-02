@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { configQueryOptions } from '#src/features/config/queries/configQueryOptions.ts';
-import { ConfigPage } from '#src/features/config/screens/ConfigPage/ConfigPage.tsx';
+import { ConfigScreen } from '#src/config/ConfigScreen/ConfigScreen.tsx';
+import { configQueryOptions } from '#src/config/configQueryOptions.ts';
 
 export const Route = createFileRoute('/app/config')({
 	// A repo with no config answers this with the router's own not-found; a repo
@@ -10,5 +10,5 @@ export const Route = createFileRoute('/app/config')({
 		await context.queryClient.ensureQueryData(configQueryOptions());
 	},
 	head: () => ({ meta: [{ title: 'Config' }] }),
-	component: ConfigPage,
+	component: ConfigScreen,
 });

@@ -20,7 +20,7 @@ import { renderWithQueryClient } from '#tests/helpers/renderWithQueryClient.tsx'
 const mockListPlans = jest.fn<() => Promise<PlanWorkspaceListing[]>>();
 const mockGetPlanWorkspace = jest.fn<() => Promise<PlanWorkspaceView>>();
 
-jest.mock('#src/lightsout/getReader.ts', () => ({
+jest.mock('#src/common/server/getReader/getReader.ts', () => ({
 	getReader: () => ({
 		listPlanWorkspaces: () => mockListPlans(),
 		getPlanWorkspace: () => mockGetPlanWorkspace(),

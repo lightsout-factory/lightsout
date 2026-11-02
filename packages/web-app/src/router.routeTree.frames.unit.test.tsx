@@ -20,7 +20,7 @@ import { renderWithQueryClient } from '#tests/helpers/renderWithQueryClient.tsx'
 const mockListRuns = jest.fn<() => Promise<RunListing[]>>();
 const mockGetStandards = jest.fn<() => Promise<StandardsView>>();
 
-jest.mock('#src/lightsout/getReader.ts', () => ({
+jest.mock('#src/common/server/getReader/getReader.ts', () => ({
 	getReader: () => ({
 		listRuns: () => mockListRuns(),
 		getStandards: () => mockGetStandards(),
@@ -35,7 +35,7 @@ jest.mock('#src/lightsout/getReader.ts', () => ({
 // `isPublicDeployment`, read from the variable each test sets.
 const mockRequireLocalRepoRoot = jest.fn<() => string>();
 
-jest.mock('#src/common/utils/requireLocalRepoRoot.ts', () => ({
+jest.mock('#src/common/server/requireLocalRepoRoot/requireLocalRepoRoot.ts', () => ({
 	requireLocalRepoRoot: () => mockRequireLocalRepoRoot(),
 }));
 // -------------------------

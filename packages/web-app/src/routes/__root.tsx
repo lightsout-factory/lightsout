@@ -2,8 +2,8 @@
 import type { QueryClient } from '@tanstack/react-query';
 import { createRootRouteWithContext, HeadContent, Outlet, Scripts } from '@tanstack/react-router';
 import type { ReactNode } from 'react';
-import { DefaultCatchBoundary } from '#src/common/components/boundaries/DefaultCatchBoundary.tsx';
-import { NotFound } from '#src/common/components/boundaries/NotFound.tsx';
+import { DefaultCatchBoundary } from '#src/common/boundaries/DefaultCatchBoundary.tsx';
+import { NotFound } from '#src/common/boundaries/NotFound.tsx';
 import { Theme } from '#src/common/constants/Theme.ts';
 import { themeStorageKey } from '#src/common/constants/themeStorageKey.ts';
 import { FeedbackWidget } from '#src/feedback/FeedbackWidget.tsx';

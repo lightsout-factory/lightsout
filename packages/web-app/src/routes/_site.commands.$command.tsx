@@ -1,7 +1,7 @@
 import { createFileRoute, Link, notFound } from '@tanstack/react-router';
-import { AddressNotFound } from '#src/common/components/boundaries/AddressNotFound.tsx';
-import { commandsQueryOptions } from '#src/features/commands/queries/commandsQueryOptions.ts';
-import { CommandDetail } from '#src/features/commands/screens/CommandDetail/CommandDetail.tsx';
+import { CommandDetailScreen } from '#src/commands/CommandDetailScreen/CommandDetailScreen.tsx';
+import { commandsQueryOptions } from '#src/commands/commandsQueryOptions.ts';
+import { AddressNotFound } from '#src/common/boundaries/AddressNotFound.tsx';
 
 const CommandNotFound = () => {
 	const { command } = Route.useParams();
@@ -20,7 +20,7 @@ const CommandNotFound = () => {
 const CommandDetailPage = () => {
 	const { command } = Route.useParams();
 
-	return <CommandDetail commandId={command} />;
+	return <CommandDetailScreen commandId={command} />;
 };
 
 export const Route = createFileRoute('/_site/commands/$command')({

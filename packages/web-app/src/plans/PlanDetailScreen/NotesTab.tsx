@@ -1,0 +1,13 @@
+import type { PlanWorkspaceView } from '@lightsout/engine';
+import { PlanDocumentBody } from '#src/plans/PlanDetailScreen/common/PlanDocumentBody.tsx';
+
+interface Props {
+	view: PlanWorkspaceView;
+}
+
+export const NotesTab = ({ view }: Props) =>
+	view.notesFile === undefined ? (
+		<p className="text-muted-foreground text-sm">No notes — /brainstorm writes them when a plan starts from a rough idea.</p>
+	) : (
+		<PlanDocumentBody path={view.notesFile.path} />
+	);

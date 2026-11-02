@@ -18,7 +18,7 @@ import { renderWithQueryClient } from '#tests/helpers/renderWithQueryClient.tsx'
 // this repo's own lightsout.config.json happens to say today.
 const mockGetConfig = jest.fn<() => Promise<ConfigView>>();
 
-jest.mock('#src/lightsout/getReader.ts', () => ({ getReader: () => ({ getConfig: () => mockGetConfig() }) }));
+jest.mock('#src/common/server/getReader/getReader.ts', () => ({ getReader: () => ({ getConfig: () => mockGetConfig() }) }));
 // -------------------------
 // Only the piece that needs a live router around it is stood in for, so this one
 // route's component can be rendered on its own. Everything else — above all

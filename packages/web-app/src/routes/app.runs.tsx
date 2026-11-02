@@ -1,10 +1,10 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { runStatusFamilies } from '#src/common/constants/runStatusFamilies.ts';
 import { SortDirection } from '#src/common/constants/SortDirection.ts';
-import { RunCommand } from '#src/features/runs/common/constants/RunCommand.ts';
-import { RunsSortKey } from '#src/features/runs/common/constants/RunsSortKey.ts';
-import { runsQueryOptions } from '#src/features/runs/queries/runsQueryOptions.ts';
-import { RunsPage } from '#src/features/runs/screens/RunsPage/RunsPage.tsx';
+import { RunCommand } from '#src/runs/RunCommand.ts';
+import { RunsScreen } from '#src/runs/RunsScreen/RunsScreen.tsx';
+import { RunsSortKey } from '#src/runs/RunsSortKey.ts';
+import { runsQueryOptions } from '#src/runs/runsQueryOptions.ts';
 
 interface RunsSearch {
 	commands?: string[];
@@ -47,5 +47,5 @@ export const Route = createFileRoute('/app/runs')({
 		await context.queryClient.ensureQueryData(runsQueryOptions());
 	},
 	head: () => ({ meta: [{ title: 'Runs' }] }),
-	component: RunsPage,
+	component: RunsScreen,
 });

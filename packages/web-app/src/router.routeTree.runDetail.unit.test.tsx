@@ -16,11 +16,11 @@ import { renderWithQueryClient } from '#tests/helpers/renderWithQueryClient.tsx'
 // of that chain. Stubbing the reader keeps the whole graph off disk.
 const mockGetRun = jest.fn<(params: { runId: string }) => Promise<RunView>>();
 
-jest.mock('#src/lightsout/getReader.ts', () => ({ getReader: () => ({ getRun: (params: { runId: string }) => mockGetRun(params) }) }));
+jest.mock('#src/common/server/getReader/getReader.ts', () => ({ getReader: () => ({ getRun: (params: { runId: string }) => mockGetRun(params) }) }));
 // -------------------------
 // Whether a repo was found is answered by walking the real filesystem, so the
 // page would otherwise report whatever directory Jest happened to start in.
-jest.mock('#src/common/utils/findRepoRoot.ts', () => ({
+jest.mock('#src/common/server/requireLocalRepoRoot/findRepoRoot.ts', () => ({
 	findRepoRoot: () => '/repos/lightsout',
 }));
 // -------------------------
