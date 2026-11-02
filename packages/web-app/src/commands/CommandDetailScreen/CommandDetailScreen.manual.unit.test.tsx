@@ -4,7 +4,7 @@ import { CommandActor } from '@lightsout/engine/contracts';
 import { screen } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { CommandDetailScreen } from '#src/commands/CommandDetailScreen/CommandDetailScreen.tsx';
-import { QueryKey } from '#src/common/constants/QueryKey.ts';
+import { commandsQueryOptions } from '#src/commands/commandsQueryOptions.ts';
 import { buildCommandCatalogEntry } from '#tests/helpers/buildCommandCatalogEntry.ts';
 import { renderWithQueryClient } from '#tests/helpers/renderWithQueryClient.tsx';
 
@@ -25,7 +25,7 @@ jest.mock('@tanstack/react-router', () => ({
 const setupCommandManual = ({ entry }: { entry: CommandCatalogEntry }) => {
 	renderWithQueryClient({
 		ui: <CommandDetailScreen commandId={entry.id} />,
-		seed: [{ queryKey: [QueryKey.Commands], data: [entry] }],
+		seed: [{ queryKey: commandsQueryOptions().queryKey, data: [entry] }],
 	});
 };
 

@@ -2,8 +2,8 @@ import { describe, expect, jest, test } from '@jest/globals';
 import type { StandardsView } from '@lightsout/engine';
 import { StandardsSeverity } from '@lightsout/engine/contracts';
 import { act, fireEvent, screen, within } from '@testing-library/react';
-import { QueryKey } from '#src/common/constants/QueryKey.ts';
 import { StandardsScreen } from '#src/standards/StandardsScreen/StandardsScreen.tsx';
+import { standardsQueryOptions } from '#src/standards/standardsQueryOptions.ts';
 import { buildStandardsFinding } from '#tests/helpers/buildStandardsFinding.ts';
 import { buildStandardsRuleView } from '#tests/helpers/buildStandardsRuleView.ts';
 import { buildStandardsView } from '#tests/helpers/buildStandardsView.ts';
@@ -33,7 +33,7 @@ const setupFindings = ({ overrides = {}, rule }: { overrides?: Partial<Standards
 	// jsdom implements the DOM, not the platform around it: navigator has no
 	// clipboard at all, so the property is defined rather than spied on.
 	Object.defineProperty(navigator, 'clipboard', { value: { writeText: mockWriteText }, configurable: true });
-	renderWithQueryClient({ ui: <StandardsScreen />, seed: [{ queryKey: [QueryKey.Standards], data: buildStandardsView({ overrides }) }] });
+	renderWithQueryClient({ ui: <StandardsScreen />, seed: [{ queryKey: standardsQueryOptions().queryKey, data: buildStandardsView({ overrides }) }] });
 
 	return { mockWriteText };
 };

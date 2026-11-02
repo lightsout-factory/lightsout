@@ -2,8 +2,8 @@ import { describe, expect, jest, test } from '@jest/globals';
 import type { RunView } from '@lightsout/engine';
 import { fireEvent, screen } from '@testing-library/react';
 import type { ReactNode } from 'react';
-import { QueryKey } from '#src/common/constants/QueryKey.ts';
 import { RunDetailScreen } from '#src/runDetail/RunDetailScreen/RunDetailScreen.tsx';
+import { runQueryOptions } from '#src/runDetail/runQueryOptions.ts';
 import { buildRunView } from '#tests/helpers/buildRunView.ts';
 import { renderWithQueryClient } from '#tests/helpers/renderWithQueryClient.tsx';
 
@@ -26,7 +26,7 @@ const setupGates = ({ overrides = {} }: { overrides?: Partial<RunView> } = {}) =
 	jest.useFakeTimers();
 	renderWithQueryClient({
 		ui: <RunDetailScreen runId={runId} />,
-		seed: [{ queryKey: [QueryKey.Run, runId], data: buildRunView({ overrides }) }],
+		seed: [{ queryKey: runQueryOptions({ runId }).queryKey, data: buildRunView({ overrides }) }],
 	});
 	// The gates have a tab of their own now, and a tab strip selects on the press
 	// rather than on the release.

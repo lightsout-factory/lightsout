@@ -3,13 +3,17 @@ import type { ConfigView, FrictionRecord, PlanWorkspaceListing, RunListing, Stan
 import { PlanStage, RunStatus } from '@lightsout/engine/contracts';
 import { screen, within } from '@testing-library/react';
 import type { ReactNode } from 'react';
-import { QueryKey } from '#src/common/constants/QueryKey.ts';
+import { configQueryOptions } from '#src/config/configQueryOptions.ts';
+import { frictionQueryOptions } from '#src/friction/frictionQueryOptions.ts';
+import { planWorkspacesQueryOptions } from '#src/plans/planWorkspacesQueryOptions.ts';
 import { RepoHealthScreen } from '#src/repo/RepoHealthScreen/RepoHealthScreen.tsx';
+import { runsQueryOptions } from '#src/runs/runsQueryOptions.ts';
+import { repoRootQueryOptions } from '#src/shell/repoRootQueryOptions.ts';
+import { standardsQueryOptions } from '#src/standards/standardsQueryOptions.ts';
 import { buildConfigView } from '#tests/helpers/buildConfigView.ts';
 import { buildFrictionRecord } from '#tests/helpers/buildFrictionRecord.ts';
 import { buildPlanWorkspaceListing } from '#tests/helpers/buildPlanWorkspaceListing.ts';
 import { buildRunListing } from '#tests/helpers/buildRunListing.ts';
-import { buildStandardsRuleView } from '#tests/helpers/buildStandardsRuleView.ts';
 import { buildStandardsView } from '#tests/helpers/buildStandardsView.ts';
 import { renderWithQueryClient } from '#tests/helpers/renderWithQueryClient.tsx';
 
@@ -101,24 +105,18 @@ const setupRepoHealth = ({
 	renderWithQueryClient({
 		ui: <RepoHealthScreen />,
 		seed: [
-			{ queryKey: [QueryKey.RepoRoot], data: { repoRoot: '/repos/lightsout' } },
-			{ queryKey: [QueryKey.Runs], data: runs },
-			...(standards === null ? [] : [{ queryKey: [QueryKey.Standards], data: standards }]),
-			...(friction === null ? [] : [{ queryKey: [QueryKey.Friction], data: friction }]),
-			...(config === null || configFails ? [] : [{ queryKey: [QueryKey.Config], data: config }]),
-			...(plans === null ? [] : [{ queryKey: [QueryKey.PlanWorkspaces], data: plans }]),
+			{ queryKey: repoRootQueryOptions().queryKey, data: { repoRoot: '/repos/lightsout' } },
+			{ queryKey: runsQueryOptions().queryKey, data: runs },
+			...(standards === null ? [] : [{ queryKey: standardsQueryOptions().queryKey, data: standards }]),
+			...(friction === null ? [] : [{ queryKey: frictionQueryOptions().queryKey, data: friction }]),
+			...(config === null || configFails ? [] : [{ queryKey: configQueryOptions().queryKey, data: config }]),
+			...(plans === null ? [] : [{ queryKey: planWorkspacesQueryOptions().queryKey, data: plans }]),
 		],
 	});
 };
 
 /** One tile, read by the words under its number rather than by its position in the grid. */
 const readTile = ({ label }: { label: string }) => within(screen.getByText(label).parentElement as HTMLElement);
-
-/** The bars, read inside their own panel, since every other link on the page is a run. */
-const readTopRules = () =>
-	within(screen.getByRole('heading', { level: 3, name: 'Top rules by findings' }).closest('section') as HTMLElement)
-		.queryAllByRole('link')
-		.map((link) => ({ rule: link.firstElementChild?.textContent, count: link.lastElementChild?.textContent, href: link.getAttribute('href') }));
 
 describe('RepoHealthScreen repo strip', () => {
 	test('says what this repo runs agents with, as the file states it', () => {
@@ -320,79 +318,5 @@ describe('RepoHealthScreen tiles', () => {
 		const tile = readTile({ label: 'open plans' });
 
 		expect(tile.getByText('—')).toBeInTheDocument();
-	});
-});
-
-describe('RepoHealthScreen top rules panel', () => {
-	test('is not mounted at all while no check has answered, rather than drawing an empty panel', () => {
-		setupRepoHealth({ standards: null });
-
-		const heading = screen.queryByRole('heading', { name: 'Top rules by findings' });
-
-		expect(heading).not.toBeInTheDocument();
-	});
-
-	test('ranks the rules a repo is breaking most, worst first', () => {
-		setupRepoHealth({
-			standards: buildStandardsView({
-				overrides: {
-					rules: [
-						buildStandardsRuleView({ rule: 'loose-file', findingCount: 3 }),
-						buildStandardsRuleView({ rule: 'file-size', findingCount: 11 }),
-						buildStandardsRuleView({ rule: 'naming-boolean', findingCount: 7 }),
-					],
-				},
-			}),
-		});
-
-		const bars = readTopRules();
-
-		expect(bars.map((bar) => bar.rule)).toStrictEqual(['file-size', 'naming-boolean', 'loose-file']);
-		expect(bars.map((bar) => bar.count)).toStrictEqual(['11 findings', '7 findings', '3 findings']);
-	});
-
-	test('orders two rules tied on count by name, so the same check always draws the same bars', () => {
-		setupRepoHealth({
-			standards: buildStandardsView({
-				overrides: {
-					rules: [buildStandardsRuleView({ rule: 'loose-file', findingCount: 4 }), buildStandardsRuleView({ rule: 'file-size', findingCount: 4 })],
-				},
-			}),
-		});
-
-		const bars = readTopRules();
-
-		expect(bars.map((bar) => bar.rule)).toStrictEqual(['file-size', 'loose-file']);
-	});
-
-	test('holds that ranking to five, however many rules a repo breaks', () => {
-		setupRepoHealth({
-			standards: buildStandardsView({
-				overrides: { rules: Array.from({ length: 8 }, (_, index) => buildStandardsRuleView({ rule: `rule-${index}`, findingCount: index + 1 })) },
-			}),
-		});
-
-		const bars = readTopRules();
-
-		expect(bars).toHaveLength(5);
-	});
-
-	test('points a bar at the findings table, already narrowed to the rule it counted', () => {
-		setupRepoHealth({ standards: buildStandardsView({ overrides: { rules: [buildStandardsRuleView({ rule: 'file-size', findingCount: 4 })] } }) });
-
-		const [bar] = readTopRules();
-
-		expect(bar.href).toBe('/app/standards?rule=file-size');
-	});
-
-	test('says a check came back clean rather than drawing five bars of nothing', () => {
-		setupRepoHealth({
-			standards: buildStandardsView({
-				overrides: { rules: [buildStandardsRuleView({ rule: 'file-size', findingCount: 0 }), buildStandardsRuleView({ rule: 'loose-file', findingCount: 0 })] },
-			}),
-		});
-
-		expect(screen.getByText('No findings.')).toBeInTheDocument();
-		expect(readTopRules()).toStrictEqual([]);
 	});
 });

@@ -2,8 +2,8 @@ import { describe, expect, jest, test } from '@jest/globals';
 import type { ConfigView } from '@lightsout/engine';
 import { screen, within } from '@testing-library/react';
 import type { ReactNode } from 'react';
-import { QueryKey } from '#src/common/constants/QueryKey.ts';
 import { ConfigScreen } from '#src/config/ConfigScreen/ConfigScreen.tsx';
+import { configQueryOptions } from '#src/config/configQueryOptions.ts';
 import { buildConfigView } from '#tests/helpers/buildConfigView.ts';
 import { renderWithQueryClient } from '#tests/helpers/renderWithQueryClient.tsx';
 
@@ -22,7 +22,7 @@ jest.mock('@tanstack/react-router', () => ({
 // -------------------------
 
 const setupConfigPage = ({ overrides = {} }: { overrides?: Partial<ConfigView> } = {}) => {
-	renderWithQueryClient({ ui: <ConfigScreen />, seed: [{ queryKey: [QueryKey.Config], data: buildConfigView({ overrides }) }] });
+	renderWithQueryClient({ ui: <ConfigScreen />, seed: [{ queryKey: configQueryOptions().queryKey, data: buildConfigView({ overrides }) }] });
 };
 
 // Split from the page's own suite by concern: the card naming the standards

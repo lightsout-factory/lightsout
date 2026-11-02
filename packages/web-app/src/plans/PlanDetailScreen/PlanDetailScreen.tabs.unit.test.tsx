@@ -3,8 +3,8 @@ import type { PlanDocument, PlanWorkspaceView } from '@lightsout/engine';
 import { DecisionSource, DedupResolution, PlanDocumentKind } from '@lightsout/engine/contracts';
 import { fireEvent, screen } from '@testing-library/react';
 import type { ReactNode } from 'react';
-import { QueryKey } from '#src/common/constants/QueryKey.ts';
 import { PlanDetailScreen } from '#src/plans/PlanDetailScreen/PlanDetailScreen.tsx';
+import { planWorkspaceQueryOptions } from '#src/plans/planWorkspaceQueryOptions.ts';
 import { buildPlanWorkspaceView } from '#tests/helpers/buildPlanWorkspaceView.ts';
 import { renderWithQueryClient } from '#tests/helpers/renderWithQueryClient.tsx';
 
@@ -31,7 +31,7 @@ const name = 'add-search';
 const setupPlanDetail = ({ overrides = {} }: { overrides?: Partial<PlanWorkspaceView> } = {}) => {
 	renderWithQueryClient({
 		ui: <PlanDetailScreen name={name} />,
-		seed: [{ queryKey: [QueryKey.PlanWorkspace, name], data: buildPlanWorkspaceView({ overrides }) }],
+		seed: [{ queryKey: planWorkspaceQueryOptions({ name }).queryKey, data: buildPlanWorkspaceView({ overrides }) }],
 	});
 };
 

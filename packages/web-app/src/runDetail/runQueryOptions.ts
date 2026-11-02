@@ -1,6 +1,5 @@
 import { RunStatus } from '@lightsout/engine/contracts';
 import { queryOptions } from '@tanstack/react-query';
-import { QueryKey } from '#src/common/constants/QueryKey.ts';
 import { getRunServerFn } from '#src/runDetail/server/getRunServerFn/getRunServerFn.ts';
 
 interface Params {
@@ -10,7 +9,7 @@ interface Params {
 
 export const runQueryOptions = ({ runId }: Params) =>
 	queryOptions({
-		queryKey: [QueryKey.Run, runId],
+		queryKey: ['run', runId],
 		queryFn: () => getRunServerFn({ data: { runId } }),
 		refetchInterval: (query) => (query.state.data?.listing.status === RunStatus.Running ? 3_000 : false),
 	});

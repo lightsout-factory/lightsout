@@ -1,5 +1,4 @@
 import { describe, expect, jest, test } from '@jest/globals';
-import { QueryKey } from '#src/common/constants/QueryKey.ts';
 import { repoRootQueryOptions } from '#src/shell/repoRootQueryOptions.ts';
 
 // Mocked Imports
@@ -36,7 +35,7 @@ describe('repoRootQueryOptions', () => {
 	test('keys the cache under the repo-root key', () => {
 		const { options } = setupRepoRootQueryOptions();
 
-		expect(options.queryKey).toStrictEqual([QueryKey.RepoRoot]);
+		expect(options.queryKey).toStrictEqual(['repoRoot']);
 	});
 
 	test('fetches through the repo-root server function', async () => {

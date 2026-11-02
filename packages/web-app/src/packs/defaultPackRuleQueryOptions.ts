@@ -1,5 +1,4 @@
 import { queryOptions } from '@tanstack/react-query';
-import { QueryKey } from '#src/common/constants/QueryKey.ts';
 import { getDefaultPackRuleServerFn } from '#src/packs/server/getDefaultPackRuleServerFn.ts';
 
 interface Params {
@@ -10,7 +9,7 @@ interface Params {
 /** Never stale: the pack is bundled into the app. */
 export const defaultPackRuleQueryOptions = ({ rule }: Params) =>
 	queryOptions({
-		queryKey: [QueryKey.DefaultPackRule, rule],
+		queryKey: ['defaultPackRule', rule],
 		queryFn: () => getDefaultPackRuleServerFn({ data: { rule } }),
 		staleTime: Number.POSITIVE_INFINITY,
 	});

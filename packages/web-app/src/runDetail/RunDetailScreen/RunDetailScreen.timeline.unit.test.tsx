@@ -3,8 +3,8 @@ import type { RunStepView } from '@lightsout/engine';
 import { RunStatus } from '@lightsout/engine/contracts';
 import { screen } from '@testing-library/react';
 import type { ReactNode } from 'react';
-import { QueryKey } from '#src/common/constants/QueryKey.ts';
 import { RunDetailScreen } from '#src/runDetail/RunDetailScreen/RunDetailScreen.tsx';
+import { runQueryOptions } from '#src/runDetail/runQueryOptions.ts';
 import { buildRunStep } from '#tests/helpers/buildRunStep.ts';
 import { buildRunView } from '#tests/helpers/buildRunView.ts';
 import { renderWithQueryClient } from '#tests/helpers/renderWithQueryClient.tsx';
@@ -27,7 +27,7 @@ const setupTimeline = ({ steps = [], activeMs = 600_000 }: { steps?: RunStepView
 	// No tab is chosen: the timeline is what the overview tab opens on.
 	renderWithQueryClient({
 		ui: <RunDetailScreen runId={runId} />,
-		seed: [{ queryKey: [QueryKey.Run, runId], data: buildRunView({ overrides: { steps, activeMs } }) }],
+		seed: [{ queryKey: runQueryOptions({ runId }).queryKey, data: buildRunView({ overrides: { steps, activeMs } }) }],
 	});
 };
 

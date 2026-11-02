@@ -1,7 +1,7 @@
 import { createFileRoute, notFound, useNavigate } from '@tanstack/react-router';
-import { AddressNotFound } from '#src/common/boundaries/AddressNotFound.tsx';
 import { CheckKind } from '#src/common/constants/CheckKind.ts';
 import { defaultPackQueryOptions } from '#src/packs/defaultPackQueryOptions.ts';
+import { PackNotFoundScreen } from '#src/packs/PackNotFoundScreen.tsx';
 import { PackScreen } from '#src/packs/PackScreen/PackScreen.tsx';
 
 interface PackSearch {
@@ -18,11 +18,7 @@ const validateSearch = (search: Record<string, unknown>): PackSearch => ({
 const PackNotFound = () => {
 	const { library, pack } = Route.useParams();
 
-	return (
-		<AddressNotFound title="No pack at that address.">
-			The library holds no pack at <span className="font-mono">{`${library}/${pack}`}</span>. Pick one from the Standards Packs page.
-		</AddressNotFound>
-	);
+	return <PackNotFoundScreen library={library} pack={pack} />;
 };
 
 /** Changes navigate with `replace: true`, so back leaves the page rather than unwinding one keystroke at a time. */

@@ -3,8 +3,8 @@ import type { RunListing } from '@lightsout/engine';
 import { PipelineKind, RunStatus } from '@lightsout/engine/contracts';
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import type { ReactNode } from 'react';
-import { QueryKey } from '#src/common/constants/QueryKey.ts';
 import { RunsScreen } from '#src/runs/RunsScreen/RunsScreen.tsx';
+import { runsQueryOptions } from '#src/runs/runsQueryOptions.ts';
 import { buildRunListing } from '#tests/helpers/buildRunListing.ts';
 import { renderWithQueryClient } from '#tests/helpers/renderWithQueryClient.tsx';
 
@@ -79,7 +79,7 @@ const setupRunsPage = ({ runs = [alpha, beta], search = {} }: { runs?: RunListin
 
 	renderWithQueryClient({
 		ui: <RunsScreen />,
-		seed: [{ queryKey: [QueryKey.Runs], data: runs }],
+		seed: [{ queryKey: runsQueryOptions().queryKey, data: runs }],
 	});
 };
 

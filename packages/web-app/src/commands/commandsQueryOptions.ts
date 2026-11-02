@@ -1,6 +1,5 @@
 import { queryOptions } from '@tanstack/react-query';
 import { listCommandsServerFn } from '#src/commands/server/listCommandsServerFn.ts';
-import { QueryKey } from '#src/common/constants/QueryKey.ts';
 
 /**
  * One query for the whole catalog: it is small static data that changes only
@@ -9,6 +8,6 @@ import { QueryKey } from '#src/common/constants/QueryKey.ts';
  */
 export const commandsQueryOptions = () =>
 	queryOptions({
-		queryKey: [QueryKey.Commands],
+		queryKey: ['commands'],
 		queryFn: () => listCommandsServerFn(),
 	});

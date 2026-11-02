@@ -3,8 +3,8 @@ import type { RunView } from '@lightsout/engine';
 import { RunStatus } from '@lightsout/engine/contracts';
 import { screen } from '@testing-library/react';
 import type { ReactNode } from 'react';
-import { QueryKey } from '#src/common/constants/QueryKey.ts';
 import { RunDetailScreen } from '#src/runDetail/RunDetailScreen/RunDetailScreen.tsx';
+import { runQueryOptions } from '#src/runDetail/runQueryOptions.ts';
 import { buildRunListing } from '#tests/helpers/buildRunListing.ts';
 import { buildRunStep } from '#tests/helpers/buildRunStep.ts';
 import { buildRunView } from '#tests/helpers/buildRunView.ts';
@@ -31,7 +31,7 @@ const setupWhatNow = ({ status = RunStatus.Failed, overrides = {} }: { status?: 
 		ui: <RunDetailScreen runId={runId} />,
 		seed: [
 			{
-				queryKey: [QueryKey.Run, runId],
+				queryKey: runQueryOptions({ runId }).queryKey,
 				data: buildRunView({ overrides: { listing: { ...buildRunListing({ status, live: true }) }, ...overrides } }),
 			},
 		],

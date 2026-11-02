@@ -4,9 +4,10 @@ import { QueryClient } from '@tanstack/react-query';
 import { createRouter, isNotFound } from '@tanstack/react-router';
 import { screen } from '@testing-library/react';
 import type { ComponentType, ReactNode } from 'react';
-import { QueryKey } from '#src/common/constants/QueryKey.ts';
 import { Theme } from '#src/common/constants/Theme.ts';
 import { routeTree } from '#src/routeTree.gen.ts';
+import { runsQueryOptions } from '#src/runs/runsQueryOptions.ts';
+import { repoRootQueryOptions } from '#src/shell/repoRootQueryOptions.ts';
 import { ThemeProvider } from '#src/theme/ThemeProvider.tsx';
 import { buildRunListing } from '#tests/helpers/buildRunListing.ts';
 import { buildStandardsView } from '#tests/helpers/buildStandardsView.ts';
@@ -136,8 +137,8 @@ const setupFrame = ({ id, ...params }: SetupParams & { id: string }) => {
 			</ThemeProvider>
 		),
 		seed: [
-			{ queryKey: [QueryKey.RepoRoot], data: { repoRoot } },
-			{ queryKey: [QueryKey.Runs], data: runs },
+			{ queryKey: repoRootQueryOptions().queryKey, data: { repoRoot } },
+			{ queryKey: runsQueryOptions().queryKey, data: runs },
 		],
 	});
 };
@@ -166,7 +167,6 @@ const setupLandingInFrame = () => {
 // public site.
 afterEach(() => {
 	delete process.env.LIGHTSOUT_PUBLIC;
-	jest.clearAllMocks();
 });
 
 describe('routeTree frames', () => {
@@ -175,7 +175,7 @@ describe('routeTree frames', () => {
 
 		await beforeLoad({ context: { queryClient } });
 
-		expect({ repoRoot: queryClient.getQueryData([QueryKey.RepoRoot]), runs: queryClient.getQueryData([QueryKey.Runs]) }).toStrictEqual({
+		expect({ repoRoot: queryClient.getQueryData(repoRootQueryOptions().queryKey), runs: queryClient.getQueryData(runsQueryOptions().queryKey) }).toStrictEqual({
 			repoRoot: { repoRoot },
 			runs: undefined,
 		});

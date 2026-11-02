@@ -4,7 +4,8 @@ import { QueryClient } from '@tanstack/react-query';
 import { createRouter, isNotFound } from '@tanstack/react-router';
 import { fireEvent, screen, within } from '@testing-library/react';
 import type { ComponentType, ReactNode } from 'react';
-import { QueryKey } from '#src/common/constants/QueryKey.ts';
+import { defaultPackQueryOptions } from '#src/packs/defaultPackQueryOptions.ts';
+import { defaultPackRuleQueryOptions } from '#src/packs/defaultPackRuleQueryOptions.ts';
 import { getDefaultPackBundle } from '#src/packs/server/common/getDefaultPackBundle.ts';
 import { routeTree } from '#src/routeTree.gen.ts';
 import { renderWithQueryClient } from '#tests/helpers/renderWithQueryClient.tsx';
@@ -86,7 +87,7 @@ const setupPacksPage = () => {
 	const { pack, pages } = setupRouteTree();
 	const Page = pages['/_site/standards-packs/'].options.component;
 
-	renderWithQueryClient({ ui: <Page />, seed: [{ queryKey: [QueryKey.DefaultPack], data: pack }] });
+	renderWithQueryClient({ ui: <Page />, seed: [{ queryKey: defaultPackQueryOptions().queryKey, data: pack }] });
 };
 
 /**
@@ -103,7 +104,7 @@ const setupPackPage = ({ search = {} }: { search?: Record<string, unknown> } = {
 	jest.spyOn(route, 'useSearch').mockReturnValue(search);
 	const Page = route.options.component;
 
-	renderWithQueryClient({ ui: <Page />, seed: [{ queryKey: [QueryKey.DefaultPack], data: pack }] });
+	renderWithQueryClient({ ui: <Page />, seed: [{ queryKey: defaultPackQueryOptions().queryKey, data: pack }] });
 };
 
 /** The same route's answer for a pack the library does not hold. */
@@ -126,8 +127,8 @@ const setupRuleDetailPage = ({ rule = 'folder-size' }: { rule?: string } = {}) =
 	renderWithQueryClient({
 		ui: <Page />,
 		seed: [
-			{ queryKey: [QueryKey.DefaultPackRule, rule], data: toStandardsPackRuleView({ bundle: getDefaultPackBundle(), rule }) },
-			{ queryKey: [QueryKey.DefaultPack], data: pack },
+			{ queryKey: defaultPackRuleQueryOptions({ rule }).queryKey, data: toStandardsPackRuleView({ bundle: getDefaultPackBundle(), rule }) },
+			{ queryKey: defaultPackQueryOptions().queryKey, data: pack },
 		],
 	});
 };
@@ -161,7 +162,7 @@ describe('routeTree standards routes', () => {
 
 		await loader({ context: { queryClient } });
 
-		expect(queryClient.getQueryData([QueryKey.DefaultPack])).toStrictEqual(pack);
+		expect(queryClient.getQueryData(defaultPackQueryOptions().queryKey)).toStrictEqual(pack);
 	});
 
 	test('the pack route renders the pack the path names, by its address', () => {
@@ -185,7 +186,7 @@ describe('routeTree standards routes', () => {
 
 		await loader({ context: { queryClient }, params: { library: 'lightsout', pack: 'standards' } });
 
-		expect(queryClient.getQueryData([QueryKey.DefaultPack])).toStrictEqual(pack);
+		expect(queryClient.getQueryData(defaultPackQueryOptions().queryKey)).toStrictEqual(pack);
 	});
 
 	test('the pack route treats a pack the library does not hold as a missing address, not an empty page', async () => {
@@ -273,7 +274,7 @@ describe('routeTree standards routes', () => {
 
 		await loader({ context: { queryClient }, params: { library: 'lightsout', rule: 'folder-size' } });
 
-		expect(queryClient.getQueryData<{ id: string }>([QueryKey.DefaultPackRule, 'folder-size'])?.id).toBe('folder-size');
+		expect(queryClient.getQueryData<{ id: string }>(defaultPackRuleQueryOptions({ rule: 'folder-size' }).queryKey)?.id).toBe('folder-size');
 	});
 
 	test('the rule route treats a real rule under the wrong library as a missing address', async () => {
@@ -332,7 +333,7 @@ describe('routeTree standards routes', () => {
 				),
 			),
 		);
-		const cachedRule = queryClient.getQueryData<{ id: string }>([QueryKey.DefaultPackRule, 'function-size']);
+		const cachedRule = queryClient.getQueryData<{ id: string }>(defaultPackRuleQueryOptions({ rule: 'function-size' }).queryKey);
 
 		expect({ outcomes, cachedRuleId: cachedRule?.id }).toStrictEqual({
 			outcomes: ['found', 'not found', 'not found'],

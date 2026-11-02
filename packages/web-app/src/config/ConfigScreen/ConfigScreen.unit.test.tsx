@@ -3,8 +3,8 @@ import type { ConfigView } from '@lightsout/engine';
 import { StandardsSeverity } from '@lightsout/engine/contracts';
 import { fireEvent, screen, within } from '@testing-library/react';
 import type { ReactNode } from 'react';
-import { QueryKey } from '#src/common/constants/QueryKey.ts';
 import { ConfigScreen } from '#src/config/ConfigScreen/ConfigScreen.tsx';
+import { configQueryOptions } from '#src/config/configQueryOptions.ts';
 import { buildConfigView } from '#tests/helpers/buildConfigView.ts';
 import { renderWithQueryClient } from '#tests/helpers/renderWithQueryClient.tsx';
 
@@ -25,7 +25,7 @@ jest.mock('@tanstack/react-router', () => ({
 const setupConfigPage = ({ overrides = {} }: { overrides?: Partial<ConfigView> } = {}) => {
 	const view = buildConfigView({ overrides });
 
-	renderWithQueryClient({ ui: <ConfigScreen />, seed: [{ queryKey: [QueryKey.Config], data: view }] });
+	renderWithQueryClient({ ui: <ConfigScreen />, seed: [{ queryKey: configQueryOptions().queryKey, data: view }] });
 
 	return { view };
 };

@@ -3,8 +3,8 @@ import type { PlanDocument, PlanWorkspaceView } from '@lightsout/engine';
 import { PlanDocumentKind, PlanGrade, PlanStage } from '@lightsout/engine/contracts';
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import type { ReactNode } from 'react';
-import { QueryKey } from '#src/common/constants/QueryKey.ts';
 import { PlanDetailScreen } from '#src/plans/PlanDetailScreen/PlanDetailScreen.tsx';
+import { planWorkspaceQueryOptions } from '#src/plans/planWorkspaceQueryOptions.ts';
 import { buildPlanWorkspaceListing } from '#tests/helpers/buildPlanWorkspaceListing.ts';
 import { buildPlanWorkspaceView } from '#tests/helpers/buildPlanWorkspaceView.ts';
 import { buildRunListing } from '#tests/helpers/buildRunListing.ts';
@@ -33,7 +33,7 @@ const name = 'add-search';
 
 const setupPlanDetail = ({ view = buildPlanWorkspaceView(), text = '# the plan' }: { view?: PlanWorkspaceView; text?: string } = {}) => {
 	mockGetPlan.mockImplementation(({ path }) => Promise.resolve({ path, kind: PlanDocumentKind.Markdown, text }));
-	renderWithQueryClient({ ui: <PlanDetailScreen name={name} />, seed: [{ queryKey: [QueryKey.PlanWorkspace, name], data: view }] });
+	renderWithQueryClient({ ui: <PlanDetailScreen name={name} />, seed: [{ queryKey: planWorkspaceQueryOptions({ name }).queryKey, data: view }] });
 
 	return { view };
 };
@@ -172,7 +172,10 @@ describe('PlanDetailScreen', () => {
 
 	test('reads a plan file that has since been deleted as a recorded absence, not an error', async () => {
 		mockGetPlan.mockImplementation(({ path }) => Promise.resolve({ path, kind: PlanDocumentKind.Missing }));
-		renderWithQueryClient({ ui: <PlanDetailScreen name={name} />, seed: [{ queryKey: [QueryKey.PlanWorkspace, name], data: buildPlanWorkspaceView() }] });
+		renderWithQueryClient({
+			ui: <PlanDetailScreen name={name} />,
+			seed: [{ queryKey: planWorkspaceQueryOptions({ name }).queryKey, data: buildPlanWorkspaceView() }],
+		});
 
 		expect(await screen.findByText('Nothing is on disk at that path any more.')).toBeInTheDocument();
 	});

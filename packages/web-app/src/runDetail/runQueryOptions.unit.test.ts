@@ -1,7 +1,6 @@
 import { describe, expect, jest, test } from '@jest/globals';
 import { RunNotFoundError, type RunView } from '@lightsout/engine';
 import { RunStatus } from '@lightsout/engine/contracts';
-import { QueryKey } from '#src/common/constants/QueryKey.ts';
 import { runQueryOptions } from '#src/runDetail/runQueryOptions.ts';
 import { buildRunView } from '#tests/helpers/buildRunView.ts';
 
@@ -44,7 +43,7 @@ describe('runQueryOptions', () => {
 	test('keys the cache under the run key and the id, so two runs never share a cache entry', () => {
 		const { options } = setupRunQueryOptions();
 
-		expect(options.queryKey).toStrictEqual([QueryKey.Run, runId]);
+		expect(options.queryKey).toStrictEqual(['run', runId]);
 	});
 
 	test('fetches through the run server function, which reads the repo through the reader', async () => {

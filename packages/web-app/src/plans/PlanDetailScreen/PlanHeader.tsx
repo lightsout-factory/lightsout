@@ -3,20 +3,20 @@ import { Link } from '@tanstack/react-router';
 import { TriangleAlert } from 'lucide-react';
 import { MetadataTag } from '#src/common/badges/MetadataTag.tsx';
 import { StatusBadge } from '#src/common/badges/StatusBadge.tsx';
+import { IconList } from '#src/common/content/IconList.tsx';
 import { formatCount } from '#src/common/formatCount.ts';
 import { planGradeBadgeConfig } from '#src/plans/common/constants/planGradeBadgeConfig.ts';
 import { planStageBadgeConfig } from '#src/plans/common/constants/planStageBadgeConfig.ts';
 
 /** A corrupt workspace is shown rather than quietly rendered as empty. */
 const PlanProblems = ({ problems }: { problems: string[] }) => (
-	<ul className="flex flex-col gap-1 rounded-lg border border-status-failed-border bg-status-failed-light px-4 py-3 text-sm text-status-failed">
-		{problems.map((problem) => (
-			<li key={problem} className="flex items-center gap-2">
-				<TriangleAlert aria-hidden="true" className="size-4 shrink-0 text-status-failed" />
-				{problem}
-			</li>
-		))}
-	</ul>
+	<IconList
+		items={problems}
+		Icon={TriangleAlert}
+		className="flex flex-col gap-1 rounded-lg border border-status-failed-border bg-status-failed-light px-4 py-3 text-sm text-status-failed"
+		itemClassName="items-center"
+		iconClassName="size-4 text-status-failed"
+	/>
 );
 
 interface Props {

@@ -4,7 +4,7 @@ import { QueryClient } from '@tanstack/react-query';
 import { createRouter } from '@tanstack/react-router';
 import { screen } from '@testing-library/react';
 import type { ComponentType, ReactNode } from 'react';
-import { QueryKey } from '#src/common/constants/QueryKey.ts';
+import { configQueryOptions } from '#src/config/configQueryOptions.ts';
 import { routeTree } from '#src/routeTree.gen.ts';
 import { buildConfigView } from '#tests/helpers/buildConfigView.ts';
 import { renderWithQueryClient } from '#tests/helpers/renderWithQueryClient.tsx';
@@ -88,7 +88,7 @@ const setupConfigPage = ({ view = buildConfigView() }: { view?: ConfigView } = {
 	const { route } = setupConfigRoute({ view });
 	const Page = route.options.component;
 
-	renderWithQueryClient({ ui: <Page />, seed: [{ queryKey: [QueryKey.Config], data: view }] });
+	renderWithQueryClient({ ui: <Page />, seed: [{ queryKey: configQueryOptions().queryKey, data: view }] });
 
 	return { view };
 };
@@ -112,7 +112,7 @@ describe('routeTree', () => {
 
 		await route.options.loader({ context: { queryClient } });
 
-		expect(queryClient.getQueryData([QueryKey.Config])).toStrictEqual(view);
+		expect(queryClient.getQueryData(configQueryOptions().queryKey)).toStrictEqual(view);
 	});
 
 	test('the config route answers a repo with no config file with the router’s own not-found', async () => {

@@ -1,8 +1,8 @@
 import { describe, expect, jest, test } from '@jest/globals';
 import { screen } from '@testing-library/react';
 import type { ReactNode } from 'react';
-import { QueryKey } from '#src/common/constants/QueryKey.ts';
 import { HomeScreen } from '#src/home/HomeScreen/HomeScreen.tsx';
+import { defaultPackQueryOptions } from '#src/packs/defaultPackQueryOptions.ts';
 import { buildStandardsPackView } from '#tests/helpers/buildStandardsPackView.ts';
 import { renderWithQueryClient } from '#tests/helpers/renderWithQueryClient.tsx';
 
@@ -33,7 +33,7 @@ const setupHome = ({ isPackLoaded = false }: { isPackLoaded?: boolean } = {}) =>
 		seed: isPackLoaded
 			? [
 					{
-						queryKey: [QueryKey.DefaultPack],
+						queryKey: defaultPackQueryOptions().queryKey,
 						data: buildStandardsPackView({ overrides: { totals: { rules: 137, deterministic: 61, agent: 76, topics: 26, packs: 10, withFixtures: 137 } } }),
 					},
 				]

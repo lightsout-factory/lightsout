@@ -4,8 +4,9 @@ import { QueryClient } from '@tanstack/react-query';
 import { createRouter } from '@tanstack/react-router';
 import { screen } from '@testing-library/react';
 import type { ComponentType, ReactNode } from 'react';
-import { QueryKey } from '#src/common/constants/QueryKey.ts';
 import { routeTree } from '#src/routeTree.gen.ts';
+import { runQueryOptions } from '#src/runDetail/runQueryOptions.ts';
+import { repoRootQueryOptions } from '#src/shell/repoRootQueryOptions.ts';
 import { buildRunView } from '#tests/helpers/buildRunView.ts';
 import { renderWithQueryClient } from '#tests/helpers/renderWithQueryClient.tsx';
 
@@ -87,8 +88,8 @@ const setupRunDetailPage = ({ runId = 'abcdef0123456789' }: { runId?: string } =
 	renderWithQueryClient({
 		ui: <Page />,
 		seed: [
-			{ queryKey: [QueryKey.Run, runId], data: runView },
-			{ queryKey: [QueryKey.RepoRoot], data: { repoRoot } },
+			{ queryKey: runQueryOptions({ runId }).queryKey, data: runView },
+			{ queryKey: repoRootQueryOptions().queryKey, data: { repoRoot } },
 		],
 	});
 };
@@ -129,6 +130,6 @@ describe('routeTree', () => {
 
 		await route.options.loader({ context: { queryClient }, params: { runId: 'abcdef0123456789' } });
 
-		expect(queryClient.getQueryData([QueryKey.Run, 'abcdef0123456789'])).toStrictEqual(runView);
+		expect(queryClient.getQueryData(runQueryOptions({ runId: 'abcdef0123456789' }).queryKey)).toStrictEqual(runView);
 	});
 });

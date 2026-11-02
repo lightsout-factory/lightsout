@@ -3,8 +3,9 @@ import type { ConfigView, FrictionRecord, RunListing, StandardsView } from '@lig
 import { PipelineKind, RunStatus } from '@lightsout/engine/contracts';
 import { act, fireEvent, screen, within } from '@testing-library/react';
 import type { ReactNode } from 'react';
-import { QueryKey } from '#src/common/constants/QueryKey.ts';
 import { RepoHealthScreen } from '#src/repo/RepoHealthScreen/RepoHealthScreen.tsx';
+import { runsQueryOptions } from '#src/runs/runsQueryOptions.ts';
+import { repoRootQueryOptions } from '#src/shell/repoRootQueryOptions.ts';
 import { buildRunListing } from '#tests/helpers/buildRunListing.ts';
 import { renderWithQueryClient } from '#tests/helpers/renderWithQueryClient.tsx';
 
@@ -66,8 +67,8 @@ const setupRepoHealth = ({ repoRoot = '/repos/lightsout', runs = [buildRunListin
 	renderWithQueryClient({
 		ui: <RepoHealthScreen />,
 		seed: [
-			{ queryKey: [QueryKey.RepoRoot], data: { repoRoot } },
-			{ queryKey: [QueryKey.Runs], data: runs },
+			{ queryKey: repoRootQueryOptions().queryKey, data: { repoRoot } },
+			{ queryKey: runsQueryOptions().queryKey, data: runs },
 		],
 	});
 

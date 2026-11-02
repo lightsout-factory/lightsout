@@ -1,8 +1,8 @@
 import { describe, expect, jest, test } from '@jest/globals';
 import type { StandardsView } from '@lightsout/engine';
 import { fireEvent, screen } from '@testing-library/react';
-import { QueryKey } from '#src/common/constants/QueryKey.ts';
 import { StandardsScreen } from '#src/standards/StandardsScreen/StandardsScreen.tsx';
+import { standardsQueryOptions } from '#src/standards/standardsQueryOptions.ts';
 import { buildStandardsView } from '#tests/helpers/buildStandardsView.ts';
 import { renderWithQueryClient } from '#tests/helpers/renderWithQueryClient.tsx';
 
@@ -28,7 +28,7 @@ const trendPoint = ({ at, path = '.', total, blocking }: { at: string; path?: st
 });
 
 const setupStandardsPage = ({ overrides = {} }: { overrides?: Partial<StandardsView> } = {}) => {
-	renderWithQueryClient({ ui: <StandardsScreen />, seed: [{ queryKey: [QueryKey.Standards], data: buildStandardsView({ overrides }) }] });
+	renderWithQueryClient({ ui: <StandardsScreen />, seed: [{ queryKey: standardsQueryOptions().queryKey, data: buildStandardsView({ overrides }) }] });
 };
 
 describe('StandardsScreen header', () => {

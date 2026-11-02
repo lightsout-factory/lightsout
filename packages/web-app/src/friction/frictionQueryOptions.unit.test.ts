@@ -25,9 +25,8 @@ const setupFrictionQueryOptions = ({ records = [buildFrictionRecord()] }: { reco
 };
 
 describe('frictionQueryOptions', () => {
-	// The literal rather than `QueryKey.Friction`: the key is the cache contract
-	// the page and the run detail have to agree on, and comparing the constant to
-	// itself would pass however it were spelled.
+	// Spelled out: the key is the cache contract the page and the run detail have
+	// to agree on.
 	test('keys the cache under the friction key alone, since one query carries the whole log', () => {
 		const { options } = setupFrictionQueryOptions();
 

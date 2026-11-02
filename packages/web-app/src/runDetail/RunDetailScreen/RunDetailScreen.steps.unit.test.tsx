@@ -3,8 +3,8 @@ import type { RunStepView } from '@lightsout/engine';
 import { RunStatus } from '@lightsout/engine/contracts';
 import { fireEvent, screen } from '@testing-library/react';
 import type { ReactNode } from 'react';
-import { QueryKey } from '#src/common/constants/QueryKey.ts';
 import { RunDetailScreen } from '#src/runDetail/RunDetailScreen/RunDetailScreen.tsx';
+import { runQueryOptions } from '#src/runDetail/runQueryOptions.ts';
 import { buildRunStep } from '#tests/helpers/buildRunStep.ts';
 import { buildRunView } from '#tests/helpers/buildRunView.ts';
 import { renderWithQueryClient } from '#tests/helpers/renderWithQueryClient.tsx';
@@ -26,7 +26,7 @@ const setupStep = ({ overrides = {} }: { overrides?: Partial<RunStepView> } = {}
 	jest.useFakeTimers();
 	renderWithQueryClient({
 		ui: <RunDetailScreen runId={runId} />,
-		seed: [{ queryKey: [QueryKey.Run, runId], data: buildRunView({ overrides: { steps: [buildRunStep({ overrides })], activeMs: 360_000 } }) }],
+		seed: [{ queryKey: runQueryOptions({ runId }).queryKey, data: buildRunView({ overrides: { steps: [buildRunStep({ overrides })], activeMs: 360_000 } }) }],
 	});
 	// The full step cards live in a tab of their own now, and a tab strip selects
 	// on the press rather than on the release.

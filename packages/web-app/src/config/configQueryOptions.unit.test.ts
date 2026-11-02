@@ -29,9 +29,8 @@ const setupConfigQueryOptions = ({ rejection, view = buildConfigView() }: { reje
 };
 
 describe('configQueryOptions', () => {
-	// The literal rather than `QueryKey.Config`: the key is the cache contract the
-	// config page and the health strip have to agree on, and comparing the
-	// constant to itself would pass however it were spelled.
+	// Spelled out: the key is the cache contract the config page and the health
+	// strip have to agree on.
 	test('keys the cache under the config key alone, since one query carries the whole file', () => {
 		const { options } = setupConfigQueryOptions();
 

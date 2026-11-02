@@ -1,9 +1,8 @@
 import type { ReactNode } from 'react';
 import type { Components } from 'react-markdown';
 import { MarkdownCodeBlock } from '#src/common/content/Markdown/articleComponents/MarkdownCodeBlock.tsx';
-import { anchored, styled } from '#src/common/content/Markdown/common/anchored.tsx';
-
-export const articleLinkClass = 'font-medium text-primary underline decoration-primary/30 underline-offset-4 transition-colors hover:decoration-primary';
+import { anchored } from '#src/common/content/Markdown/common/anchored.tsx';
+import { styled } from '#src/common/content/Markdown/common/styled.tsx';
 
 /** A wide table scrolls inside its own frame rather than widening the page. */
 const ArticleTable = ({ children }: { children?: ReactNode }) => (

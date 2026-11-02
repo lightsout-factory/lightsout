@@ -4,7 +4,7 @@ import { CommandGroup, CommandRecordKind } from '@lightsout/engine/contracts';
 import { screen, within } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { CommandsScreen } from '#src/commands/CommandsScreen/CommandsScreen.tsx';
-import { QueryKey } from '#src/common/constants/QueryKey.ts';
+import { commandsQueryOptions } from '#src/commands/commandsQueryOptions.ts';
 import { buildCommandCatalogEntry } from '#tests/helpers/buildCommandCatalogEntry.ts';
 import { renderWithQueryClient } from '#tests/helpers/renderWithQueryClient.tsx';
 
@@ -25,7 +25,7 @@ jest.mock('@tanstack/react-router', () => ({
 const setupCommandsPage = ({ commands = [buildCommandCatalogEntry()] }: { commands?: CommandCatalogEntry[] } = {}) => {
 	renderWithQueryClient({
 		ui: <CommandsScreen />,
-		seed: [{ queryKey: [QueryKey.Commands], data: commands }],
+		seed: [{ queryKey: commandsQueryOptions().queryKey, data: commands }],
 	});
 };
 

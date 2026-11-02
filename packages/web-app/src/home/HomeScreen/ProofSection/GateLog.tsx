@@ -49,21 +49,27 @@ const frames = [
 
 const facts = ['1 failure caught', '67 gate runs', '18m 25s', '$6.61'];
 
+const GateChipState = { Running: 'running', Passed: 'passed', Failed: 'failed' } as const;
+
+type GateChipState = (typeof GateChipState)[keyof typeof GateChipState];
+
+const gateChipIcons = { [GateChipState.Running]: LoaderCircle, [GateChipState.Passed]: Check, [GateChipState.Failed]: X };
+
 const GateChip = ({ gate, isResolved }: { gate: Gate; isResolved: boolean }) => {
-	const state = isResolved ? (gate.isPassed ? 'passed' : 'failed') : 'running';
-	const Icon = { running: LoaderCircle, passed: Check, failed: X }[state];
+	const state: GateChipState = isResolved ? (gate.isPassed ? GateChipState.Passed : GateChipState.Failed) : GateChipState.Running;
+	const Icon = gateChipIcons[state];
 
 	return (
 		<span
 			data-state={state}
 			className={cn(
 				'inline-flex items-center gap-1.5 rounded-md border px-2 py-1 font-medium text-xs transition-colors duration-300',
-				state === 'running' && 'border-border bg-card text-subtle-foreground',
-				state === 'passed' && 'border-status-passed-border bg-status-passed-light text-status-passed-foreground',
-				state === 'failed' && 'border-status-failed-border bg-status-failed-light text-status-failed-foreground',
+				state === GateChipState.Running && 'border-border bg-card text-subtle-foreground',
+				state === GateChipState.Passed && 'border-status-passed-border bg-status-passed-light text-status-passed-foreground',
+				state === GateChipState.Failed && 'border-status-failed-border bg-status-failed-light text-status-failed-foreground',
 			)}
 		>
-			<Icon aria-hidden="true" className={cn('size-3', state === 'running' && 'animate-spin')} />
+			<Icon aria-hidden="true" className={cn('size-3', state === GateChipState.Running && 'animate-spin')} />
 			{gate.name}
 			<span className="sr-only"> {state}</span>
 		</span>

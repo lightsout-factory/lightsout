@@ -25,9 +25,8 @@ const setupPlanWorkspacesQueryOptions = ({ plans = [buildPlanWorkspaceListing({ 
 };
 
 describe('planWorkspacesQueryOptions', () => {
-	// The literal rather than `QueryKey.PlanWorkspaces`: the key is the cache
-	// contract the plans page, the health tile and two command cards have to agree
-	// on, and comparing the constant to itself would pass however it were spelled.
+	// Spelled out: the key is the cache contract the plans page, the health tile
+	// and two command cards have to agree on.
 	test('keys the cache under the plans key alone, since the whole list is one answer', () => {
 		const { options } = setupPlanWorkspacesQueryOptions();
 

@@ -1,6 +1,7 @@
 import { ArrowRight, Bot, ChevronRight, CircleCheck, Workflow } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { cn } from '#src/common/cn.ts';
+import { IconList } from '#src/common/content/IconList.tsx';
 import { FadeIn } from '#src/home/HomeScreen/common/FadeIn.tsx';
 import { SectionPill } from '#src/home/HomeScreen/common/SectionPill.tsx';
 import { FlowActor } from '#src/home/HomeScreen/HowItWorksSection/common/constants/FlowActor.ts';
@@ -26,14 +27,13 @@ const shipStages = [
 ];
 
 const CheckList = ({ items }: { items: string[] }) => (
-	<ul className="flex flex-col gap-1.5 border-border/60 border-t pt-3 text-muted-foreground-strong text-xs">
-		{items.map((item) => (
-			<li key={item} className="flex items-start gap-2">
-				<CircleCheck aria-hidden="true" className="mt-px size-3.5 shrink-0 text-status-passed" />
-				{item}
-			</li>
-		))}
-	</ul>
+	<IconList
+		items={items}
+		Icon={CircleCheck}
+		className="flex flex-col gap-1.5 border-border/60 border-t pt-3 text-muted-foreground-strong text-xs"
+		itemClassName="items-start"
+		iconClassName="mt-px size-3.5 text-status-passed"
+	/>
 );
 
 const StepArrow = () => <ChevronRight aria-hidden="true" className="size-5 shrink-0 rotate-90 self-center text-subtle-foreground/60 lg:rotate-0" />;

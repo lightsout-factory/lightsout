@@ -2,7 +2,7 @@ import { describe, expect, jest, test } from '@jest/globals';
 import type { StandardsPackView } from '@lightsout/engine';
 import { screen, within } from '@testing-library/react';
 import type { ReactNode } from 'react';
-import { QueryKey } from '#src/common/constants/QueryKey.ts';
+import { defaultPackQueryOptions } from '#src/packs/defaultPackQueryOptions.ts';
 import { PacksScreen } from '#src/packs/PacksScreen/PacksScreen.tsx';
 import { buildStandardsPackListing } from '#tests/helpers/buildStandardsPackListing.ts';
 import { buildStandardsPackView } from '#tests/helpers/buildStandardsPackView.ts';
@@ -43,7 +43,7 @@ jest.mock('@tanstack/react-router', () => ({
 // -------------------------
 
 const setupPacksPage = ({ pack = buildStandardsPackView() }: { pack?: StandardsPackView } = {}) => {
-	renderWithQueryClient({ ui: <PacksScreen />, seed: [{ queryKey: [QueryKey.DefaultPack], data: pack }] });
+	renderWithQueryClient({ ui: <PacksScreen />, seed: [{ queryKey: defaultPackQueryOptions().queryKey, data: pack }] });
 };
 
 describe('PacksScreen', () => {

@@ -2,7 +2,7 @@ import { describe, expect, jest, test } from '@jest/globals';
 import { render, screen } from '@testing-library/react';
 import { SortDirection } from '#src/common/constants/SortDirection.ts';
 import { TableAlignment } from '#src/common/constants/TableAlignment.ts';
-import { DataTableHeader } from '#src/common/tables/DataTable/DataTableHeader.tsx';
+import { DataTableHeader } from '#src/common/tables/DataTable/DataTableHeader/DataTableHeader.tsx';
 import type { DataTableColumn } from '#src/common/types/DataTableColumn.ts';
 
 interface Row {

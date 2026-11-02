@@ -1,7 +1,7 @@
 import { Fragment, type ReactNode } from 'react';
 import { cn } from '#src/common/cn.ts';
 import { SortDirection } from '#src/common/constants/SortDirection.ts';
-import { DataTableHeader } from '#src/common/tables/DataTable/DataTableHeader.tsx';
+import { DataTableHeader } from '#src/common/tables/DataTable/DataTableHeader/DataTableHeader.tsx';
 import { DataTableRow } from '#src/common/tables/DataTableRow/DataTableRow.tsx';
 import type { DataTableColumn } from '#src/common/types/DataTableColumn.ts';
 

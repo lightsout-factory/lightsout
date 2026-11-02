@@ -1,17 +1,11 @@
 import { createElement, isValidElement, type ReactNode } from 'react';
 import { slugifyHeading } from '#src/common/slugifyHeading.ts';
 
-export const styled = ({ tag, className }: { tag: string; className: string }) => {
-	const Styled = ({ children }: { children?: ReactNode }) => createElement(tag, { className }, children);
-
-	return Styled;
-};
-
 /**
  * A heading spelling one word in backticks arrives as an array with an element
  * in the middle, and the id has to come out the same either way.
  */
-export const flattenText = ({ node }: { node: ReactNode }): string => {
+const flattenText = ({ node }: { node: ReactNode }): string => {
 	let text = '';
 
 	if (typeof node === 'string' || typeof node === 'number') {

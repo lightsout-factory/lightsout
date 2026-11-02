@@ -1,7 +1,7 @@
 import { describe, expect, jest, test } from '@jest/globals';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { SortDirection } from '#src/common/constants/SortDirection.ts';
-import { SortableHeader } from '#src/common/tables/DataTable/SortableHeader.tsx';
+import { SortableHeader } from '#src/common/tables/DataTable/DataTableHeader/SortableHeader.tsx';
 
 const setupHeader = ({ activeKey, direction }: { activeKey?: string; direction?: SortDirection } = {}) => {
 	const onSort = jest.fn<(params: { key: string; direction: SortDirection }) => void>();

@@ -1,7 +1,8 @@
 import { cn } from '#src/common/cn.ts';
 import { SortDirection } from '#src/common/constants/SortDirection.ts';
-import { TableAlignment, tableAlignmentClasses } from '#src/common/constants/TableAlignment.ts';
-import { SortableHeader } from '#src/common/tables/DataTable/SortableHeader.tsx';
+import { TableAlignment } from '#src/common/constants/TableAlignment.ts';
+import { tableAlignmentClasses } from '#src/common/constants/tableAlignmentClasses.ts';
+import { SortableHeader } from '#src/common/tables/DataTable/DataTableHeader/SortableHeader.tsx';
 import type { DataTableColumn } from '#src/common/types/DataTableColumn.ts';
 
 const ariaSortOf = ({ isActive, direction }: { isActive: boolean; direction?: SortDirection }) => {

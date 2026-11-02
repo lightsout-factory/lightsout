@@ -1,20 +1,12 @@
-import { createFileRoute, Link, notFound } from '@tanstack/react-router';
+import { createFileRoute, notFound } from '@tanstack/react-router';
 import { CommandDetailScreen } from '#src/commands/CommandDetailScreen/CommandDetailScreen.tsx';
+import { CommandNotFoundScreen } from '#src/commands/CommandNotFoundScreen.tsx';
 import { commandsQueryOptions } from '#src/commands/commandsQueryOptions.ts';
-import { AddressNotFound } from '#src/common/boundaries/AddressNotFound.tsx';
 
 const CommandNotFound = () => {
 	const { command } = Route.useParams();
 
-	return (
-		<AddressNotFound title="No command by that name.">
-			lightsout has no command called <span className="font-mono">{command}</span> —{' '}
-			<Link to="/commands" className="text-brand-to underline underline-offset-4">
-				pick one from the commands list
-			</Link>
-			.
-		</AddressNotFound>
-	);
+	return <CommandNotFoundScreen command={command} />;
 };
 
 const CommandDetailPage = () => {

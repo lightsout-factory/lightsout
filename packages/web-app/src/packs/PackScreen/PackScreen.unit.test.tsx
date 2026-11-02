@@ -3,7 +3,7 @@ import type { StandardsTopicView } from '@lightsout/engine';
 import { StandardsSet, StandardsSeverity } from '@lightsout/engine/contracts';
 import { fireEvent, screen, within } from '@testing-library/react';
 import type { ReactNode } from 'react';
-import { QueryKey } from '#src/common/constants/QueryKey.ts';
+import { defaultPackQueryOptions } from '#src/packs/defaultPackQueryOptions.ts';
 import type { PackRuleFilters } from '#src/packs/PackScreen/common/types/PackRuleFilters.ts';
 import { PackScreen } from '#src/packs/PackScreen/PackScreen.tsx';
 import { buildStandardsPackListing } from '#tests/helpers/buildStandardsPackListing.ts';
@@ -106,7 +106,7 @@ const setupPackPage = ({ pack = 'app', filters = {} }: { pack?: string; filters?
 
 	renderWithQueryClient({
 		ui: <PackScreen pack={pack} filters={filters} onFiltersChange={onFiltersChange} />,
-		seed: [{ queryKey: [QueryKey.DefaultPack], data: library }],
+		seed: [{ queryKey: defaultPackQueryOptions().queryKey, data: library }],
 	});
 
 	return { onFiltersChange };

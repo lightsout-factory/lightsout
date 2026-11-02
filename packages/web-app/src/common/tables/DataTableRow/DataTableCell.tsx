@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { cn } from '#src/common/cn.ts';
-import { TableAlignment, tableAlignmentClasses } from '#src/common/constants/TableAlignment.ts';
+import { TableAlignment } from '#src/common/constants/TableAlignment.ts';
+import { tableAlignmentClasses } from '#src/common/constants/tableAlignmentClasses.ts';
 
 interface Props {
 	align?: TableAlignment;

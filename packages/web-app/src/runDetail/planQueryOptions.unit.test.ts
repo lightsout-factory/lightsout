@@ -1,6 +1,5 @@
 import { describe, expect, jest, test } from '@jest/globals';
 import type { PlanDocument } from '@lightsout/engine';
-import { QueryKey } from '#src/common/constants/QueryKey.ts';
 import { planQueryOptions } from '#src/runDetail/planQueryOptions.ts';
 
 // Mocked Imports
@@ -30,7 +29,7 @@ describe('planQueryOptions', () => {
 	test('keys the cache under the plan key and the path, so two plans never share a cache entry', () => {
 		const { options } = setupPlanQueryOptions();
 
-		expect(options.queryKey).toStrictEqual([QueryKey.Plan, path]);
+		expect(options.queryKey).toStrictEqual(['plan', path]);
 	});
 
 	test('fetches through the plan server function, which reads the repo through the reader', async () => {

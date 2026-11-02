@@ -1,7 +1,6 @@
 import { RunStatus } from '@lightsout/engine/contracts';
 import { formatCost, formatDuration } from '@lightsout/shared';
 import { Link } from '@tanstack/react-router';
-import type { ReactNode } from 'react';
 import { StatusBadge } from '#src/common/badges/StatusBadge.tsx';
 import { statusBadgeConfig } from '#src/common/constants/statusBadgeConfig.ts';
 import { CopyButton } from '#src/common/controls/CopyButton.tsx';
@@ -10,13 +9,6 @@ import { FailureNotice } from '#src/runDetail/RunDetailScreen/RunDetailBody/comm
 import { PlanPathButton } from '#src/runDetail/RunDetailScreen/RunDetailBody/common/PlanPathButton.tsx';
 import { RunWhatNow } from '#src/runDetail/RunDetailScreen/RunDetailBody/RunHeader/RunWhatNow.tsx';
 import { getRunCommand } from '#src/runs/getRunCommand.ts';
-
-const Meta = ({ label, value }: { label: string; value: ReactNode }) => (
-	<div className="flex flex-col gap-0.5">
-		<span className="text-muted-foreground text-xs uppercase tracking-wide">{label}</span>
-		<span className="font-medium text-sm">{value}</span>
-	</div>
-);
 
 interface Props {
 	view: RunDetailView;
@@ -32,6 +24,12 @@ interface Props {
  */
 export const RunHeader = ({ view, onOpenPlan }: Props) => {
 	const { listing } = view;
+	const measures = [
+		['wall', formatDuration({ ms: view.wallMs })],
+		['active', formatDuration({ ms: view.activeMs })],
+		['gates', formatDuration({ ms: view.gateMs })],
+		['cost', view.usage === undefined ? '—' : formatCost({ usd: view.usage.costUsd })],
+	];
 
 	return (
 		<header className="flex flex-col gap-4">
@@ -67,12 +65,14 @@ export const RunHeader = ({ view, onOpenPlan }: Props) => {
 				<PlanPathButton label="plan" path={listing.plan} onOpenPlan={onOpenPlan} />
 				{view.overview === undefined ? null : <PlanPathButton label="overview" path={view.overview} onOpenPlan={onOpenPlan} />}
 			</div>
-			<div className="flex flex-wrap gap-x-10 gap-y-3">
-				<Meta label="wall" value={formatDuration({ ms: view.wallMs })} />
-				<Meta label="active" value={formatDuration({ ms: view.activeMs })} />
-				<Meta label="gates" value={formatDuration({ ms: view.gateMs })} />
-				<Meta label="cost" value={view.usage === undefined ? '—' : formatCost({ usd: view.usage.costUsd })} />
-			</div>
+			<dl className="flex flex-wrap gap-x-10 gap-y-3">
+				{measures.map(([label, value]) => (
+					<div key={label} className="flex flex-col gap-0.5">
+						<dt className="text-muted-foreground text-xs uppercase tracking-wide">{label}</dt>
+						<dd className="font-medium text-sm">{value}</dd>
+					</div>
+				))}
+			</dl>
 			<RunWhatNow view={view} />
 		</header>
 	);

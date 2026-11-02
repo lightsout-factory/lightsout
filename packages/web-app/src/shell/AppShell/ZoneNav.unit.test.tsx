@@ -1,8 +1,8 @@
 import { describe, expect, jest, test } from '@jest/globals';
 import { screen, within } from '@testing-library/react';
 import type { ReactNode } from 'react';
-import { QueryKey } from '#src/common/constants/QueryKey.ts';
 import { ZoneNav } from '#src/shell/AppShell/ZoneNav.tsx';
+import { repoRootQueryOptions } from '#src/shell/repoRootQueryOptions.ts';
 import { renderWithQueryClient } from '#tests/helpers/renderWithQueryClient.tsx';
 
 // Mocked Imports
@@ -19,7 +19,7 @@ jest.mock('@tanstack/react-router', () => ({
 const setupZoneNav = ({ repoRoot = '/repos/lightsout' }: { repoRoot?: string } = {}) => {
 	renderWithQueryClient({
 		ui: <ZoneNav />,
-		seed: [{ queryKey: [QueryKey.RepoRoot], data: { repoRoot } }],
+		seed: [{ queryKey: repoRootQueryOptions().queryKey, data: { repoRoot } }],
 	});
 };
 

@@ -3,8 +3,8 @@ import type { PlanWorkspaceListing } from '@lightsout/engine';
 import { PlanStage } from '@lightsout/engine/contracts';
 import { fireEvent, screen } from '@testing-library/react';
 import type { ReactNode } from 'react';
-import { QueryKey } from '#src/common/constants/QueryKey.ts';
 import { PlansScreen } from '#src/plans/PlansScreen/PlansScreen.tsx';
+import { planWorkspacesQueryOptions } from '#src/plans/planWorkspacesQueryOptions.ts';
 import { buildPlanWorkspaceListing } from '#tests/helpers/buildPlanWorkspaceListing.ts';
 import { renderWithQueryClient } from '#tests/helpers/renderWithQueryClient.tsx';
 
@@ -50,7 +50,7 @@ const setupPlansPage = ({ plans = [drafted, rough], search = {} }: { plans?: Pla
 	mockNavigate.mockClear();
 	mockUseSearch.mockReturnValue(search);
 
-	renderWithQueryClient({ ui: <PlansScreen />, seed: [{ queryKey: [QueryKey.PlanWorkspaces], data: plans }] });
+	renderWithQueryClient({ ui: <PlansScreen />, seed: [{ queryKey: planWorkspacesQueryOptions().queryKey, data: plans }] });
 };
 
 /** Every body row's plan name, in the order the table drew them. */

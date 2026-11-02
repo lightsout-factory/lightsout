@@ -12,15 +12,17 @@ const patternImages: Record<GridPattern, { backgroundImage: string; backgroundSi
 	},
 };
 
-const centreFade = 'radial-gradient(ellipse at center, black 20%, transparent 75%)';
-
 interface Props {
 	pattern?: GridPattern;
 	maskImage?: string;
 	className?: string;
 }
 
-export const GridBackground = ({ pattern = GridPattern.Lines, maskImage = centreFade, className }: Props) => (
+export const GridBackground = ({
+	pattern = GridPattern.Lines,
+	maskImage = 'radial-gradient(ellipse at center, black 20%, transparent 75%)',
+	className,
+}: Props) => (
 	<div
 		aria-hidden="true"
 		style={{

@@ -2,8 +2,8 @@ import { describe, expect, jest, test } from '@jest/globals';
 import type { PlanDocument } from '@lightsout/engine';
 import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import type { ReactNode } from 'react';
-import { QueryKey } from '#src/common/constants/QueryKey.ts';
 import { RunDetailScreen } from '#src/runDetail/RunDetailScreen/RunDetailScreen.tsx';
+import { runQueryOptions } from '#src/runDetail/runQueryOptions.ts';
 import { buildRunView } from '#tests/helpers/buildRunView.ts';
 import { renderWithQueryClient } from '#tests/helpers/renderWithQueryClient.tsx';
 
@@ -40,7 +40,7 @@ const setupPlanDrawer = ({ plan }: { plan?: PlanDocument } = {}) => {
 	mockGetPlan.mockReturnValue(plan === undefined ? new Promise<PlanDocument>(() => undefined) : Promise.resolve(plan));
 	renderWithQueryClient({
 		ui: <RunDetailScreen runId={runId} />,
-		seed: [{ queryKey: [QueryKey.Run, runId], data: buildRunView() }],
+		seed: [{ queryKey: runQueryOptions({ runId }).queryKey, data: buildRunView() }],
 	});
 
 	return { mockWriteText, openPlan: () => fireEvent.click(screen.getByRole('button', { name: /^plan:/ })) };

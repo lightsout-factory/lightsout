@@ -1,17 +1,13 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { AddressNotFound } from '#src/common/boundaries/AddressNotFound.tsx';
 import { PlanDetailScreen } from '#src/plans/PlanDetailScreen/PlanDetailScreen.tsx';
+import { PlanNotFoundScreen } from '#src/plans/PlanNotFoundScreen.tsx';
 import { planWorkspaceQueryOptions } from '#src/plans/planWorkspaceQueryOptions.ts';
 
 /** Reached because `getPlanWorkspaceServerFn` turns `PlanWorkspaceNotFoundError` into `notFound()` on the server. */
 const PlanNotFound = () => {
 	const { name } = Route.useParams();
 
-	return (
-		<AddressNotFound title="No plan by that name.">
-			Nothing under <span className="font-mono">.lightsout/plans/</span> is named <span className="font-mono">{name}</span>. Pick one from the plans list.
-		</AddressNotFound>
-	);
+	return <PlanNotFoundScreen name={name} />;
 };
 
 const PlanDetailPage = () => {

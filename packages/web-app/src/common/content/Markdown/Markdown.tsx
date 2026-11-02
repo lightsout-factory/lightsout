@@ -1,8 +1,10 @@
 import { type ReactNode, useMemo } from 'react';
 import ReactMarkdown, { type Components } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { articleComponents, articleLinkClass } from '#src/common/content/Markdown/articleComponents/articleComponents.tsx';
-import { anchored, styled } from '#src/common/content/Markdown/common/anchored.tsx';
+import { articleComponents } from '#src/common/content/Markdown/articleComponents/articleComponents.tsx';
+import { articleLinkClass } from '#src/common/content/Markdown/articleLinkClass.ts';
+import { anchored } from '#src/common/content/Markdown/common/anchored.tsx';
+import { styled } from '#src/common/content/Markdown/common/styled.tsx';
 import type { DefinitionEntry } from '#src/common/content/Markdown/common/types/DefinitionEntry.ts';
 import { DefinitionList } from '#src/common/content/Markdown/DefinitionList.tsx';
 

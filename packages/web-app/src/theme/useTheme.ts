@@ -1,5 +1,5 @@
 import { useContext } from 'react';
-import { ThemeContext } from '#src/theme/common/ThemeContext.ts';
+import { ThemeContext } from '#src/theme/common/constants/ThemeContext.ts';
 import type { ThemeContextValue } from '#src/theme/common/types/ThemeContextValue.ts';
 
 /**

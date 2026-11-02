@@ -1,5 +1,4 @@
 import { queryOptions } from '@tanstack/react-query';
-import { QueryKey } from '#src/common/constants/QueryKey.ts';
 import { getPlanWorkspaceServerFn } from '#src/plans/server/getPlanWorkspaceServerFn/getPlanWorkspaceServerFn.ts';
 
 interface Params {
@@ -10,6 +9,6 @@ interface Params {
 /** Not polled: a workspace changes only when someone runs a planning command. */
 export const planWorkspaceQueryOptions = ({ name }: Params) =>
 	queryOptions({
-		queryKey: [QueryKey.PlanWorkspace, name],
+		queryKey: ['planWorkspace', name],
 		queryFn: () => getPlanWorkspaceServerFn({ data: { name } }),
 	});

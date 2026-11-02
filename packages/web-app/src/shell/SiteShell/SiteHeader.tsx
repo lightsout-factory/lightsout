@@ -1,10 +1,8 @@
 import { Link } from '@tanstack/react-router';
-import { Menu } from 'lucide-react';
-import { useState } from 'react';
 import { Button } from '#src/common/controls/Button.tsx';
-import { Dialog } from '#src/common/controls/Dialog.tsx';
 import { GithubMark } from '#src/common/icons/GithubMark.tsx';
 import { Wordmark } from '#src/common/icons/Wordmark.tsx';
+import { SitePagesMenu } from '#src/shell/common/SitePagesMenu.tsx';
 import { ThemeToggle } from '#src/shell/common/ThemeToggle.tsx';
 
 const siteLinkClasses = 'font-medium text-muted-foreground-strong transition-colors hover:text-foreground';
@@ -28,31 +26,22 @@ const SitePages = () => (
 	</>
 );
 
-export const SiteHeader = () => {
-	const [menuOpen, setMenuOpen] = useState(false);
-
-	return (
-		<header className="sticky top-0 z-30 flex items-center gap-10 border-border border-b bg-background/80 px-4 py-4 backdrop-blur-md sm:px-6 lg:px-8">
-			<Wordmark />
-			<nav aria-label="Site" className="hidden items-center gap-8 md:flex">
+export const SiteHeader = () => (
+	<header className="sticky top-0 z-30 flex items-center gap-10 border-border border-b bg-background/80 px-4 py-4 backdrop-blur-md sm:px-6 lg:px-8">
+		<Wordmark />
+		<nav aria-label="Site" className="hidden items-center gap-8 md:flex">
+			<SitePages />
+		</nav>
+		<div className="ml-auto flex items-center gap-1">
+			<ThemeToggle />
+			<Button asChild variant="ghost" size="icon" className="text-foreground hover:text-foreground/70">
+				<a href="https://github.com/lightsout-factory/lightsout" target="_blank" rel="noreferrer" aria-label="GitHub">
+					<GithubMark className="size-4.5" />
+				</a>
+			</Button>
+			<SitePagesMenu>
 				<SitePages />
-			</nav>
-			<div className="ml-auto flex items-center gap-1">
-				<ThemeToggle />
-				<Button asChild variant="ghost" size="icon" className="text-foreground hover:text-foreground/70">
-					<a href="https://github.com/lightsout-factory/lightsout" target="_blank" rel="noreferrer" aria-label="GitHub">
-						<GithubMark className="size-4.5" />
-					</a>
-				</Button>
-				<Button type="button" variant="ghost" size="icon" aria-label="Open menu" className="md:hidden" onClick={() => setMenuOpen(true)}>
-					<Menu className="size-4" />
-				</Button>
-			</div>
-			<Dialog open={menuOpen} onOpenChange={setMenuOpen} title="Menu">
-				<nav aria-label="Site pages" className="flex flex-col gap-3">
-					<SitePages />
-				</nav>
-			</Dialog>
-		</header>
-	);
-};
+			</SitePagesMenu>
+		</div>
+	</header>
+);

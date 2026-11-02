@@ -1,9 +1,7 @@
 import { Link } from '@tanstack/react-router';
-import { Menu } from 'lucide-react';
-import { useState } from 'react';
 import { Button } from '#src/common/controls/Button.tsx';
-import { Dialog } from '#src/common/controls/Dialog.tsx';
 import { Wordmark } from '#src/common/icons/Wordmark.tsx';
+import { SitePagesMenu } from '#src/shell/common/SitePagesMenu.tsx';
 import { ThemeToggle } from '#src/shell/common/ThemeToggle.tsx';
 
 /**
@@ -25,31 +23,22 @@ const SitePages = () => (
 	</>
 );
 
-export const TopNav = () => {
-	const [menuOpen, setMenuOpen] = useState(false);
-
-	return (
-		<header className="flex shrink-0 items-center gap-4 border-border border-b bg-background px-4 py-3">
-			<Wordmark />
-			<nav aria-label="Site" className="hidden items-center gap-4 md:flex">
+export const TopNav = () => (
+	<header className="flex shrink-0 items-center gap-4 border-border border-b bg-background px-4 py-3">
+		<Wordmark />
+		<nav aria-label="Site" className="hidden items-center gap-4 md:flex">
+			<SitePages />
+		</nav>
+		<div className="ml-auto flex items-center gap-1">
+			<ThemeToggle />
+			<Button asChild variant="ghost" size="sm">
+				<a href="https://github.com/lightsout-factory/lightsout" target="_blank" rel="noreferrer">
+					GitHub
+				</a>
+			</Button>
+			<SitePagesMenu>
 				<SitePages />
-			</nav>
-			<div className="ml-auto flex items-center gap-1">
-				<ThemeToggle />
-				<Button asChild variant="ghost" size="sm">
-					<a href="https://github.com/lightsout-factory/lightsout" target="_blank" rel="noreferrer">
-						GitHub
-					</a>
-				</Button>
-				<Button type="button" variant="ghost" size="icon" aria-label="Open menu" className="md:hidden" onClick={() => setMenuOpen(true)}>
-					<Menu className="size-4" />
-				</Button>
-			</div>
-			<Dialog open={menuOpen} onOpenChange={setMenuOpen} title="Menu">
-				<nav aria-label="Site pages" className="flex flex-col gap-3">
-					<SitePages />
-				</nav>
-			</Dialog>
-		</header>
-	);
-};
+			</SitePagesMenu>
+		</div>
+	</header>
+);

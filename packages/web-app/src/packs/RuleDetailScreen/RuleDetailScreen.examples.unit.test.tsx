@@ -3,7 +3,8 @@ import type { StandardsPackRuleView } from '@lightsout/engine';
 import { FixtureSide, RuleExampleKind } from '@lightsout/engine/contracts';
 import { screen, within } from '@testing-library/react';
 import type { ReactNode } from 'react';
-import { QueryKey } from '#src/common/constants/QueryKey.ts';
+import { defaultPackQueryOptions } from '#src/packs/defaultPackQueryOptions.ts';
+import { defaultPackRuleQueryOptions } from '#src/packs/defaultPackRuleQueryOptions.ts';
 import { RuleDetailScreen } from '#src/packs/RuleDetailScreen/RuleDetailScreen.tsx';
 import { buildStandardsPackRuleListing } from '#tests/helpers/buildStandardsPackRuleListing.ts';
 import { buildStandardsPackRuleView } from '#tests/helpers/buildStandardsPackRuleView.ts';
@@ -54,8 +55,8 @@ const setupRuleDetail = ({ rule = buildStandardsPackRuleView() }: { rule?: Stand
 	renderWithQueryClient({
 		ui: <RuleDetailScreen ruleId={rule.id} />,
 		seed: [
-			{ queryKey: [QueryKey.DefaultPackRule, rule.id], data: rule },
-			{ queryKey: [QueryKey.DefaultPack], data: buildStandardsPackView({ rules: packRules }) },
+			{ queryKey: defaultPackRuleQueryOptions({ rule: rule.id }).queryKey, data: rule },
+			{ queryKey: defaultPackQueryOptions().queryKey, data: buildStandardsPackView({ rules: packRules }) },
 		],
 	});
 };

@@ -1,3 +1,4 @@
+import { buildTrendPath } from '#src/common/buildTrendPath.ts';
 import { cn } from '#src/common/cn.ts';
 
 interface Props {
@@ -5,20 +6,13 @@ interface Props {
 	className?: string;
 }
 
-/**
- * Coordinates are normalised to a 0–1 box that the `viewBox` scales, so nothing
- * recomputes on resize. Fewer than two points draws nothing rather than claim a
- * direction; an all-zero run has no peak to divide by, so it sits on the floor.
- */
+/** Fewer than two points draws nothing rather than claim a direction. */
 export const Sparkline = ({ values, className }: Props) => {
 	if (values.length < 2) {
 		return null;
 	}
 
-	const peak = Math.max(...values);
-	const data = values
-		.map((value, index) => `${index === 0 ? 'M' : 'L'}${(index / (values.length - 1)).toFixed(4)},${(peak === 0 ? 1 : 1 - value / peak).toFixed(4)}`)
-		.join(' ');
+	const data = buildTrendPath({ values, peak: Math.max(...values) });
 
 	return (
 		<svg viewBox="0 0 1 1" preserveAspectRatio="none" role="img" aria-label="Recent trend" className={cn('h-6 w-full', className)}>

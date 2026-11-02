@@ -1,6 +1,5 @@
 import { describe, expect, jest, test } from '@jest/globals';
 import type { StandardsView } from '@lightsout/engine';
-import { QueryKey } from '#src/common/constants/QueryKey.ts';
 import { standardsQueryOptions } from '#src/standards/standardsQueryOptions.ts';
 import { buildStandardsView } from '#tests/helpers/buildStandardsView.ts';
 
@@ -31,7 +30,7 @@ describe('standardsQueryOptions', () => {
 	test('keys the cache under the standards key alone, since the view covers the whole repo', () => {
 		const { options } = setupStandardsQueryOptions();
 
-		expect(options.queryKey).toStrictEqual([QueryKey.Standards]);
+		expect(options.queryKey).toStrictEqual(['standards']);
 	});
 
 	test('fetches through the standards server function, which reads the repo through the reader', async () => {

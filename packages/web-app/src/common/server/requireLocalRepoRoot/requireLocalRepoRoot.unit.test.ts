@@ -37,7 +37,6 @@ const catchRefusal = (): unknown => {
 };
 
 afterEach(() => {
-	jest.restoreAllMocks();
 	delete process.env.LIGHTSOUT_PUBLIC;
 });
 

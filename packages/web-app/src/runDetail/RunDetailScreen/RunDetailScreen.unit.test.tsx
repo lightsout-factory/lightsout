@@ -3,8 +3,8 @@ import type { RunView } from '@lightsout/engine';
 import { RunStatus } from '@lightsout/engine/contracts';
 import { screen } from '@testing-library/react';
 import type { ReactNode } from 'react';
-import { QueryKey } from '#src/common/constants/QueryKey.ts';
 import { RunDetailScreen } from '#src/runDetail/RunDetailScreen/RunDetailScreen.tsx';
+import { runQueryOptions } from '#src/runDetail/runQueryOptions.ts';
 import { buildRunListing } from '#tests/helpers/buildRunListing.ts';
 import { buildRunView } from '#tests/helpers/buildRunView.ts';
 import { renderWithQueryClient } from '#tests/helpers/renderWithQueryClient.tsx';
@@ -29,7 +29,7 @@ const setupRunDetail = ({ overrides = {} }: { overrides?: Partial<RunView> } = {
 
 	renderWithQueryClient({
 		ui: <RunDetailScreen runId={runId} />,
-		seed: [{ queryKey: [QueryKey.Run, runId], data: view }],
+		seed: [{ queryKey: runQueryOptions({ runId }).queryKey, data: view }],
 	});
 
 	return { view };

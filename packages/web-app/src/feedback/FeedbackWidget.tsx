@@ -3,12 +3,6 @@ import { Theme as WidgetTheme } from '@feedbackdropai/widget';
 import { Theme } from '#src/common/constants/Theme.ts';
 import { useTheme } from '#src/theme/useTheme.ts';
 
-/**
- * FeedbackDrop's public project key: it identifies the project feedback lands
- * in and is shipped to every browser by design, so it is not a secret.
- */
-const feedbackDropApiKey = 'fd_5q-1p_LkT7ZiGg-JbV5RXEwHbf4XM9Qq3Qq4jnBQjtY';
-
 const widgetThemes: Record<Theme, WidgetTheme> = {
 	[Theme.Light]: WidgetTheme.Light,
 	[Theme.Dark]: WidgetTheme.Dark,
@@ -21,6 +15,9 @@ const widgetThemes: Record<Theme, WidgetTheme> = {
  */
 export const FeedbackWidget = () => {
 	const { theme } = useTheme();
+	// FeedbackDrop's public project key: it identifies the project feedback lands
+	// in and is shipped to every browser by design, so it is not a secret.
+	const feedbackDropApiKey = 'fd_5q-1p_LkT7ZiGg-JbV5RXEwHbf4XM9Qq3Qq4jnBQjtY';
 
 	return <FeedbackDropWidget apiKey={feedbackDropApiKey} theme={widgetThemes[theme]} />;
 };

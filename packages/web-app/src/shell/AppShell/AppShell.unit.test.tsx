@@ -1,8 +1,8 @@
 import { describe, expect, jest, test } from '@jest/globals';
 import { fireEvent, screen } from '@testing-library/react';
 import type { ReactNode } from 'react';
-import { QueryKey } from '#src/common/constants/QueryKey.ts';
 import { AppShell } from '#src/shell/AppShell/AppShell.tsx';
+import { repoRootQueryOptions } from '#src/shell/repoRootQueryOptions.ts';
 import { ThemeProvider } from '#src/theme/ThemeProvider.tsx';
 import { renderWithQueryClient } from '#tests/helpers/renderWithQueryClient.tsx';
 
@@ -25,7 +25,7 @@ const setupAppShell = ({ repoRoot = '/repos/lightsout' }: { repoRoot?: string } 
 				<AppShell />
 			</ThemeProvider>
 		),
-		seed: [{ queryKey: [QueryKey.RepoRoot], data: { repoRoot } }],
+		seed: [{ queryKey: repoRootQueryOptions().queryKey, data: { repoRoot } }],
 	});
 };
 

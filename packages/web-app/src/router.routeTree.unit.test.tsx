@@ -1,11 +1,15 @@
-import { afterEach, describe, expect, jest, test } from '@jest/globals';
+import { describe, expect, jest, test } from '@jest/globals';
 import type { RunListing, StandardsView } from '@lightsout/engine';
 import { QueryClient } from '@tanstack/react-query';
 import { createRouter } from '@tanstack/react-router';
 import { screen } from '@testing-library/react';
 import type { ComponentType, ReactNode } from 'react';
-import { QueryKey } from '#src/common/constants/QueryKey.ts';
+import { configQueryOptions } from '#src/config/configQueryOptions.ts';
+import { frictionQueryOptions } from '#src/friction/frictionQueryOptions.ts';
 import { routeTree } from '#src/routeTree.gen.ts';
+import { runsQueryOptions } from '#src/runs/runsQueryOptions.ts';
+import { repoRootQueryOptions } from '#src/shell/repoRootQueryOptions.ts';
+import { standardsQueryOptions } from '#src/standards/standardsQueryOptions.ts';
 import appCssHref from '#src/styles/app.css?url';
 import { buildConfigView } from '#tests/helpers/buildConfigView.ts';
 import { buildRunListing } from '#tests/helpers/buildRunListing.ts';
@@ -135,8 +139,8 @@ const setupRootPage = (params: SetupParams = {}) => {
 	renderWithQueryClient({
 		ui: <Page />,
 		seed: [
-			{ queryKey: [QueryKey.RepoRoot], data: { repoRoot } },
-			{ queryKey: [QueryKey.Runs], data: runs },
+			{ queryKey: repoRootQueryOptions().queryKey, data: { repoRoot } },
+			{ queryKey: runsQueryOptions().queryKey, data: runs },
 		],
 	});
 };
@@ -159,7 +163,7 @@ const setupStandardsPage = () => {
 	const { pages, standards } = setupRouteTree();
 	const Page = pages['/app/standards'].options.component;
 
-	renderWithQueryClient({ ui: <Page />, seed: [{ queryKey: [QueryKey.Standards], data: standards }] });
+	renderWithQueryClient({ ui: <Page />, seed: [{ queryKey: standardsQueryOptions().queryKey, data: standards }] });
 };
 
 const setupRepoIndexPage = (params: SetupParams = {}) => {
@@ -169,11 +173,11 @@ const setupRepoIndexPage = (params: SetupParams = {}) => {
 	renderWithQueryClient({
 		ui: <Page />,
 		seed: [
-			{ queryKey: [QueryKey.RepoRoot], data: { repoRoot } },
-			{ queryKey: [QueryKey.Runs], data: runs },
-			{ queryKey: [QueryKey.Standards], data: standards },
-			{ queryKey: [QueryKey.Friction], data: [] },
-			{ queryKey: [QueryKey.Config], data: buildConfigView() },
+			{ queryKey: repoRootQueryOptions().queryKey, data: { repoRoot } },
+			{ queryKey: runsQueryOptions().queryKey, data: runs },
+			{ queryKey: standardsQueryOptions().queryKey, data: standards },
+			{ queryKey: frictionQueryOptions().queryKey, data: [] },
+			{ queryKey: configQueryOptions().queryKey, data: buildConfigView() },
 		],
 	});
 };
@@ -185,8 +189,8 @@ const setupRunsPage = ({ runs = [buildRunListing({ title: 'raise coverage' })], 
 	renderWithQueryClient({
 		ui: <Page />,
 		seed: [
-			{ queryKey: [QueryKey.Runs], data: runs },
-			{ queryKey: [QueryKey.RepoRoot], data: { repoRoot } },
+			{ queryKey: runsQueryOptions().queryKey, data: runs },
+			{ queryKey: repoRootQueryOptions().queryKey, data: { repoRoot } },
 		],
 	});
 };
@@ -199,10 +203,6 @@ const setupRunsPage = ({ runs = [buildRunListing({ title: 'raise coverage' })], 
 // The sell zone's standards routes, the run detail route and the two frames
 // around the pages are concerns of their own and have their own suites beside
 // this one; this file carries the rest of the shell and the local zone.
-afterEach(() => {
-	jest.clearAllMocks();
-});
-
 describe('routeTree', () => {
 	// The `_` in `/app/runs_/$runId` is the router's own mark for a route that
 	// does not nest inside its path's parent; the address a reader sees is still
@@ -329,7 +329,7 @@ describe('routeTree', () => {
 
 		await loader({ context: { queryClient } });
 
-		expect(queryClient.getQueryData([QueryKey.Runs])).toStrictEqual(runs);
+		expect(queryClient.getQueryData(runsQueryOptions().queryKey)).toStrictEqual(runs);
 	});
 
 	test('the repo route titles the tab after what the page answers, not after the zone', () => {
@@ -369,7 +369,7 @@ describe('routeTree', () => {
 
 		await loader({ context: { queryClient } });
 
-		expect(queryClient.getQueryData([QueryKey.Runs])).toStrictEqual(runs);
+		expect(queryClient.getQueryData(runsQueryOptions().queryKey)).toStrictEqual(runs);
 	});
 
 	test('the standards route renders what the repo enforces and what is open under it', () => {
@@ -385,6 +385,6 @@ describe('routeTree', () => {
 
 		await loader({ context: { queryClient } });
 
-		expect(queryClient.getQueryData([QueryKey.Standards])).toStrictEqual(standards);
+		expect(queryClient.getQueryData(standardsQueryOptions().queryKey)).toStrictEqual(standards);
 	});
 });

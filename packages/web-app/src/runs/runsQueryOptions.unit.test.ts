@@ -1,7 +1,6 @@
 import { describe, expect, jest, test } from '@jest/globals';
 import type { RunListing } from '@lightsout/engine';
 import { RunStatus } from '@lightsout/engine/contracts';
-import { QueryKey } from '#src/common/constants/QueryKey.ts';
 import { runsQueryOptions } from '#src/runs/runsQueryOptions.ts';
 import { buildRunListing } from '#tests/helpers/buildRunListing.ts';
 
@@ -39,7 +38,7 @@ describe('runsQueryOptions', () => {
 	test('keys the cache under the runs key, so every reader shares one list', () => {
 		const { options } = setupRunsQueryOptions();
 
-		expect(options.queryKey).toStrictEqual([QueryKey.Runs]);
+		expect(options.queryKey).toStrictEqual(['runs']);
 	});
 
 	test('fetches through the runs server function, which reads the repo through the reader', async () => {
