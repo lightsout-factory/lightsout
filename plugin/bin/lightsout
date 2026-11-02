@@ -1,0 +1,12 @@
+#!/bin/sh
+#
+# Runs this plugin's own engine, so `lightsout <command>` works by name wherever
+# the harness puts the plugin's bin/ on the PATH (Claude Code does, while the
+# plugin is enabled).
+#
+# A script rather than a symlink: the engine reads its own path from
+# process.argv[1] to find the standards bundled beside it, and to build the
+# command it grants agents. exec keeps that path dist/cli.mjs and passes the
+# engine's exit code straight through.
+
+exec node "$(dirname "$0")/../dist/cli.mjs" "$@"
