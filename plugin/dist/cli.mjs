@@ -126739,13 +126739,17 @@ ${problems.map((problem) => `- ${problem}`).join("\n")}`);
 // src/standardsLibraries/resolveDefaultStandardsLibrary.ts
 import { existsSync } from "node:fs";
 import { dirname as dirname3, join as join17, resolve as resolve2 } from "node:path";
-var overrideVariable = "LIGHTSOUT_DEFAULT_STANDARDS";
+
+// src/standardsLibraries/common/constants/defaultStandardsOverrideVariable.ts
+var defaultStandardsOverrideVariable = "LIGHTSOUT_DEFAULT_STANDARDS";
+
+// src/standardsLibraries/resolveDefaultStandardsLibrary.ts
 var resolveDefaultStandardsLibrary = ({ startDir } = {}) => {
-  const override = process.env[overrideVariable];
+  const override = process.env[defaultStandardsOverrideVariable];
   if (override !== void 0) {
     const overridden = resolve2(override);
-    if (!existsSync(join17(overridden, "lightsout-standards.json"))) {
-      throw new Error(`${overrideVariable} points at ${overridden}, which holds no lightsout-standards.json`);
+    if (!existsSync(join17(overridden, standardsLibraryRootFile))) {
+      throw new Error(`${defaultStandardsOverrideVariable} points at ${overridden}, which holds no ${standardsLibraryRootFile}`);
     }
     return overridden;
   }
@@ -126754,7 +126758,7 @@ var resolveDefaultStandardsLibrary = ({ startDir } = {}) => {
   let found;
   while (found === void 0) {
     const candidates = [join17(current, "standards"), join17(current, "plugin", "standards")];
-    found = candidates.find((candidate) => existsSync(join17(candidate, "lightsout-standards.json")));
+    found = candidates.find((candidate) => existsSync(join17(candidate, standardsLibraryRootFile)));
     const parent = dirname3(current);
     if (found === void 0 && parent === current) {
       throw new Error(`bundled default standards not found next to the engine (searched upward from ${current})`);
