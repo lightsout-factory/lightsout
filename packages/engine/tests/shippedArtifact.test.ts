@@ -1,10 +1,11 @@
 import { execFile } from 'node:child_process';
-import { mkdtemp, readdir, readFile, stat } from 'node:fs/promises';
+import { copyFile, cp, mkdir, mkdtemp, readdir, readFile, stat } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
 import { join, sep } from 'node:path';
 import { promisify } from 'node:util';
 import { expect, test } from '@jest/globals';
+import { seedConfiguredCwd } from '#tests/helpers/seedConfiguredCwd.ts';
 
 // Two properties the shipped plugin rests on that nothing else would notice
 // breaking. Both fail silently rather than loudly, which is why they are tested
@@ -26,6 +27,31 @@ const buildShippedStandards = async (): Promise<string> => {
 	await run('node', [join(repoRoot, 'scripts', 'copyStandards.mjs'), '--out', out], { cwd: repoRoot });
 
 	return out;
+};
+
+/**
+ * A fresh temp folder in the plugin's installed shape: the committed shim at
+ * bin/lightsout, the bundle at dist/cli.mjs and, when asked for, the standards at
+ * standards/. The bundle is the e2e globalSetup's build of current source rather
+ * than the committed plugin/dist/, which can lag it the way plugin/standards/ can.
+ * copyFile keeps the shim's mode and nothing here sets it, so running the copy
+ * proves the committed executable bit too.
+ */
+const buildInstalledLayout = async ({ withStandards }: { withStandards: boolean }) => {
+	const layout = await mkdtemp(join(tmpdir(), 'lightsout-installed-layout-'));
+
+	await mkdir(join(layout, 'bin'));
+	await mkdir(join(layout, 'dist'));
+	await copyFile(join(repoRoot, 'plugin', 'bin', 'lightsout'), join(layout, 'bin', 'lightsout'));
+	await copyFile(join(repoRoot, '.test-dist', 'cli-under-test.mjs'), join(layout, 'dist', 'cli.mjs'));
+
+	if (withStandards) {
+		const shipped = await buildShippedStandards();
+
+		await cp(shipped, join(layout, 'standards'), { recursive: true });
+	}
+
+	return layout;
 };
 
 /** Every file under a directory, as slash-separated relative paths. */
@@ -112,4 +138,45 @@ test('a shipped check may import common/ through the #common alias its package.j
 	};
 
 	expect(scan).toStrictEqual({ mapsCommon: true, importsThroughCommon: true, unresolved: [], bareNameReported: ['typescript'] });
+});
+
+test('the shim runs the bundle beside it, and that bundle finds the standards beside it', async () => {
+	// The engine finds its standards by walking up from process.argv[1], so a shim
+	// that reached any other bundle, or left that path pointing at bin/, would break
+	// every installed command. The test setup's standards override would short-circuit
+	// that walk, so it is kept from the child. `--list` loads the library only for a
+	// selected pack, and `run` rejects on any exit but 0.
+	const layout = await buildInstalledLayout({ withStandards: true });
+	const cwd = await seedConfiguredCwd({ config: { 'standards-pack': 'lightsout/standards' } });
+	const env = { ...process.env, LIGHTSOUT_DEFAULT_STANDARDS: undefined };
+
+	const { stdout } = await run(join(layout, 'bin', 'lightsout'), ['standards-check', '--list'], { cwd, env });
+
+	expect(stdout).toContain('lightsout/object-args');
+});
+
+test("the shim hands a failing engine's exit code and error straight back to the caller", async () => {
+	// Everything calling lightsout by name reads the engine's exit code and stderr
+	// through the shim, so swallowing either would report a failure as success. With
+	// no standards folder this also shows the passing case above found its standards
+	// in the layout and not some other way.
+	const layout = await buildInstalledLayout({ withStandards: false });
+	const cwd = await seedConfiguredCwd({ config: { 'standards-pack': 'lightsout/standards' } });
+	const env = { ...process.env, LIGHTSOUT_DEFAULT_STANDARDS: undefined };
+
+	await expect(run(join(layout, 'bin', 'lightsout'), ['standards-check', '--list'], { cwd, env })).rejects.toMatchObject({
+		code: 1,
+		stderr: expect.stringContaining('bundled default standards not found next to the engine'),
+	});
+});
+
+test('the shim is committed as an executable regular file, never a symlink', async () => {
+	// Git records the mode a marketplace install gets. At 100644 Claude Code could
+	// not run the file by name, and at 120000 a symlink would point the engine's own
+	// process.argv[1] at bin/.
+	const { stdout } = await run('git', ['ls-files', '-s', 'plugin/bin/lightsout'], { cwd: repoRoot });
+
+	const mode = stdout.split(' ')[0];
+
+	expect(mode).toBe('100755');
 });

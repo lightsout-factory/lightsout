@@ -79,7 +79,7 @@ Only `gates` is required. `standards-pack` turns on the built-in standards; leav
 | `/lightsout:test-coverage-to-threshold` | Write tests until your coverage check passes. |
 | `/lightsout:status` | See what lightsout is doing right now. |
 
-The engine also has terminal commands — `doctor`, `ship`, `resume`, `stop`, `report`, `standards-check` and more. See every command, its flags and what it does step by step on the [Commands page](https://lightsout.dev/commands).
+The engine also has terminal commands — `doctor`, `ship`, `resume`, `stop`, `report`, `standards-check` and more. When Claude Code's agent runs them, `lightsout <command>` works once the plugin is enabled; otherwise run `node <plugin folder>/dist/cli.mjs <command>` (Claude Code installs the plugin under `~/.claude/plugins/cache/lightsout/lightsout/<version>`). See every command, its flags and what it does step by step on the [Commands page](https://lightsout.dev/commands).
 
 ## Ticket trackers
 
