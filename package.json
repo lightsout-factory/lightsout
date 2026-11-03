@@ -30,18 +30,14 @@
 		"compare:plan-drafts": "node scripts/comparePlanDrafts.mjs",
 		"build:config-reference": "node scripts/buildConfigKeyReference.mjs",
 		"build:plugin-prompts": "node scripts/buildPluginPrompts.mjs",
-		"build:sprawl": "node scripts/buildSprawlDataset.mjs",
-		"build:sprawl-gif": "node scripts/renderSprawlGif.mjs",
 		"graph": "nx graph",
 		"lightsout": "node plugin/dist/cli.mjs"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.5.7",
 		"@jest/globals": "catalog:",
-		"@resvg/resvg-js": "2.6.2",
 		"@types/node": "catalog:",
 		"esbuild": "catalog:",
-		"gifenc": "1.0.3",
 		"jest": "catalog:",
 		"nx": "^23.1.1",
 		"ts-jest": "catalog:",
