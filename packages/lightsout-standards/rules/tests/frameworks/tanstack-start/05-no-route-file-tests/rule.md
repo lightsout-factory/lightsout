@@ -6,7 +6,7 @@ example:
   kind: repo
   focus:
     fail: src/routes/issues.unit.test.tsx
-    pass: src/issues/IssuesScreen/IssuesScreen.unit.test.tsx
+    pass: src/features/issues/screens/IssuesScreen.unit.test.tsx
 ---
 
 ## No Route File Tests

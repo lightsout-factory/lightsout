@@ -4,7 +4,8 @@ import { QueryClient } from '@tanstack/react-query';
 import { createRouter } from '@tanstack/react-router';
 import { fireEvent, screen, within } from '@testing-library/react';
 import type { ComponentType, ReactNode } from 'react';
-import { QueryKey } from '#src/common/constants/QueryKey.ts';
+import { frictionQueryOptions } from '#src/queries/frictionQueryOptions.ts';
+import { runsQueryOptions } from '#src/queries/runsQueryOptions.ts';
 import { routeTree } from '#src/routeTree.gen.ts';
 import { buildFrictionRecord } from '#tests/helpers/buildFrictionRecord.ts';
 import { buildRunListing } from '#tests/helpers/buildRunListing.ts';
@@ -20,7 +21,7 @@ import { renderWithQueryClient } from '#tests/helpers/renderWithQueryClient.tsx'
 const mockGetFriction = jest.fn<() => Promise<FrictionRecord[]>>();
 const mockListRuns = jest.fn<() => Promise<RunListing[]>>();
 
-jest.mock('#src/lightsout/getReader.ts', () => ({ getReader: () => ({ getFriction: () => mockGetFriction(), listRuns: () => mockListRuns() }) }));
+jest.mock('#src/server/getReader.ts', () => ({ getReader: () => ({ getFriction: () => mockGetFriction(), listRuns: () => mockListRuns() }) }));
 // -------------------------
 // Only the piece that needs a live router around it is stood in for, so this one
 // route's component can be rendered on its own. Everything else — above all
@@ -113,7 +114,7 @@ const setupFrictionPage = ({
 
 	renderWithQueryClient({
 		ui: <Page />,
-		seed: [{ queryKey: [QueryKey.Friction], data: friction }, ...(runs === null ? [] : [{ queryKey: [QueryKey.Runs], data: runs }])],
+		seed: [{ queryKey: frictionQueryOptions().queryKey, data: friction }, ...(runs === null ? [] : [{ queryKey: runsQueryOptions().queryKey, data: runs }])],
 	});
 };
 
@@ -144,7 +145,7 @@ describe('routeTree', () => {
 
 		await route.options.loader({ context: { queryClient } });
 
-		expect(queryClient.getQueryData([QueryKey.Friction])).toStrictEqual(friction);
+		expect(queryClient.getQueryData(frictionQueryOptions().queryKey)).toStrictEqual(friction);
 	});
 
 	test('the friction route warms the runs too, which are what put a title beside a run id', async () => {
@@ -152,7 +153,7 @@ describe('routeTree', () => {
 
 		await route.options.loader({ context: { queryClient } });
 
-		expect(queryClient.getQueryData([QueryKey.Runs])).toStrictEqual(runs);
+		expect(queryClient.getQueryData(runsQueryOptions().queryKey)).toStrictEqual(runs);
 	});
 
 	test('the friction route names the page and counts what is on record', () => {

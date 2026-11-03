@@ -1,6 +1,5 @@
 import { queryOptions } from '@tanstack/react-query';
-import { QueryKey } from '#src/common/constants/QueryKey.ts';
-import { getPlanWorkspaceServerFn } from '#src/features/plans/internal/serverFns/getPlanWorkspaceServerFn.ts';
+import { getPlanWorkspaceServerFn } from '#src/features/plans/server/getPlanWorkspaceServerFn.ts';
 
 interface Params {
 	/** The workspace's kebab folder name, which is what the URL carries. */
@@ -10,6 +9,6 @@ interface Params {
 /** Not polled: a workspace changes only when someone runs a planning command. */
 export const planWorkspaceQueryOptions = ({ name }: Params) =>
 	queryOptions({
-		queryKey: [QueryKey.PlanWorkspace, name],
+		queryKey: ['planWorkspace', name],
 		queryFn: () => getPlanWorkspaceServerFn({ data: { name } }),
 	});

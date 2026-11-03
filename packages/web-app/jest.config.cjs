@@ -22,12 +22,7 @@ module.exports = createJestConfig({
 	setupFilesAfterEnv: [join(__dirname, '..', '..', 'tooling', 'jest', 'setupTestEnvironment.ts'), join(__dirname, 'tests', 'config', 'jest.setup.ts')],
 	// Every source file, not just the ones a test imports: a file left out of
 	// the report is indistinguishable from one no test ever loaded.
-	//
-	// Except `src/common/components/ui/` — shadcn/ui components written by their
-	// CLI. They are `vendored` in lightsout.config.json, so the engine writes no
-	// tests for them, and measuring them would hold the threshold against code
-	// nothing is allowed to cover.
-	collectCoverageFrom: ['src/**/*.ts', 'src/**/*.tsx', '!src/**/*.unit.test.ts', '!src/**/*.unit.test.tsx', '!src/common/components/ui/**'],
+	collectCoverageFrom: ['src/**/*.ts', 'src/**/*.tsx', '!src/**/*.unit.test.ts', '!src/**/*.unit.test.tsx'],
 	coverageThreshold: { global: { statements: 95, branches: 95, functions: 95, lines: 95 } },
 	// `@tanstack/react-start` and its subpaths publish an `import` condition and
 	// nothing else, so Jest's CommonJS resolver cannot load them however it is

@@ -8,11 +8,14 @@ import { resolveStandardsPack } from '#src/standardsLibraries/resolveStandardsPa
 const listedRequires: Record<string, string[]> = {
 	'lightsout/duplicate-export-name': ['lightsout/multi-export', 'lightsout/filename-mismatch'],
 	'lightsout/reuse-common-code': ['lightsout/file-placement'],
-	'lightsout/feature-layout': ['lightsout/file-placement', 'lightsout/module-file-to-folder'],
+	'lightsout/shared-layer': ['lightsout/feature-folders'],
+	'lightsout/component-folder': ['lightsout/feature-folders'],
+	'lightsout/feature-import-direction': ['lightsout/shared-layer'],
+	'lightsout/feature-layout': ['lightsout/feature-folders'],
 	'lightsout/thin-route-file': ['lightsout/feature-layout'],
 	'lightsout/query-options-per-query': ['lightsout/feature-layout'],
 	'lightsout/loader-owns-first-paint': ['lightsout/query-options-per-query', 'lightsout/thin-route-file'],
-	'lightsout/server-function-boundary': ['lightsout/feature-layout', 'lightsout/module-file-to-folder'],
+	'lightsout/server-function-boundary': ['lightsout/feature-layout'],
 	'lightsout/inferred-return-types': ['lightsout/explicit-return-type'],
 	'lightsout/screen-test-under-router': ['lightsout/no-route-file-tests', 'lightsout/component-test-rendering'],
 };
@@ -44,7 +47,7 @@ describe('findMissingRequirements on the shipped lightsout library', () => {
 			'lightsout/standards': [],
 			'lightsout/fractal': [],
 			'lightsout/code-style': [],
-			// react's own rules require nothing; tanstack-start's require the base rules it includes
+			// react's layout rules require each other; tanstack-start's require the react and base rules it includes
 			'lightsout/react': [],
 			'lightsout/tanstack-start': [],
 		});

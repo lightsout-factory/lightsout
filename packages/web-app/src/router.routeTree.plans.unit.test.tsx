@@ -4,7 +4,8 @@ import { QueryClient } from '@tanstack/react-query';
 import { createRouter } from '@tanstack/react-router';
 import { screen } from '@testing-library/react';
 import type { ComponentType, ReactNode } from 'react';
-import { QueryKey } from '#src/common/constants/QueryKey.ts';
+import { planWorkspaceQueryOptions } from '#src/features/plans/queries/planWorkspaceQueryOptions.ts';
+import { planWorkspacesQueryOptions } from '#src/queries/planWorkspacesQueryOptions.ts';
 import { routeTree } from '#src/routeTree.gen.ts';
 import { buildPlanWorkspaceListing } from '#tests/helpers/buildPlanWorkspaceListing.ts';
 import { buildPlanWorkspaceView } from '#tests/helpers/buildPlanWorkspaceView.ts';
@@ -20,7 +21,7 @@ import { renderWithQueryClient } from '#tests/helpers/renderWithQueryClient.tsx'
 const mockListPlans = jest.fn<() => Promise<PlanWorkspaceListing[]>>();
 const mockGetPlanWorkspace = jest.fn<() => Promise<PlanWorkspaceView>>();
 
-jest.mock('#src/lightsout/getReader.ts', () => ({
+jest.mock('#src/server/getReader.ts', () => ({
 	getReader: () => ({
 		listPlanWorkspaces: () => mockListPlans(),
 		getPlanWorkspace: () => mockGetPlanWorkspace(),
@@ -84,7 +85,7 @@ const setupPlansPage = ({ plans = [buildPlanWorkspaceListing({ name })] }: { pla
 	const { pages } = setupRouteTree({ plans });
 	const Page = pages['/app/plans/'].options.component;
 
-	renderWithQueryClient({ ui: <Page />, seed: [{ queryKey: [QueryKey.PlanWorkspaces], data: plans }] });
+	renderWithQueryClient({ ui: <Page />, seed: [{ queryKey: planWorkspacesQueryOptions().queryKey, data: plans }] });
 };
 
 /**
@@ -100,7 +101,7 @@ const setupPlanDetailPage = ({ view = buildPlanWorkspaceView() }: { view?: PlanW
 	jest.spyOn(route, 'useParams').mockReturnValue({ name });
 	const Page = route.options.component;
 
-	renderWithQueryClient({ ui: <Page />, seed: [{ queryKey: [QueryKey.PlanWorkspace, name], data: view }] });
+	renderWithQueryClient({ ui: <Page />, seed: [{ queryKey: planWorkspaceQueryOptions({ name }).queryKey, data: view }] });
 };
 
 /** The same route's answer for a name no workspace on disk carries. */
@@ -125,7 +126,7 @@ describe('routeTree plans', () => {
 
 		await pages['/app/plans/'].options.loader({ context: { queryClient }, params: { name } });
 
-		expect(queryClient.getQueryData([QueryKey.PlanWorkspaces])).toStrictEqual(plans);
+		expect(queryClient.getQueryData(planWorkspacesQueryOptions().queryKey)).toStrictEqual(plans);
 	});
 
 	test('the plans route keeps a stage the URL names, so a narrowed list is a link somebody can send', () => {
@@ -158,7 +159,7 @@ describe('routeTree plans', () => {
 
 		await pages['/app/plans/$name'].options.loader({ context: { queryClient }, params: { name } });
 
-		expect(queryClient.getQueryData([QueryKey.PlanWorkspace, name])).toStrictEqual(view);
+		expect(queryClient.getQueryData(planWorkspaceQueryOptions({ name }).queryKey)).toStrictEqual(view);
 	});
 
 	test('the plan detail route is the page that shows one workspace whole', () => {

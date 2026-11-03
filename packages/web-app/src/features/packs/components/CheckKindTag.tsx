@@ -1,8 +1,8 @@
-import type { CheckKind } from '#src/common/constants/CheckKind.ts';
-import { checkKindIcons } from '#src/common/constants/checkKindIcons.ts';
-import { checkKindLabels } from '#src/common/constants/checkKindLabels.ts';
-import { checkKindTones } from '#src/common/constants/checkKindTones.ts';
-import { cn } from '#src/common/utils/cn.ts';
+import type { CheckKind } from '#src/constants/CheckKind.ts';
+import { checkKindIcons } from '#src/constants/checkKindIcons.ts';
+import { checkKindLabels } from '#src/constants/checkKindLabels.ts';
+import { checkKindTones } from '#src/constants/checkKindTones.ts';
+import { cn } from '#src/utils/cn.ts';
 
 interface Props {
 	kind: CheckKind;

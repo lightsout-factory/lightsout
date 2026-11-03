@@ -5,7 +5,8 @@ import { QueryClient } from '@tanstack/react-query';
 import { createRouter } from '@tanstack/react-router';
 import { screen } from '@testing-library/react';
 import type { ComponentType, ReactNode } from 'react';
-import { QueryKey } from '#src/common/constants/QueryKey.ts';
+import { commandsQueryOptions } from '#src/features/commands/queries/commandsQueryOptions.ts';
+import { repoRootQueryOptions } from '#src/queries/repoRootQueryOptions.ts';
 import { routeTree } from '#src/routeTree.gen.ts';
 import { buildCommandCatalogEntry } from '#tests/helpers/buildCommandCatalogEntry.ts';
 import { renderWithQueryClient } from '#tests/helpers/renderWithQueryClient.tsx';
@@ -16,7 +17,7 @@ import { renderWithQueryClient } from '#tests/helpers/renderWithQueryClient.tsx'
 // the catalog answered and the loader's cache can be checked against it.
 const mockListCommands = jest.fn<() => Promise<CommandCatalogEntry[]>>();
 
-jest.mock('#src/features/commands/internal/serverFns/listCommandsServerFn.ts', () => ({ listCommandsServerFn: () => mockListCommands() }));
+jest.mock('#src/features/commands/server/listCommandsServerFn.ts', () => ({ listCommandsServerFn: () => mockListCommands() }));
 // -------------------------
 // Only the piece that needs a live router around it is stood in for, so the
 // route's own component can be rendered on its own. Everything else — above all
@@ -75,8 +76,8 @@ const setupCommandsPage = ({ commands = [buildCommandCatalogEntry()] }: { comman
 	renderWithQueryClient({
 		ui: <Page />,
 		seed: [
-			{ queryKey: [QueryKey.Commands], data: commands },
-			{ queryKey: [QueryKey.RepoRoot], data: { repoRoot: undefined } },
+			{ queryKey: commandsQueryOptions().queryKey, data: commands },
+			{ queryKey: repoRootQueryOptions().queryKey, data: { repoRoot: undefined } },
 		],
 	});
 };
@@ -102,7 +103,7 @@ describe('routeTree', () => {
 
 		await page.options.loader({ context: { queryClient } });
 
-		expect(queryClient.getQueryData([QueryKey.Commands])).toStrictEqual(commands);
+		expect(queryClient.getQueryData(commandsQueryOptions().queryKey)).toStrictEqual(commands);
 	});
 
 	test('the commands route opens the page that lists everything lightsout can be asked to do', () => {

@@ -7,8 +7,8 @@ requires:
 example:
   kind: repo
   focus:
-    fail: src/issues/IssuesScreen/IssuesScreen.tsx
-    pass: src/issues/issuesQueryOptions.ts
+    fail: src/features/issues/screens/IssuesScreen.tsx
+    pass: src/features/issues/queries/issuesQueryOptions.ts
 ---
 
 ## Query Options Per Query

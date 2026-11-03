@@ -1,8 +1,9 @@
 import { createFileRoute } from '@tanstack/react-router';
+import { IssuesScreen } from '../features/issues/components/IssuesScreen.tsx';
 import { issuesQueryOptions } from '../features/issues/queries/issuesQueryOptions.ts';
-import { IssuesScreen } from '../features/issues/screens/IssuesScreen/IssuesScreen.tsx';
 
-// The route is wired as it should be; its imports show the folders in the way.
+// Incorrect: the route imports from the feature's components/, which is the
+// screen's to compose from, not the route's to reach.
 export const Route = createFileRoute('/issues')({
 	loader: ({ context }) => context.queryClient.ensureQueryData(issuesQueryOptions()),
 	component: IssuesScreen,

@@ -1,6 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { runQueryOptions } from '#src/features/runDetail/queries/runQueryOptions.ts';
-import { RunDetail } from '#src/features/runDetail/screens/RunDetail/RunDetail.tsx';
+import { runQueryOptions } from '#src/features/runs/queries/runQueryOptions.ts';
+import { RunDetailScreen } from '#src/features/runs/screens/RunDetailScreen.tsx';
+import { RunNotFoundScreen } from '#src/features/runs/screens/RunNotFoundScreen.tsx';
 
 // The trailing underscore on `runs_` stops the file router nesting this page
 // inside the runs list; the URL is still /app/runs/$runId.
@@ -9,20 +10,13 @@ import { RunDetail } from '#src/features/runDetail/screens/RunDetail/RunDetail.t
 const RunNotFound = () => {
 	const { runId } = Route.useParams();
 
-	return (
-		<div className="flex h-full flex-col items-start justify-center gap-2 p-10">
-			<h1 className="font-semibold text-lg">No run matching that id.</h1>
-			<p className="text-muted-foreground text-sm">
-				Nothing on disk answers to <span className="font-mono">{runId}</span>. Pick one from the runs list.
-			</p>
-		</div>
-	);
+	return <RunNotFoundScreen runId={runId} />;
 };
 
 const RunDetailPage = () => {
 	const { runId } = Route.useParams();
 
-	return <RunDetail runId={runId} />;
+	return <RunDetailScreen runId={runId} />;
 };
 
 export const Route = createFileRoute('/app/runs_/$runId')({

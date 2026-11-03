@@ -1,7 +1,7 @@
 import { PlanStage } from '@lightsout/engine/contracts';
 import { createFileRoute } from '@tanstack/react-router';
-import { planWorkspacesQueryOptions } from '#src/features/plans/queries/planWorkspacesQueryOptions.ts';
-import { PlansPage } from '#src/features/plans/screens/PlansPage/PlansPage.tsx';
+import { PlansScreen } from '#src/features/plans/screens/PlansScreen.tsx';
+import { planWorkspacesQueryOptions } from '#src/queries/planWorkspacesQueryOptions.ts';
 
 interface PlansSearch {
 	stage?: PlanStage;
@@ -18,5 +18,5 @@ export const Route = createFileRoute('/app/plans/')({
 		await context.queryClient.ensureQueryData(planWorkspacesQueryOptions());
 	},
 	head: () => ({ meta: [{ title: 'Plans' }] }),
-	component: PlansPage,
+	component: PlansScreen,
 });

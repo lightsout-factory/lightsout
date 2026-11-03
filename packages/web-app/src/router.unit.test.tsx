@@ -3,8 +3,8 @@ import type { RunListing } from '@lightsout/engine';
 import { QueryClient } from '@tanstack/react-query';
 import type { AnyRouter } from '@tanstack/react-router';
 import type { ReactElement } from 'react';
-import { DefaultCatchBoundary } from '#src/common/components/boundaries/DefaultCatchBoundary.tsx';
-import { NotFound } from '#src/common/components/boundaries/NotFound.tsx';
+import { DefaultCatchBoundary } from '#src/components/boundaries/DefaultCatchBoundary.tsx';
+import { NotFound } from '#src/components/boundaries/NotFound.tsx';
 import { getRouter } from '#src/router.tsx';
 
 // Mocked Imports
@@ -17,7 +17,7 @@ import { getRouter } from '#src/router.tsx';
 // or matches nothing. Nothing here is called while a router is built.
 const mockListRuns = jest.fn<() => Promise<RunListing[]>>();
 
-jest.mock('#src/lightsout/getReader.ts', () => ({ getReader: () => ({ listRuns: () => mockListRuns() }) }));
+jest.mock('#src/server/getReader.ts', () => ({ getReader: () => ({ listRuns: () => mockListRuns() }) }));
 // -------------------------
 // The query integration reaches the router's server-side header helpers, which
 // require an ESM-only cookie package that Jest's CommonJS loader cannot parse.

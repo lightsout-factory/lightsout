@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { IssueDetailScreen } from '../issues/IssueDetailScreen/IssueDetailScreen.tsx';
-import { issueDetailQueryOptions } from '../issues/issueDetailQueryOptions.ts';
+import { IssueDetailScreen } from '../features/issues/screens/IssueDetailScreen.tsx';
+import { issueDetailQueryOptions } from '../features/issues/queries/issueDetailQueryOptions.ts';
 
 // Correct: the route prefetches, names the tab and hands typed params to one
 // screen. Everything with a test of its own lives in the screen.

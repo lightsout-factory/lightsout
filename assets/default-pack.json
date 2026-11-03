@@ -5,12 +5,12 @@
   "rootPath": "packages/lightsout-standards",
   "built": false,
   "totals": {
-    "rules": 54,
-    "deterministic": 37,
+    "rules": 58,
+    "deterministic": 41,
     "agent": 25,
-    "topics": 14,
+    "topics": 15,
     "packs": 5,
-    "withFixtures": 54
+    "withFixtures": 58
   },
   "packs": [
     {
@@ -312,22 +312,39 @@
     {
       "name": "react",
       "address": "lightsout/react",
-      "description": "The rules written for React: size caps for hooks and components, and one way to write a component test.",
+      "description": "The rules written for React: an app laid out by feature, size caps for hooks and components, and one way to write a component test.",
       "include": {
         "packs": [],
         "topics": [
-          "lightsout/code/frameworks/react",
+          "lightsout/code/frameworks/react/layout",
+          "lightsout/code/frameworks/react/size",
           "lightsout/tests/frameworks/react"
         ],
         "rules": []
       },
       "topics": [
-        "lightsout/code/frameworks/react",
+        "lightsout/code/frameworks/react/layout",
+        "lightsout/code/frameworks/react/size",
         "lightsout/tests/frameworks/react"
       ],
       "rules": [
         {
+          "name": "lightsout/component-folder",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
           "name": "lightsout/component-test-rendering",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/feature-folders",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/feature-import-direction",
           "severity": "advisory",
           "options": {}
         },
@@ -339,14 +356,19 @@
             "hook": 160,
             "component": 200
           }
+        },
+        {
+          "name": "lightsout/shared-layer",
+          "severity": "advisory",
+          "options": {}
         }
       ],
       "totals": {
-        "rules": 2,
-        "deterministic": 1,
-        "agent": 1,
-        "topics": 2,
-        "tokens": 533
+        "rules": 6,
+        "deterministic": 5,
+        "agent": 2,
+        "topics": 3,
+        "tokens": 1448
       }
     },
     {
@@ -618,7 +640,7 @@
     {
       "name": "tanstack-start",
       "address": "lightsout/tanstack-start",
-      "description": "The rules written for TanStack Start: the React and base rules, the framework's own files left to it, and one shape for features, routes, screens, server functions and queries.",
+      "description": "The rules written for TanStack Start: the React and base rules, the framework's own files left to it, and the folders it adds for routes, server functions and queries.",
       "appliesWhen": {
         "dependencies": [
           "@tanstack/react-start"
@@ -630,16 +652,20 @@
           "lightsout/code-style"
         ],
         "topics": [
-          "lightsout/code/fractal/layout",
           "lightsout/code/fractal/imports",
           "lightsout/code/fractal/duplication",
-          "lightsout/tests/fractal",
           "lightsout/code/frameworks/tanstack-start",
           "lightsout/tests/frameworks/tanstack-start"
         ],
         "rules": [
+          "lightsout/multi-export",
+          "lightsout/filename-mismatch",
+          "lightsout/case-collision",
           "lightsout/file-size",
-          "lightsout/folder-size"
+          "lightsout/folder-size",
+          "lightsout/test-beside-subject",
+          "lightsout/test-support-in-src",
+          "lightsout/test-file-size"
         ]
       },
       "topics": [
@@ -651,7 +677,8 @@
         "lightsout/code/fractal/imports",
         "lightsout/code/fractal/layout",
         "lightsout/code/fractal/size",
-        "lightsout/code/frameworks/react",
+        "lightsout/code/frameworks/react/layout",
+        "lightsout/code/frameworks/react/size",
         "lightsout/code/frameworks/tanstack-start",
         "lightsout/tests/code-style",
         "lightsout/tests/fractal",
@@ -661,11 +688,6 @@
       "rules": [
         {
           "name": "lightsout/assertions-pin-contracts",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
-          "name": "lightsout/banned-folder-name",
           "severity": "advisory",
           "options": {}
         },
@@ -685,7 +707,7 @@
           "options": {}
         },
         {
-          "name": "lightsout/common-folder-layout",
+          "name": "lightsout/component-folder",
           "severity": "advisory",
           "options": {}
         },
@@ -734,12 +756,17 @@
           "options": {}
         },
         {
-          "name": "lightsout/feature-layout",
+          "name": "lightsout/feature-folders",
           "severity": "advisory",
           "options": {}
         },
         {
-          "name": "lightsout/file-placement",
+          "name": "lightsout/feature-import-direction",
+          "severity": "advisory",
+          "options": {}
+        },
+        {
+          "name": "lightsout/feature-layout",
           "severity": "advisory",
           "options": {}
         },
@@ -784,16 +811,6 @@
         },
         {
           "name": "lightsout/loader-owns-first-paint",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
-          "name": "lightsout/module-boundary-testing",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
-          "name": "lightsout/module-file-to-folder",
           "severity": "advisory",
           "options": {}
         },
@@ -852,11 +869,6 @@
           }
         },
         {
-          "name": "lightsout/reuse-common-code",
-          "severity": "advisory",
-          "options": {}
-        },
-        {
           "name": "lightsout/screen-test-under-router",
           "severity": "advisory",
           "options": {}
@@ -867,7 +879,7 @@
           "options": {}
         },
         {
-          "name": "lightsout/shared-package-criteria",
+          "name": "lightsout/shared-layer",
           "severity": "advisory",
           "options": {}
         },
@@ -940,11 +952,11 @@
         }
       ],
       "totals": {
-        "rules": 53,
+        "rules": 50,
         "deterministic": 36,
-        "agent": 25,
-        "topics": 14,
-        "tokens": 9534
+        "agent": 20,
+        "topics": 15,
+        "tokens": 9496
       }
     }
   ],
@@ -1037,8 +1049,19 @@
     },
     {
       "set": "code",
-      "path": "code/frameworks/react",
-      "intro": "# React\n\nHow React code is written: components, hooks and JSX.",
+      "path": "code/frameworks/react/layout",
+      "intro": "# React Layout\n\nHow a React app's source is laid out: features, the shared layer, screens, layouts and components.\n\n- A **feature** is one area of the product, such as issues or billing, and lives in `src/features/<name>/`.\n- A **screen** is the component a route renders. Its name ends in `Screen`.\n- A **layout** is the frame a set of routes shares around their screens. Its name ends in `Layout`.\n- The **shared layer** is the folders at the top of `src/` that hold what two or more features use.\n\nA folder is named for the kind of code it holds, and a file's name says what it is: a component is PascalCase, a hook starts with `use`. A framework's rules add folder names of their own, and no other folder names exist.",
+      "ruleIds": [
+        "feature-folders",
+        "shared-layer",
+        "component-folder",
+        "feature-import-direction"
+      ]
+    },
+    {
+      "set": "code",
+      "path": "code/frameworks/react/size",
+      "intro": "# React Size\n\nHow long React code may grow: functions, hooks and components.",
       "ruleIds": [
         "react-function-size"
       ]
@@ -1046,7 +1069,7 @@
     {
       "set": "code",
       "path": "code/frameworks/tanstack-start",
-      "intro": "# TanStack Start\n\nHow a TanStack Start app is laid out and how its data moves: the framework's own files, a feature's shape, routes, screens, server functions and queries.\n\nThe framework names the route files under `routes/`, the generated route tree and the entry files, and decides where they sit, so the layout and naming rules do not judge them. Everything else is laid out as the layout rules say, with these conventions on top:\n\n- A feature is a subject folder at the top of `src/`, such as `src/issues/`.\n- A screen is the component a route renders. Its name ends in `Screen`.\n- A query options factory's name ends in `QueryOptions`.\n- A server function lives in a `server/` folder.",
+      "intro": "# TanStack Start\n\nHow a TanStack Start app is laid out and how its data moves: the framework's own files, the folders it adds to the React layout, routes, screens, server functions and queries.\n\nThe framework names the route files under `routes/`, the generated route tree and the entry files, and decides where they sit, so the layout and naming rules do not judge them. Everything else is laid out as the React layout rules say, with the framework's folders on top:\n\n- `routes/`, at the top of `src/`, holds the route files.\n- `queries/`, in a feature or at the top of `src/`, holds query options factories, each named with a `QueryOptions` suffix.\n- `server/`, in a feature or at the top of `src/`, holds server functions and the server-only code they use.",
       "ruleIds": [
         "feature-layout",
         "thin-route-file",
@@ -1396,6 +1419,61 @@
         "focus": {
           "fail": "src/billing/common/Rate.ts",
           "pass": "src/billing/common/types/Rate.ts"
+        }
+      }
+    },
+    {
+      "id": "component-folder",
+      "name": "lightsout/component-folder",
+      "set": "code",
+      "documentPath": "code/frameworks/react/layout",
+      "summary": "When a component gets a folder of its own.",
+      "deterministic": true,
+      "agent": false,
+      "defaultSeverity": "advisory",
+      "defaultOptions": {},
+      "fixtureCounts": {
+        "pass": 3,
+        "fail": 3
+      },
+      "prose": "## Component Folder\n\nKeep a component in one file until it has parts only it uses: sub-components, a hook, a type. Then give it a folder of its own name inside the `components/` it sat in, with the component as the folder's main file and its parts flat beside it.\n\n- A part that gains a second user moves up to the folder for its kind.\n- A part with parts of its own is a component in its own right: it moves up to `components/` and takes a folder there.\n- A folder down to its main file turns back into a file.\n\nThen a component's folder reads as the list of its parts, and no path goes deeper than one folder.",
+      "fixtures": [
+        {
+          "side": "pass",
+          "path": "src/features/issues/components/IssueCard/IssueCard.tsx",
+          "text": "import { IssueFooter } from '../IssueFooter.tsx';\nimport { IssueCardHeader } from './IssueCardHeader.tsx';\n\ninterface Params {\n\ttitle: string;\n}\n\n// Correct: the card has a part only it uses, so it has a folder of its own name\n// with the part flat beside it.\nexport const IssueCard = ({ title }: Params) => (\n\t<article>\n\t\t<IssueCardHeader title={title} />\n\t\t<IssueFooter />\n\t</article>\n);\n"
+        },
+        {
+          "side": "pass",
+          "path": "src/features/issues/components/IssueCard/IssueCardHeader.tsx",
+          "text": "interface Params {\n\ttitle: string;\n}\n\n// Correct: a part of the card, beside the card.\nexport const IssueCardHeader = ({ title }: Params) => <h2>{title}</h2>;\n"
+        },
+        {
+          "side": "pass",
+          "path": "src/features/issues/components/IssueFooter.tsx",
+          "text": "// Correct: a component with no parts is one file in components/.\nexport const IssueFooter = () => <footer>Opened today</footer>;\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/features/issues/components/IssueCard/Header/IssueCardHeader.tsx",
+          "text": "interface Params {\n\ttitle: string;\n}\n\n// Incorrect: a folder inside the component folder. The card's parts sit flat\n// beside it; a part with parts of its own becomes a component in components/.\nexport const IssueCardHeader = ({ title }: Params) => <h2>{title}</h2>;\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/features/issues/components/IssueCard/IssueCard.tsx",
+          "text": "import { IssueCardHeader } from './Header/IssueCardHeader.tsx';\nimport { IssueFooter } from '../IssueFooter/IssueFooter.tsx';\n\ninterface Params {\n\ttitle: string;\n}\n\nexport const IssueCard = ({ title }: Params) => (\n\t<article>\n\t\t<IssueCardHeader title={title} />\n\t\t<IssueFooter />\n\t</article>\n);\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/features/issues/components/IssueFooter/IssueFooter.tsx",
+          "text": "// Incorrect: a component folder holding only its main file. A component with\n// no parts is one file.\nexport const IssueFooter = () => <footer>Opened today</footer>;\n"
+        }
+      ],
+      "example": {
+        "kind": "repo",
+        "focus": {
+          "fail": "src/features/issues/components/IssueCard/Header/IssueCardHeader.tsx",
+          "pass": "src/features/issues/components/IssueCard/IssueCardHeader.tsx"
         }
       }
     },
@@ -1756,77 +1834,177 @@
       }
     },
     {
-      "id": "feature-layout",
-      "name": "lightsout/feature-layout",
+      "id": "feature-folders",
+      "name": "lightsout/feature-folders",
       "set": "code",
-      "documentPath": "code/frameworks/tanstack-start",
-      "summary": "How a feature is laid out, and which folder names the framework adds.",
+      "documentPath": "code/frameworks/react/layout",
+      "summary": "What a feature is, and which folders it holds.",
       "deterministic": true,
-      "agent": true,
+      "agent": false,
       "defaultSeverity": "advisory",
       "defaultOptions": {},
       "fixtureCounts": {
-        "pass": 6,
-        "fail": 4
+        "pass": 3,
+        "fail": 2
       },
-      "prose": "## Feature Layout\n\nA feature is a subject folder at the top of `src/`, and it grows as every folder does: a module is a file until it needs a folder, a file sits where its users are, and siblings share through `common/`. The framework adds two folder names to the three kinds the layout rules allow, and no others:\n\n- `routes/`, at the top of `src/`, holds the route files the framework owns.\n- `server/`, inside a feature, holds its server functions.\n\nWhat a route or another feature imports sits at the feature's top level: its screens, named with a `Screen` suffix, and its query options factories, named with a `QueryOptions` suffix. A hook's name starts with `use`. Kind lives in the name, so no folder is named for one: no `features/`, `screens/`, `components/`, `hooks/` or `queries/`, at any depth.\n\nA feature imports another feature only from its top level, never from its `common/` or `server/`.\n\nThen one rule places every file at every depth, and a path reads subject, subject, subject rather than kind, kind, kind.",
+      "prose": "## Feature Folders\n\nPut every piece of the product in a feature, `src/features/<name>/`, named for what the user does there: `issues/`, `billing/`. A feature holds only these folders, each present only while it has files:\n\n- `screens/` — the components its routes render, one file each. A not-found or error screen for those routes sits here too.\n- `components/` — the components its screens compose.\n- `hooks/` — its hooks.\n- `utils/` — its plain functions.\n- `types/` — its types. `constants/` — its constants, a value built by a call included.\n- The folders the framework's rules add.\n\nNothing sits directly under a feature's root, no feature holds another, and every folder in a feature is flat, apart from the component folders `component-folder` allows.\n\nThen everything about one area of the product is in one folder, and inside it a reader looks by kind.",
       "fixtures": [
         {
           "side": "pass",
-          "path": "src/issues/common/types/Issue.ts",
-          "text": "// Shared by the server function and the screen, so it sits in the feature's common/.\nexport interface Issue {\n\tid: number;\n\ttitle: string;\n}\n"
+          "path": "src/features/issues/components/IssueRow.tsx",
+          "text": "interface Params {\n\ttitle: string;\n}\n\n// Correct: a component the screen composes, in the feature's components/.\nexport const IssueRow = ({ title }: Params) => <li>{title}</li>;\n"
         },
         {
           "side": "pass",
-          "path": "src/issues/issuesQueryOptions.ts",
-          "text": "import { queryOptions } from '@tanstack/react-query';\nimport { findIssues } from './server/findIssues.ts';\n\n// Correct: used by the route loader and the screen, so it sits at the feature's\n// top level, and its name says what it is.\nexport const issuesQueryOptions = () =>\n\tqueryOptions({\n\t\tqueryKey: ['issues'],\n\t\tqueryFn: () => findIssues(),\n\t});\n"
+          "path": "src/features/issues/screens/IssuesScreen.tsx",
+          "text": "import { IssueRow } from '../components/IssueRow.tsx';\n\n// Correct: the screen a route renders sits in screens/, named with the suffix.\nexport const IssuesScreen = () => (\n\t<ul>\n\t\t<IssueRow title=\"Login fails\" />\n\t</ul>\n);\n"
         },
         {
           "side": "pass",
-          "path": "src/issues/IssuesScreen/IssueRow.tsx",
-          "text": "interface Params {\n\ttitle: string;\n}\n\n// Correct: used by the screen alone, so it sits beside it, with no folder between.\nexport const IssueRow = ({ title }: Params) => <li>{title}</li>;\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/issues/IssuesScreen/IssuesScreen.tsx",
-          "text": "import { useSuspenseQuery } from '@tanstack/react-query';\nimport { issuesQueryOptions } from '../issuesQueryOptions.ts';\nimport { IssueRow } from './IssueRow.tsx';\n\n// Correct: a module folder named for its export, at the top of the feature\n// because the route imports it.\nexport const IssuesScreen = () => {\n\tconst { data: issues } = useSuspenseQuery(issuesQueryOptions());\n\n\treturn (\n\t\t<ul>\n\t\t\t{issues.map((issue) => (\n\t\t\t\t<IssueRow key={issue.id} title={issue.title} />\n\t\t\t))}\n\t\t</ul>\n\t);\n};\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/issues/server/findIssues.ts",
-          "text": "import { createServerFn } from '@tanstack/react-start';\nimport type { Issue } from '../common/types/Issue.ts';\n\n// Correct: the one place in the feature that runs on the server.\nexport const findIssues = createServerFn({ method: 'GET' }).handler(async (): Promise<Issue[]> => [{ id: 1, title: 'Login fails' }]);\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/routes/issues.tsx",
-          "text": "import { createFileRoute } from '@tanstack/react-router';\nimport { IssuesScreen } from '../issues/IssuesScreen/IssuesScreen.tsx';\nimport { issuesQueryOptions } from '../issues/issuesQueryOptions.ts';\n\n// The route imports from the feature's top level and nothing deeper.\nexport const Route = createFileRoute('/issues')({\n\tloader: ({ context }) => context.queryClient.ensureQueryData(issuesQueryOptions()),\n\tcomponent: IssuesScreen,\n});\n"
+          "path": "src/features/issues/types/Issue.ts",
+          "text": "// Correct: the feature's types sit in its types/.\nexport interface Issue {\n\tid: number;\n\ttitle: string;\n}\n"
         },
         {
           "side": "fail",
-          "path": "src/features/issues/queries/issuesQueryOptions.ts",
-          "text": "import { queryOptions } from '@tanstack/react-query';\n\n// Incorrect: queries/ names a kind of code. The factory's own name already says\n// what it is, and placement puts it at the feature's top level.\nexport const issuesQueryOptions = () =>\n\tqueryOptions({\n\t\tqueryKey: ['issues'],\n\t\tqueryFn: async () => [{ id: 1, title: 'Login fails' }],\n\t});\n"
+          "path": "src/features/issues/IssuesScreen.tsx",
+          "text": "import { IssueRow } from './ui/IssueRow.tsx';\n\n// Incorrect: the screen sits directly under the feature, so nothing says it is\n// what a route renders.\nexport const IssuesScreen = () => (\n\t<ul>\n\t\t<IssueRow title=\"Login fails\" />\n\t</ul>\n);\n"
         },
         {
           "side": "fail",
-          "path": "src/features/issues/screens/IssuesScreen/components/IssueRow.tsx",
-          "text": "interface Params {\n\ttitle: string;\n}\n\n// Incorrect: features/, screens/ and components/ each name a kind of code, and\n// the file is four folders from the feature it belongs to.\nexport const IssueRow = ({ title }: Params) => <li>{title}</li>;\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/features/issues/screens/IssuesScreen/IssuesScreen.tsx",
-          "text": "import { useSuspenseQuery } from '@tanstack/react-query';\nimport { issuesQueryOptions } from '../../queries/issuesQueryOptions.ts';\nimport { IssueRow } from './components/IssueRow.tsx';\n\n// Incorrect: the screen reaches its query through a queries/ folder, and its\n// one private child through a components/ folder.\nexport const IssuesScreen = () => {\n\tconst { data: issues } = useSuspenseQuery(issuesQueryOptions());\n\n\treturn (\n\t\t<ul>\n\t\t\t{issues.map((issue) => (\n\t\t\t\t<IssueRow key={issue.id} title={issue.title} />\n\t\t\t))}\n\t\t</ul>\n\t);\n};\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/routes/issues.tsx",
-          "text": "import { createFileRoute } from '@tanstack/react-router';\nimport { issuesQueryOptions } from '../features/issues/queries/issuesQueryOptions.ts';\nimport { IssuesScreen } from '../features/issues/screens/IssuesScreen/IssuesScreen.tsx';\n\n// The route is wired as it should be; its imports show the folders in the way.\nexport const Route = createFileRoute('/issues')({\n\tloader: ({ context }) => context.queryClient.ensureQueryData(issuesQueryOptions()),\n\tcomponent: IssuesScreen,\n});\n"
+          "path": "src/features/issues/ui/IssueRow.tsx",
+          "text": "interface Params {\n\ttitle: string;\n}\n\n// Incorrect: ui/ is not a folder a feature holds, so a reader looking for the\n// feature's components has to guess the name.\nexport const IssueRow = ({ title }: Params) => <li>{title}</li>;\n"
         }
       ],
       "example": {
         "kind": "repo",
         "focus": {
-          "fail": "src/features/issues/screens/IssuesScreen/components/IssueRow.tsx",
-          "pass": "src/issues/IssuesScreen/IssueRow.tsx"
+          "fail": "src/features/issues/ui/IssueRow.tsx",
+          "pass": "src/features/issues/components/IssueRow.tsx"
+        }
+      }
+    },
+    {
+      "id": "feature-import-direction",
+      "name": "lightsout/feature-import-direction",
+      "set": "code",
+      "documentPath": "code/frameworks/react/layout",
+      "summary": "Which way imports flow between features and the shared layer.",
+      "deterministic": true,
+      "agent": false,
+      "defaultSeverity": "advisory",
+      "defaultOptions": {},
+      "fixtureCounts": {
+        "pass": 3,
+        "fail": 2
+      },
+      "prose": "## Feature Import Direction\n\nImports flow one way: the shared layer imports nothing from a feature, a feature imports from the shared layer and from itself, and the app above the features, its routes and entry files, imports from any feature.\n\nWhen two features need the same code, move it to the shared layer, as `shared-layer` says, and import it from there.\n\nA feature that reaches into no sibling can be read, tested and deleted on its own.",
+      "fixtures": [
+        {
+          "side": "pass",
+          "path": "src/components/ui/StatusBadge.tsx",
+          "text": "interface Params {\n\tlabel: string;\n}\n\n// Correct: what two features need sits in the shared layer.\nexport const StatusBadge = ({ label }: Params) => <span className=\"badge\">{label}</span>;\n"
+        },
+        {
+          "side": "pass",
+          "path": "src/features/billing/components/InvoiceRow.tsx",
+          "text": "import { StatusBadge } from '../../../components/ui/StatusBadge.tsx';\n\ninterface Params {\n\tnumber: string;\n\tstatus: string;\n}\n\n// Correct: both features import the badge from the shared layer, and neither\n// knows the other exists.\nexport const InvoiceRow = ({ number, status }: Params) => (\n\t<li>\n\t\t{number} <StatusBadge label={status} />\n\t</li>\n);\n"
+        },
+        {
+          "side": "pass",
+          "path": "src/features/issues/components/IssueRow.tsx",
+          "text": "import { StatusBadge } from '../../../components/ui/StatusBadge.tsx';\n\ninterface Params {\n\ttitle: string;\n\tstatus: string;\n}\n\nexport const IssueRow = ({ title, status }: Params) => (\n\t<li>\n\t\t{title} <StatusBadge label={status} />\n\t</li>\n);\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/features/billing/components/InvoiceRow.tsx",
+          "text": "import { StatusBadge } from '../../issues/components/StatusBadge.tsx';\n\ninterface Params {\n\tnumber: string;\n\tstatus: string;\n}\n\n// Incorrect: billing imports from issues, so neither feature can change or go\n// without the other.\nexport const InvoiceRow = ({ number, status }: Params) => (\n\t<li>\n\t\t{number} <StatusBadge label={status} />\n\t</li>\n);\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/features/issues/components/StatusBadge.tsx",
+          "text": "interface Params {\n\tlabel: string;\n}\n\n// The badge was written for issues, and billing reached in for it.\nexport const StatusBadge = ({ label }: Params) => <span className=\"badge\">{label}</span>;\n"
+        }
+      ],
+      "example": {
+        "kind": "repo",
+        "focus": {
+          "fail": "src/features/billing/components/InvoiceRow.tsx",
+          "pass": "src/features/billing/components/InvoiceRow.tsx"
+        }
+      }
+    },
+    {
+      "id": "feature-layout",
+      "name": "lightsout/feature-layout",
+      "set": "code",
+      "documentPath": "code/frameworks/tanstack-start",
+      "summary": "Which folders the framework adds to a feature, and what a route reaches into.",
+      "deterministic": true,
+      "agent": false,
+      "defaultSeverity": "advisory",
+      "defaultOptions": {},
+      "fixtureCounts": {
+        "pass": 5,
+        "fail": 5
+      },
+      "prose": "## Feature Layout\n\nLay a feature out as the React layout rules say, with two folders the framework adds: `queries/` for its query options factories and `server/` for its server functions. A query or server function several features use sits in `queries/` or `server/` at the top of `src/`, as the shared layer rule says of everything shared.\n\nA route reaches a feature through `screens/`, `queries/`, `utils/`, `constants/`, `types/` and `server/`, never through `components/` or `hooks/`.\n\nThen what a route may touch, and where the server begins, are both read from the tree.",
+      "fixtures": [
+        {
+          "side": "pass",
+          "path": "src/features/issues/queries/issuesQueryOptions.ts",
+          "text": "import { queryOptions } from '@tanstack/react-query';\nimport { findIssues } from '../server/findIssues.ts';\n\n// The query the route prefetches and the screen reads, in the folder the framework adds for it.\nexport const issuesQueryOptions = () =>\n\tqueryOptions({\n\t\tqueryKey: ['issues'],\n\t\tqueryFn: () => findIssues(),\n\t});\n"
+        },
+        {
+          "side": "pass",
+          "path": "src/features/issues/screens/IssuesScreen.tsx",
+          "text": "import { useSuspenseQuery } from '@tanstack/react-query';\nimport { issuesQueryOptions } from '../queries/issuesQueryOptions.ts';\n\n// Correct: the screen the route renders sits in screens/.\nexport const IssuesScreen = () => {\n\tconst { data: issues } = useSuspenseQuery(issuesQueryOptions());\n\n\treturn (\n\t\t<ul>\n\t\t\t{issues.map((issue) => (\n\t\t\t\t<li key={issue.id}>{issue.title}</li>\n\t\t\t))}\n\t\t</ul>\n\t);\n};\n"
+        },
+        {
+          "side": "pass",
+          "path": "src/features/issues/server/findIssues.ts",
+          "text": "import { createServerFn } from '@tanstack/react-start';\nimport type { Issue } from '../types/Issue.ts';\n\n// The feature's one server function, in the folder the framework adds for it.\nexport const findIssues = createServerFn({ method: 'GET' }).handler(async (): Promise<Issue[]> => [{ id: 1, title: 'Login fails' }]);\n"
+        },
+        {
+          "side": "pass",
+          "path": "src/features/issues/types/Issue.ts",
+          "text": "export interface Issue {\n\tid: number;\n\ttitle: string;\n}\n"
+        },
+        {
+          "side": "pass",
+          "path": "src/routes/issues.tsx",
+          "text": "import { createFileRoute } from '@tanstack/react-router';\nimport { issuesQueryOptions } from '../features/issues/queries/issuesQueryOptions.ts';\nimport { IssuesScreen } from '../features/issues/screens/IssuesScreen.tsx';\n\n// Correct: the route reaches the feature through screens/ and queries/ only.\nexport const Route = createFileRoute('/issues')({\n\tloader: ({ context }) => context.queryClient.ensureQueryData(issuesQueryOptions()),\n\tcomponent: IssuesScreen,\n});\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/features/issues/components/IssuesScreen.tsx",
+          "text": "import { useSuspenseQuery } from '@tanstack/react-query';\nimport { issuesQueryOptions } from '../queries/issuesQueryOptions.ts';\n\n// Incorrect: the screen sits among the components, so the route has to reach\n// into components/ to render it.\nexport const IssuesScreen = () => {\n\tconst { data: issues } = useSuspenseQuery(issuesQueryOptions());\n\n\treturn (\n\t\t<ul>\n\t\t\t{issues.map((issue) => (\n\t\t\t\t<li key={issue.id}>{issue.title}</li>\n\t\t\t))}\n\t\t</ul>\n\t);\n};\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/features/issues/queries/issuesQueryOptions.ts",
+          "text": "import { queryOptions } from '@tanstack/react-query';\nimport { findIssues } from '../server/findIssues.ts';\n\n// The query the route prefetches and the screen reads, in the folder the framework adds for it.\nexport const issuesQueryOptions = () =>\n\tqueryOptions({\n\t\tqueryKey: ['issues'],\n\t\tqueryFn: () => findIssues(),\n\t});\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/features/issues/server/findIssues.ts",
+          "text": "import { createServerFn } from '@tanstack/react-start';\nimport type { Issue } from '../types/Issue.ts';\n\n// The feature's one server function, in the folder the framework adds for it.\nexport const findIssues = createServerFn({ method: 'GET' }).handler(async (): Promise<Issue[]> => [{ id: 1, title: 'Login fails' }]);\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/features/issues/types/Issue.ts",
+          "text": "export interface Issue {\n\tid: number;\n\ttitle: string;\n}\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/routes/issues.tsx",
+          "text": "import { createFileRoute } from '@tanstack/react-router';\nimport { IssuesScreen } from '../features/issues/components/IssuesScreen.tsx';\nimport { issuesQueryOptions } from '../features/issues/queries/issuesQueryOptions.ts';\n\n// Incorrect: the route imports from the feature's components/, which is the\n// screen's to compose from, not the route's to reach.\nexport const Route = createFileRoute('/issues')({\n\tloader: ({ context }) => context.queryClient.ensureQueryData(issuesQueryOptions()),\n\tcomponent: IssuesScreen,\n});\n"
+        }
+      ],
+      "example": {
+        "kind": "repo",
+        "focus": {
+          "fail": "src/routes/issues.tsx",
+          "pass": "src/routes/issues.tsx"
         }
       }
     },
@@ -2431,64 +2609,64 @@
       "fixtures": [
         {
           "side": "pass",
-          "path": "src/issues/common/types/Issue.ts",
+          "path": "src/features/issues/queries/issuesQueryOptions.ts",
+          "text": "import { queryOptions } from '@tanstack/react-query';\nimport { findIssues } from '../server/findIssues.ts';\n\nexport const issuesQueryOptions = () =>\n\tqueryOptions({\n\t\tqueryKey: ['issues'],\n\t\tqueryFn: () => findIssues(),\n\t});\n"
+        },
+        {
+          "side": "pass",
+          "path": "src/features/issues/screens/IssuesScreen.tsx",
+          "text": "import { useSuspenseQuery } from '@tanstack/react-query';\nimport { issuesQueryOptions } from '../queries/issuesQueryOptions.ts';\n\n// Correct: the data is already in the cache, so the screen reads it and renders.\nexport const IssuesScreen = () => {\n\tconst { data: issues } = useSuspenseQuery(issuesQueryOptions());\n\n\treturn (\n\t\t<ul>\n\t\t\t{issues.map((issue) => (\n\t\t\t\t<li key={issue.id}>{issue.title}</li>\n\t\t\t))}\n\t\t</ul>\n\t);\n};\n"
+        },
+        {
+          "side": "pass",
+          "path": "src/features/issues/server/findIssues.ts",
+          "text": "import { createServerFn } from '@tanstack/react-start';\nimport type { Issue } from '../types/Issue.ts';\n\nexport const findIssues = createServerFn({ method: 'GET' }).handler(async (): Promise<Issue[]> => [{ id: 1, title: 'Login fails' }]);\n"
+        },
+        {
+          "side": "pass",
+          "path": "src/features/issues/types/Issue.ts",
           "text": "export interface Issue {\n\tid: number;\n\ttitle: string;\n}\n"
         },
         {
           "side": "pass",
-          "path": "src/issues/issuesQueryOptions.ts",
-          "text": "import { queryOptions } from '@tanstack/react-query';\nimport { findIssues } from './server/findIssues.ts';\n\nexport const issuesQueryOptions = () =>\n\tqueryOptions({\n\t\tqueryKey: ['issues'],\n\t\tqueryFn: () => findIssues(),\n\t});\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/issues/IssuesScreen/IssuesScreen.tsx",
-          "text": "import { useSuspenseQuery } from '@tanstack/react-query';\nimport { issuesQueryOptions } from '../issuesQueryOptions.ts';\n\n// Correct: the data is already in the cache, so the screen reads it and renders.\nexport const IssuesScreen = () => {\n\tconst { data: issues } = useSuspenseQuery(issuesQueryOptions());\n\n\treturn (\n\t\t<ul>\n\t\t\t{issues.map((issue) => (\n\t\t\t\t<li key={issue.id}>{issue.title}</li>\n\t\t\t))}\n\t\t</ul>\n\t);\n};\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/issues/server/findIssues.ts",
-          "text": "import { createServerFn } from '@tanstack/react-start';\nimport type { Issue } from '../common/types/Issue.ts';\n\nexport const findIssues = createServerFn({ method: 'GET' }).handler(async (): Promise<Issue[]> => [{ id: 1, title: 'Login fails' }]);\n"
-        },
-        {
-          "side": "pass",
           "path": "src/routes/issues.tsx",
-          "text": "import { createFileRoute } from '@tanstack/react-router';\nimport { IssuesScreen } from '../issues/IssuesScreen/IssuesScreen.tsx';\nimport { issuesQueryOptions } from '../issues/issuesQueryOptions.ts';\n\n// Correct: the loader fetches through the object the screen reads, so the\n// screen's first render has its data.\nexport const Route = createFileRoute('/issues')({\n\tloader: ({ context }) => context.queryClient.ensureQueryData(issuesQueryOptions()),\n\tcomponent: IssuesScreen,\n});\n"
+          "text": "import { createFileRoute } from '@tanstack/react-router';\nimport { IssuesScreen } from '../features/issues/screens/IssuesScreen.tsx';\nimport { issuesQueryOptions } from '../features/issues/queries/issuesQueryOptions.ts';\n\n// Correct: the loader fetches through the object the screen reads, so the\n// screen's first render has its data.\nexport const Route = createFileRoute('/issues')({\n\tloader: ({ context }) => context.queryClient.ensureQueryData(issuesQueryOptions()),\n\tcomponent: IssuesScreen,\n});\n"
         },
         {
           "side": "fail",
-          "path": "src/issues/common/types/Issue.ts",
+          "path": "src/features/issues/hooks/useIssues.ts",
+          "text": "import { useQuery } from '@tanstack/react-query';\nimport { issuesQueryOptions } from '../queries/issuesQueryOptions.ts';\n\n// Incorrect: a hook whose whole body is the query call is a second name for it.\nexport const useIssues = () => useQuery(issuesQueryOptions());\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/features/issues/queries/issuesQueryOptions.ts",
+          "text": "import { queryOptions } from '@tanstack/react-query';\nimport { findIssues } from '../server/findIssues.ts';\n\nexport const issuesQueryOptions = () =>\n\tqueryOptions({\n\t\tqueryKey: ['issues'],\n\t\tqueryFn: () => findIssues(),\n\t});\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/features/issues/screens/IssuesScreen.tsx",
+          "text": "import { useIssues } from '../hooks/useIssues.ts';\n\n// Incorrect: nothing prefetched, so the screen paints a loading branch first,\n// and it reads the query through a hook that only renames it.\nexport const IssuesScreen = () => {\n\tconst { data: issues, isLoading } = useIssues();\n\n\tif (isLoading || issues === undefined) {\n\t\treturn <p>Loading…</p>;\n\t}\n\n\treturn (\n\t\t<ul>\n\t\t\t{issues.map((issue) => (\n\t\t\t\t<li key={issue.id}>{issue.title}</li>\n\t\t\t))}\n\t\t</ul>\n\t);\n};\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/features/issues/server/findIssues.ts",
+          "text": "import { createServerFn } from '@tanstack/react-start';\nimport type { Issue } from '../types/Issue.ts';\n\nexport const findIssues = createServerFn({ method: 'GET' }).handler(async (): Promise<Issue[]> => [{ id: 1, title: 'Login fails' }]);\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/features/issues/types/Issue.ts",
           "text": "export interface Issue {\n\tid: number;\n\ttitle: string;\n}\n"
         },
         {
           "side": "fail",
-          "path": "src/issues/issuesQueryOptions.ts",
-          "text": "import { queryOptions } from '@tanstack/react-query';\nimport { findIssues } from './server/findIssues.ts';\n\nexport const issuesQueryOptions = () =>\n\tqueryOptions({\n\t\tqueryKey: ['issues'],\n\t\tqueryFn: () => findIssues(),\n\t});\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/issues/IssuesScreen/IssuesScreen.tsx",
-          "text": "import { useIssues } from '../useIssues.ts';\n\n// Incorrect: nothing prefetched, so the screen paints a loading branch first,\n// and it reads the query through a hook that only renames it.\nexport const IssuesScreen = () => {\n\tconst { data: issues, isLoading } = useIssues();\n\n\tif (isLoading || issues === undefined) {\n\t\treturn <p>Loading…</p>;\n\t}\n\n\treturn (\n\t\t<ul>\n\t\t\t{issues.map((issue) => (\n\t\t\t\t<li key={issue.id}>{issue.title}</li>\n\t\t\t))}\n\t\t</ul>\n\t);\n};\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/issues/server/findIssues.ts",
-          "text": "import { createServerFn } from '@tanstack/react-start';\nimport type { Issue } from '../common/types/Issue.ts';\n\nexport const findIssues = createServerFn({ method: 'GET' }).handler(async (): Promise<Issue[]> => [{ id: 1, title: 'Login fails' }]);\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/issues/useIssues.ts",
-          "text": "import { useQuery } from '@tanstack/react-query';\nimport { issuesQueryOptions } from './issuesQueryOptions.ts';\n\n// Incorrect: a hook whose whole body is the query call is a second name for it.\nexport const useIssues = () => useQuery(issuesQueryOptions());\n"
-        },
-        {
-          "side": "fail",
           "path": "src/routes/issues.tsx",
-          "text": "import { createFileRoute } from '@tanstack/react-router';\nimport { IssuesScreen } from '../issues/IssuesScreen/IssuesScreen.tsx';\n\n// Incorrect: no loader, so the route is \"done\" before the screen has its data.\nexport const Route = createFileRoute('/issues')({ component: IssuesScreen });\n"
+          "text": "import { createFileRoute } from '@tanstack/react-router';\nimport { IssuesScreen } from '../features/issues/screens/IssuesScreen.tsx';\n\n// Incorrect: no loader, so the route is \"done\" before the screen has its data.\nexport const Route = createFileRoute('/issues')({ component: IssuesScreen });\n"
         }
       ],
       "example": {
         "kind": "repo",
         "focus": {
-          "fail": "src/issues/IssuesScreen/IssuesScreen.tsx",
+          "fail": "src/features/issues/screens/IssuesScreen.tsx",
           "pass": "src/routes/issues.tsx"
         }
       }
@@ -2781,33 +2959,33 @@
       "fixtures": [
         {
           "side": "pass",
-          "path": "src/issues/common/types/Issue.ts",
+          "path": "src/features/issues/queries/issuesQueryOptions.ts",
+          "text": "import { queryOptions } from '@tanstack/react-query';\nimport type { Issue } from '../types/Issue.ts';\n\nexport const issuesQueryOptions = () =>\n\tqueryOptions({\n\t\tqueryKey: ['issues'],\n\t\tqueryFn: async (): Promise<Issue[]> => [{ id: 1, title: 'Login fails' }],\n\t});\n"
+        },
+        {
+          "side": "pass",
+          "path": "src/features/issues/screens/IssuesScreen.tsx",
+          "text": "import { useSuspenseQuery } from '@tanstack/react-query';\nimport { issuesQueryOptions } from '../queries/issuesQueryOptions.ts';\n\nexport const IssuesScreen = () => {\n\tconst { data: issues } = useSuspenseQuery(issuesQueryOptions());\n\n\treturn (\n\t\t<section>\n\t\t\t<h1>Issues</h1>\n\t\t\t<ul>\n\t\t\t\t{issues.map((issue) => (\n\t\t\t\t\t<li key={issue.id}>{issue.title}</li>\n\t\t\t\t))}\n\t\t\t</ul>\n\t\t</section>\n\t);\n};\n"
+        },
+        {
+          "side": "pass",
+          "path": "src/features/issues/screens/IssuesScreen.unit.test.tsx",
+          "text": "import { describe, expect, test } from '@jest/globals';\nimport { QueryClient, QueryClientProvider } from '@tanstack/react-query';\nimport { RouterProvider, createMemoryHistory, createRootRoute, createRoute, createRouter } from '@tanstack/react-router';\nimport { render, screen } from '@testing-library/react';\nimport type { Issue } from '../types/Issue.ts';\nimport { issuesQueryOptions } from '../queries/issuesQueryOptions.ts';\nimport { IssuesScreen } from './IssuesScreen.tsx';\n\n// Correct: the screen renders under a router whose one route is its own, with a\n// query client holding what the loader would have fetched.\nconst setupIssuesScreen = ({ issues = [{ id: 1, title: 'Login fails' }] }: { issues?: Issue[] } = {}) => {\n\tconst queryClient = new QueryClient();\n\tqueryClient.setQueryData(issuesQueryOptions().queryKey, issues);\n\tconst rootRoute = createRootRoute();\n\tconst issuesRoute = createRoute({ getParentRoute: () => rootRoute, path: '/issues', component: IssuesScreen });\n\tconst router = createRouter({ routeTree: rootRoute.addChildren([issuesRoute]), history: createMemoryHistory({ initialEntries: ['/issues'] }) });\n\n\trender(\n\t\t<QueryClientProvider client={queryClient}>\n\t\t\t<RouterProvider router={router} />\n\t\t</QueryClientProvider>,\n\t);\n};\n\ndescribe('IssuesScreen', () => {\n\ttest('lists each issue by title', async () => {\n\t\tsetupIssuesScreen();\n\n\t\tconst row = await screen.findByText('Login fails');\n\n\t\texpect(row).toBeInTheDocument();\n\t});\n});\n"
+        },
+        {
+          "side": "pass",
+          "path": "src/features/issues/types/Issue.ts",
           "text": "export interface Issue {\n\tid: number;\n\ttitle: string;\n}\n"
         },
         {
-          "side": "pass",
-          "path": "src/issues/issuesQueryOptions.ts",
-          "text": "import { queryOptions } from '@tanstack/react-query';\nimport type { Issue } from './common/types/Issue.ts';\n\nexport const issuesQueryOptions = () =>\n\tqueryOptions({\n\t\tqueryKey: ['issues'],\n\t\tqueryFn: async (): Promise<Issue[]> => [{ id: 1, title: 'Login fails' }],\n\t});\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/issues/IssuesScreen/IssuesScreen.tsx",
-          "text": "import { useSuspenseQuery } from '@tanstack/react-query';\nimport { issuesQueryOptions } from '../issuesQueryOptions.ts';\n\nexport const IssuesScreen = () => {\n\tconst { data: issues } = useSuspenseQuery(issuesQueryOptions());\n\n\treturn (\n\t\t<section>\n\t\t\t<h1>Issues</h1>\n\t\t\t<ul>\n\t\t\t\t{issues.map((issue) => (\n\t\t\t\t\t<li key={issue.id}>{issue.title}</li>\n\t\t\t\t))}\n\t\t\t</ul>\n\t\t</section>\n\t);\n};\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/issues/IssuesScreen/IssuesScreen.unit.test.tsx",
-          "text": "import { describe, expect, test } from '@jest/globals';\nimport { QueryClient, QueryClientProvider } from '@tanstack/react-query';\nimport { RouterProvider, createMemoryHistory, createRootRoute, createRoute, createRouter } from '@tanstack/react-router';\nimport { render, screen } from '@testing-library/react';\nimport type { Issue } from '../common/types/Issue.ts';\nimport { issuesQueryOptions } from '../issuesQueryOptions.ts';\nimport { IssuesScreen } from './IssuesScreen.tsx';\n\n// Correct: the screen renders under a router whose one route is its own, with a\n// query client holding what the loader would have fetched.\nconst setupIssuesScreen = ({ issues = [{ id: 1, title: 'Login fails' }] }: { issues?: Issue[] } = {}) => {\n\tconst queryClient = new QueryClient();\n\tqueryClient.setQueryData(issuesQueryOptions().queryKey, issues);\n\tconst rootRoute = createRootRoute();\n\tconst issuesRoute = createRoute({ getParentRoute: () => rootRoute, path: '/issues', component: IssuesScreen });\n\tconst router = createRouter({ routeTree: rootRoute.addChildren([issuesRoute]), history: createMemoryHistory({ initialEntries: ['/issues'] }) });\n\n\trender(\n\t\t<QueryClientProvider client={queryClient}>\n\t\t\t<RouterProvider router={router} />\n\t\t</QueryClientProvider>,\n\t);\n};\n\ndescribe('IssuesScreen', () => {\n\ttest('lists each issue by title', async () => {\n\t\tsetupIssuesScreen();\n\n\t\tconst row = await screen.findByText('Login fails');\n\n\t\texpect(row).toBeInTheDocument();\n\t});\n});\n"
-        },
-        {
           "side": "fail",
-          "path": "src/issues/IssuesScreen/IssuesScreen.tsx",
-          "text": "import { useSuspenseQuery } from '@tanstack/react-query';\nimport { issuesQueryOptions } from '../issuesQueryOptions.ts';\n\nexport const IssuesScreen = () => {\n\tconst { data: issues } = useSuspenseQuery(issuesQueryOptions());\n\n\treturn (\n\t\t<section>\n\t\t\t<h1>Issues</h1>\n\t\t\t<ul>\n\t\t\t\t{issues.map((issue) => (\n\t\t\t\t\t<li key={issue.id}>{issue.title}</li>\n\t\t\t\t))}\n\t\t\t</ul>\n\t\t</section>\n\t);\n};\n"
+          "path": "src/features/issues/screens/IssuesScreen.tsx",
+          "text": "import { useSuspenseQuery } from '@tanstack/react-query';\nimport { issuesQueryOptions } from '../queries/issuesQueryOptions.ts';\n\nexport const IssuesScreen = () => {\n\tconst { data: issues } = useSuspenseQuery(issuesQueryOptions());\n\n\treturn (\n\t\t<section>\n\t\t\t<h1>Issues</h1>\n\t\t\t<ul>\n\t\t\t\t{issues.map((issue) => (\n\t\t\t\t\t<li key={issue.id}>{issue.title}</li>\n\t\t\t\t))}\n\t\t\t</ul>\n\t\t</section>\n\t);\n};\n"
         },
         {
           "side": "fail",
           "path": "src/routes/issues.tsx",
-          "text": "import { createFileRoute } from '@tanstack/react-router';\nimport { IssuesScreen } from '../issues/IssuesScreen/IssuesScreen.tsx';\n\n// The route only wires the screen to its path.\nexport const Route = createFileRoute('/issues')({ component: IssuesScreen });\n"
+          "text": "import { createFileRoute } from '@tanstack/react-router';\nimport { IssuesScreen } from '../features/issues/screens/IssuesScreen.tsx';\n\n// The route only wires the screen to its path.\nexport const Route = createFileRoute('/issues')({ component: IssuesScreen });\n"
         },
         {
           "side": "fail",
@@ -2819,7 +2997,7 @@
         "kind": "repo",
         "focus": {
           "fail": "src/routes/issues.unit.test.tsx",
-          "pass": "src/issues/IssuesScreen/IssuesScreen.unit.test.tsx"
+          "pass": "src/features/issues/screens/IssuesScreen.unit.test.tsx"
         }
       }
     },
@@ -2989,55 +3167,55 @@
       "fixtures": [
         {
           "side": "pass",
-          "path": "src/issues/common/types/Issue.ts",
+          "path": "src/features/issues/queries/issuesQueryOptions.ts",
+          "text": "// Correct: the query and its key are declared once, and every reader imports this.\nimport { queryOptions } from '@tanstack/react-query';\nimport { findIssues } from '../server/findIssues.ts';\n\nexport const issuesQueryOptions = () =>\n\tqueryOptions({\n\t\tqueryKey: ['issues'],\n\t\tqueryFn: () => findIssues(),\n\t});\n"
+        },
+        {
+          "side": "pass",
+          "path": "src/features/issues/screens/IssuesScreen.tsx",
+          "text": "import { useSuspenseQuery } from '@tanstack/react-query';\nimport { issuesQueryOptions } from '../queries/issuesQueryOptions.ts';\n\n// Correct: the screen reads the one options object and writes no key.\nexport const IssuesScreen = () => {\n\tconst { data: issues } = useSuspenseQuery(issuesQueryOptions());\n\n\treturn (\n\t\t<ul>\n\t\t\t{issues.map((issue) => (\n\t\t\t\t<li key={issue.id}>{issue.title}</li>\n\t\t\t))}\n\t\t</ul>\n\t);\n};\n"
+        },
+        {
+          "side": "pass",
+          "path": "src/features/issues/server/findIssues.ts",
+          "text": "import { createServerFn } from '@tanstack/react-start';\nimport type { Issue } from '../types/Issue.ts';\n\nexport const findIssues = createServerFn({ method: 'GET' }).handler(async (): Promise<Issue[]> => [{ id: 1, title: 'Login fails' }]);\n"
+        },
+        {
+          "side": "pass",
+          "path": "src/features/issues/types/Issue.ts",
           "text": "export interface Issue {\n\tid: number;\n\ttitle: string;\n}\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/issues/issuesQueryOptions.ts",
-          "text": "// Correct: the query and its key are declared once, and every reader imports this.\nimport { queryOptions } from '@tanstack/react-query';\nimport { findIssues } from './server/findIssues.ts';\n\nexport const issuesQueryOptions = () =>\n\tqueryOptions({\n\t\tqueryKey: ['issues'],\n\t\tqueryFn: () => findIssues(),\n\t});\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/issues/IssuesScreen/IssuesScreen.tsx",
-          "text": "import { useSuspenseQuery } from '@tanstack/react-query';\nimport { issuesQueryOptions } from '../issuesQueryOptions.ts';\n\n// Correct: the screen reads the one options object and writes no key.\nexport const IssuesScreen = () => {\n\tconst { data: issues } = useSuspenseQuery(issuesQueryOptions());\n\n\treturn (\n\t\t<ul>\n\t\t\t{issues.map((issue) => (\n\t\t\t\t<li key={issue.id}>{issue.title}</li>\n\t\t\t))}\n\t\t</ul>\n\t);\n};\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/issues/server/findIssues.ts",
-          "text": "import { createServerFn } from '@tanstack/react-start';\nimport type { Issue } from '../common/types/Issue.ts';\n\nexport const findIssues = createServerFn({ method: 'GET' }).handler(async (): Promise<Issue[]> => [{ id: 1, title: 'Login fails' }]);\n"
         },
         {
           "side": "pass",
           "path": "src/routes/issues.tsx",
-          "text": "import { createFileRoute } from '@tanstack/react-router';\nimport { IssuesScreen } from '../issues/IssuesScreen/IssuesScreen.tsx';\nimport { issuesQueryOptions } from '../issues/issuesQueryOptions.ts';\n\n// The loader prefetches through the same object the screen reads.\nexport const Route = createFileRoute('/issues')({\n\tloader: ({ context }) => context.queryClient.ensureQueryData(issuesQueryOptions()),\n\tcomponent: IssuesScreen,\n});\n"
+          "text": "import { createFileRoute } from '@tanstack/react-router';\nimport { IssuesScreen } from '../features/issues/screens/IssuesScreen.tsx';\nimport { issuesQueryOptions } from '../features/issues/queries/issuesQueryOptions.ts';\n\n// The loader prefetches through the same object the screen reads.\nexport const Route = createFileRoute('/issues')({\n\tloader: ({ context }) => context.queryClient.ensureQueryData(issuesQueryOptions()),\n\tcomponent: IssuesScreen,\n});\n"
         },
         {
           "side": "fail",
-          "path": "src/issues/common/types/Issue.ts",
-          "text": "export interface Issue {\n\tid: number;\n\ttitle: string;\n}\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/issues/IssuesScreen/IssuesScreen.tsx",
+          "path": "src/features/issues/screens/IssuesScreen.tsx",
           "text": "import { useQuery } from '@tanstack/react-query';\nimport { findIssues } from '../server/findIssues.ts';\n\n// Incorrect: the screen spells the query and its key itself, so the loader\n// below has to spell them again, and the two can drift.\nexport const IssuesScreen = () => {\n\tconst { data: issues = [] } = useQuery({ queryKey: ['issues'], queryFn: () => findIssues() });\n\n\treturn (\n\t\t<ul>\n\t\t\t{issues.map((issue) => (\n\t\t\t\t<li key={issue.id}>{issue.title}</li>\n\t\t\t))}\n\t\t</ul>\n\t);\n};\n"
         },
         {
           "side": "fail",
-          "path": "src/issues/server/findIssues.ts",
-          "text": "import { createServerFn } from '@tanstack/react-start';\nimport type { Issue } from '../common/types/Issue.ts';\n\nexport const findIssues = createServerFn({ method: 'GET' }).handler(async (): Promise<Issue[]> => [{ id: 1, title: 'Login fails' }]);\n"
+          "path": "src/features/issues/server/findIssues.ts",
+          "text": "import { createServerFn } from '@tanstack/react-start';\nimport type { Issue } from '../types/Issue.ts';\n\nexport const findIssues = createServerFn({ method: 'GET' }).handler(async (): Promise<Issue[]> => [{ id: 1, title: 'Login fails' }]);\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/features/issues/types/Issue.ts",
+          "text": "export interface Issue {\n\tid: number;\n\ttitle: string;\n}\n"
         },
         {
           "side": "fail",
           "path": "src/routes/issues.tsx",
-          "text": "import { createFileRoute } from '@tanstack/react-router';\nimport { IssuesScreen } from '../issues/IssuesScreen/IssuesScreen.tsx';\nimport { findIssues } from '../issues/server/findIssues.ts';\n\n// Incorrect: a second copy of the key and the fetch, written by hand.\nexport const Route = createFileRoute('/issues')({\n\tloader: ({ context }) => context.queryClient.ensureQueryData({ queryKey: ['issues'], queryFn: () => findIssues() }),\n\tcomponent: IssuesScreen,\n});\n"
+          "text": "import { createFileRoute } from '@tanstack/react-router';\nimport { IssuesScreen } from '../features/issues/screens/IssuesScreen.tsx';\nimport { findIssues } from '../features/issues/server/findIssues.ts';\n\n// Incorrect: a second copy of the key and the fetch, written by hand.\nexport const Route = createFileRoute('/issues')({\n\tloader: ({ context }) => context.queryClient.ensureQueryData({ queryKey: ['issues'], queryFn: () => findIssues() }),\n\tcomponent: IssuesScreen,\n});\n"
         }
       ],
       "example": {
         "kind": "repo",
         "focus": {
-          "fail": "src/issues/IssuesScreen/IssuesScreen.tsx",
-          "pass": "src/issues/issuesQueryOptions.ts"
+          "fail": "src/features/issues/screens/IssuesScreen.tsx",
+          "pass": "src/features/issues/queries/issuesQueryOptions.ts"
         }
       }
     },
@@ -3045,7 +3223,7 @@
       "id": "react-function-size",
       "name": "lightsout/react-function-size",
       "set": "code",
-      "documentPath": "code/frameworks/react",
+      "documentPath": "code/frameworks/react/size",
       "summary": "How long a function, a hook and a component may grow.",
       "deterministic": true,
       "agent": false,
@@ -3149,12 +3327,12 @@
       "fixtures": [
         {
           "side": "pass",
-          "path": "src/issues/IssuesScreen/IssuesScreen.unit.test.tsx",
-          "text": "import { describe, expect, test } from '@jest/globals';\nimport { QueryClient, QueryClientProvider } from '@tanstack/react-query';\nimport { RouterProvider, createMemoryHistory, createRootRoute, createRoute, createRouter } from '@tanstack/react-router';\nimport { render, screen } from '@testing-library/react';\nimport type { Issue } from '../common/types/Issue.ts';\nimport { issuesQueryOptions } from '../issuesQueryOptions.ts';\nimport { IssuesScreen } from './IssuesScreen.tsx';\n\n// Correct: the screen renders under a router whose one route is its own, with a\n// query client holding what the loader would have fetched.\nconst setupIssuesScreen = ({ issues = [{ id: 1, title: 'Login fails' }] }: { issues?: Issue[] } = {}) => {\n\tconst queryClient = new QueryClient();\n\tqueryClient.setQueryData(issuesQueryOptions().queryKey, issues);\n\tconst rootRoute = createRootRoute();\n\tconst issuesRoute = createRoute({ getParentRoute: () => rootRoute, path: '/issues', component: IssuesScreen });\n\tconst router = createRouter({ routeTree: rootRoute.addChildren([issuesRoute]), history: createMemoryHistory({ initialEntries: ['/issues'] }) });\n\n\trender(\n\t\t<QueryClientProvider client={queryClient}>\n\t\t\t<RouterProvider router={router} />\n\t\t</QueryClientProvider>,\n\t);\n};\n\ndescribe('IssuesScreen', () => {\n\ttest('lists each issue by title', async () => {\n\t\tsetupIssuesScreen();\n\n\t\tconst row = await screen.findByText('Login fails');\n\n\t\texpect(row).toBeInTheDocument();\n\t});\n});\n"
+          "path": "src/features/issues/screens/IssuesScreen.unit.test.tsx",
+          "text": "import { describe, expect, test } from '@jest/globals';\nimport { QueryClient, QueryClientProvider } from '@tanstack/react-query';\nimport { RouterProvider, createMemoryHistory, createRootRoute, createRoute, createRouter } from '@tanstack/react-router';\nimport { render, screen } from '@testing-library/react';\nimport type { Issue } from '../types/Issue.ts';\nimport { issuesQueryOptions } from '../queries/issuesQueryOptions.ts';\nimport { IssuesScreen } from './IssuesScreen.tsx';\n\n// Correct: the screen renders under a router whose one route is its own, with a\n// query client holding what the loader would have fetched.\nconst setupIssuesScreen = ({ issues = [{ id: 1, title: 'Login fails' }] }: { issues?: Issue[] } = {}) => {\n\tconst queryClient = new QueryClient();\n\tqueryClient.setQueryData(issuesQueryOptions().queryKey, issues);\n\tconst rootRoute = createRootRoute();\n\tconst issuesRoute = createRoute({ getParentRoute: () => rootRoute, path: '/issues', component: IssuesScreen });\n\tconst router = createRouter({ routeTree: rootRoute.addChildren([issuesRoute]), history: createMemoryHistory({ initialEntries: ['/issues'] }) });\n\n\trender(\n\t\t<QueryClientProvider client={queryClient}>\n\t\t\t<RouterProvider router={router} />\n\t\t</QueryClientProvider>,\n\t);\n};\n\ndescribe('IssuesScreen', () => {\n\ttest('lists each issue by title', async () => {\n\t\tsetupIssuesScreen();\n\n\t\tconst row = await screen.findByText('Login fails');\n\n\t\texpect(row).toBeInTheDocument();\n\t});\n});\n"
         },
         {
           "side": "fail",
-          "path": "src/issues/IssuesScreen/IssuesScreen.unit.test.tsx",
+          "path": "src/features/issues/screens/IssuesScreen.unit.test.tsx",
           "text": "import { describe, expect, jest, test } from '@jest/globals';\nimport { render, screen } from '@testing-library/react';\nimport { IssuesScreen } from './IssuesScreen.tsx';\n\nconst mockUseSuspenseQuery = jest.fn<() => { data: Array<{ id: number; title: string }> }>();\n\n// Incorrect: with the query hook and the router mocked away, the screen under\n// test is not the one the route renders — its key, loader and links are gone.\njest.mock('@tanstack/react-query', () => ({ useSuspenseQuery: () => mockUseSuspenseQuery() }));\njest.mock('@tanstack/react-router', () => ({ Link: ({ children }: { children: string }) => children }));\n\nconst setupIssuesScreen = () => {\n\tmockUseSuspenseQuery.mockReturnValue({ data: [{ id: 1, title: 'Login fails' }] });\n\trender(<IssuesScreen />);\n};\n\ndescribe('IssuesScreen', () => {\n\ttest('lists each issue by title', () => {\n\t\tsetupIssuesScreen();\n\n\t\tconst row = screen.getByText('Login fails');\n\n\t\texpect(row).toBeInTheDocument();\n\t});\n});\n"
         }
       ],
@@ -3176,44 +3354,99 @@
         "pass": 3,
         "fail": 3
       },
-      "prose": "## Server Function Boundary\n\nPut every `createServerFn` in a feature's `server/` folder, one per file, named for what it does. A server function that takes input declares its validator. A document or helper only that function uses sits beside it, as `module-file-to-folder` says, and nothing outside `server/` imports a server-only dependency.\n\n`server/` is the one place a feature's code runs on the server, so the client/server line is read from the tree, and a server dependency reaching the client shows as a wrong import path.",
+      "prose": "## Server Function Boundary\n\nPut every `createServerFn` in a `server/` folder, one per file, named for what it does. A server function that takes input declares its validator. Server-only code only that function uses sits beside it in `server/`, and nothing outside `server/` imports a server-only dependency.\n\n`server/` is the one place code runs on the server, so the client/server line is read from the tree, and a server dependency reaching the client shows as a wrong import path.",
       "fixtures": [
         {
           "side": "pass",
-          "path": "src/issues/common/types/Issue.ts",
-          "text": "export interface Issue {\n\tid: number;\n\ttitle: string;\n}\n"
+          "path": "src/features/issues/server/closeIssue.ts",
+          "text": "import { createServerFn } from '@tanstack/react-start';\nimport type { Issue } from '../types/Issue.ts';\n\n// Correct: input is declared before the handler reads it.\nexport const closeIssue = createServerFn({ method: 'POST' })\n\t.inputValidator((data: { issueId: number }) => data)\n\t.handler(async ({ data }): Promise<Issue> => ({ id: data.issueId, title: 'Login fails' }));\n"
         },
         {
           "side": "pass",
-          "path": "src/issues/server/closeIssue.ts",
-          "text": "import { createServerFn } from '@tanstack/react-start';\nimport type { Issue } from '../common/types/Issue.ts';\n\n// Correct: input is declared before the handler reads it.\nexport const closeIssue = createServerFn({ method: 'POST' })\n\t.inputValidator((data: { issueId: number }) => data)\n\t.handler(async ({ data }): Promise<Issue> => ({ id: data.issueId, title: 'Login fails' }));\n"
+          "path": "src/features/issues/server/findIssues.ts",
+          "text": "import { createServerFn } from '@tanstack/react-start';\nimport type { Issue } from '../types/Issue.ts';\n\n// Correct: one server function, in server/, named for what it does.\nexport const findIssues = createServerFn({ method: 'GET' }).handler(async (): Promise<Issue[]> => [{ id: 1, title: 'Login fails' }]);\n"
         },
         {
           "side": "pass",
-          "path": "src/issues/server/findIssues.ts",
-          "text": "import { createServerFn } from '@tanstack/react-start';\nimport type { Issue } from '../common/types/Issue.ts';\n\n// Correct: one server function, in server/, named for what it does.\nexport const findIssues = createServerFn({ method: 'GET' }).handler(async (): Promise<Issue[]> => [{ id: 1, title: 'Login fails' }]);\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/issues/common/types/Issue.ts",
+          "path": "src/features/issues/types/Issue.ts",
           "text": "export interface Issue {\n\tid: number;\n\ttitle: string;\n}\n"
         },
         {
           "side": "fail",
-          "path": "src/issues/issueCommands.ts",
-          "text": "import { createServerFn } from '@tanstack/react-start';\nimport type { Issue } from './common/types/Issue.ts';\n\n// Incorrect: two server functions in one file, outside server/, and the update\n// takes input it never validates.\nexport const findOneIssue = createServerFn({ method: 'GET' }).handler(async (): Promise<Issue> => ({ id: 1, title: 'Login fails' }));\n\nexport const closeIssue = createServerFn({ method: 'POST' }).handler(async ({ data }): Promise<Issue> => ({ id: Number(data), title: 'Login fails' }));\n"
+          "path": "src/features/issues/types/Issue.ts",
+          "text": "export interface Issue {\n\tid: number;\n\ttitle: string;\n}\n"
         },
         {
           "side": "fail",
-          "path": "src/issues/IssuesScreen/findIssues.ts",
-          "text": "import { createServerFn } from '@tanstack/react-start';\nimport type { Issue } from '../common/types/Issue.ts';\n\n// Incorrect: a server function beside the screen, so nothing in the tree says\n// where the client stops and the server begins.\nexport const findIssues = createServerFn({ method: 'GET' }).handler(async (): Promise<Issue[]> => [{ id: 1, title: 'Login fails' }]);\n"
+          "path": "src/features/issues/utils/findIssues.ts",
+          "text": "import { createServerFn } from '@tanstack/react-start';\nimport type { Issue } from '../types/Issue.ts';\n\n// Incorrect: a server function in utils/, so nothing in the tree says\n// where the client stops and the server begins.\nexport const findIssues = createServerFn({ method: 'GET' }).handler(async (): Promise<Issue[]> => [{ id: 1, title: 'Login fails' }]);\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/features/issues/utils/issueCommands.ts",
+          "text": "import { createServerFn } from '@tanstack/react-start';\nimport type { Issue } from '../types/Issue.ts';\n\n// Incorrect: two server functions in one file, outside server/, and the update\n// takes input it never validates.\nexport const findOneIssue = createServerFn({ method: 'GET' }).handler(async (): Promise<Issue> => ({ id: 1, title: 'Login fails' }));\n\nexport const closeIssue = createServerFn({ method: 'POST' }).handler(async ({ data }): Promise<Issue> => ({ id: Number(data), title: 'Login fails' }));\n"
         }
       ],
       "example": {
         "kind": "repo",
         "focus": {
-          "fail": "src/issues/IssuesScreen/findIssues.ts",
-          "pass": "src/issues/server/findIssues.ts"
+          "fail": "src/features/issues/utils/findIssues.ts",
+          "pass": "src/features/issues/server/findIssues.ts"
+        }
+      }
+    },
+    {
+      "id": "shared-layer",
+      "name": "lightsout/shared-layer",
+      "set": "code",
+      "documentPath": "code/frameworks/react/layout",
+      "summary": "Where code that several features use lives.",
+      "deterministic": true,
+      "agent": true,
+      "defaultSeverity": "advisory",
+      "defaultOptions": {},
+      "fixtureCounts": {
+        "pass": 3,
+        "fail": 3
+      },
+      "prose": "## Shared Layer\n\nPut what two or more features use at the top of `src/`, in a folder named for its kind:\n\n- `components/` — shared components, grouped by subject once there are enough to group: `components/ui/` for the design system's primitives, `components/icons/`, `components/markdown/`.\n- `layouts/` — the frames routes share, each named with a `Layout` suffix, the parts only they use, and the root document.\n- `providers/` — the context providers wrapped around the app, each with the context it provides.\n- `hooks/`, `utils/`, `types/`, `constants/` — as in a feature.\n- `styles/` and `assets/` — stylesheets, fonts and images.\n- The folders the framework's rules add.\n\nCode one feature uses stays in that feature. When a second feature needs it, move it here and update the imports; when a shared file is down to one user, move it back into that feature.\n\nThen `features/` is the product, the top of `src/` is what holds it up, and shared code is found by kind without opening a feature.",
+      "fixtures": [
+        {
+          "side": "pass",
+          "path": "src/components/ui/StatusBadge.tsx",
+          "text": "interface Params {\n\tlabel: string;\n}\n\n// Correct: two features use it, so it sits in the shared components, in the\n// group for the design system's primitives.\nexport const StatusBadge = ({ label }: Params) => <span className=\"badge\">{label}</span>;\n"
+        },
+        {
+          "side": "pass",
+          "path": "src/features/billing/components/InvoiceRow.tsx",
+          "text": "import { StatusBadge } from '../../../components/ui/StatusBadge.tsx';\n\ninterface Params {\n\tnumber: string;\n\tstatus: string;\n}\n\nexport const InvoiceRow = ({ number, status }: Params) => (\n\t<li>\n\t\t{number} <StatusBadge label={status} />\n\t</li>\n);\n"
+        },
+        {
+          "side": "pass",
+          "path": "src/features/issues/components/IssueRow.tsx",
+          "text": "import { StatusBadge } from '../../../components/ui/StatusBadge.tsx';\n\ninterface Params {\n\ttitle: string;\n\tstatus: string;\n}\n\n// Correct: used by this feature alone, so it stays in the feature.\nexport const IssueRow = ({ title, status }: Params) => (\n\t<li>\n\t\t{title} <StatusBadge label={status} />\n\t</li>\n);\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/features/billing/components/InvoiceRow.tsx",
+          "text": "import { StatusBadge } from '../../../shared/StatusBadge.tsx';\n\ninterface Params {\n\tnumber: string;\n\tstatus: string;\n}\n\nexport const InvoiceRow = ({ number, status }: Params) => (\n\t<li>\n\t\t{number} <StatusBadge label={status} />\n\t</li>\n);\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/features/issues/components/IssueRow.tsx",
+          "text": "import { StatusBadge } from '../../../shared/StatusBadge.tsx';\n\ninterface Params {\n\ttitle: string;\n\tstatus: string;\n}\n\nexport const IssueRow = ({ title, status }: Params) => (\n\t<li>\n\t\t{title} <StatusBadge label={status} />\n\t</li>\n);\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/shared/StatusBadge.tsx",
+          "text": "interface Params {\n\tlabel: string;\n}\n\n// Incorrect: shared/ says only that something is shared, not what kind of code\n// it is, so every shared thing of every kind ends up here.\nexport const StatusBadge = ({ label }: Params) => <span className=\"badge\">{label}</span>;\n"
+        }
+      ],
+      "example": {
+        "kind": "repo",
+        "focus": {
+          "fail": "src/shared/StatusBadge.tsx",
+          "pass": "src/components/ui/StatusBadge.tsx"
         }
       }
     },
@@ -3673,52 +3906,52 @@
         "pass": 5,
         "fail": 4
       },
-      "prose": "## Thin Route File\n\nA route file holds route wiring and nothing else: the loader, `beforeLoad` guards, `validateSearch`, `head`, and the one `Screen` it renders, imported from a feature's top level. Read params and search through the route's own hooks, `Route.useParams()` and `Route.useSearch()`, never the untyped ones.\n\nA component written in the route file may only turn params into the screen's props. Markup, state, a fetch, and anything that deserves a test of its own belong in the screen.\n\nA route file is named by its URL, so nobody searching for a name finds the code in it.",
+      "prose": "## Thin Route File\n\nA route file holds route wiring and nothing else: the loader, `beforeLoad` guards, `validateSearch`, `head`, and the one `Screen` it renders, imported from its feature's `screens/`. Read params and search through the route's own hooks, `Route.useParams()` and `Route.useSearch()`, never the untyped ones.\n\nA component written in the route file may only turn params into the screen's props. Markup, state, a fetch, and anything that deserves a test of its own belong in the screen.\n\nA route file is named by its URL, so nobody searching for a name finds the code in it.",
       "fixtures": [
         {
           "side": "pass",
-          "path": "src/issues/common/types/Issue.ts",
+          "path": "src/features/issues/queries/issueDetailQueryOptions.ts",
+          "text": "import { queryOptions } from '@tanstack/react-query';\nimport { findOneIssue } from '../server/findOneIssue.ts';\n\ninterface Params {\n\tissueId: number;\n}\n\nexport const issueDetailQueryOptions = ({ issueId }: Params) =>\n\tqueryOptions({\n\t\tqueryKey: ['issues', issueId],\n\t\tqueryFn: () => findOneIssue({ data: { issueId } }),\n\t});\n"
+        },
+        {
+          "side": "pass",
+          "path": "src/features/issues/screens/IssueDetailScreen.tsx",
+          "text": "import { useSuspenseQuery } from '@tanstack/react-query';\nimport { issueDetailQueryOptions } from '../queries/issueDetailQueryOptions.ts';\n\ninterface Params {\n\tissueId: number;\n}\n\n// The screen holds the markup and reads what the route's loader fetched.\nexport const IssueDetailScreen = ({ issueId }: Params) => {\n\tconst { data: issue } = useSuspenseQuery(issueDetailQueryOptions({ issueId }));\n\n\treturn (\n\t\t<article>\n\t\t\t<h1>{issue.title}</h1>\n\t\t\t<p>{issue.summary}</p>\n\t\t</article>\n\t);\n};\n"
+        },
+        {
+          "side": "pass",
+          "path": "src/features/issues/server/findOneIssue.ts",
+          "text": "import { createServerFn } from '@tanstack/react-start';\nimport type { Issue } from '../types/Issue.ts';\n\nexport const findOneIssue = createServerFn({ method: 'GET' })\n\t.inputValidator((data: { issueId: number }) => data)\n\t.handler(async ({ data }): Promise<Issue> => ({ id: data.issueId, title: 'Login fails', summary: 'The form posts twice.' }));\n"
+        },
+        {
+          "side": "pass",
+          "path": "src/features/issues/types/Issue.ts",
           "text": "export interface Issue {\n\tid: number;\n\ttitle: string;\n\tsummary: string;\n}\n"
         },
         {
           "side": "pass",
-          "path": "src/issues/issueDetailQueryOptions.ts",
-          "text": "import { queryOptions } from '@tanstack/react-query';\nimport { findOneIssue } from './server/findOneIssue.ts';\n\ninterface Params {\n\tissueId: number;\n}\n\nexport const issueDetailQueryOptions = ({ issueId }: Params) =>\n\tqueryOptions({\n\t\tqueryKey: ['issues', issueId],\n\t\tqueryFn: () => findOneIssue({ data: { issueId } }),\n\t});\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/issues/IssueDetailScreen/IssueDetailScreen.tsx",
-          "text": "import { useSuspenseQuery } from '@tanstack/react-query';\nimport { issueDetailQueryOptions } from '../issueDetailQueryOptions.ts';\n\ninterface Params {\n\tissueId: number;\n}\n\n// The screen holds the markup and reads what the route's loader fetched.\nexport const IssueDetailScreen = ({ issueId }: Params) => {\n\tconst { data: issue } = useSuspenseQuery(issueDetailQueryOptions({ issueId }));\n\n\treturn (\n\t\t<article>\n\t\t\t<h1>{issue.title}</h1>\n\t\t\t<p>{issue.summary}</p>\n\t\t</article>\n\t);\n};\n"
-        },
-        {
-          "side": "pass",
-          "path": "src/issues/server/findOneIssue.ts",
-          "text": "import { createServerFn } from '@tanstack/react-start';\nimport type { Issue } from '../common/types/Issue.ts';\n\nexport const findOneIssue = createServerFn({ method: 'GET' })\n\t.inputValidator((data: { issueId: number }) => data)\n\t.handler(async ({ data }): Promise<Issue> => ({ id: data.issueId, title: 'Login fails', summary: 'The form posts twice.' }));\n"
-        },
-        {
-          "side": "pass",
           "path": "src/routes/issues.$issueId.tsx",
-          "text": "import { createFileRoute } from '@tanstack/react-router';\nimport { IssueDetailScreen } from '../issues/IssueDetailScreen/IssueDetailScreen.tsx';\nimport { issueDetailQueryOptions } from '../issues/issueDetailQueryOptions.ts';\n\n// Correct: the route prefetches, names the tab and hands typed params to one\n// screen. Everything with a test of its own lives in the screen.\nconst IssueDetailRoute = () => {\n\tconst { issueId } = Route.useParams();\n\n\treturn <IssueDetailScreen issueId={Number(issueId)} />;\n};\n\nexport const Route = createFileRoute('/issues/$issueId')({\n\tloader: ({ context, params }) => context.queryClient.ensureQueryData(issueDetailQueryOptions({ issueId: Number(params.issueId) })),\n\thead: ({ params }) => ({ meta: [{ title: `Issue ${params.issueId}` }] }),\n\tcomponent: IssueDetailRoute,\n});\n"
+          "text": "import { createFileRoute } from '@tanstack/react-router';\nimport { IssueDetailScreen } from '../features/issues/screens/IssueDetailScreen.tsx';\nimport { issueDetailQueryOptions } from '../features/issues/queries/issueDetailQueryOptions.ts';\n\n// Correct: the route prefetches, names the tab and hands typed params to one\n// screen. Everything with a test of its own lives in the screen.\nconst IssueDetailRoute = () => {\n\tconst { issueId } = Route.useParams();\n\n\treturn <IssueDetailScreen issueId={Number(issueId)} />;\n};\n\nexport const Route = createFileRoute('/issues/$issueId')({\n\tloader: ({ context, params }) => context.queryClient.ensureQueryData(issueDetailQueryOptions({ issueId: Number(params.issueId) })),\n\thead: ({ params }) => ({ meta: [{ title: `Issue ${params.issueId}` }] }),\n\tcomponent: IssueDetailRoute,\n});\n"
         },
         {
           "side": "fail",
-          "path": "src/issues/common/types/Issue.ts",
+          "path": "src/features/issues/queries/issueDetailQueryOptions.ts",
+          "text": "import { queryOptions } from '@tanstack/react-query';\nimport { findOneIssue } from '../server/findOneIssue.ts';\n\ninterface Params {\n\tissueId: number;\n}\n\nexport const issueDetailQueryOptions = ({ issueId }: Params) =>\n\tqueryOptions({\n\t\tqueryKey: ['issues', issueId],\n\t\tqueryFn: () => findOneIssue({ data: { issueId } }),\n\t});\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/features/issues/server/findOneIssue.ts",
+          "text": "import { createServerFn } from '@tanstack/react-start';\nimport type { Issue } from '../types/Issue.ts';\n\nexport const findOneIssue = createServerFn({ method: 'GET' })\n\t.inputValidator((data: { issueId: number }) => data)\n\t.handler(async ({ data }): Promise<Issue> => ({ id: data.issueId, title: 'Login fails', summary: 'The form posts twice.' }));\n"
+        },
+        {
+          "side": "fail",
+          "path": "src/features/issues/types/Issue.ts",
           "text": "export interface Issue {\n\tid: number;\n\ttitle: string;\n\tsummary: string;\n}\n"
         },
         {
           "side": "fail",
-          "path": "src/issues/issueDetailQueryOptions.ts",
-          "text": "import { queryOptions } from '@tanstack/react-query';\nimport { findOneIssue } from './server/findOneIssue.ts';\n\ninterface Params {\n\tissueId: number;\n}\n\nexport const issueDetailQueryOptions = ({ issueId }: Params) =>\n\tqueryOptions({\n\t\tqueryKey: ['issues', issueId],\n\t\tqueryFn: () => findOneIssue({ data: { issueId } }),\n\t});\n"
-        },
-        {
-          "side": "fail",
-          "path": "src/issues/server/findOneIssue.ts",
-          "text": "import { createServerFn } from '@tanstack/react-start';\nimport type { Issue } from '../common/types/Issue.ts';\n\nexport const findOneIssue = createServerFn({ method: 'GET' })\n\t.inputValidator((data: { issueId: number }) => data)\n\t.handler(async ({ data }): Promise<Issue> => ({ id: data.issueId, title: 'Login fails', summary: 'The form posts twice.' }));\n"
-        },
-        {
-          "side": "fail",
           "path": "src/routes/issues.$issueId.tsx",
-          "text": "import { useQuery } from '@tanstack/react-query';\nimport { createFileRoute, useParams } from '@tanstack/react-router';\nimport { issueDetailQueryOptions } from '../issues/issueDetailQueryOptions.ts';\n\n// Incorrect: the screen lives in the route file — a fetch, a loading branch and\n// markup under a URL for a name — and reads its params through the untyped hook.\nconst IssueDetailPage = () => {\n\tconst { issueId } = useParams({ strict: false });\n\tconst { data: issue, isLoading } = useQuery(issueDetailQueryOptions({ issueId: Number(issueId) }));\n\n\tif (isLoading || issue === undefined) {\n\t\treturn <p>Loading…</p>;\n\t}\n\n\treturn (\n\t\t<article>\n\t\t\t<h1>{issue.title}</h1>\n\t\t\t<p>{issue.summary}</p>\n\t\t</article>\n\t);\n};\n\nexport const Route = createFileRoute('/issues/$issueId')({ component: IssueDetailPage });\n"
+          "text": "import { useQuery } from '@tanstack/react-query';\nimport { createFileRoute, useParams } from '@tanstack/react-router';\nimport { issueDetailQueryOptions } from '../features/issues/queries/issueDetailQueryOptions.ts';\n\n// Incorrect: the screen lives in the route file — a fetch, a loading branch and\n// markup under a URL for a name — and reads its params through the untyped hook.\nconst IssueDetailPage = () => {\n\tconst { issueId } = useParams({ strict: false });\n\tconst { data: issue, isLoading } = useQuery(issueDetailQueryOptions({ issueId: Number(issueId) }));\n\n\tif (isLoading || issue === undefined) {\n\t\treturn <p>Loading…</p>;\n\t}\n\n\treturn (\n\t\t<article>\n\t\t\t<h1>{issue.title}</h1>\n\t\t\t<p>{issue.summary}</p>\n\t\t</article>\n\t);\n};\n\nexport const Route = createFileRoute('/issues/$issueId')({ component: IssueDetailPage });\n"
         }
       ],
       "example": {

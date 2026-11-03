@@ -1,36 +1,59 @@
 import type { RawStandardsFinding, StandardsCheckModule } from '@lightsout/standards-contracts';
-import { readPathLists } from '#common/checkInput/readPathLists.ts';
 import { buildRawFinding } from '#common/findings/buildRawFinding.ts';
-import { collectDirectories } from '#common/paths/collectDirectories.ts';
 import { getBaseName } from '#common/paths/getBaseName.ts';
-import { getPackageSourceRoot } from '#common/paths/getPackageSourceRoot.ts';
+import { getSourceRelativePath } from '#common/paths/getSourceRelativePath.ts';
 
-/** The folder names a React tree sorts by kind. The layout keeps each kind in the file's name instead, so none of them is a folder. */
-const kindLayerNames = new Set(['features', 'screens', 'components', 'hooks', 'queries']);
+const rule = 'feature-layout';
+
+/** The folders of a feature a route may import from: everything but the UI internals, components/ and hooks/, which are the screen's to compose. */
+const routeReach = new Set(['screens', 'queries', 'utils', 'constants', 'types', 'server']);
+
+/** The feature folder an import from a route lands in, or undefined when the import is not into a feature or lands where a route may reach. */
+const judgeEdge = ({ from, relativeFrom, relativeTo }: { from: string; relativeFrom: string; relativeTo: string }) => {
+	const [top, feature, kind] = relativeTo.split('/');
+
+	// A file directly under a feature is the feature-folders rule's to report.
+	if (!relativeFrom.startsWith('routes/') || top !== 'features' || feature === undefined || kind === undefined || routeReach.has(kind)) {
+		return undefined;
+	}
+
+	return {
+		detail: `route '${getBaseName({ path: from })}' imports '${relativeTo}' from its ${kind}/`,
+		guidance: "A route never reaches into a feature's components/ or hooks/: render the screen and let it compose them.",
+	};
+};
 
 export const check: StandardsCheckModule = {
-	inputKinds: ['file-list'],
-	// The five names are the code's to report. Whether a screen sits at its
-	// feature's top level, or a feature reaches into another's common/, is the
-	// agent's to judge, which is why the rule has both kinds of check.
+	inputKinds: ['import-graph'],
+	// Where a route reaches into a feature is read from its imports. Which
+	// folders a feature holds is the React layout rules' to judge, with this
+	// pack's queries/ and server/ left out of their findings.
 	run: ({ inputs }): RawStandardsFinding[] => {
-		const { files } = readPathLists({ input: inputs['file-list'] });
-		const packageDirectories = [...(inputs['file-list']?.dependencies ?? new Map<string, string[]>()).keys()];
+		const input = inputs['import-graph'];
 
-		return [...collectDirectories({ files })]
-			.sort()
-			.filter(
-				(directory) =>
-					directory.startsWith(getPackageSourceRoot({ path: directory, packageDirectories })) && kindLayerNames.has(getBaseName({ path: directory })),
-			)
-			.map((directory) =>
-				buildRawFinding({
-					rule: 'feature-layout',
-					files: [{ path: directory }],
-					detail: `folder '${getBaseName({ path: directory })}' is a layer named for a kind of code`,
-					guidance:
-						'Move its files up a level, beside the module that uses them, and let each file name say what it is: a Screen suffix, a QueryOptions suffix, a use prefix.',
-				}),
-			);
+		if (input === undefined) {
+			return [];
+		}
+
+		const testPaths = new Set(input.tests);
+		const packageDirectories = [...input.dependencies.keys()];
+		const findings = new Map<string, RawStandardsFinding>();
+
+		for (const { from, to } of input.edges) {
+			const relativeFrom = getSourceRelativePath({ path: from, packageDirectories });
+			const relativeTo = getSourceRelativePath({ path: to, packageDirectories });
+			const verdict =
+				relativeFrom === undefined || relativeTo === undefined || testPaths.has(from) || testPaths.has(to)
+					? undefined
+					: judgeEdge({ from, relativeFrom, relativeTo });
+
+			if (verdict !== undefined) {
+				const finding = buildRawFinding({ rule, files: [{ path: from }, { path: to }], ...verdict });
+
+				findings.set(finding.siteKey, finding);
+			}
+		}
+
+		return [...findings.keys()].sort().flatMap((key) => findings.get(key) ?? []);
 	},
 };

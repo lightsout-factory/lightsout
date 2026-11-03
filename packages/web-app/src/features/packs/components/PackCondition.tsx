@@ -1,5 +1,5 @@
 import { Fragment } from 'react';
-import { cn } from '#src/common/utils/cn.ts';
+import { cn } from '#src/utils/cn.ts';
 
 /** What stands before the name at `index`: nothing, a comma, or the closing "or". */
 const readSeparator = ({ index, count }: { index: number; count: number }) => {

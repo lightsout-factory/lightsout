@@ -1,9 +1,9 @@
 import { queryOptions } from '@tanstack/react-query';
+import { findIssues } from '../server/findIssues.ts';
 
-// Incorrect: queries/ names a kind of code. The factory's own name already says
-// what it is, and placement puts it at the feature's top level.
+// The query the route prefetches and the screen reads, in the folder the framework adds for it.
 export const issuesQueryOptions = () =>
 	queryOptions({
 		queryKey: ['issues'],
-		queryFn: async () => [{ id: 1, title: 'Login fails' }],
+		queryFn: () => findIssues(),
 	});

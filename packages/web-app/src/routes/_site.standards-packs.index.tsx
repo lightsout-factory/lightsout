@@ -1,10 +1,10 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { defaultPackQueryOptions } from '#src/features/packs/queries/defaultPackQueryOptions.ts';
-import { PacksPage } from '#src/features/packs/screens/PacksPage/PacksPage.tsx';
+import { PacksScreen } from '#src/features/packs/screens/PacksScreen.tsx';
+import { defaultPackQueryOptions } from '#src/queries/defaultPackQueryOptions.ts';
 
 export const Route = createFileRoute('/_site/standards-packs/')({
 	loader: async ({ context }) => {
 		await context.queryClient.ensureQueryData(defaultPackQueryOptions());
 	},
-	component: PacksPage,
+	component: PacksScreen,
 });

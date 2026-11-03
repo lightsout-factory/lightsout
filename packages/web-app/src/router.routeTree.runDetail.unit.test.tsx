@@ -4,7 +4,8 @@ import { QueryClient } from '@tanstack/react-query';
 import { createRouter } from '@tanstack/react-router';
 import { screen } from '@testing-library/react';
 import type { ComponentType, ReactNode } from 'react';
-import { QueryKey } from '#src/common/constants/QueryKey.ts';
+import { runQueryOptions } from '#src/features/runs/queries/runQueryOptions.ts';
+import { repoRootQueryOptions } from '#src/queries/repoRootQueryOptions.ts';
 import { routeTree } from '#src/routeTree.gen.ts';
 import { buildRunView } from '#tests/helpers/buildRunView.ts';
 import { renderWithQueryClient } from '#tests/helpers/renderWithQueryClient.tsx';
@@ -16,11 +17,11 @@ import { renderWithQueryClient } from '#tests/helpers/renderWithQueryClient.tsx'
 // of that chain. Stubbing the reader keeps the whole graph off disk.
 const mockGetRun = jest.fn<(params: { runId: string }) => Promise<RunView>>();
 
-jest.mock('#src/lightsout/getReader.ts', () => ({ getReader: () => ({ getRun: (params: { runId: string }) => mockGetRun(params) }) }));
+jest.mock('#src/server/getReader.ts', () => ({ getReader: () => ({ getRun: (params: { runId: string }) => mockGetRun(params) }) }));
 // -------------------------
 // Whether a repo was found is answered by walking the real filesystem, so the
 // page would otherwise report whatever directory Jest happened to start in.
-jest.mock('#src/common/utils/findRepoRoot.ts', () => ({
+jest.mock('#src/server/findRepoRoot.ts', () => ({
 	findRepoRoot: () => '/repos/lightsout',
 }));
 // -------------------------
@@ -87,8 +88,8 @@ const setupRunDetailPage = ({ runId = 'abcdef0123456789' }: { runId?: string } =
 	renderWithQueryClient({
 		ui: <Page />,
 		seed: [
-			{ queryKey: [QueryKey.Run, runId], data: runView },
-			{ queryKey: [QueryKey.RepoRoot], data: { repoRoot } },
+			{ queryKey: runQueryOptions({ runId }).queryKey, data: runView },
+			{ queryKey: repoRootQueryOptions().queryKey, data: { repoRoot } },
 		],
 	});
 };
@@ -129,6 +130,6 @@ describe('routeTree', () => {
 
 		await route.options.loader({ context: { queryClient }, params: { runId: 'abcdef0123456789' } });
 
-		expect(queryClient.getQueryData([QueryKey.Run, 'abcdef0123456789'])).toStrictEqual(runView);
+		expect(queryClient.getQueryData(runQueryOptions({ runId: 'abcdef0123456789' }).queryKey)).toStrictEqual(runView);
 	});
 });

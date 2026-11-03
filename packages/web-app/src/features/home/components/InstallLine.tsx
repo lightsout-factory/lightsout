@@ -1,5 +1,5 @@
-import { CopyButton } from '#src/appUI/buttons/CopyButton.tsx';
-import { cn } from '#src/common/utils/cn.ts';
+import { CopyButton } from '#src/components/ui/CopyButton.tsx';
+import { cn } from '#src/utils/cn.ts';
 
 /** Split so the command word can be coloured apart from its argument. */
 const installCommand = { name: '/plugin', rest: 'marketplace add lightsout-factory/lightsout' };

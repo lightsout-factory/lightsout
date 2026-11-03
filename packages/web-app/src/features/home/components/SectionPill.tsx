@@ -1,6 +1,6 @@
 import type { LucideIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
-import { cn } from '#src/common/utils/cn.ts';
+import { cn } from '#src/utils/cn.ts';
 
 interface Props {
 	label: ReactNode;

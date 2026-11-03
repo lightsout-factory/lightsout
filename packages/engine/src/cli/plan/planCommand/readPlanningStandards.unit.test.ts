@@ -138,7 +138,7 @@ test("readPlanningStandards: planning reads the selected pack's code prose", asy
 	// standards-pack false selects no pack; the react pack's code topic is read beside the fractal ones
 	expect(switchedOff).toBe(undefined);
 	expect(named ?? '').toMatch(/<!-- lightsout: code\/fractal\/layout -->/);
-	expect(named ?? '').toMatch(/<!-- lightsout: code\/frameworks\/react -->/);
+	expect(named ?? '').toMatch(/<!-- lightsout: code\/frameworks\/react\/layout -->/);
 	expect((named ?? '').includes('<!-- lightsout: tests/')).toBeFalsy();
 	expect(logged).toStrictEqual([]);
 });

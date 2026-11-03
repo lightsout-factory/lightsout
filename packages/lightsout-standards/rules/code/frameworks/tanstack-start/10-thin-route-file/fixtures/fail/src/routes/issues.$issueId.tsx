@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { createFileRoute, useParams } from '@tanstack/react-router';
-import { issueDetailQueryOptions } from '../issues/issueDetailQueryOptions.ts';
+import { issueDetailQueryOptions } from '../features/issues/queries/issueDetailQueryOptions.ts';
 
 // Incorrect: the screen lives in the route file — a fetch, a loading branch and
 // markup under a URL for a name — and reads its params through the untyped hook.

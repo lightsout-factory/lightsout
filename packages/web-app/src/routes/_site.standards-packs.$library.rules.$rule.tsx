@@ -1,25 +1,19 @@
-import { builtInStandardsLibraryName } from '@lightsout/engine/contracts';
 import { createFileRoute, notFound } from '@tanstack/react-router';
-import { AddressNotFound } from '#src/common/components/boundaries/AddressNotFound.tsx';
-import { defaultPackQueryOptions } from '#src/features/packs/queries/defaultPackQueryOptions.ts';
 import { defaultPackRuleQueryOptions } from '#src/features/packs/queries/defaultPackRuleQueryOptions.ts';
-import { RuleDetail } from '#src/features/packs/screens/RuleDetail/RuleDetail.tsx';
+import { RuleDetailScreen } from '#src/features/packs/screens/RuleDetailScreen.tsx';
+import { RuleNotFoundScreen } from '#src/features/packs/screens/RuleNotFoundScreen.tsx';
+import { defaultPackQueryOptions } from '#src/queries/defaultPackQueryOptions.ts';
 
 const RuleNotFound = () => {
 	const { library, rule } = Route.useParams();
 
-	return (
-		<AddressNotFound title="No rule at that address.">
-			The <span className="font-mono">{library}</span> library holds no rule named <span className="font-mono">{rule}</span>. It may have been renamed, and
-			these pages show only the {builtInStandardsLibraryName} library.
-		</AddressNotFound>
-	);
+	return <RuleNotFoundScreen library={library} rule={rule} />;
 };
 
 const RuleDetailPage = () => {
 	const { rule } = Route.useParams();
 
-	return <RuleDetail ruleId={rule} />;
+	return <RuleDetailScreen ruleId={rule} />;
 };
 
 export const Route = createFileRoute('/_site/standards-packs/$library/rules/$rule')({

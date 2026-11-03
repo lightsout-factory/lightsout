@@ -1,8 +1,8 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { IssuesScreen } from '../issues/IssuesScreen/IssuesScreen.tsx';
-import { issuesQueryOptions } from '../issues/issuesQueryOptions.ts';
+import { issuesQueryOptions } from '../features/issues/queries/issuesQueryOptions.ts';
+import { IssuesScreen } from '../features/issues/screens/IssuesScreen.tsx';
 
-// The route imports from the feature's top level and nothing deeper.
+// Correct: the route reaches the feature through screens/ and queries/ only.
 export const Route = createFileRoute('/issues')({
 	loader: ({ context }) => context.queryClient.ensureQueryData(issuesQueryOptions()),
 	component: IssuesScreen,

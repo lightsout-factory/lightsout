@@ -1,6 +1,6 @@
 import { describe, expect, test } from '@jest/globals';
 import { render, screen } from '@testing-library/react';
-import { CheckKind } from '#src/common/constants/CheckKind.ts';
+import { CheckKind } from '#src/constants/CheckKind.ts';
 import { CheckKindTag } from '#src/features/packs/components/CheckKindTag.tsx';
 
 describe('CheckKindTag', () => {

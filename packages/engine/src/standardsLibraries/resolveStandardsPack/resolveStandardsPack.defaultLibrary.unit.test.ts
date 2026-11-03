@@ -14,13 +14,23 @@ const codeStyleTopics = [
 	'code/code-style/type-safety',
 	'tests/code-style',
 ];
-const reactOwnTopics = ['code/frameworks/react', 'tests/frameworks/react'];
+const reactOwnTopics = ['code/frameworks/react/layout', 'code/frameworks/react/size', 'tests/frameworks/react'];
 const tanstackStartOwnTopics = ['code/frameworks/tanstack-start', 'tests/frameworks/tanstack-start'];
 const goalTopics = [...fractalTopics, ...codeStyleTopics];
 const frameworkTopics = [...reactOwnTopics, ...tanstackStartOwnTopics];
-/** The whole standard for a TanStack Start package: every goal topic but the size one, whose two file and folder rules it names one by one, plus both framework packs' own topics. */
-const tanstackStartTopics = [...goalTopics.filter((topic) => topic !== 'code/fractal/size'), ...frameworkTopics];
-const tanstackStartSizeRules = ['lightsout/file-size', 'lightsout/folder-size'];
+/** The topics tanstack-start takes whole: code-style, the two fractal topics that fit any shape, and both framework packs' own. */
+const tanstackStartWholeTopics = [...codeStyleTopics, 'code/fractal/imports', 'code/fractal/duplication', ...frameworkTopics];
+/** The fractal rules tanstack-start names one by one, so function-size and the common/ layout rules stay out while these, which fit any shape, come in. */
+const tanstackStartNamedRules = [
+	'lightsout/multi-export',
+	'lightsout/filename-mismatch',
+	'lightsout/case-collision',
+	'lightsout/file-size',
+	'lightsout/folder-size',
+	'lightsout/test-beside-subject',
+	'lightsout/test-support-in-src',
+	'lightsout/test-file-size',
+];
 
 /**
  * The shipped built-in library, loaded from its authored folder — not the copy
@@ -78,21 +88,21 @@ describe('resolveStandardsPack on the shipped lightsout library', () => {
 		expect({ conditionalPacks: pack.conditionalPacks, ...summarizePack({ pack }) }).toStrictEqual({ conditionalPacks: [], ...expected });
 	});
 
-	test('lightsout/tanstack-start is the whole standard for a package that declares the framework, with function-size left out for react-function-size', async () => {
+	test('lightsout/tanstack-start is the whole standard for a package that declares the framework, with the fractal layout left to the react layout topic', async () => {
 		const { library, libraries } = await setupDefaultLibrary();
 
 		const pack = resolveStandardsPack({ addresses: ['lightsout/tanstack-start'], libraries, dependencies: new Set(['@tanstack/react-start']) });
 
-		const sizeRules = library.rules
-			.filter((rule) => tanstackStartSizeRules.includes(rule.name))
+		const namedRules = library.rules
+			.filter((rule) => tanstackStartNamedRules.includes(rule.name))
 			.map((rule) => ({ name: rule.name, severity: rule.defaultSeverity, options: rule.defaultOptions }));
-		const expected = expectPackOf({ library, topicPaths: tanstackStartTopics });
-		expect(sizeRules).toHaveLength(tanstackStartSizeRules.length);
+		const expected = expectPackOf({ library, topicPaths: tanstackStartWholeTopics });
+		expect(namedRules).toHaveLength(tanstackStartNamedRules.length);
 		expect({ conditionalPacks: pack.conditionalPacks, ...summarizePack({ pack }) }).toStrictEqual({
 			conditionalPacks: ['lightsout/tanstack-start'],
-			// a rule named on its own brings its topic's background with it, so the size topic is read even though only two of its rules apply
-			topics: [...expected.topics, 'code/fractal/size'].sort(),
-			rules: [...expected.rules, ...sizeRules].sort((left, right) => left.name.localeCompare(right.name)),
+			// a rule named on its own brings its topic's background with it, so the three fractal topics are read even though only some of their rules apply
+			topics: [...expected.topics, 'code/fractal/layout', 'code/fractal/size', 'tests/fractal'].sort(),
+			rules: [...expected.rules, ...namedRules].sort((left, right) => left.name.localeCompare(right.name)),
 		});
 	});
 

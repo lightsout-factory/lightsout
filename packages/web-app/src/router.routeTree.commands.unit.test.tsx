@@ -5,7 +5,8 @@ import { QueryClient } from '@tanstack/react-query';
 import { createRouter } from '@tanstack/react-router';
 import { screen } from '@testing-library/react';
 import type { ComponentType, ReactNode } from 'react';
-import { QueryKey } from '#src/common/constants/QueryKey.ts';
+import { commandsQueryOptions } from '#src/features/commands/queries/commandsQueryOptions.ts';
+import { repoRootQueryOptions } from '#src/queries/repoRootQueryOptions.ts';
 import { routeTree } from '#src/routeTree.gen.ts';
 import { renderWithQueryClient } from '#tests/helpers/renderWithQueryClient.tsx';
 
@@ -16,7 +17,7 @@ import { renderWithQueryClient } from '#tests/helpers/renderWithQueryClient.tsx'
 // engine happens to ship today.
 const mockListCommands = jest.fn<() => Promise<CommandCatalogEntry[]>>();
 
-jest.mock('#src/features/commands/internal/serverFns/listCommandsServerFn.ts', () => ({ listCommandsServerFn: () => mockListCommands() }));
+jest.mock('#src/features/commands/server/listCommandsServerFn.ts', () => ({ listCommandsServerFn: () => mockListCommands() }));
 // -------------------------
 // Only the piece that needs a live router around it is stood in for, so this one
 // route's component can be rendered on its own. Everything else — above all
@@ -117,8 +118,8 @@ const setupCommandPage = ({ command = 'status' }: { command?: string } = {}) => 
 	renderWithQueryClient({
 		ui: <Page />,
 		seed: [
-			{ queryKey: [QueryKey.Commands], data: catalog },
-			{ queryKey: [QueryKey.RepoRoot], data: { repoRoot: undefined } },
+			{ queryKey: commandsQueryOptions().queryKey, data: catalog },
+			{ queryKey: repoRootQueryOptions().queryKey, data: { repoRoot: undefined } },
 		],
 	});
 };
@@ -151,7 +152,7 @@ describe('routeTree', () => {
 
 		await route.options.loader({ context: { queryClient }, params: { command: 'status' } });
 
-		expect(queryClient.getQueryData([QueryKey.Commands])).toStrictEqual(catalog);
+		expect(queryClient.getQueryData(commandsQueryOptions().queryKey)).toStrictEqual(catalog);
 	});
 
 	test('the command route turns away a word no command in the catalog answers to', async () => {

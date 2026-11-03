@@ -1,7 +1,7 @@
 import { createFileRoute, notFound } from '@tanstack/react-router';
-import { isPublicDeployment } from '#src/common/utils/isPublicDeployment.ts';
-import { AppShell } from '#src/features/app/components/AppShell.tsx';
-import { repoRootQueryOptions } from '#src/features/app/queries/repoRootQueryOptions.ts';
+import { AppLayout } from '#src/layouts/AppLayout.tsx';
+import { repoRootQueryOptions } from '#src/queries/repoRootQueryOptions.ts';
+import { isPublicDeployment } from '#src/utils/isPublicDeployment.ts';
 
 /**
  * The public-site check sits in `beforeLoad` so every page under `/app` answers
@@ -20,5 +20,5 @@ export const Route = createFileRoute('/app')({
 
 		await context.queryClient.ensureQueryData(repoRootQueryOptions());
 	},
-	component: AppShell,
+	component: AppLayout,
 });

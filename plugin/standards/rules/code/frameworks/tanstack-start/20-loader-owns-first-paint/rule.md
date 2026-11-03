@@ -8,7 +8,7 @@ requires:
 example:
   kind: repo
   focus:
-    fail: src/issues/IssuesScreen/IssuesScreen.tsx
+    fail: src/features/issues/screens/IssuesScreen.tsx
     pass: src/routes/issues.tsx
 ---
 

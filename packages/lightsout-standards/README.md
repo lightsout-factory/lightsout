@@ -53,18 +53,29 @@ Packs are grouped by what the rules are for, and the rule tree mirrors them:
 - `standards` — both packs above. It is the pack the docs tell a repository to
   opt into, and the one this repo runs for every package but the web app.
 - `react` — the rules written for React, under `rules/code/frameworks/react/`
-  and `rules/tests/frameworks/react/`, and nothing else. `react-function-size`
-  replaces `function-size`, so the two never go to one package together.
+  and `rules/tests/frameworks/react/`, and nothing else: how an app is laid out
+  by feature (`react/layout/`), how long a hook and a component may grow
+  (`react/size/`), and how a component is tested. `react-function-size`
+  replaces `function-size`, so the two never go to one package together, and
+  the layout topic replaces `fractal`'s: its features, kind folders and shared
+  layer cannot hold together with module folders and `common/`.
 - `tanstack-start` — the whole standard for a TanStack Start package: it
-  includes `react` and `code-style`, the `fractal` topics with `file-size` and
-  `folder-size` named one by one so `function-size` stays out, and its own
-  topics under `rules/code/frameworks/tanstack-start/` and
-  `rules/tests/frameworks/tanstack-start/`. Its `rule-settings` drop the layout
-  and naming findings on the files the framework owns — `routes/`, the
-  generated route tree and the entry files — and the `explicit-return-type`
-  findings on the exports its `inferred-return-types` rule leaves to inference.
-  It declares `applies-when` on `@tanstack/react-start`, so it reaches only a
-  package that uses the framework. A package selects a framework pack through
+  includes `react` and `code-style`, the `fractal` imports and duplication
+  topics whole, and names one by one the `fractal` rules that fit any shape —
+  `multi-export`, `filename-mismatch`, `case-collision`, `file-size`,
+  `folder-size` and the three test-placement rules — so `function-size` and
+  the `common/` layout rules stay out. Its own topics sit under
+  `rules/code/frameworks/tanstack-start/` and
+  `rules/tests/frameworks/tanstack-start/`. Its `rule-settings` drop the
+  naming findings on the files the framework owns — `routes/`, the generated
+  route tree and the entry files — the `explicit-return-type` findings on the
+  exports its `inferred-return-types` rule leaves to inference, and the
+  `feature-folders` and `shared-layer` findings on the folders the framework
+  adds: `queries/` and `server/` in a feature, `routes/` and `server/` at the
+  top of `src/`. That exclude is how a framework pack adds a folder name to the
+  React layout without the React rules naming it. It declares `applies-when`
+  on `@tanstack/react-start`, so it reaches only a package that uses the
+  framework. A package selects a framework pack through
   `package-standards-packs`. The general rules know nothing about a framework,
   so a framework pack is where a framework's differences live.
 

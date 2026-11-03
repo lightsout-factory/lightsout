@@ -4,7 +4,7 @@ import { QueryClient } from '@tanstack/react-query';
 import { createRouter } from '@tanstack/react-router';
 import { screen } from '@testing-library/react';
 import type { ComponentType } from 'react';
-import { QueryKey } from '#src/common/constants/QueryKey.ts';
+import { standardsQueryOptions } from '#src/queries/standardsQueryOptions.ts';
 import { routeTree } from '#src/routeTree.gen.ts';
 import { buildStandardsFinding } from '#tests/helpers/buildStandardsFinding.ts';
 import { buildStandardsRuleView } from '#tests/helpers/buildStandardsRuleView.ts';
@@ -72,7 +72,7 @@ const setupStandardsPage = ({ search = {}, overrides = {} }: PageParams = {}) =>
 	const Page = route.options.component;
 
 	mockUseSearch.mockReturnValue(validateSearch(search));
-	renderWithQueryClient({ ui: <Page />, seed: [{ queryKey: [QueryKey.Standards], data: buildStandardsView({ overrides }) }] });
+	renderWithQueryClient({ ui: <Page />, seed: [{ queryKey: standardsQueryOptions().queryKey, data: buildStandardsView({ overrides }) }] });
 };
 
 /** Two findings under two rules, so a narrowed table can be told from an unnarrowed one. */

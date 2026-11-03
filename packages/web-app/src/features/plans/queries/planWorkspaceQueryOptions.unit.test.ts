@@ -10,7 +10,7 @@ import { buildPlanWorkspaceView } from '#tests/helpers/buildPlanWorkspaceView.ts
 // and only the filesystem is stood in for.
 const mockGetPlanWorkspace = jest.fn<(params: { name: string }) => Promise<PlanWorkspaceView>>();
 
-jest.mock('#src/lightsout/getReader.ts', () => ({
+jest.mock('#src/server/getReader.ts', () => ({
 	getReader: () => ({ getPlanWorkspace: (params: { name: string }) => mockGetPlanWorkspace(params) }),
 }));
 // -------------------------
@@ -27,9 +27,7 @@ const setupPlanWorkspaceQueryOptions = ({ view = buildPlanWorkspaceView() }: { v
 };
 
 describe('planWorkspaceQueryOptions', () => {
-	// The literals rather than `QueryKey.PlanWorkspace`: the key is the cache
-	// contract, and comparing the constant to itself would pass however it were
-	// spelled.
+	// Spelled out: the key is the cache contract every reader seeds and reads.
 	test('keys the cache under the workspace name, so two plans are two entries', () => {
 		const { options } = setupPlanWorkspaceQueryOptions();
 
