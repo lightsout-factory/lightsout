@@ -82,6 +82,8 @@ export const createBatchTools = ({
 			cwd,
 			runId,
 			driver,
+			model: config.model,
+			effort: config.effort,
 			batch,
 			groups,
 			packagesDir,

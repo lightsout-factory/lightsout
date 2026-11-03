@@ -3,6 +3,7 @@ import { CommandGroup } from '@lightsout/engine/contracts';
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { type LucideIcon, Sparkles, Terminal } from 'lucide-react';
 import type { ReactNode } from 'react';
+import { CodeSpans } from '#src/components/markdown/CodeSpans.tsx';
 import { SitePageFrame } from '#src/components/site/SitePageFrame.tsx';
 import { CommandRow } from '#src/features/commands/components/CommandRow.tsx';
 import { commandGroupDisplays } from '#src/features/commands/constants/commandGroupDisplays.ts';
@@ -77,7 +78,13 @@ export const CommandsScreen = () => {
 					))}
 				</ul>
 			</KindSection>
-			<KindSection title="CLI" description="Run them in a terminal, in the repository you want them to act on." Icon={Terminal}>
+			<KindSection
+				title="CLI"
+				description={
+					<CodeSpans text="Run them in the repository you want them to act on. When Claude Code's agent runs them, `lightsout <command>` works once the plugin is enabled; otherwise run `node <plugin folder>/dist/cli.mjs <command>`, where the plugin folder is where your harness installed lightsout (in Claude Code, under `~/.claude/plugins/cache/lightsout/lightsout/<version>`)." />
+				}
+				Icon={Terminal}
+			>
 				<div className="flex flex-col gap-8">
 					<CliGroups commands={cli} />
 				</div>

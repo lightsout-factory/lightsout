@@ -1,8 +1,10 @@
-import { mkdtempSync, writeFileSync } from 'node:fs';
+import { execSync } from 'node:child_process';
+import { mkdtempSync, realpathSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { expect, test } from '@jest/globals';
 import { resolveConfigAndDriver } from '#src/cli/common/resolveConfigAndDriver.ts';
+import { setupBranchRepo } from '#tests/helpers/setupBranchRepo.ts';
 import { sourceFileGlobs } from '#tests/helpers/sourceFileGlobs.ts';
 import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 
@@ -15,6 +17,44 @@ const setupConsumerDir = ({ config }: { config?: Record<string, unknown> } = {})
 
 	return { cwd };
 };
+
+/**
+ * The shape that billed the wrong harness: a primary checkout whose config is
+ * gitignored, so it is never committed, and a linked worktree cut from it that
+ * therefore holds no config at all.
+ */
+const setupIgnoredConfigWorktree = ({ config }: { config: Record<string, unknown> }) => {
+	const cwd = realpathSync(setupBranchRepo().cwd);
+	const worktree = join(`${cwd}-worktrees`, 'lo-10-read-config-outside-worktree');
+
+	writeFileSync(join(cwd, '.gitignore'), 'lightsout.config.json\n');
+	writeFileSync(join(cwd, 'lightsout.config.json'), JSON.stringify(config));
+	execSync(`git worktree add -q -b lo-10-read-config-outside-worktree "${worktree}" main`, { cwd, stdio: 'ignore' });
+
+	return { cwd, worktree };
+};
+
+test('resolveConfigAndDriver: a worktree cut from a checkout whose config is gitignored still runs on that config’s harness and model', async () => {
+	const { cwd, worktree } = setupIgnoredConfigWorktree({
+		config: {
+			harness: 'omp',
+			model: 'glm-5.3-flash',
+			'source-files': sourceFileGlobs,
+			'test-files': testFileGlobs,
+			gates: { check: 'c', test: 't', 'test-coverage': false },
+		},
+	});
+
+	const { config, driver, configPath } = await resolveConfigAndDriver({ cwd: worktree, command: 'plan' });
+
+	// the tree has no file of its own, so the primary checkout's is the one
+	// read — never the default harness on its default model
+	expect({ driver: driver.name, model: config?.model, configPath }).toStrictEqual({
+		driver: 'omp',
+		model: 'glm-5.3-flash',
+		configPath: join(cwd, 'lightsout.config.json'),
+	});
+});
 
 test('resolveConfigAndDriver: only a genuinely absent config file is non-fatal — claude-code driver, no config', async () => {
 	const { cwd } = setupConsumerDir();

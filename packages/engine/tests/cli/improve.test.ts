@@ -14,7 +14,7 @@ test('cli: improve with no config and no friction reports nothing to improve and
 
 	// no config file, so the run says there is none rather than naming a path
 	expect(stdout).toBe(
-		'  config: none — this checkout has no lightsout.config.json, so every setting is its default\nno friction recorded — nothing to improve from\n',
+		'  config: none — neither this checkout nor its primary checkout has a lightsout.config.json, so every setting is its default\nno friction recorded — nothing to improve from\n',
 	);
 	expect(stderr).toBe('');
 	expect(code).toBe(0);

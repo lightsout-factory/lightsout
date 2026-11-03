@@ -50,7 +50,7 @@ test('improveCommand: no recorded friction reports there is nothing to improve f
 
 	// a repo with no config says so, rather than naming a file nothing was read from
 	expect(logged).toStrictEqual([
-		'  config: none — this checkout has no lightsout.config.json, so every setting is its default',
+		'  config: none — neither this checkout nor its primary checkout has a lightsout.config.json, so every setting is its default',
 		'no friction recorded — nothing to improve from',
 	]);
 	expect(errors).toStrictEqual([]);
@@ -127,7 +127,7 @@ test('improveCommand: a complete report is printed file by file and exits 0', as
 	await expect(improveCommand(context)).rejects.toThrow(/process\.exit/);
 
 	expect(logged).toStrictEqual([
-		'  config: none — this checkout has no lightsout.config.json, so every setting is its default',
+		'  config: none — neither this checkout nor its primary checkout has a lightsout.config.json, so every setting is its default',
 		'\nimprove: complete (1 friction entries considered)',
 		'  tightened the executor scope wording',
 		'  ~ src/agents/prompts/executor.md — named the scope rule',

@@ -2,6 +2,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { basename, dirname, join, resolve } from 'node:path';
 import { standardsLibraryRootFile } from '#src/common/constants/standardsLibraryRootFile.ts';
 import { readGitFileList } from '#src/common/git/readGitFileList.ts';
+import { defaultStandardsOverrideVariable } from '#src/standardsLibraries/common/constants/defaultStandardsOverrideVariable.ts';
 import { resolveDefaultStandardsLibrary } from '#src/standardsLibraries/resolveDefaultStandardsLibrary.ts';
 
 interface Params {
@@ -39,7 +40,7 @@ const readShippedName = (): string | undefined => {
 export const resolveAuthoredStandardsLibrary = async ({ cwd }: Params): Promise<string | undefined> => {
 	// The same override `resolveDefaultStandardsLibrary` honours, so a repo's own
 	// suites and dev server agree with the engine about which library is the default.
-	const override = process.env.LIGHTSOUT_DEFAULT_STANDARDS;
+	const override = process.env[defaultStandardsOverrideVariable];
 
 	if (override !== undefined && existsSync(join(resolve(override), standardsLibraryRootFile))) {
 		return resolve(override);

@@ -125209,13 +125209,45 @@ var readConfigFile = async ({ configPath }) => {
   }
 };
 
-// src/common/config/resolveConfigPath.ts
+// src/common/config/resolveConfigPath/resolveConfigPath.ts
 import { resolve } from "node:path";
-var resolveConfigPath = ({ cwd }) => resolve(cwd, "lightsout.config.json");
+
+// src/common/config/resolveConfigPath/readGitTopLevel.ts
+var readGitTopLevel = async ({ cwd }) => {
+  const shown = await runCommand({ command: "git rev-parse --show-toplevel", cwd, timeoutMs: gitTimeoutMs }).catch(() => void 0);
+  const topLevel = shown && shown.exitCode === 0 ? shown.stdout.trim() : "";
+  return topLevel === "" ? void 0 : topLevel;
+};
+
+// src/common/paths/pathExists.ts
+import { stat } from "node:fs/promises";
+var pathExists = ({ path }) => stat(path).then(
+  () => true,
+  () => false
+);
+
+// src/common/config/resolveConfigPath/resolveConfigPath.ts
+var configFileName = "lightsout.config.json";
+var readPrimaryOfLinkedWorktree = async ({ cwd }) => {
+  const [topLevel, primary] = await Promise.all([readGitTopLevel({ cwd }), readGitPrimaryCheckout({ cwd })]);
+  if (topLevel === void 0 || primary === void 0 || !await isSamePath({ path: topLevel, otherPath: cwd })) {
+    return void 0;
+  }
+  return await isSamePath({ path: topLevel, otherPath: primary }) ? void 0 : primary;
+};
+var resolveConfigPath = async ({ cwd }) => {
+  const own = resolve(cwd, configFileName);
+  if (await pathExists({ path: own })) {
+    return own;
+  }
+  const primary = await readPrimaryOfLinkedWorktree({ cwd });
+  const shared = primary === void 0 ? void 0 : resolve(primary, configFileName);
+  return shared !== void 0 && await pathExists({ path: shared }) ? shared : own;
+};
 
 // src/common/config/readConfig.ts
 var readConfig = async ({ cwd }) => {
-  const configPath = resolveConfigPath({ cwd });
+  const configPath = await resolveConfigPath({ cwd });
   const raw = await readConfigFile({ configPath });
   if (raw === void 0) {
     throw new Error(`lightsout.config.json not found at ${configPath}`);
@@ -125295,16 +125327,19 @@ var yellow = paint({ code: "33" });
 
 // src/common/config/readOptionalConfig.ts
 var readOptionalConfig = async ({ cwd }) => {
-  const configPath = resolveConfigPath({ cwd });
+  const configPath = await resolveConfigPath({ cwd });
   const raw = await readConfigFile({ configPath });
   return raw === void 0 ? void 0 : parseConfig({ raw, configPath });
 };
+
+// src/common/constants/defaultHarnessName.ts
+var defaultHarnessName = "claude-code";
 
 // src/common/constants/defaultPackagesDir.ts
 var defaultPackagesDir = "packages";
 
 // src/doctor/runDoctor/checkConfiguredPaths.ts
-import { stat } from "node:fs/promises";
+import { stat as stat2 } from "node:fs/promises";
 import { join as join7 } from "node:path";
 var checkConfiguredPaths = async ({ cwd, id, paths, fix }) => {
   if (!paths) {
@@ -125312,13 +125347,13 @@ var checkConfiguredPaths = async ({ cwd, id, paths, fix }) => {
   }
   const absent = [];
   for (const prefix of paths) {
-    await stat(join7(cwd, prefix)).catch(() => absent.push(prefix));
+    await stat2(join7(cwd, prefix)).catch(() => absent.push(prefix));
   }
   return absent.length === 0 ? { id, status: "pass", detail: `${paths.length} ${id} path(s) exist` } : { id, status: "warn", detail: `not found: ${absent.join(", ")}`, fix };
 };
 
 // src/doctor/runDoctor/checkCoverageSummary.ts
-import { stat as stat2 } from "node:fs/promises";
+import { stat as stat3 } from "node:fs/promises";
 import { join as join8 } from "node:path";
 
 // src/common/constants/defaultCoverageSummaryPath.ts
@@ -125336,7 +125371,7 @@ var checkCoverageSummary = async ({ config: config2, packageDirs }) => {
   const expected = scopes.map((entry) => ({ label: entry.label, path: join8(entry.dir, summaryPath) }));
   const absent = [];
   for (const entry of expected) {
-    await stat2(entry.path).catch(() => absent.push(`${entry.label}: ${summaryPath}`));
+    await stat3(entry.path).catch(() => absent.push(`${entry.label}: ${summaryPath}`));
   }
   return absent.length === 0 ? { id: "coverage-summary", status: "pass", detail: `coverage summary found for ${expected.length} scope(s)` } : {
     id: "coverage-summary",
@@ -125381,7 +125416,7 @@ ${stateDir}`
 var driverBinaries = { "claude-code": "claude", codex: "codex", omp: "omp", pi: "pi" };
 var getReferencedDriverNames = ({ config: config2 }) => {
   const entryDrivers = Object.values(config2.commands ?? {}).map((entry) => entry?.harness);
-  const names = [config2.harness ?? "claude-code", ...entryDrivers].filter((name) => typeof name === "string");
+  const names = [config2.harness ?? defaultHarnessName, ...entryDrivers].filter((name) => typeof name === "string");
   return [...new Set(names)];
 };
 var checkHarness = async ({ cwd, config: config2, probeHarness }) => {
@@ -125940,7 +125975,7 @@ var verdictOf = ({ harness, probed }) => {
   return { id: "harness-usage", ...verdict };
 };
 var checkHarnessUsage = async ({ cwd, config: config2, driver }) => {
-  const harness = config2.harness ?? "claude-code";
+  const harness = config2.harness ?? defaultHarnessName;
   if (harness === "codex") {
     return {
       id: "harness-usage",
@@ -126057,7 +126092,7 @@ var selectsNoStandards = ({ config: config2 }) => {
 };
 
 // src/common/workspace/listWorkspacePackages.ts
-import { readdir as readdir2, stat as stat3 } from "node:fs/promises";
+import { readdir as readdir2, stat as stat4 } from "node:fs/promises";
 import { join as join12 } from "node:path";
 var listWorkspacePackages = async ({ cwd, packagesDir }) => {
   const root = join12(cwd, packagesDir);
@@ -126065,7 +126100,7 @@ var listWorkspacePackages = async ({ cwd, packagesDir }) => {
   const directories = entries.filter((entry) => entry.isDirectory() && !entry.name.startsWith("."));
   const hasManifest = await Promise.all(
     directories.map(
-      ({ name }) => stat3(join12(root, name, "package.json")).then(() => true).catch(() => false)
+      ({ name }) => stat4(join12(root, name, "package.json")).then(() => true).catch(() => false)
     )
   );
   return directories.filter((_, index) => hasManifest[index]).map(({ name }) => name);
@@ -126394,8 +126429,8 @@ import { readdir as readdir4, readFile as readFile8 } from "node:fs/promises";
 import { join as join15 } from "node:path";
 
 // src/standardsLibraries/readStandardsLibrary/parseTopicFolder/common/hasFile.ts
-import { stat as stat4 } from "node:fs/promises";
-var hasFile = async ({ path }) => stat4(path).then(
+import { stat as stat5 } from "node:fs/promises";
+var hasFile = async ({ path }) => stat5(path).then(
   () => true,
   () => false
 );
@@ -126739,13 +126774,17 @@ ${problems.map((problem) => `- ${problem}`).join("\n")}`);
 // src/standardsLibraries/resolveDefaultStandardsLibrary.ts
 import { existsSync } from "node:fs";
 import { dirname as dirname3, join as join17, resolve as resolve2 } from "node:path";
-var overrideVariable = "LIGHTSOUT_DEFAULT_STANDARDS";
+
+// src/standardsLibraries/common/constants/defaultStandardsOverrideVariable.ts
+var defaultStandardsOverrideVariable = "LIGHTSOUT_DEFAULT_STANDARDS";
+
+// src/standardsLibraries/resolveDefaultStandardsLibrary.ts
 var resolveDefaultStandardsLibrary = ({ startDir } = {}) => {
-  const override = process.env[overrideVariable];
+  const override = process.env[defaultStandardsOverrideVariable];
   if (override !== void 0) {
     const overridden = resolve2(override);
-    if (!existsSync(join17(overridden, "lightsout-standards.json"))) {
-      throw new Error(`${overrideVariable} points at ${overridden}, which holds no lightsout-standards.json`);
+    if (!existsSync(join17(overridden, standardsLibraryRootFile))) {
+      throw new Error(`${defaultStandardsOverrideVariable} points at ${overridden}, which holds no ${standardsLibraryRootFile}`);
     }
     return overridden;
   }
@@ -126754,7 +126793,7 @@ var resolveDefaultStandardsLibrary = ({ startDir } = {}) => {
   let found;
   while (found === void 0) {
     const candidates = [join17(current, "standards"), join17(current, "plugin", "standards")];
-    found = candidates.find((candidate) => existsSync(join17(candidate, "lightsout-standards.json")));
+    found = candidates.find((candidate) => existsSync(join17(candidate, standardsLibraryRootFile)));
     const parent = dirname3(current);
     if (found === void 0 && parent === current) {
       throw new Error(`bundled default standards not found next to the engine (searched upward from ${current})`);
@@ -127192,7 +127231,7 @@ var isTestFile = ({ path, testFileGlobs }) => matchesGlobs({ path, globs: testFi
 import { dirname as dirname6 } from "node:path";
 
 // ../../node_modules/.pnpm/tinyglobby@0.2.17/node_modules/tinyglobby/dist/index.mjs
-import { readdir as readdir6, readdirSync, realpath as realpath3, realpathSync as realpathSync2, stat as stat5, statSync } from "fs";
+import { readdir as readdir6, readdirSync, realpath as realpath3, realpathSync as realpathSync2, stat as stat6, statSync } from "fs";
 import { isAbsolute as isAbsolute2, posix, resolve as resolve5 } from "path";
 import { fileURLToPath } from "url";
 
@@ -127946,7 +127985,7 @@ function getOptions(options) {
     readdirSync: opts.fs.readdirSync || readdirSync,
     realpath: opts.fs.realpath || realpath3,
     realpathSync: opts.fs.realpathSync || realpathSync2,
-    stat: opts.fs.stat || stat5,
+    stat: opts.fs.stat || stat6,
     statSync: opts.fs.statSync || statSync
   });
   if (opts.debug) log("globbing with options:", opts);
@@ -128148,7 +128187,7 @@ var runDoctor = async ({ cwd, probeHarness, usageProbe, usageDriver }) => {
   checks.push({
     id: "config",
     status: "pass",
-    detail: `lightsout.config.json valid \xB7 harness ${config2.harness ?? "claude-code"}${config2["package-gates"] ? ` \xB7 monorepo (${packagesDir}/)` : ""}`
+    detail: `lightsout.config.json valid \xB7 harness ${config2.harness ?? defaultHarnessName}${config2["package-gates"] ? ` \xB7 monorepo (${packagesDir}/)` : ""}`
   });
   checks.push(await checkHarness({ cwd, config: config2, probeHarness }));
   if (usageProbe) {
@@ -128173,7 +128212,7 @@ var runDoctor = async ({ cwd, probeHarness, usageProbe, usageDriver }) => {
 // src/cli/doctorCommand.ts
 var warnBeforeProbing = async ({ cwd }) => {
   const config2 = await readOptionalConfig({ cwd }).catch(() => void 0);
-  console.log(`--usage-probe: about to spend one real agent call on ${config2?.harness ?? "claude-code"} \u2014 it bills your own subscription.`);
+  console.log(`--usage-probe: about to spend one real agent call on ${config2?.harness ?? defaultHarnessName} \u2014 it bills your own subscription.`);
 };
 var doctorCommand = async ({ cwd, flags }) => {
   const usageProbe = flags.has("usage-probe");
@@ -129316,13 +129355,13 @@ var removeShippedRunWorkspace = async ({ cwd, manifest, onProgress }) => {
 };
 
 // src/cli/common/implementRun/resolveRunCwd.ts
-import { stat as stat6 } from "node:fs/promises";
+import { stat as stat7 } from "node:fs/promises";
 var resolveRunCwd = async ({ cwd, manifest }) => {
   const { workspace } = manifest;
   if (workspace === void 0) {
     return { workspace: cwd };
   }
-  const isDirectory = await stat6(workspace).then(
+  const isDirectory = await stat7(workspace).then(
     (entry) => entry.isDirectory(),
     () => false
   );
@@ -129332,7 +129371,7 @@ var resolveRunCwd = async ({ cwd, manifest }) => {
 // src/cli/common/resolveCommandHarness.ts
 var resolveCommandHarness = ({ config: config2, command }) => {
   const entry = config2?.commands?.[command];
-  const globalHarnessName = config2?.harness ?? "claude-code";
+  const globalHarnessName = config2?.harness ?? defaultHarnessName;
   const driverName = entry?.harness ?? globalHarnessName;
   const model = entry?.model ?? (driverName === globalHarnessName ? config2?.model : void 0);
   const effort = entry?.effort ?? config2?.effort;
@@ -129471,7 +129510,7 @@ var ShippingStepId = {
 var runGit = ({ command, cwd, timeoutMs = gitTimeoutMs }) => runCommand({ command, cwd, timeoutMs }).catch(() => void 0);
 
 // src/ship/progress/ShippingProgressRecorder.ts
-import { mkdir as mkdir2, rename as rename2, stat as stat7, writeFile as writeFile3 } from "node:fs/promises";
+import { mkdir as mkdir2, rename as rename2, stat as stat8, writeFile as writeFile3 } from "node:fs/promises";
 import { dirname as dirname8, join as join35 } from "node:path";
 
 // src/common/json/writeJsonFile.ts
@@ -129503,7 +129542,7 @@ var freshRecord = ({ branch, maxAttempts }) => {
 };
 var ensureIgnoreFile = async ({ folder }) => {
   const ignorePath = join35(folder, ".gitignore");
-  const isFile = await stat7(ignorePath).then(
+  const isFile = await stat8(ignorePath).then(
     (found) => found.isFile(),
     () => false
   );
@@ -133384,7 +133423,7 @@ var reportWorkOrderPlanOutcome = ({ outcome }) => {
 // src/cli/common/readLoadedConfig.ts
 var readLoadedConfig = async ({ cwd }) => ({
   config: await readConfig({ cwd }),
-  path: resolveConfigPath({ cwd })
+  path: await resolveConfigPath({ cwd })
 });
 
 // src/cli/common/resolveCommandShipIntent.ts
@@ -136091,10 +136130,10 @@ import { createRequire as createRequire4 } from "node:module";
 import { join as join65 } from "node:path";
 
 // src/coverage/loadScopeJestConfig/resolveJestConfigPath.ts
-import { readFile as readFile23, stat as stat8 } from "node:fs/promises";
+import { readFile as readFile23, stat as stat9 } from "node:fs/promises";
 import { join as join64, resolve as resolve12 } from "node:path";
 var configFileNames = ["jest.config.cjs", "jest.config.js", "jest.config.mjs", "jest.config.json"];
-var exists = ({ path }) => stat8(path).then(
+var exists = ({ path }) => stat9(path).then(
   () => true,
   () => false
 );
@@ -137561,6 +137600,8 @@ var toFindings = ({
 var runStandardsReview = async ({
   cwd,
   driver,
+  model,
+  effort,
   groups,
   files,
   packagesDir,
@@ -137582,6 +137623,8 @@ var runStandardsReview = async ({
     cwd,
     invocation: buildStandardsReviewInvocation({ rules: toReviewRules({ agentRules, groups }), files }),
     contract: StandardsReviewReport,
+    model,
+    effort,
     permissions: Permissions.ReadOnly,
     timeoutMs,
     onEvent: heartbeat.onEvent
@@ -137606,6 +137649,8 @@ var reviewAdvisories = async ({ run, groups, files }) => {
   const review = await runStandardsReview({
     cwd: run.cwd,
     driver: run.driver,
+    model: run.config.model,
+    effort: run.config.effort,
     groups,
     files,
     packagesDir: run.config["packages-dir"] ?? defaultPackagesDir,
@@ -150529,7 +150574,7 @@ var groupTestTargets = async ({ run, targets, compiler }) => {
 };
 
 // src/pipeline/steps/buildSteps/buildTestSteps/writeTestsStep/selectTestTargets.ts
-import { readFile as readFile33, stat as stat9 } from "node:fs/promises";
+import { readFile as readFile33, stat as stat10 } from "node:fs/promises";
 import { join as join84 } from "node:path";
 var selectTestTargets = async ({
   run,
@@ -150549,7 +150594,7 @@ var selectTestTargets = async ({
   for (const file2 of candidates) {
     const content = await readFile33(join84(run.cwd, file2), "utf8").catch(() => void 0);
     if (content === void 0) {
-      const exists3 = await stat9(join84(run.cwd, file2)).then(
+      const exists3 = await stat10(join84(run.cwd, file2)).then(
         () => true,
         () => false
       );
@@ -152101,7 +152146,7 @@ var resolveRunBranch = async ({ cwd, planPath, ticketPath, ticketRef }) => {
 };
 
 // src/worktree/createWorktree.ts
-import { stat as stat10 } from "node:fs/promises";
+import { stat as stat11 } from "node:fs/promises";
 
 // src/worktree/records/writeWorktreeRecord.ts
 import { mkdir as mkdir20, rename as rename7 } from "node:fs/promises";
@@ -152139,7 +152184,7 @@ var resolveWorktreePath = async ({ cwd, branch }) => join92(await resolveWorktre
 
 // src/worktree/createWorktree.ts
 var exists2 = async ({ path }) => {
-  const found = await stat10(path).catch(() => void 0);
+  const found = await stat11(path).catch(() => void 0);
   return found !== void 0;
 };
 var branchExists = async ({ cwd, branch }) => {
@@ -152375,18 +152420,18 @@ var resolveRunWorkspace = async ({
 };
 
 // src/cli/implementCommand/common/resolvePlanTarget.ts
-import { stat as stat11 } from "node:fs/promises";
+import { stat as stat12 } from "node:fs/promises";
 import { join as join93 } from "node:path";
 var resolvePlanTarget = async ({ cwd, planPath }) => {
   const dir = await resolveRecordedPlanPath({ cwd, path: planPath });
-  const isDirectory = await stat11(dir).then(
+  const isDirectory = await stat12(dir).then(
     (entry) => entry.isDirectory(),
     () => false
   );
   if (!isDirectory) {
     return { planPath };
   }
-  const holds = async ({ name }) => stat11(join93(dir, name)).then(
+  const holds = async ({ name }) => stat12(join93(dir, name)).then(
     (entry) => entry.isFile(),
     () => false
   );
@@ -152428,7 +152473,16 @@ var openImplementWorkspace = async ({
 
 // src/cli/common/render/printConfigSource.ts
 var printConfigSource = ({ configPath }) => {
-  console.log(`  config: ${configPath ?? "none \u2014 this checkout has no lightsout.config.json, so every setting is its default"}`);
+  console.log(
+    `  config: ${configPath ?? "none \u2014 neither this checkout nor its primary checkout has a lightsout.config.json, so every setting is its default"}`
+  );
+};
+
+// src/cli/common/render/printHarnessLine.ts
+var printHarnessLine = ({ driver, config: config2 }) => {
+  console.log(
+    `  harness: ${driver.name} \xB7 model: ${config2?.model ?? "harness default"} \xB7 effort: ${config2?.effort ?? "harness default"} \xB7 permissions: ${config2?.permissions ?? Permissions.Write}`
+  );
 };
 
 // src/cli/common/render/printRunHeader.ts
@@ -152458,9 +152512,7 @@ var printRunHeader = async ({ config: config2, driver, cwd, configPath }) => {
   for (const line of await describeStandards({ config: config2, cwd })) {
     console.log(line);
   }
-  console.log(
-    `  harness: ${driver.name} \xB7 model: ${config2.model ?? "harness default"} \xB7 effort: ${config2.effort ?? "harness default"} \xB7 permissions: ${config2.permissions ?? Permissions.Write}`
-  );
+  printHarnessLine({ driver, config: config2 });
   console.log(
     `  timeouts: agent ${config2.timeouts?.["agent-minutes"] ?? defaultAgentTimeoutMinutes}m \xB7 supervisor ${config2.timeouts?.["supervisor-minutes"] ?? defaultSupervisorTimeoutMinutes}m \xB7 gate ${config2.timeouts?.["gate-minutes"] ?? defaultGateTimeoutMinutes}m`
   );
@@ -152500,13 +152552,6 @@ var printRunStart = async ({ target, overviewPath, packages, startPhase, config:
   );
   await printRunHeader({ config: config2, driver, cwd, configPath });
 };
-
-// src/common/paths/pathExists.ts
-import { stat as stat12 } from "node:fs/promises";
-var pathExists = ({ path }) => stat12(path).then(
-  () => true,
-  () => false
-);
 
 // src/brainstorm/restore/restoreBrainstormFiles.ts
 import { mkdir as mkdir21, writeFile as writeFile16 } from "node:fs/promises";
@@ -154144,7 +154189,7 @@ var resolveConfigAndDriver = async ({
   cwd,
   command
 }) => {
-  const configPath = resolveConfigPath({ cwd });
+  const configPath = await resolveConfigPath({ cwd });
   const present = await stat14(configPath).then(
     () => true,
     () => false
@@ -161762,8 +161807,9 @@ var planCommand = async ({ flags, rest, cwd: launchingCwd }) => {
   }
   if (subcommand === "draft" || subcommand === "dedup" || subcommand === "grade") {
     const name = await getRequiredFlag({ flags, name: "name" });
-    const { config: config2, driver, configPath } = await resolveConfigAndDriver({ cwd, command: "plan" });
+    const { config: config2, driver, configPath } = await resolveConfigAndDriver({ cwd: launchingCwd, command: "plan" });
     printConfigSource({ configPath });
+    printHarnessLine({ driver, config: config2 });
     const standards = await readPlanningStandards({ cwd, config: config2 });
     if (subcommand === "draft") {
       await planDraftCommand({ cwd, driver, name, standards, config: config2, flags });
@@ -162783,7 +162829,7 @@ var readSummary = async ({
   const timeoutMs = 12e4;
   try {
     return await invokeAgentWithContract({
-      driver: driver ?? getDriver({ name: config2.harness ?? "claude-code" }),
+      driver: driver ?? getDriver({ name: config2.harness ?? defaultHarnessName }),
       cwd,
       invocation: buildWorkOrderNameInvocation({ ticketRef, title }),
       contract: WorkOrderName,
@@ -165524,6 +165570,8 @@ var runBatchReview = async ({
   cwd,
   runId,
   driver,
+  model,
+  effort,
   batch,
   groups,
   files,
@@ -165538,6 +165586,8 @@ var runBatchReview = async ({
   const review = await runStandardsReview({
     cwd,
     driver,
+    model,
+    effort,
     groups,
     files,
     packagesDir,
@@ -165556,6 +165606,8 @@ var collectBatchAdvisories = async ({
   cwd,
   runId,
   driver,
+  model,
+  effort,
   batch,
   groups,
   findings,
@@ -165566,7 +165618,20 @@ var collectBatchAdvisories = async ({
 }) => {
   const batchFiles = new Set(batch.blocking.flatMap((finding6) => finding6.files.map((file2) => file2.path)));
   const machine = findings.filter((finding6) => finding6.severity === StandardsSeverity.Advisory && finding6.files.some((file2) => batchFiles.has(file2.path)));
-  const reviewed = await runBatchReview({ cwd, runId, driver, batch, groups, files: [...batchFiles], packagesDir, agentReview, timeoutMs, onProgress });
+  const reviewed = await runBatchReview({
+    cwd,
+    runId,
+    driver,
+    model,
+    effort,
+    batch,
+    groups,
+    files: [...batchFiles],
+    packagesDir,
+    agentReview,
+    timeoutMs,
+    onProgress
+  });
   return [...machine, ...reviewed];
 };
 
@@ -165738,6 +165803,8 @@ var reviewBatchOutput = async ({
   cwd,
   runId,
   driver,
+  model,
+  effort,
   batch,
   groups,
   baseline,
@@ -165750,7 +165817,20 @@ var reviewBatchOutput = async ({
   if (changedFiles.length === 0) {
     return [];
   }
-  const reviewed = await runBatchReview({ cwd, runId, driver, batch, groups, files: changedFiles, packagesDir, agentReview, timeoutMs, onProgress });
+  const reviewed = await runBatchReview({
+    cwd,
+    runId,
+    driver,
+    model,
+    effort,
+    batch,
+    groups,
+    files: changedFiles,
+    packagesDir,
+    agentReview,
+    timeoutMs,
+    onProgress
+  });
   return findIntroducedFindings({ frozen: baseline, live: reviewed, severity: StandardsSeverity.Advisory });
 };
 
@@ -165966,6 +166046,8 @@ var createBatchTools = ({
     cwd,
     runId,
     driver,
+    model: config2.model,
+    effort: config2.effort,
     batch,
     groups,
     packagesDir,
@@ -166210,6 +166292,8 @@ var runBatch = async ({
     cwd,
     runId,
     driver,
+    model: config2.model,
+    effort: config2.effort,
     batch,
     groups,
     findings: preCheck.findings,
@@ -167747,7 +167831,9 @@ var reviewStandards = async ({ cwd, config: config2, path, onProgress }) => {
   const files = walked.filter((file2) => !path || file2.startsWith(path));
   return runStandardsReview({
     cwd,
-    driver: getDriver({ name: config2?.harness ?? "claude-code" }),
+    driver: getDriver({ name: config2?.harness ?? defaultHarnessName }),
+    model: config2?.model,
+    effort: config2?.effort,
     groups,
     files,
     packagesDir: config2?.["packages-dir"] ?? defaultPackagesDir,

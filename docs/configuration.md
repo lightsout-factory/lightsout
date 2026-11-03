@@ -756,6 +756,9 @@ grade is measured against — a reusable passing grade stays reusable. The tree
 sits at the branch's usual worktree path, on a branch named after the plan, cut
 from the launching checkout's committed `HEAD` — never its uncommitted edits —
 and that commit is recorded so a re-created tree starts from the same one. The
+config the session runs on is the launching checkout's, read before the tree is
+opened, so an edited or gitignored config decides the harness even though the
+tree holds only what its start commit held. The
 tree holds code work only: the plan folder stays in the primary checkout at
 `.lightsout/work-orders/<work-order>/plans/<plan-id>/`, whichever checkout a
 plan command runs from, and `lightsout plan workspace` prints its absolute path
@@ -1123,3 +1126,12 @@ nothing lightsout writes under it is meant to be tracked:
 ```gitignore
 .lightsout
 ```
+
+A team that has not adopted lightsout repo-wide can keep `lightsout.config.json`
+out of the repository instead, through a global or local gitignore. Every command
+reads the config from the checkout it was launched from, and a command run inside
+a linked worktree that holds no config of its own reads the primary checkout's —
+the same rule the `.env` file follows — so an ignored config still decides the
+harness, model and gates of every run, and nothing is ever copied into a
+worktree. Each run prints the path it read on its `config:` line and the harness
+it is about to spawn on its `harness:` line.

@@ -19,6 +19,8 @@ export const reviewAdvisories = async ({ run, groups, files }: Params): Promise<
 	const review = await runStandardsReview({
 		cwd: run.cwd,
 		driver: run.driver,
+		model: run.config.model,
+		effort: run.config.effort,
 		groups,
 		files,
 		packagesDir: run.config['packages-dir'] ?? defaultPackagesDir,

@@ -1,5 +1,5 @@
 import { readConfig } from '#src/common/config/readConfig.ts';
-import { resolveConfigPath } from '#src/common/config/resolveConfigPath.ts';
+import { resolveConfigPath } from '#src/common/config/resolveConfigPath/resolveConfigPath.ts';
 import type { LoadedConfig } from '#src/common/types/LoadedConfig.ts';
 
 interface Params {
@@ -8,10 +8,10 @@ interface Params {
 
 /**
  * The config a fresh run starts with, read with the strict parser, paired with
- * the file it came from. Both come from the one checkout, so the recorded path
- * always names the file the recorded config was read from.
+ * the file it came from. Both resolve from the one checkout by the same rule,
+ * so the recorded path always names the file the recorded config was read from.
  */
 export const readLoadedConfig = async ({ cwd }: Params): Promise<Required<LoadedConfig>> => ({
 	config: await readConfig({ cwd }),
-	path: resolveConfigPath({ cwd }),
+	path: await resolveConfigPath({ cwd }),
 });

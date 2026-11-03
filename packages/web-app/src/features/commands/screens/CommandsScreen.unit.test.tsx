@@ -91,6 +91,18 @@ describe('CommandsScreen', () => {
 
 		expect(readSectionTitles({ section: 'Skills' })).toStrictEqual(['/plan', '/brainstorm', '/implement']);
 	});
+
+	test('tells a reader how to run a terminal command with and without the plugin on the PATH, showing each form as code', () => {
+		setupCommandsPage({ commands: [cliOnly({ id: 'doctor' })] });
+
+		const description = screen.getByRole('region', { name: 'CLI' }).querySelector('p');
+		const codeForms = Array.from(description?.querySelectorAll('code') ?? [], (code) => code.textContent);
+
+		expect({ text: description?.textContent, codeForms }).toStrictEqual({
+			text: "Run them in the repository you want them to act on. When Claude Code's agent runs them, lightsout <command> works once the plugin is enabled; otherwise run node <plugin folder>/dist/cli.mjs <command>, where the plugin folder is where your harness installed lightsout (in Claude Code, under ~/.claude/plugins/cache/lightsout/lightsout/<version>).",
+			codeForms: ['lightsout <command>', 'node <plugin folder>/dist/cli.mjs <command>', '~/.claude/plugins/cache/lightsout/lightsout/<version>'],
+		});
+	});
 });
 
 describe('CommandsScreen rows', () => {

@@ -291,6 +291,20 @@ describe('planCommand', () => {
 		expect(argsOf(mockPlanGradeCommand)).toMatchObject({ cwd: worktreePath, name: 'demo/001-demo' });
 	});
 
+	test("resolves the harness from the launching checkout's config, never from the worktree the draft runs in", async () => {
+		const { context, cwd, worktreePath, config, logged } = setupWorktree({ args: ['draft', '--name', 'demo/001-demo'] });
+
+		await planCommand(context);
+
+		// The tree carries only what its start commit held: a gitignored or
+		// uncommitted config edit exists in the launching checkout alone, so that
+		// is where the harness is read — and it is announced before any spawn.
+		expect(mockResolveConfigAndDriver).toHaveBeenCalledWith({ cwd, command: 'plan' });
+		expect(mockResolveConfigAndDriver).not.toHaveBeenCalledWith(expect.objectContaining({ cwd: worktreePath }));
+		expect(argsOf(mockPlanDraftCommand)).toMatchObject({ cwd: worktreePath, config, driver: stubDriver });
+		expect(logged).toEqual(expect.arrayContaining([expect.stringContaining(`harness: ${stubDriver.name}`)]));
+	});
+
 	test("dispatches no subcommand when the plan's worktree cannot be established", async () => {
 		const { context, errors, exitCodes, refusal } = setupWorktree({ args: ['grade', '--name', 'demo/001-demo'], refused: true });
 
