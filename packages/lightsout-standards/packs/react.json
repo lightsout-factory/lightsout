@@ -1,6 +1,6 @@
 {
-	"description": "The rules written for React: size caps for hooks and components, and one way to write a component test.",
+	"description": "The rules written for React: an app laid out by feature, size caps for hooks and components, and one way to write a component test.",
 	"include": {
-		"topics": ["lightsout/code/frameworks/react", "lightsout/tests/frameworks/react"]
+		"topics": ["lightsout/code/frameworks/react/layout", "lightsout/code/frameworks/react/size", "lightsout/tests/frameworks/react"]
 	}
 }

@@ -1,76 +1,70 @@
 import { describe, expect, test } from '@jest/globals';
-import { setupFileListInput } from '@lightsout/standards-testkit';
+import { setupImportGraphInput } from '@lightsout/standards-testkit';
 import { check } from './check.ts';
 
 describe('feature-layout check', () => {
-	test('asks for the file list alone, since a layer is read from its path', () => {
-		expect(check.inputKinds).toStrictEqual(['file-list']);
+	test('asks for the import graph alone, since what a route reaches is read from its imports', () => {
+		expect(check.inputKinds).toStrictEqual(['import-graph']);
 	});
 
-	test('reports a folder that sorts a feature by kind, naming the folder', async () => {
-		const input = setupFileListInput({ files: ['src/issues/IssuesScreen/components/IssueRow.tsx'] });
+	test('reports a route importing from a feature folder it may not reach, naming the route and the file', async () => {
+		const input = setupImportGraphInput({ edges: [{ from: 'src/routes/issues.tsx', to: 'src/features/issues/components/IssuesScreen.tsx' }] });
 
-		const findings = await check.run({ inputs: { 'file-list': input }, options: {} });
+		const findings = await check.run({ inputs: { 'import-graph': input }, options: {} });
 
 		expect(findings).toStrictEqual([
 			{
-				siteKey: 'feature-layout:src/issues/IssuesScreen/components',
-				files: [{ path: 'src/issues/IssuesScreen/components' }],
-				detail: "folder 'components' is a layer named for a kind of code",
-				guidance:
-					'Move its files up a level, beside the module that uses them, and let each file name say what it is: a Screen suffix, a QueryOptions suffix, a use prefix.',
+				siteKey: 'feature-layout:src/features/issues/components/IssuesScreen.tsx|src/routes/issues.tsx',
+				files: [{ path: 'src/routes/issues.tsx' }, { path: 'src/features/issues/components/IssuesScreen.tsx' }],
+				detail: "route 'issues.tsx' imports 'features/issues/components/IssuesScreen.tsx' from outside screens/, queries/, utils/ or server/",
+				guidance: 'Reach a feature through its screens/, queries/, utils/ or server/; move what the route needs into one of them.',
 			},
 		]);
 	});
 
-	test('names every layer on the closed list, restated here so a name dropped from it stops enforcing loudly', async () => {
-		const input = setupFileListInput({
-			files: ['src/features/issues/screens/IssuesScreen.tsx', 'src/issues/hooks/useIssues.ts', 'src/issues/queries/issuesQueryOptions.ts'],
-		});
+	test('reports a route importing a file directly under a feature', async () => {
+		const input = setupImportGraphInput({ edges: [{ from: 'src/routes/issues.tsx', to: 'src/features/issues/IssuesScreen.tsx' }] });
 
-		const findings = await check.run({ inputs: { 'file-list': input }, options: {} });
+		const findings = await check.run({ inputs: { 'import-graph': input }, options: {} });
 
-		expect(findings.map(({ siteKey }) => siteKey)).toStrictEqual([
-			'feature-layout:src/features',
-			'feature-layout:src/features/issues/screens',
-			'feature-layout:src/issues/hooks',
-			'feature-layout:src/issues/queries',
+		expect(findings.map(({ detail }) => detail)).toStrictEqual([
+			"route 'issues.tsx' imports 'features/issues/IssuesScreen.tsx' from outside screens/, queries/, utils/ or server/",
 		]);
 	});
 
-	test('leaves the folders the layout allows alone: a feature, a module, common/, routes/ and server/', async () => {
-		const input = setupFileListInput({
-			files: [
-				'src/routes/issues.tsx',
-				'src/issues/IssuesScreen/IssuesScreen.tsx',
-				'src/issues/IssuesScreen/IssueRow.tsx',
-				'src/issues/issuesQueryOptions.ts',
-				'src/issues/server/findIssues.ts',
-				'src/issues/common/types/Issue.ts',
+	test('lets a route reach screens/, queries/, utils/ and server/, the shared layer, and lets everything but a route alone', async () => {
+		const input = setupImportGraphInput({
+			edges: [
+				{ from: 'src/routes/issues.tsx', to: 'src/features/issues/screens/IssuesScreen.tsx' },
+				{ from: 'src/routes/issues.tsx', to: 'src/features/issues/queries/issuesQueryOptions.ts' },
+				{ from: 'src/routes/issues.tsx', to: 'src/features/issues/utils/parseIssuesSearch.ts' },
+				{ from: 'src/routes/api.issues.ts', to: 'src/features/issues/server/findIssues.ts' },
+				{ from: 'src/routes/__root.tsx', to: 'src/layouts/RootDocument.tsx' },
+				{ from: 'src/features/issues/screens/IssuesScreen.tsx', to: 'src/features/issues/hooks/useIssueFilters.ts' },
+				{ from: 'src/routes/issues.unit.test.tsx', to: 'src/features/issues/components/IssueRow.tsx' },
 			],
+			tests: ['src/routes/issues.unit.test.tsx'],
 		});
 
-		const findings = await check.run({ inputs: { 'file-list': input }, options: {} });
+		const findings = await check.run({ inputs: { 'import-graph': input }, options: {} });
 
 		expect(findings).toStrictEqual([]);
 	});
 
-	test('judges only the source tree of each package, so a test helper tree outside src/ is not its to report', async () => {
-		const input = setupFileListInput({
-			files: [
-				'tests/helpers/components/renderWithRouter.tsx',
-				'packages/web-app/tests/components/stub.tsx',
-				'packages/web-app/src/issues/components/IssueRow.tsx',
-			],
-			dependencies: [['packages/web-app', ['react']]],
+	test('reads each file’s place inside its own package', async () => {
+		const input = setupImportGraphInput({
+			edges: [{ from: 'packages/web-app/src/routes/issues.tsx', to: 'packages/web-app/src/features/issues/hooks/useIssues.ts' }],
+			dependencies: [['packages/web-app', ['@tanstack/react-start']]],
 		});
 
-		const findings = await check.run({ inputs: { 'file-list': input }, options: {} });
+		const findings = await check.run({ inputs: { 'import-graph': input }, options: {} });
 
-		expect(findings.map(({ siteKey }) => siteKey)).toStrictEqual(['feature-layout:packages/web-app/src/issues/components']);
+		expect(findings.map(({ siteKey }) => siteKey)).toStrictEqual([
+			'feature-layout:packages/web-app/src/features/issues/hooks/useIssues.ts|packages/web-app/src/routes/issues.tsx',
+		]);
 	});
 
-	test('reports nothing when handed no file list', async () => {
+	test('reports nothing when handed no import graph', async () => {
 		const findings = await check.run({ inputs: {}, options: {} });
 
 		expect(findings).toStrictEqual([]);
