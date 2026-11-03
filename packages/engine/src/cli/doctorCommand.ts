@@ -3,6 +3,7 @@ import { green } from '#src/cli/common/terminal/green.ts';
 import { red } from '#src/cli/common/terminal/red.ts';
 import { yellow } from '#src/cli/common/terminal/yellow.ts';
 import { readOptionalConfig } from '#src/common/config/readOptionalConfig.ts';
+import { defaultHarnessName } from '#src/common/constants/defaultHarnessName.ts';
 import { usage } from '#src/common/constants/usage.ts';
 import { exitCli } from '#src/common/exitCli.ts';
 import type { CommandContext } from '#src/common/types/CommandContext.ts';
@@ -13,7 +14,7 @@ import { runDoctor } from '#src/doctor/runDoctor/runDoctor.ts';
 const warnBeforeProbing = async ({ cwd }: { cwd: string }) => {
 	const config = await readOptionalConfig({ cwd }).catch(() => undefined);
 
-	console.log(`--usage-probe: about to spend one real agent call on ${config?.harness ?? 'claude-code'} — it bills your own subscription.`);
+	console.log(`--usage-probe: about to spend one real agent call on ${config?.harness ?? defaultHarnessName} — it bills your own subscription.`);
 };
 
 /**

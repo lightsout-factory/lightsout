@@ -1,13 +1,16 @@
 interface Params {
-	/** The absolute path of the config the run loaded, or `undefined` when the checkout has none. */
+	/** The absolute path of the config the run loaded, or `undefined` when neither the checkout nor its primary checkout has one. */
 	configPath: string | undefined;
 }
 
 /**
- * Every linked worktree carries its own copy of the tracked config, so a
- * setting edited in one checkout and a run launched from another looks like the
- * engine ignoring it; the path makes the mismatch visible.
+ * A linked worktree without a config of its own reads the primary checkout's,
+ * and a tracked config may differ between two checkouts, so a setting edited in
+ * one place and a run launched from another can look like the engine ignoring
+ * it; the path makes the mismatch visible.
  */
 export const printConfigSource = ({ configPath }: Params): void => {
-	console.log(`  config: ${configPath ?? 'none — this checkout has no lightsout.config.json, so every setting is its default'}`);
+	console.log(
+		`  config: ${configPath ?? 'none — neither this checkout nor its primary checkout has a lightsout.config.json, so every setting is its default'}`,
+	);
 };

@@ -3,6 +3,7 @@ import { getPositionals } from '#src/cli/common/args/getPositionals.ts';
 import { getRequiredFlag } from '#src/cli/common/args/getRequiredFlag.ts';
 import { describeMissingPlanAddress } from '#src/cli/common/describeMissingPlanAddress.ts';
 import { printConfigSource } from '#src/cli/common/render/printConfigSource.ts';
+import { printHarnessLine } from '#src/cli/common/render/printHarnessLine.ts';
 import { resolveConfigAndDriver } from '#src/cli/common/resolveConfigAndDriver.ts';
 import { openPlanWorktree } from '#src/cli/plan/planCommand/openPlanWorktree/openPlanWorktree.ts';
 import { planDedupCommand } from '#src/cli/plan/planCommand/planDedupCommand.ts';
@@ -25,7 +26,8 @@ import type { CommandContext } from '#src/common/types/CommandContext.ts';
 /**
  * An unknown subcommand is left unopened so it still reaches the usage error with
  * nothing printed ahead of it. The config read is the launching checkout's, so an
- * uncommitted `plan.worktree` edit is obeyed.
+ * uncommitted `plan.worktree` edit is obeyed — as every later config read of the
+ * command is, for the same reason.
  *
  * A `--name` that is not a plan address (`<work order>/<plan id>`) is refused
  * before any tree is cut: a bare folder name names no plan, and every subcommand
@@ -95,9 +97,15 @@ export const planCommand = async ({ flags, rest, cwd: launchingCwd }: CommandCon
 
 	if (subcommand === 'draft' || subcommand === 'dedup' || subcommand === 'grade') {
 		const name = await getRequiredFlag({ flags, name: 'name' });
-		const { config, driver, configPath } = await resolveConfigAndDriver({ cwd, command: 'plan' });
+		// From the launching checkout, never the planning tree: the tree carries
+		// only what its start commit held, so an edited or gitignored config
+		// would be read as absent and the harness would fall back to its default.
+		const { config, driver, configPath } = await resolveConfigAndDriver({ cwd: launchingCwd, command: 'plan' });
 
 		printConfigSource({ configPath });
+		// Before the first spawn, so a run on the wrong harness is visible before
+		// it bills anything.
+		printHarnessLine({ driver, config });
 
 		const standards = await readPlanningStandards({ cwd, config });
 

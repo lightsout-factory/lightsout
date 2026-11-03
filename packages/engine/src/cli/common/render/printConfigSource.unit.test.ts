@@ -25,5 +25,7 @@ test('printConfigSource: a checkout with no config says so rather than naming a 
 
 	printConfigSource({ configPath: undefined });
 
-	expect(logged).toStrictEqual(['  config: none — this checkout has no lightsout.config.json, so every setting is its default']);
+	expect(logged).toStrictEqual([
+		'  config: none — neither this checkout nor its primary checkout has a lightsout.config.json, so every setting is its default',
+	]);
 });

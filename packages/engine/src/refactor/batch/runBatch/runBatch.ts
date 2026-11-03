@@ -85,6 +85,8 @@ export const runBatch = async ({
 		cwd,
 		runId,
 		driver,
+		model: config.model,
+		effort: config.effort,
 		batch,
 		groups,
 		findings: preCheck.findings,

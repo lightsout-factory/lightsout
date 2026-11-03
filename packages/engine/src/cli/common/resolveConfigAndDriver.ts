@@ -1,7 +1,7 @@
 import { stat } from 'node:fs/promises';
 import { resolveCommandHarness } from '#src/cli/common/resolveCommandHarness.ts';
 import { readConfig } from '#src/common/config/readConfig.ts';
-import { resolveConfigPath } from '#src/common/config/resolveConfigPath.ts';
+import { resolveConfigPath } from '#src/common/config/resolveConfigPath/resolveConfigPath.ts';
 import type { Driver } from '#src/common/types/Driver.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import { getDriver } from '#src/drivers/getDriver/getDriver.ts';
@@ -15,13 +15,15 @@ interface Params {
 /**
  * The returned config is the effective one: its top-level harness, model and
  * effort are overwritten with this command's resolved values, so downstream
- * reads of `config.model` are already per-command.
+ * reads of `config.model` are already per-command. The path is the one
+ * `resolveConfigPath` settles on, so a linked worktree with no config of its
+ * own reports the primary checkout's file as its source.
  */
 export const resolveConfigAndDriver = async ({
 	cwd,
 	command,
 }: Params): Promise<{ config: LightsoutConfig | undefined; driver: Driver; configPath: string | undefined }> => {
-	const configPath = resolveConfigPath({ cwd });
+	const configPath = await resolveConfigPath({ cwd });
 	const present = await stat(configPath).then(
 		() => true,
 		() => false,

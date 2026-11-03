@@ -1,3 +1,4 @@
+import { defaultHarnessName } from '#src/common/constants/defaultHarnessName.ts';
 import { messageOf } from '#src/common/messageOf.ts';
 import { runCommand } from '#src/common/processes/runCommand.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
@@ -8,7 +9,7 @@ const driverBinaries: Record<string, string> = { 'claude-code': 'claude', codex:
 
 const getReferencedDriverNames = ({ config }: { config: LightsoutConfig }) => {
 	const entryDrivers = Object.values(config.commands ?? {}).map((entry) => entry?.harness);
-	const names = [config.harness ?? 'claude-code', ...entryDrivers].filter((name): name is string => typeof name === 'string');
+	const names = [config.harness ?? defaultHarnessName, ...entryDrivers].filter((name): name is string => typeof name === 'string');
 
 	return [...new Set(names)];
 };

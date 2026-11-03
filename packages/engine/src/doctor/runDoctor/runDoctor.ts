@@ -1,4 +1,5 @@
 import { readConfig } from '#src/common/config/readConfig.ts';
+import { defaultHarnessName } from '#src/common/constants/defaultHarnessName.ts';
 import { defaultPackagesDir } from '#src/common/constants/defaultPackagesDir.ts';
 import { messageOf } from '#src/common/messageOf.ts';
 import type { Driver } from '#src/common/types/Driver.ts';
@@ -68,7 +69,7 @@ export const runDoctor = async ({ cwd, probeHarness, usageProbe, usageDriver }: 
 	checks.push({
 		id: 'config',
 		status: 'pass',
-		detail: `lightsout.config.json valid · harness ${config.harness ?? 'claude-code'}${config['package-gates'] ? ` · monorepo (${packagesDir}/)` : ''}`,
+		detail: `lightsout.config.json valid · harness ${config.harness ?? defaultHarnessName}${config['package-gates'] ? ` · monorepo (${packagesDir}/)` : ''}`,
 	});
 
 	checks.push(await checkHarness({ cwd, config, probeHarness }));
