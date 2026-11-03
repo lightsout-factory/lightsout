@@ -368,7 +368,7 @@
         "deterministic": 5,
         "agent": 2,
         "topics": 3,
-        "tokens": 1442
+        "tokens": 1448
       }
     },
     {
@@ -956,7 +956,7 @@
         "deterministic": 36,
         "agent": 20,
         "topics": 15,
-        "tokens": 9456
+        "tokens": 9496
       }
     }
   ],
@@ -1069,7 +1069,7 @@
     {
       "set": "code",
       "path": "code/frameworks/tanstack-start",
-      "intro": "# TanStack Start\n\nHow a TanStack Start app is laid out and how its data moves: the framework's own files, the folders it adds to the React layout, routes, screens, server functions and queries.\n\nThe framework names the route files under `routes/`, the generated route tree and the entry files, and decides where they sit, so the layout and naming rules do not judge them. Everything else is laid out as the React layout rules say, with the framework's folders on top:\n\n- `routes/`, at the top of `src/`, holds the route files.\n- `queries/`, in a feature, holds its query options factories, each named with a `QueryOptions` suffix.\n- `server/`, in a feature or at the top of `src/`, holds server functions and the server-only code they use.",
+      "intro": "# TanStack Start\n\nHow a TanStack Start app is laid out and how its data moves: the framework's own files, the folders it adds to the React layout, routes, screens, server functions and queries.\n\nThe framework names the route files under `routes/`, the generated route tree and the entry files, and decides where they sit, so the layout and naming rules do not judge them. Everything else is laid out as the React layout rules say, with the framework's folders on top:\n\n- `routes/`, at the top of `src/`, holds the route files.\n- `queries/`, in a feature or at the top of `src/`, holds query options factories, each named with a `QueryOptions` suffix.\n- `server/`, in a feature or at the top of `src/`, holds server functions and the server-only code they use.",
       "ruleIds": [
         "feature-layout",
         "thin-route-file",
@@ -1947,7 +1947,7 @@
         "pass": 5,
         "fail": 5
       },
-      "prose": "## Feature Layout\n\nLay a feature out as the React layout rules say, with two folders the framework adds: `queries/` for its query options factories and `server/` for its server functions. Server-only code several features share sits in `server/` at the top of `src/`.\n\nA route reaches a feature through `screens/`, `queries/`, `utils/` and `server/`, and nothing else in it.\n\nThen what a route may touch, and where the server begins, are both read from the tree.",
+      "prose": "## Feature Layout\n\nLay a feature out as the React layout rules say, with two folders the framework adds: `queries/` for its query options factories and `server/` for its server functions. A query or server function several features use sits in `queries/` or `server/` at the top of `src/`, as the shared layer rule says of everything shared.\n\nA route reaches a feature through `screens/`, `queries/`, `utils/`, `constants/`, `types/` and `server/`, never through `components/` or `hooks/`.\n\nThen what a route may touch, and where the server begins, are both read from the tree.",
       "fixtures": [
         {
           "side": "pass",
@@ -3409,7 +3409,7 @@
         "pass": 3,
         "fail": 3
       },
-      "prose": "## Shared Layer\n\nPut what two or more features use at the top of `src/`, in a folder named for its kind:\n\n- `components/` — shared components, grouped by subject once there are enough to group: `components/ui/` for the design system's primitives, `components/icons/`, `components/markdown/`.\n- `layouts/` — the frames routes share, each named with a `Layout` suffix, and the root document.\n- `providers/` — the context providers wrapped around the app, each with the context it provides.\n- `hooks/`, `utils/`, `types/`, `constants/` — as in a feature.\n- `styles/` and `assets/` — stylesheets, fonts and images.\n- The folders the framework's rules add.\n\nCode one feature uses stays in that feature. When a second feature needs it, move it here and update the imports; when a shared file is down to one user, move it back into that feature.\n\nThen `features/` is the product, the top of `src/` is what holds it up, and shared code is found by kind without opening a feature.",
+      "prose": "## Shared Layer\n\nPut what two or more features use at the top of `src/`, in a folder named for its kind:\n\n- `components/` — shared components, grouped by subject once there are enough to group: `components/ui/` for the design system's primitives, `components/icons/`, `components/markdown/`.\n- `layouts/` — the frames routes share, each named with a `Layout` suffix, the parts only they use, and the root document.\n- `providers/` — the context providers wrapped around the app, each with the context it provides.\n- `hooks/`, `utils/`, `types/`, `constants/` — as in a feature.\n- `styles/` and `assets/` — stylesheets, fonts and images.\n- The folders the framework's rules add.\n\nCode one feature uses stays in that feature. When a second feature needs it, move it here and update the imports; when a shared file is down to one user, move it back into that feature.\n\nThen `features/` is the product, the top of `src/` is what holds it up, and shared code is found by kind without opening a feature.",
       "fixtures": [
         {
           "side": "pass",

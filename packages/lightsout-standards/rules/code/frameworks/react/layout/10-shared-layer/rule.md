@@ -16,7 +16,7 @@ example:
 Put what two or more features use at the top of `src/`, in a folder named for its kind:
 
 - `components/` — shared components, grouped by subject once there are enough to group: `components/ui/` for the design system's primitives, `components/icons/`, `components/markdown/`.
-- `layouts/` — the frames routes share, each named with a `Layout` suffix, and the root document.
+- `layouts/` — the frames routes share, each named with a `Layout` suffix, the parts only they use, and the root document.
 - `providers/` — the context providers wrapped around the app, each with the context it provides.
 - `hooks/`, `utils/`, `types/`, `constants/` — as in a feature.
 - `styles/` and `assets/` — stylesheets, fonts and images.

@@ -22,7 +22,7 @@
 	"rule-settings": {
 		"explicit-return-type": { "exclude": ["**/*.tsx", "**/use[A-Z]*.ts", "**/*QueryOptions.ts"] },
 		"feature-folders": { "exclude": ["src/features/*/queries", "src/features/*/server"] },
-		"shared-layer": { "exclude": ["src/routes", "src/server"] },
+		"shared-layer": { "exclude": ["src/routes", "src/queries", "src/server"] },
 		"file-size": { "exclude": ["**/routeTree.gen.ts"] },
 		"filename-mismatch": { "exclude": ["**/routes/**", "**/routeTree.gen.ts", "**/router.tsx", "**/client.tsx", "**/server.ts", "**/ssr.tsx", "**/start.ts"] },
 		"multi-export": { "exclude": ["**/routes/**", "**/routeTree.gen.ts", "**/router.tsx", "**/client.tsx", "**/server.ts", "**/ssr.tsx", "**/start.ts"] },

@@ -5,20 +5,21 @@ import { getSourceRelativePath } from '#common/paths/getSourceRelativePath.ts';
 
 const rule = 'feature-layout';
 
-/** The folders of a feature a route may import from: what it renders, what it prefetches, what parses its search, and what runs on the server. */
-const routeReach = new Set(['screens', 'queries', 'utils', 'server']);
+/** The folders of a feature a route may import from: everything but the UI internals, components/ and hooks/, which are the screen's to compose. */
+const routeReach = new Set(['screens', 'queries', 'utils', 'constants', 'types', 'server']);
 
 /** The feature folder an import from a route lands in, or undefined when the import is not into a feature or lands where a route may reach. */
 const judgeEdge = ({ from, relativeFrom, relativeTo }: { from: string; relativeFrom: string; relativeTo: string }) => {
 	const [top, feature, kind] = relativeTo.split('/');
 
-	if (!relativeFrom.startsWith('routes/') || top !== 'features' || feature === undefined || (kind !== undefined && routeReach.has(kind))) {
+	// A file directly under a feature is the feature-folders rule's to report.
+	if (!relativeFrom.startsWith('routes/') || top !== 'features' || feature === undefined || kind === undefined || routeReach.has(kind)) {
 		return undefined;
 	}
 
 	return {
-		detail: `route '${getBaseName({ path: from })}' imports '${relativeTo}' from outside screens/, queries/, utils/ or server/`,
-		guidance: 'Reach a feature through its screens/, queries/, utils/ or server/; move what the route needs into one of them.',
+		detail: `route '${getBaseName({ path: from })}' imports '${relativeTo}' from its ${kind}/`,
+		guidance: "A route never reaches into a feature's components/ or hooks/: render the screen and let it compose them.",
 	};
 };
 

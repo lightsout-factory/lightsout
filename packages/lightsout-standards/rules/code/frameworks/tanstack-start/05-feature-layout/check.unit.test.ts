@@ -16,28 +16,29 @@ describe('feature-layout check', () => {
 			{
 				siteKey: 'feature-layout:src/features/issues/components/IssuesScreen.tsx|src/routes/issues.tsx',
 				files: [{ path: 'src/routes/issues.tsx' }, { path: 'src/features/issues/components/IssuesScreen.tsx' }],
-				detail: "route 'issues.tsx' imports 'features/issues/components/IssuesScreen.tsx' from outside screens/, queries/, utils/ or server/",
-				guidance: 'Reach a feature through its screens/, queries/, utils/ or server/; move what the route needs into one of them.',
+				detail: "route 'issues.tsx' imports 'features/issues/components/IssuesScreen.tsx' from its components/",
+				guidance: "A route never reaches into a feature's components/ or hooks/: render the screen and let it compose them.",
 			},
 		]);
 	});
 
-	test('reports a route importing a file directly under a feature', async () => {
-		const input = setupImportGraphInput({ edges: [{ from: 'src/routes/issues.tsx', to: 'src/features/issues/IssuesScreen.tsx' }] });
+	test('reports a route importing a hook', async () => {
+		const input = setupImportGraphInput({ edges: [{ from: 'src/routes/issues.tsx', to: 'src/features/issues/hooks/useIssues.ts' }] });
 
 		const findings = await check.run({ inputs: { 'import-graph': input }, options: {} });
 
-		expect(findings.map(({ detail }) => detail)).toStrictEqual([
-			"route 'issues.tsx' imports 'features/issues/IssuesScreen.tsx' from outside screens/, queries/, utils/ or server/",
-		]);
+		expect(findings.map(({ detail }) => detail)).toStrictEqual(["route 'issues.tsx' imports 'features/issues/hooks/useIssues.ts' from its hooks/"]);
 	});
 
-	test('lets a route reach screens/, queries/, utils/ and server/, the shared layer, and lets everything but a route alone', async () => {
+	test('lets a route reach screens/, queries/, utils/, constants/, types/ and server/, the shared layer, and lets everything but a route alone', async () => {
 		const input = setupImportGraphInput({
 			edges: [
 				{ from: 'src/routes/issues.tsx', to: 'src/features/issues/screens/IssuesScreen.tsx' },
 				{ from: 'src/routes/issues.tsx', to: 'src/features/issues/queries/issuesQueryOptions.ts' },
 				{ from: 'src/routes/issues.tsx', to: 'src/features/issues/utils/parseIssuesSearch.ts' },
+				{ from: 'src/routes/issues.tsx', to: 'src/features/issues/constants/issuesMeta.ts' },
+				{ from: 'src/routes/issues.tsx', to: 'src/features/issues/types/IssuesSearch.ts' },
+				{ from: 'src/routes/issues.tsx', to: 'src/queries/repoRootQueryOptions.ts' },
 				{ from: 'src/routes/api.issues.ts', to: 'src/features/issues/server/findIssues.ts' },
 				{ from: 'src/routes/__root.tsx', to: 'src/layouts/RootDocument.tsx' },
 				{ from: 'src/features/issues/screens/IssuesScreen.tsx', to: 'src/features/issues/hooks/useIssueFilters.ts' },
