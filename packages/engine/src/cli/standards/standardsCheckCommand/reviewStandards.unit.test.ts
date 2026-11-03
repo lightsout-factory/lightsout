@@ -5,6 +5,7 @@ import { describe, expect, jest, test } from '@jest/globals';
 import { reviewStandards } from '#src/cli/standards/standardsCheckCommand/reviewStandards.ts';
 import type { Driver } from '#src/common/types/Driver.ts';
 import type { StandardsGroup } from '#src/common/types/StandardsGroup.ts';
+import type { Effort } from '#src/contracts/Effort.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFinding.ts';
 import { captureCommandOutput } from '#tests/helpers/captureCommandOutput.ts';
@@ -20,6 +21,8 @@ import { testFileGlobs } from '#tests/helpers/testFileGlobs.ts';
 interface RunStandardsReviewParams {
 	cwd: string;
 	driver: Driver;
+	model?: string;
+	effort?: Effort;
 	groups: StandardsGroup[];
 	files: string[];
 	packagesDir: string;
@@ -117,6 +120,28 @@ describe('reviewStandards', () => {
 
 		expect(reviewParams()).toEqual(expect.objectContaining({ timeoutMs: 60 * 60_000 }));
 		expect(reviewParams()?.driver.name).toBe('claude-code');
+	});
+
+	test('the global harness, model and effort are the ones the review runs on', async () => {
+		const cwd = setupRepo();
+		const config: LightsoutConfig = {
+			'source-files': sourceFileGlobs,
+			'test-files': testFileGlobs,
+			gates,
+			harness: 'omp',
+			model: 'glm-5.3-flash',
+			effort: 'low',
+		};
+
+		await reviewStandards({ cwd, config });
+
+		// the review has no per-command entry, so the global keys decide — and
+		// the model and effort travel with the harness rather than being dropped
+		expect({ driver: reviewParams()?.driver.name, model: reviewParams()?.model, effort: reviewParams()?.effort }).toStrictEqual({
+			driver: 'omp',
+			model: 'glm-5.3-flash',
+			effort: 'low',
+		});
 	});
 
 	test('the packs the resolver loaded for this config are the ones the review runs against', async () => {

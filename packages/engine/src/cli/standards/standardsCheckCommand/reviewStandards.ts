@@ -1,5 +1,6 @@
 import { readRepoFileGlobs } from '#src/common/config/readRepoFileGlobs.ts';
 import { defaultAgentTimeoutMinutes } from '#src/common/constants/defaultAgentTimeoutMinutes.ts';
+import { defaultHarnessName } from '#src/common/constants/defaultHarnessName.ts';
 import { defaultPackagesDir } from '#src/common/constants/defaultPackagesDir.ts';
 import { excludedSourcePaths } from '#src/common/sourceFiles/excludedSourcePaths.ts';
 import { listSourceFiles } from '#src/common/sourceFiles/listSourceFiles.ts';
@@ -18,7 +19,8 @@ interface Params {
 }
 
 // Resolved here rather than by the runner, so a run that never asks for the
-// review never loads a pack or a harness for it.
+// review never loads a pack or a harness for it. The global harness, model and
+// effort apply: the review has no per-command entry of its own.
 export const reviewStandards = async ({ cwd, config, path, onProgress }: Params): Promise<{ findings: StandardsFinding[]; notes: string[] }> => {
 	const groups = await resolveStandardsGroups({ cwd, config });
 	const { files: walked } = await listSourceFiles({ cwd, sourceFileGlobs: readRepoFileGlobs({ config }).source, exclude: excludedSourcePaths({ config }) });
@@ -26,7 +28,9 @@ export const reviewStandards = async ({ cwd, config, path, onProgress }: Params)
 
 	return runStandardsReview({
 		cwd,
-		driver: getDriver({ name: config?.harness ?? 'claude-code' }),
+		driver: getDriver({ name: config?.harness ?? defaultHarnessName }),
+		model: config?.model,
+		effort: config?.effort,
 		groups,
 		files,
 		packagesDir: config?.['packages-dir'] ?? defaultPackagesDir,

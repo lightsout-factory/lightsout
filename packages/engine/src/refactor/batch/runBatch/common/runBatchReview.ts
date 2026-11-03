@@ -1,5 +1,6 @@
 import type { Driver } from '#src/common/types/Driver.ts';
 import type { StandardsGroup } from '#src/common/types/StandardsGroup.ts';
+import type { Effort } from '#src/contracts/Effort.ts';
 import type { RefactorBatch } from '#src/contracts/refactor/RefactorBatch.ts';
 import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFinding.ts';
 import { appendReviewFindings } from '#src/runState/appendReviewFindings.ts';
@@ -10,6 +11,9 @@ interface Params {
 	/** Provenance for the ledger line. */
 	runId: string;
 	driver: Driver;
+	/** The run's configured model and effort, so the review spawns as every other role of the run does. */
+	model?: string;
+	effort?: Effort;
 	batch: RefactorBatch;
 	groups: StandardsGroup[];
 	/** The batch's own files before it works, the ones it wrote after. */
@@ -31,6 +35,8 @@ export const runBatchReview = async ({
 	cwd,
 	runId,
 	driver,
+	model,
+	effort,
 	batch,
 	groups,
 	files,
@@ -46,6 +52,8 @@ export const runBatchReview = async ({
 	const review = await runStandardsReview({
 		cwd,
 		driver,
+		model,
+		effort,
 		groups,
 		files,
 		packagesDir,

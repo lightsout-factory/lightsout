@@ -143,9 +143,12 @@ describe('planCommand', () => {
 
 			await planCommand(context);
 
-			// an agent run reports which checkout's config it read, since every
-			// worktree carries its own copy — and that line is all it prints here
-			expect(logged).toStrictEqual([`  config: ${join(cwd, 'lightsout.config.json')}`]);
+			// an agent run reports which config it read and which harness it is
+			// about to spend — and those two lines are all it prints here
+			expect(logged).toStrictEqual([
+				`  config: ${join(cwd, 'lightsout.config.json')}`,
+				'  harness: stub · model: harness default · effort: harness default · permissions: write',
+			]);
 			expect(exitCodes).toStrictEqual([]);
 		},
 	);

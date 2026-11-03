@@ -1,4 +1,5 @@
 import { buildWorkOrderNameInvocation } from '#src/agents/buildWorkOrderNameInvocation.ts';
+import { defaultHarnessName } from '#src/common/constants/defaultHarnessName.ts';
 import { messageOf } from '#src/common/messageOf.ts';
 import { toBranchSlug } from '#src/common/toBranchSlug.ts';
 import type { Driver } from '#src/common/types/Driver.ts';
@@ -38,7 +39,7 @@ const readSummary = async ({
 
 	try {
 		return await invokeAgentWithContract({
-			driver: driver ?? getDriver({ name: config.harness ?? 'claude-code' }),
+			driver: driver ?? getDriver({ name: config.harness ?? defaultHarnessName }),
 			cwd,
 			invocation: buildWorkOrderNameInvocation({ ticketRef, title }),
 			contract: WorkOrderName,

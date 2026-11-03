@@ -1,4 +1,5 @@
 import { printConfigSource } from '#src/cli/common/render/printConfigSource.ts';
+import { printHarnessLine } from '#src/cli/common/render/printHarnessLine.ts';
 import { defaultAgentTimeoutMinutes } from '#src/common/constants/defaultAgentTimeoutMinutes.ts';
 import { defaultGateTimeoutMinutes } from '#src/common/constants/defaultGateTimeoutMinutes.ts';
 import { defaultSupervisorTimeoutMinutes } from '#src/common/constants/defaultSupervisorTimeoutMinutes.ts';
@@ -6,7 +7,6 @@ import { messageOf } from '#src/common/messageOf.ts';
 import type { Driver } from '#src/common/types/Driver.ts';
 import type { StandardsGroup } from '#src/common/types/StandardsGroup.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
-import { Permissions } from '#src/contracts/Permissions.ts';
 import { resolveStandardsGroups } from '#src/standards/resolveStandardsGroups/resolveStandardsGroups.ts';
 
 interface Params {
@@ -65,9 +65,7 @@ export const printRunHeader = async ({ config, driver, cwd, configPath }: Params
 		console.log(line);
 	}
 
-	console.log(
-		`  harness: ${driver.name} · model: ${config.model ?? 'harness default'} · effort: ${config.effort ?? 'harness default'} · permissions: ${config.permissions ?? Permissions.Write}`,
-	);
+	printHarnessLine({ driver, config });
 	console.log(
 		`  timeouts: agent ${config.timeouts?.['agent-minutes'] ?? defaultAgentTimeoutMinutes}m · supervisor ${config.timeouts?.['supervisor-minutes'] ?? defaultSupervisorTimeoutMinutes}m · gate ${config.timeouts?.['gate-minutes'] ?? defaultGateTimeoutMinutes}m`,
 	);

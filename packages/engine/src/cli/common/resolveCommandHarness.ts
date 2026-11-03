@@ -1,3 +1,4 @@
+import { defaultHarnessName } from '#src/common/constants/defaultHarnessName.ts';
 import type { Effort } from '#src/contracts/Effort.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
 
@@ -15,7 +16,7 @@ interface Params {
  */
 export const resolveCommandHarness = ({ config, command }: Params): { driverName: string; model: string | undefined; effort: Effort | undefined } => {
 	const entry = config?.commands?.[command];
-	const globalHarnessName = config?.harness ?? 'claude-code';
+	const globalHarnessName = config?.harness ?? defaultHarnessName;
 	const driverName = entry?.harness ?? globalHarnessName;
 	const model = entry?.model ?? (driverName === globalHarnessName ? config?.model : undefined);
 	const effort = entry?.effort ?? config?.effort;

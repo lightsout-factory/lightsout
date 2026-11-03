@@ -6,6 +6,7 @@ import type { LoadedStandardsRule } from '#src/common/types/LoadedStandardsRule.
 import type { StandardsGroup } from '#src/common/types/StandardsGroup.ts';
 import { describePackageSet } from '#src/common/workspace/describePackageSet.ts';
 import { listWorkspacePackages } from '#src/common/workspace/listWorkspacePackages.ts';
+import type { Effort } from '#src/contracts/Effort.ts';
 import { Permissions } from '#src/contracts/Permissions.ts';
 import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFinding.ts';
 import { StandardsReviewReport } from '#src/contracts/standardsCheck/StandardsReviewReport.ts';
@@ -19,6 +20,9 @@ import { resolveRuleName } from '#src/standardsLibraries/resolveRuleName.ts';
 interface Params {
 	cwd: string;
 	driver: Driver;
+	/** The configured model and effort, handed to the harness as every other role's are; absent means the harness's own default. */
+	model?: string;
+	effort?: Effort;
 	groups: StandardsGroup[];
 	/** Files in scope — changed files at the gate, batch files in refactor, the path scope in the CLI. */
 	files: string[];
@@ -158,6 +162,8 @@ const toFindings = ({
 export const runStandardsReview = async ({
 	cwd,
 	driver,
+	model,
+	effort,
 	groups,
 	files,
 	packagesDir,
@@ -188,6 +194,8 @@ export const runStandardsReview = async ({
 		cwd,
 		invocation: buildStandardsReviewInvocation({ rules: toReviewRules({ agentRules, groups }), files }),
 		contract: StandardsReviewReport,
+		model,
+		effort,
 		permissions: Permissions.ReadOnly,
 		timeoutMs,
 		onEvent: heartbeat.onEvent,

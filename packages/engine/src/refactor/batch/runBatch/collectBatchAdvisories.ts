@@ -1,5 +1,6 @@
 import type { Driver } from '#src/common/types/Driver.ts';
 import type { StandardsGroup } from '#src/common/types/StandardsGroup.ts';
+import type { Effort } from '#src/contracts/Effort.ts';
 import type { RefactorBatch } from '#src/contracts/refactor/RefactorBatch.ts';
 import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFinding.ts';
 import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
@@ -10,6 +11,9 @@ interface Params {
 	/** Provenance for the judgment ledger. */
 	runId: string;
 	driver: Driver;
+	/** The run's configured model and effort, relayed to the agent's read. */
+	model?: string;
+	effort?: Effort;
 	batch: RefactorBatch;
 	groups: StandardsGroup[];
 	/** A live check's findings, which the machine advisories are filtered out of. */
@@ -31,6 +35,8 @@ export const collectBatchAdvisories = async ({
 	cwd,
 	runId,
 	driver,
+	model,
+	effort,
 	batch,
 	groups,
 	findings,
@@ -42,7 +48,20 @@ export const collectBatchAdvisories = async ({
 	const batchFiles = new Set(batch.blocking.flatMap((finding) => finding.files.map((file) => file.path)));
 	const machine = findings.filter((finding) => finding.severity === StandardsSeverity.Advisory && finding.files.some((file) => batchFiles.has(file.path)));
 
-	const reviewed = await runBatchReview({ cwd, runId, driver, batch, groups, files: [...batchFiles], packagesDir, agentReview, timeoutMs, onProgress });
+	const reviewed = await runBatchReview({
+		cwd,
+		runId,
+		driver,
+		model,
+		effort,
+		batch,
+		groups,
+		files: [...batchFiles],
+		packagesDir,
+		agentReview,
+		timeoutMs,
+		onProgress,
+	});
 
 	return [...machine, ...reviewed];
 };

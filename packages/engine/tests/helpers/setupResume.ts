@@ -1,7 +1,6 @@
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { parseFlags } from '#src/cli/parseFlags.ts';
-import { resolveConfigPath } from '#src/common/config/resolveConfigPath.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import { captureCommandOutput } from '#tests/helpers/captureCommandOutput.ts';
@@ -91,7 +90,10 @@ export const setupResume = ({
 
 	if (manifest && parkedDir) {
 		mkdirSync(parkedDir, { recursive: true });
-		writeFileSync(join(parkedDir, 'manifest.json'), JSON.stringify(recordConfigOf({ manifest, configPath: resolveConfigPath({ cwd }) })));
+		// The consumer repo this helper set up holds its config at its root, so
+		// the recorded path is that file's — no resolution against a primary
+		// checkout is involved for a fixture that is no worktree.
+		writeFileSync(join(parkedDir, 'manifest.json'), JSON.stringify(recordConfigOf({ manifest, configPath: join(cwd, 'lightsout.config.json') })));
 	}
 
 	if (parkedDir && ledger) {

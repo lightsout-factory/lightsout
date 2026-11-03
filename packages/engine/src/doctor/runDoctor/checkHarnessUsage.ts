@@ -1,3 +1,4 @@
+import { defaultHarnessName } from '#src/common/constants/defaultHarnessName.ts';
 import { messageOf } from '#src/common/messageOf.ts';
 import type { Driver } from '#src/common/types/Driver.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
@@ -108,7 +109,7 @@ interface Params {
  * its format; this catches that. Codex is not probed: its driver reads no usage.
  */
 export const checkHarnessUsage = async ({ cwd, config, driver }: Params): Promise<DoctorCheck> => {
-	const harness = config.harness ?? 'claude-code';
+	const harness = config.harness ?? defaultHarnessName;
 
 	if (harness === 'codex') {
 		return {
