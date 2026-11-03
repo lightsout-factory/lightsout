@@ -1,13 +1,13 @@
 /// <reference types="vite/client" />
 import type { QueryClient } from '@tanstack/react-query';
 import { createRootRouteWithContext, Outlet } from '@tanstack/react-router';
-import { DefaultCatchBoundary } from '#src/common/boundaries/DefaultCatchBoundary.tsx';
-import { NotFound } from '#src/common/boundaries/NotFound.tsx';
-import { Theme } from '#src/common/constants/Theme.ts';
-import { FeedbackWidget } from '#src/feedback/FeedbackWidget.tsx';
-import { RootDocument } from '#src/shell/RootDocument.tsx';
+import { DefaultCatchBoundary } from '#src/components/boundaries/DefaultCatchBoundary.tsx';
+import { NotFound } from '#src/components/boundaries/NotFound.tsx';
+import { Theme } from '#src/constants/Theme.ts';
+import { FeedbackWidget } from '#src/layouts/FeedbackWidget.tsx';
+import { RootDocument } from '#src/layouts/RootDocument.tsx';
+import { ThemeProvider } from '#src/providers/ThemeProvider.tsx';
 import appCss from '#src/styles/app.css?url';
-import { ThemeProvider } from '#src/theme/ThemeProvider.tsx';
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
 	head: () => ({

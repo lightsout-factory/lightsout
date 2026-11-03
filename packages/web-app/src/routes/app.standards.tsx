@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { StandardsScreen } from '#src/standards/StandardsScreen/StandardsScreen.tsx';
-import { standardsQueryOptions } from '#src/standards/standardsQueryOptions.ts';
+import { StandardsScreen } from '#src/features/standards/screens/StandardsScreen.tsx';
+import { standardsQueryOptions } from '#src/queries/standardsQueryOptions.ts';
 
 interface StandardsSearch {
 	rule?: string;

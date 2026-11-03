@@ -4,9 +4,9 @@ import { QueryClient } from '@tanstack/react-query';
 import { createRouter } from '@tanstack/react-router';
 import { fireEvent, screen, within } from '@testing-library/react';
 import type { ComponentType, ReactNode } from 'react';
-import { frictionQueryOptions } from '#src/friction/frictionQueryOptions.ts';
+import { frictionQueryOptions } from '#src/queries/frictionQueryOptions.ts';
+import { runsQueryOptions } from '#src/queries/runsQueryOptions.ts';
 import { routeTree } from '#src/routeTree.gen.ts';
-import { runsQueryOptions } from '#src/runs/runsQueryOptions.ts';
 import { buildFrictionRecord } from '#tests/helpers/buildFrictionRecord.ts';
 import { buildRunListing } from '#tests/helpers/buildRunListing.ts';
 import { renderWithQueryClient } from '#tests/helpers/renderWithQueryClient.tsx';
@@ -21,7 +21,7 @@ import { renderWithQueryClient } from '#tests/helpers/renderWithQueryClient.tsx'
 const mockGetFriction = jest.fn<() => Promise<FrictionRecord[]>>();
 const mockListRuns = jest.fn<() => Promise<RunListing[]>>();
 
-jest.mock('#src/common/server/getReader/getReader.ts', () => ({ getReader: () => ({ getFriction: () => mockGetFriction(), listRuns: () => mockListRuns() }) }));
+jest.mock('#src/server/getReader.ts', () => ({ getReader: () => ({ getFriction: () => mockGetFriction(), listRuns: () => mockListRuns() }) }));
 // -------------------------
 // Only the piece that needs a live router around it is stood in for, so this one
 // route's component can be rendered on its own. Everything else — above all

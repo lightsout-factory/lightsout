@@ -5,9 +5,9 @@ import { QueryClient } from '@tanstack/react-query';
 import { createRouter } from '@tanstack/react-router';
 import { screen } from '@testing-library/react';
 import type { ComponentType, ReactNode } from 'react';
-import { commandsQueryOptions } from '#src/commands/commandsQueryOptions.ts';
+import { commandsQueryOptions } from '#src/features/commands/queries/commandsQueryOptions.ts';
+import { repoRootQueryOptions } from '#src/queries/repoRootQueryOptions.ts';
 import { routeTree } from '#src/routeTree.gen.ts';
-import { repoRootQueryOptions } from '#src/shell/repoRootQueryOptions.ts';
 import { renderWithQueryClient } from '#tests/helpers/renderWithQueryClient.tsx';
 
 // Mocked Imports
@@ -17,7 +17,7 @@ import { renderWithQueryClient } from '#tests/helpers/renderWithQueryClient.tsx'
 // engine happens to ship today.
 const mockListCommands = jest.fn<() => Promise<CommandCatalogEntry[]>>();
 
-jest.mock('#src/commands/server/listCommandsServerFn.ts', () => ({ listCommandsServerFn: () => mockListCommands() }));
+jest.mock('#src/features/commands/server/listCommandsServerFn.ts', () => ({ listCommandsServerFn: () => mockListCommands() }));
 // -------------------------
 // Only the piece that needs a live router around it is stood in for, so this one
 // route's component can be rendered on its own. Everything else — above all

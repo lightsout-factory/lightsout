@@ -4,11 +4,11 @@ import { QueryClient } from '@tanstack/react-query';
 import { createRouter, isNotFound } from '@tanstack/react-router';
 import { screen } from '@testing-library/react';
 import type { ComponentType, ReactNode } from 'react';
-import { Theme } from '#src/common/constants/Theme.ts';
+import { Theme } from '#src/constants/Theme.ts';
+import { ThemeProvider } from '#src/providers/ThemeProvider.tsx';
+import { repoRootQueryOptions } from '#src/queries/repoRootQueryOptions.ts';
+import { runsQueryOptions } from '#src/queries/runsQueryOptions.ts';
 import { routeTree } from '#src/routeTree.gen.ts';
-import { runsQueryOptions } from '#src/runs/runsQueryOptions.ts';
-import { repoRootQueryOptions } from '#src/shell/repoRootQueryOptions.ts';
-import { ThemeProvider } from '#src/theme/ThemeProvider.tsx';
 import { buildRunListing } from '#tests/helpers/buildRunListing.ts';
 import { buildStandardsView } from '#tests/helpers/buildStandardsView.ts';
 import { renderWithQueryClient } from '#tests/helpers/renderWithQueryClient.tsx';
@@ -21,7 +21,7 @@ import { renderWithQueryClient } from '#tests/helpers/renderWithQueryClient.tsx'
 const mockListRuns = jest.fn<() => Promise<RunListing[]>>();
 const mockGetStandards = jest.fn<() => Promise<StandardsView>>();
 
-jest.mock('#src/common/server/getReader/getReader.ts', () => ({
+jest.mock('#src/server/getReader.ts', () => ({
 	getReader: () => ({
 		listRuns: () => mockListRuns(),
 		getStandards: () => mockGetStandards(),
@@ -36,7 +36,7 @@ jest.mock('#src/common/server/getReader/getReader.ts', () => ({
 // `isPublicDeployment`, read from the variable each test sets.
 const mockRequireLocalRepoRoot = jest.fn<() => string>();
 
-jest.mock('#src/common/server/requireLocalRepoRoot/requireLocalRepoRoot.ts', () => ({
+jest.mock('#src/server/requireLocalRepoRoot.ts', () => ({
 	requireLocalRepoRoot: () => mockRequireLocalRepoRoot(),
 }));
 // -------------------------

@@ -4,12 +4,12 @@ import { QueryClient } from '@tanstack/react-query';
 import { createRouter } from '@tanstack/react-router';
 import { screen } from '@testing-library/react';
 import type { ComponentType, ReactNode } from 'react';
-import { configQueryOptions } from '#src/config/configQueryOptions.ts';
-import { frictionQueryOptions } from '#src/friction/frictionQueryOptions.ts';
+import { configQueryOptions } from '#src/queries/configQueryOptions.ts';
+import { frictionQueryOptions } from '#src/queries/frictionQueryOptions.ts';
+import { repoRootQueryOptions } from '#src/queries/repoRootQueryOptions.ts';
+import { runsQueryOptions } from '#src/queries/runsQueryOptions.ts';
+import { standardsQueryOptions } from '#src/queries/standardsQueryOptions.ts';
 import { routeTree } from '#src/routeTree.gen.ts';
-import { runsQueryOptions } from '#src/runs/runsQueryOptions.ts';
-import { repoRootQueryOptions } from '#src/shell/repoRootQueryOptions.ts';
-import { standardsQueryOptions } from '#src/standards/standardsQueryOptions.ts';
 import appCssHref from '#src/styles/app.css?url';
 import { buildConfigView } from '#tests/helpers/buildConfigView.ts';
 import { buildRunListing } from '#tests/helpers/buildRunListing.ts';
@@ -24,7 +24,7 @@ import { renderWithQueryClient } from '#tests/helpers/renderWithQueryClient.tsx'
 const mockListRuns = jest.fn<() => Promise<RunListing[]>>();
 const mockGetStandards = jest.fn<() => Promise<StandardsView>>();
 
-jest.mock('#src/common/server/getReader/getReader.ts', () => ({
+jest.mock('#src/server/getReader.ts', () => ({
 	getReader: () => ({
 		listRuns: () => mockListRuns(),
 		getStandards: () => mockGetStandards(),
@@ -39,7 +39,7 @@ jest.mock('#src/common/server/getReader/getReader.ts', () => ({
 // `isPublicDeployment`.
 const mockRequireLocalRepoRoot = jest.fn<() => string>();
 
-jest.mock('#src/common/server/requireLocalRepoRoot/requireLocalRepoRoot.ts', () => ({
+jest.mock('#src/server/requireLocalRepoRoot.ts', () => ({
 	requireLocalRepoRoot: () => mockRequireLocalRepoRoot(),
 }));
 // -------------------------

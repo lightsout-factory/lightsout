@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { FrictionScreen } from '#src/friction/FrictionScreen/FrictionScreen.tsx';
-import { frictionQueryOptions } from '#src/friction/frictionQueryOptions.ts';
-import { runsQueryOptions } from '#src/runs/runsQueryOptions.ts';
+import { FrictionScreen } from '#src/features/friction/screens/FrictionScreen.tsx';
+import { frictionQueryOptions } from '#src/queries/frictionQueryOptions.ts';
+import { runsQueryOptions } from '#src/queries/runsQueryOptions.ts';
 
 export const Route = createFileRoute('/app/friction')({
 	// Both warmed here: the page suspends on the log, and the runs are what put a

@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { CommandsScreen } from '#src/commands/CommandsScreen/CommandsScreen.tsx';
-import { commandsQueryOptions } from '#src/commands/commandsQueryOptions.ts';
+import { commandsQueryOptions } from '#src/features/commands/queries/commandsQueryOptions.ts';
+import { CommandsScreen } from '#src/features/commands/screens/CommandsScreen.tsx';
 
 export const Route = createFileRoute('/_site/commands/')({
 	// The catalog is engine source rather than repo state, so this resolves on a

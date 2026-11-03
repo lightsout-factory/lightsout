@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { RepoHealthScreen } from '#src/repo/RepoHealthScreen/RepoHealthScreen.tsx';
-import { runsQueryOptions } from '#src/runs/runsQueryOptions.ts';
+import { RepoHealthScreen } from '#src/features/repo/screens/RepoHealthScreen.tsx';
+import { runsQueryOptions } from '#src/queries/runsQueryOptions.ts';
 
 export const Route = createFileRoute('/app/')({
 	head: () => ({ meta: [{ title: 'Health' }] }),

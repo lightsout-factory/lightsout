@@ -1,7 +1,7 @@
 import { createFileRoute, notFound } from '@tanstack/react-router';
-import { CommandDetailScreen } from '#src/commands/CommandDetailScreen/CommandDetailScreen.tsx';
-import { CommandNotFoundScreen } from '#src/commands/CommandNotFoundScreen.tsx';
-import { commandsQueryOptions } from '#src/commands/commandsQueryOptions.ts';
+import { commandsQueryOptions } from '#src/features/commands/queries/commandsQueryOptions.ts';
+import { CommandDetailScreen } from '#src/features/commands/screens/CommandDetailScreen.tsx';
+import { CommandNotFoundScreen } from '#src/features/commands/screens/CommandNotFoundScreen.tsx';
 
 const CommandNotFound = () => {
 	const { command } = Route.useParams();

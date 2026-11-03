@@ -1,8 +1,8 @@
 import { createFileRoute, notFound } from '@tanstack/react-router';
-import { defaultPackQueryOptions } from '#src/packs/defaultPackQueryOptions.ts';
-import { defaultPackRuleQueryOptions } from '#src/packs/defaultPackRuleQueryOptions.ts';
-import { RuleDetailScreen } from '#src/packs/RuleDetailScreen/RuleDetailScreen.tsx';
-import { RuleNotFoundScreen } from '#src/packs/RuleNotFoundScreen.tsx';
+import { defaultPackRuleQueryOptions } from '#src/features/packs/queries/defaultPackRuleQueryOptions.ts';
+import { RuleDetailScreen } from '#src/features/packs/screens/RuleDetailScreen.tsx';
+import { RuleNotFoundScreen } from '#src/features/packs/screens/RuleNotFoundScreen.tsx';
+import { defaultPackQueryOptions } from '#src/queries/defaultPackQueryOptions.ts';
 
 const RuleNotFound = () => {
 	const { library, rule } = Route.useParams();

@@ -1,8 +1,8 @@
 import { createFileRoute, notFound, useNavigate } from '@tanstack/react-router';
-import { CheckKind } from '#src/common/constants/CheckKind.ts';
-import { defaultPackQueryOptions } from '#src/packs/defaultPackQueryOptions.ts';
-import { PackNotFoundScreen } from '#src/packs/PackNotFoundScreen.tsx';
-import { PackScreen } from '#src/packs/PackScreen/PackScreen.tsx';
+import { CheckKind } from '#src/constants/CheckKind.ts';
+import { PackNotFoundScreen } from '#src/features/packs/screens/PackNotFoundScreen.tsx';
+import { PackScreen } from '#src/features/packs/screens/PackScreen.tsx';
+import { defaultPackQueryOptions } from '#src/queries/defaultPackQueryOptions.ts';
 
 interface PackSearch {
 	check?: CheckKind;

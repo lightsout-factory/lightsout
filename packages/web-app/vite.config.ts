@@ -4,7 +4,7 @@ import tailwindcss from '@tailwindcss/vite';
 import { tanstackStart } from '@tanstack/react-start/plugin/vite';
 import viteReact from '@vitejs/plugin-react';
 import { defineConfig, type Plugin } from 'vite';
-import { isPublicDeployment } from './src/isPublicDeployment.ts';
+import { isPublicDeployment } from './src/utils/isPublicDeployment.ts';
 
 /**
  * The engine imports its prompts as `.md` modules. esbuild

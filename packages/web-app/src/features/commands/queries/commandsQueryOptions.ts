@@ -1,0 +1,13 @@
+import { queryOptions } from '@tanstack/react-query';
+import { listCommandsServerFn } from '#src/features/commands/server/listCommandsServerFn.ts';
+
+/**
+ * One query for the whole catalog: it is small static data that changes only
+ * with the engine, so the detail page needs no second round trip and nothing
+ * is polled.
+ */
+export const commandsQueryOptions = () =>
+	queryOptions({
+		queryKey: ['commands'],
+		queryFn: () => listCommandsServerFn(),
+	});

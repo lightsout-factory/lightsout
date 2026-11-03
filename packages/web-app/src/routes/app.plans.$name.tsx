@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { PlanDetailScreen } from '#src/plans/PlanDetailScreen/PlanDetailScreen.tsx';
-import { PlanNotFoundScreen } from '#src/plans/PlanNotFoundScreen.tsx';
-import { planWorkspaceQueryOptions } from '#src/plans/planWorkspaceQueryOptions.ts';
+import { planWorkspaceQueryOptions } from '#src/features/plans/queries/planWorkspaceQueryOptions.ts';
+import { PlanDetailScreen } from '#src/features/plans/screens/PlanDetailScreen.tsx';
+import { PlanNotFoundScreen } from '#src/features/plans/screens/PlanNotFoundScreen.tsx';
 
 /** Reached because `getPlanWorkspaceServerFn` turns `PlanWorkspaceNotFoundError` into `notFound()` on the server. */
 const PlanNotFound = () => {

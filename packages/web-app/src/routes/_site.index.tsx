@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { HomeScreen } from '#src/home/HomeScreen/HomeScreen.tsx';
-import { homeMeta } from '#src/home/homeMeta.ts';
+import { homeMeta } from '#src/features/home/constants/homeMeta.ts';
+import { HomeScreen } from '#src/features/home/screens/HomeScreen.tsx';
 
 export const Route = createFileRoute('/_site/')({
 	// No loader: the default pack's numbers are left cold so the headline paints

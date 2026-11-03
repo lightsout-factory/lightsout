@@ -4,9 +4,9 @@ import { QueryClient } from '@tanstack/react-query';
 import { createRouter } from '@tanstack/react-router';
 import { screen } from '@testing-library/react';
 import type { ComponentType, ReactNode } from 'react';
+import { runQueryOptions } from '#src/features/runs/queries/runQueryOptions.ts';
+import { repoRootQueryOptions } from '#src/queries/repoRootQueryOptions.ts';
 import { routeTree } from '#src/routeTree.gen.ts';
-import { runQueryOptions } from '#src/runDetail/runQueryOptions.ts';
-import { repoRootQueryOptions } from '#src/shell/repoRootQueryOptions.ts';
 import { buildRunView } from '#tests/helpers/buildRunView.ts';
 import { renderWithQueryClient } from '#tests/helpers/renderWithQueryClient.tsx';
 
@@ -17,11 +17,11 @@ import { renderWithQueryClient } from '#tests/helpers/renderWithQueryClient.tsx'
 // of that chain. Stubbing the reader keeps the whole graph off disk.
 const mockGetRun = jest.fn<(params: { runId: string }) => Promise<RunView>>();
 
-jest.mock('#src/common/server/getReader/getReader.ts', () => ({ getReader: () => ({ getRun: (params: { runId: string }) => mockGetRun(params) }) }));
+jest.mock('#src/server/getReader.ts', () => ({ getReader: () => ({ getRun: (params: { runId: string }) => mockGetRun(params) }) }));
 // -------------------------
 // Whether a repo was found is answered by walking the real filesystem, so the
 // page would otherwise report whatever directory Jest happened to start in.
-jest.mock('#src/common/server/requireLocalRepoRoot/findRepoRoot.ts', () => ({
+jest.mock('#src/server/findRepoRoot.ts', () => ({
 	findRepoRoot: () => '/repos/lightsout',
 }));
 // -------------------------

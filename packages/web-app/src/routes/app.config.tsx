@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { ConfigScreen } from '#src/config/ConfigScreen/ConfigScreen.tsx';
-import { configQueryOptions } from '#src/config/configQueryOptions.ts';
+import { ConfigScreen } from '#src/features/config/screens/ConfigScreen.tsx';
+import { configQueryOptions } from '#src/queries/configQueryOptions.ts';
 
 export const Route = createFileRoute('/app/config')({
 	// A repo with no config answers this with the router's own not-found; a repo

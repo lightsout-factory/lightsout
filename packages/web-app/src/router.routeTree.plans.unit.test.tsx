@@ -4,8 +4,8 @@ import { QueryClient } from '@tanstack/react-query';
 import { createRouter } from '@tanstack/react-router';
 import { screen } from '@testing-library/react';
 import type { ComponentType, ReactNode } from 'react';
-import { planWorkspaceQueryOptions } from '#src/plans/planWorkspaceQueryOptions.ts';
-import { planWorkspacesQueryOptions } from '#src/plans/planWorkspacesQueryOptions.ts';
+import { planWorkspaceQueryOptions } from '#src/features/plans/queries/planWorkspaceQueryOptions.ts';
+import { planWorkspacesQueryOptions } from '#src/queries/planWorkspacesQueryOptions.ts';
 import { routeTree } from '#src/routeTree.gen.ts';
 import { buildPlanWorkspaceListing } from '#tests/helpers/buildPlanWorkspaceListing.ts';
 import { buildPlanWorkspaceView } from '#tests/helpers/buildPlanWorkspaceView.ts';
@@ -21,7 +21,7 @@ import { renderWithQueryClient } from '#tests/helpers/renderWithQueryClient.tsx'
 const mockListPlans = jest.fn<() => Promise<PlanWorkspaceListing[]>>();
 const mockGetPlanWorkspace = jest.fn<() => Promise<PlanWorkspaceView>>();
 
-jest.mock('#src/common/server/getReader/getReader.ts', () => ({
+jest.mock('#src/server/getReader.ts', () => ({
 	getReader: () => ({
 		listPlanWorkspaces: () => mockListPlans(),
 		getPlanWorkspace: () => mockGetPlanWorkspace(),

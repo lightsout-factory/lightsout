@@ -1,0 +1,94 @@
+import { describe, expect, jest, test } from '@jest/globals';
+import type { RunView } from '@lightsout/engine';
+import { fireEvent, screen } from '@testing-library/react';
+import type { ReactNode } from 'react';
+import { runQueryOptions } from '#src/features/runs/queries/runQueryOptions.ts';
+import { RunDetailScreen } from '#src/features/runs/screens/RunDetailScreen.tsx';
+import { buildRunView } from '#tests/helpers/buildRunView.ts';
+import { renderWithQueryClient } from '#tests/helpers/renderWithQueryClient.tsx';
+
+// Mocked Imports
+// -------------------------
+jest.mock('@tanstack/react-router', () => ({
+	Link: ({ to, params, children, className }: { to: string; params?: Record<string, string>; children: ReactNode; className?: string }) => (
+		<a href={Object.entries(params ?? {}).reduce((path, [name, value]) => path.replace(`$${name}`, value), to)} className={className}>
+			{children}
+		</a>
+	),
+}));
+// -------------------------
+
+const runId = 'abcdef0123456789';
+
+const setupFriction = ({ overrides = {}, tab }: { overrides?: Partial<RunView>; tab: string }) => {
+	jest.useFakeTimers();
+	renderWithQueryClient({
+		ui: <RunDetailScreen runId={runId} />,
+		seed: [{ queryKey: runQueryOptions({ runId }).queryKey, data: buildRunView({ overrides }) }],
+	});
+	// Friction and changed files are two tabs now, and a tab strip selects on the
+	// press rather than on the release.
+	fireEvent.mouseDown(screen.getByRole('tab', { name: tab }));
+};
+
+describe('RunDetailScreen friction and changed files', () => {
+	test('says a run reported no friction rather than showing an empty panel', () => {
+		setupFriction({ tab: 'Friction' });
+
+		const none = screen.getByText('This run reported no friction.');
+
+		expect(none).toBeInTheDocument();
+	});
+
+	test('gathers what fought the agents under the area each entry named, with a count', () => {
+		setupFriction({
+			tab: 'Friction',
+			overrides: {
+				friction: [
+					{ kind: 'friction', area: 'plan', detail: 'the plan named a file that is not on disk', at: '2026-01-01T00:01:00.000Z', runId, step: 'implement' },
+					{ kind: 'decision', area: 'plan', detail: 'chose the narrower barrel', at: '2026-01-01T00:02:00.000Z', runId, step: 'implement' },
+					{ area: 'environment', detail: 'the coverage report was stale', at: '2026-01-01T00:03:00.000Z', runId, step: 'write-tests' },
+				],
+			},
+		});
+
+		const areas = screen.getAllByText(/^(plan|environment) · \d+$/);
+
+		expect(areas.map((area) => area.textContent)).toStrictEqual(['plan · 2', 'environment · 1']);
+	});
+
+	test('reads an entry that named no kind as friction, which is what an omitted kind means', () => {
+		setupFriction({
+			tab: 'Friction',
+			overrides: { friction: [{ area: 'other', detail: 'the coverage report was stale', at: '2026-01-01T00:03:00.000Z', runId, step: 'write-tests' }] },
+		});
+
+		const entry = screen.getByText('the coverage report was stale').previousElementSibling;
+
+		expect(entry).toHaveTextContent('friction · write-tests');
+	});
+
+	test('says a run changed nothing rather than showing an empty list', () => {
+		setupFriction({ tab: 'Files' });
+
+		const none = screen.getByText('This run changed nothing.');
+
+		expect(none).toBeInTheDocument();
+	});
+
+	test('groups the changed files by area, so the blast radius reads by package first', () => {
+		setupFriction({ tab: 'Files', overrides: { changedFiles: ['packages/engine/src/a.ts', 'packages/engine/src/b.ts', 'packages/web-app/src/c.tsx'] } });
+
+		const areas = screen.getAllByText(/^packages\/(engine|web-app)$/);
+
+		expect(areas.map((area) => area.textContent)).toStrictEqual(['packages/engine', 'packages/web-app']);
+	});
+
+	test('counts the changed files in the panel heading', () => {
+		setupFriction({ tab: 'Files', overrides: { changedFiles: ['packages/engine/src/a.ts', 'packages/engine/src/b.ts'] } });
+
+		const heading = screen.getByRole('heading', { name: 'Changed files · 2' });
+
+		expect(heading).toBeInTheDocument();
+	});
+});

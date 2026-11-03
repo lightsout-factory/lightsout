@@ -327,7 +327,7 @@ describe('getStandardsPackBundle', () => {
 			name: bundle.name,
 			built: bundle.built,
 			packs: bundle.packs.map((pack) => pack.name),
-			holdsReact: topicsOf({ address: 'lightsout/react' }).has('code/frameworks/react'),
+			holdsReact: topicsOf({ address: 'lightsout/react' }).has('code/frameworks/react/layout'),
 			holdsTanstackStart: topicsOf({ address: 'lightsout/tanstack-start' }).has('tests/frameworks/tanstack-start'),
 		}).toStrictEqual({
 			name: 'lightsout',

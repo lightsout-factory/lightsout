@@ -4,10 +4,10 @@ import { QueryClient } from '@tanstack/react-query';
 import { createRouter, isNotFound } from '@tanstack/react-router';
 import { fireEvent, screen, within } from '@testing-library/react';
 import type { ComponentType, ReactNode } from 'react';
-import { defaultPackQueryOptions } from '#src/packs/defaultPackQueryOptions.ts';
-import { defaultPackRuleQueryOptions } from '#src/packs/defaultPackRuleQueryOptions.ts';
-import { getDefaultPackBundle } from '#src/packs/server/common/getDefaultPackBundle.ts';
+import { defaultPackRuleQueryOptions } from '#src/features/packs/queries/defaultPackRuleQueryOptions.ts';
+import { defaultPackQueryOptions } from '#src/queries/defaultPackQueryOptions.ts';
 import { routeTree } from '#src/routeTree.gen.ts';
+import { getDefaultPackBundle } from '#src/server/getDefaultPackBundle.ts';
 import { renderWithQueryClient } from '#tests/helpers/renderWithQueryClient.tsx';
 
 // Mocked Imports

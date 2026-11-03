@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { parseRunsSearch } from '#src/runs/parseRunsSearch/parseRunsSearch.ts';
-import { RunsScreen } from '#src/runs/RunsScreen/RunsScreen.tsx';
-import { runsQueryOptions } from '#src/runs/runsQueryOptions.ts';
+import { RunsScreen } from '#src/features/runs/screens/RunsScreen.tsx';
+import { parseRunsSearch } from '#src/features/runs/utils/parseRunsSearch.ts';
+import { runsQueryOptions } from '#src/queries/runsQueryOptions.ts';
 
 export const Route = createFileRoute('/app/runs')({
 	validateSearch: parseRunsSearch,

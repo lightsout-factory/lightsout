@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { RunDetailScreen } from '#src/runDetail/RunDetailScreen/RunDetailScreen.tsx';
-import { RunNotFoundScreen } from '#src/runDetail/RunNotFoundScreen.tsx';
-import { runQueryOptions } from '#src/runDetail/runQueryOptions.ts';
+import { runQueryOptions } from '#src/features/runs/queries/runQueryOptions.ts';
+import { RunDetailScreen } from '#src/features/runs/screens/RunDetailScreen.tsx';
+import { RunNotFoundScreen } from '#src/features/runs/screens/RunNotFoundScreen.tsx';
 
 // The trailing underscore on `runs_` stops the file router nesting this page
 // inside the runs list; the URL is still /app/runs/$runId.

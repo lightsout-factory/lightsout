@@ -1,7 +1,7 @@
 import { PlanStage } from '@lightsout/engine/contracts';
 import { createFileRoute } from '@tanstack/react-router';
-import { PlansScreen } from '#src/plans/PlansScreen/PlansScreen.tsx';
-import { planWorkspacesQueryOptions } from '#src/plans/planWorkspacesQueryOptions.ts';
+import { PlansScreen } from '#src/features/plans/screens/PlansScreen.tsx';
+import { planWorkspacesQueryOptions } from '#src/queries/planWorkspacesQueryOptions.ts';
 
 interface PlansSearch {
 	stage?: PlanStage;

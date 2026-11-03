@@ -75,7 +75,7 @@ describe('resolveStandards', () => {
 		const fractal = await resolveStandards({ cwd, config: fractalConfig });
 
 		// lightsout/react carries the React topic
-		expect(fractalWithReact.standards ?? '').toContain('<!-- lightsout: code/frameworks/react -->');
+		expect(fractalWithReact.standards ?? '').toContain('<!-- lightsout: code/frameworks/react/layout -->');
 		expect(fractalWithReact.groups.map((group) => group.pack.name)).toStrictEqual(['lightsout/fractal + lightsout/react']);
 		// nothing is detected: the root manifest declares react, and the named fractal pack still leaves its topic out
 		expect(fractal.standards ?? '').not.toContain('code/frameworks/react');

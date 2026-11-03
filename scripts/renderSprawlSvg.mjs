@@ -1,5 +1,5 @@
-import { buildSprawlLayout } from '../packages/web-app/src/sprawl/buildSprawlLayout/buildSprawlLayout.ts';
-import { sprawlUnitBox } from '../packages/web-app/src/sprawl/sprawlUnitBox.ts';
+import { sprawlUnitBox } from '../packages/web-app/src/features/sprawl/constants/sprawlUnitBox.ts';
+import { buildSprawlLayout } from '../packages/web-app/src/features/sprawl/utils/buildSprawlLayout.ts';
 
 /** `&`, `<` and `>` in a commit subject would otherwise close the tag they sit in. */
 const escapeText = ({ text }) => text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');

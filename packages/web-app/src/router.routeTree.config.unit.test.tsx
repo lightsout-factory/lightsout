@@ -4,7 +4,7 @@ import { QueryClient } from '@tanstack/react-query';
 import { createRouter } from '@tanstack/react-router';
 import { screen } from '@testing-library/react';
 import type { ComponentType, ReactNode } from 'react';
-import { configQueryOptions } from '#src/config/configQueryOptions.ts';
+import { configQueryOptions } from '#src/queries/configQueryOptions.ts';
 import { routeTree } from '#src/routeTree.gen.ts';
 import { buildConfigView } from '#tests/helpers/buildConfigView.ts';
 import { renderWithQueryClient } from '#tests/helpers/renderWithQueryClient.tsx';
@@ -18,7 +18,7 @@ import { renderWithQueryClient } from '#tests/helpers/renderWithQueryClient.tsx'
 // this repo's own lightsout.config.json happens to say today.
 const mockGetConfig = jest.fn<() => Promise<ConfigView>>();
 
-jest.mock('#src/common/server/getReader/getReader.ts', () => ({ getReader: () => ({ getConfig: () => mockGetConfig() }) }));
+jest.mock('#src/server/getReader.ts', () => ({ getReader: () => ({ getConfig: () => mockGetConfig() }) }));
 // -------------------------
 // Only the piece that needs a live router around it is stood in for, so this one
 // route's component can be rendered on its own. Everything else — above all

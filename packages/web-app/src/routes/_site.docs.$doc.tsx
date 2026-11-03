@@ -1,7 +1,7 @@
 import { createFileRoute, notFound } from '@tanstack/react-router';
-import { DocNotFoundScreen } from '#src/docs/DocNotFoundScreen.tsx';
-import { DocScreen } from '#src/docs/DocScreen/DocScreen.tsx';
-import { docPages } from '#src/docs/docPages.ts';
+import { docPages } from '#src/features/docs/constants/docPages.ts';
+import { DocNotFoundScreen } from '#src/features/docs/screens/DocNotFoundScreen.tsx';
+import { DocScreen } from '#src/features/docs/screens/DocScreen.tsx';
 
 const DocRoutePage = () => {
 	const { doc } = Route.useParams();
