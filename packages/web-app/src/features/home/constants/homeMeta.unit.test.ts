@@ -63,25 +63,19 @@ describe('homeMeta', () => {
 		});
 	});
 
-	test('leaves out the two that need one when no deploy origin was stated, rather than emitting a path a scraper ignores', () => {
+	test('leaves out the one that needs one when no deploy origin was stated, rather than emitting a path a scraper ignores', () => {
 		// The suite runs with VITE_SITE_ORIGIN unset, which is also local dev and
 		// any preview with no settled origin.
-		expect({ image: contentOf({ key: 'og:image' }), url: contentOf({ key: 'og:url' }) }).toStrictEqual({ image: undefined, url: undefined });
+		expect(contentOf({ key: 'og:url' })).toBeUndefined();
 	});
 
-	test('leaves them out for a build that declared the origin but left it blank, which states no origin either', () => {
+	test('leaves it out for a build that declared the origin but left it blank, which states no origin either', () => {
 		const { meta } = setupHomeMeta({ siteOrigin: '' });
 
-		expect({ image: contentOf({ key: 'og:image', meta }), url: contentOf({ key: 'og:url', meta }) }).toStrictEqual({ image: undefined, url: undefined });
+		expect(contentOf({ key: 'og:url', meta })).toBeUndefined();
 	});
 
-	test('points the preview image at the deploy’s own origin, absolute, as a scraper requires', () => {
-		const { meta } = setupHomeMeta({ siteOrigin: 'https://lightsout.dev' });
-
-		expect(contentOf({ key: 'og:image', meta })).toMatch(/^https:\/\/lightsout\.dev\/.+/);
-	});
-
-	test('keeps the four tags that need no origin when one is stated, so nothing is traded for the image', () => {
+	test('keeps the four tags that need no origin when one is stated, so nothing is traded for the page URL', () => {
 		const { meta } = setupHomeMeta({ siteOrigin: 'https://lightsout.dev' });
 
 		expect({ title: contentOf({ key: 'og:title', meta }), description: contentOf({ key: 'og:description', meta }) }).toStrictEqual({
