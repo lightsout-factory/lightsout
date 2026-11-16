@@ -32,9 +32,9 @@ module.exports = createJestConfig({
 		// Jest would hand the binary to the JavaScript parser.
 		//
 		// Ahead of `#assets` deliberately: Jest stops at the first pattern that
-		// matches, and that one would rewrite the specifier to a real `.gif` on
+		// matches, and that one would rewrite the specifier to a real `.svg` on
 		// disk first.
-		'\\.(gif|svg)(\\?.*)?$': join(__dirname, 'tests', 'stubs', 'styleUrl.ts'),
+		'\\.svg(\\?.*)?$': join(__dirname, 'tests', 'stubs', 'styleUrl.ts'),
 		// Mirrors tsconfig.json `paths` and vite.config.ts `resolve.alias`. Spelled
 		// three times rather than once in package.json `imports` because a package
 		// import may not escape the package.
