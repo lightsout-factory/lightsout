@@ -13,10 +13,13 @@ import { Route as AppRouteImport } from './routes/app'
 import { Route as SiteRouteImport } from './routes/_site'
 import { Route as AppIndexRouteImport } from './routes/app.index'
 import { Route as SiteIndexRouteImport } from './routes/_site.index'
+import { Route as AppQueueRouteImport } from './routes/app.queue'
 import { Route as SiteStandardsPacksIndexRouteImport } from './routes/_site.standards-packs.index'
 import { Route as SiteCommandsIndexRouteImport } from './routes/_site.commands.index'
 import { Route as SiteDocsDocRouteImport } from './routes/_site.docs.$doc'
 import { Route as SiteCommandsCommandRouteImport } from './routes/_site.commands.$command'
+import { Route as AppWorkOrdersWorkOrderIndexRouteImport } from './routes/app.work-orders.$workOrder.index'
+import { Route as AppWorkOrdersWorkOrderPlansPlanRouteImport } from './routes/app.work-orders.$workOrder.plans.$plan'
 import { Route as SiteStandardsPacksLibraryRulesRuleRouteImport } from './routes/_site.standards-packs.$library.rules.$rule'
 import { Route as SiteStandardsPacksLibraryPacksPackRouteImport } from './routes/_site.standards-packs.$library.packs.$pack'
 
@@ -39,6 +42,11 @@ const SiteIndexRoute = SiteIndexRouteImport.update({
   path: '/',
   getParentRoute: () => SiteRoute,
 } as any)
+const AppQueueRoute = AppQueueRouteImport.update({
+  id: '/queue',
+  path: '/queue',
+  getParentRoute: () => AppRoute,
+} as any)
 const SiteStandardsPacksIndexRoute = SiteStandardsPacksIndexRouteImport.update({
   id: '/standards-packs/',
   path: '/standards-packs/',
@@ -59,6 +67,18 @@ const SiteCommandsCommandRoute = SiteCommandsCommandRouteImport.update({
   path: '/commands/$command',
   getParentRoute: () => SiteRoute,
 } as any)
+const AppWorkOrdersWorkOrderIndexRoute =
+  AppWorkOrdersWorkOrderIndexRouteImport.update({
+    id: '/work-orders/$workOrder/',
+    path: '/work-orders/$workOrder/',
+    getParentRoute: () => AppRoute,
+  } as any)
+const AppWorkOrdersWorkOrderPlansPlanRoute =
+  AppWorkOrdersWorkOrderPlansPlanRouteImport.update({
+    id: '/work-orders/$workOrder/plans/$plan',
+    path: '/work-orders/$workOrder/plans/$plan',
+    getParentRoute: () => AppRoute,
+  } as any)
 const SiteStandardsPacksLibraryRulesRuleRoute =
   SiteStandardsPacksLibraryRulesRuleRouteImport.update({
     id: '/standards-packs/$library/rules/$rule',
@@ -75,71 +95,89 @@ const SiteStandardsPacksLibraryPacksPackRoute =
 export interface FileRoutesByFullPath {
   '/': typeof SiteIndexRoute
   '/app': typeof AppRouteWithChildren
+  '/app/queue': typeof AppQueueRoute
   '/app/': typeof AppIndexRoute
   '/commands/$command': typeof SiteCommandsCommandRoute
   '/docs/$doc': typeof SiteDocsDocRoute
   '/commands/': typeof SiteCommandsIndexRoute
   '/standards-packs/': typeof SiteStandardsPacksIndexRoute
+  '/app/work-orders/$workOrder/': typeof AppWorkOrdersWorkOrderIndexRoute
   '/standards-packs/$library/packs/$pack': typeof SiteStandardsPacksLibraryPacksPackRoute
   '/standards-packs/$library/rules/$rule': typeof SiteStandardsPacksLibraryRulesRuleRoute
+  '/app/work-orders/$workOrder/plans/$plan': typeof AppWorkOrdersWorkOrderPlansPlanRoute
 }
 export interface FileRoutesByTo {
+  '/app/queue': typeof AppQueueRoute
   '/': typeof SiteIndexRoute
   '/app': typeof AppIndexRoute
   '/commands/$command': typeof SiteCommandsCommandRoute
   '/docs/$doc': typeof SiteDocsDocRoute
   '/commands': typeof SiteCommandsIndexRoute
   '/standards-packs': typeof SiteStandardsPacksIndexRoute
+  '/app/work-orders/$workOrder': typeof AppWorkOrdersWorkOrderIndexRoute
   '/standards-packs/$library/packs/$pack': typeof SiteStandardsPacksLibraryPacksPackRoute
   '/standards-packs/$library/rules/$rule': typeof SiteStandardsPacksLibraryRulesRuleRoute
+  '/app/work-orders/$workOrder/plans/$plan': typeof AppWorkOrdersWorkOrderPlansPlanRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_site': typeof SiteRouteWithChildren
   '/app': typeof AppRouteWithChildren
+  '/app/queue': typeof AppQueueRoute
   '/_site/': typeof SiteIndexRoute
   '/app/': typeof AppIndexRoute
   '/_site/commands/$command': typeof SiteCommandsCommandRoute
   '/_site/docs/$doc': typeof SiteDocsDocRoute
   '/_site/commands/': typeof SiteCommandsIndexRoute
   '/_site/standards-packs/': typeof SiteStandardsPacksIndexRoute
+  '/app/work-orders/$workOrder/': typeof AppWorkOrdersWorkOrderIndexRoute
   '/_site/standards-packs/$library/packs/$pack': typeof SiteStandardsPacksLibraryPacksPackRoute
   '/_site/standards-packs/$library/rules/$rule': typeof SiteStandardsPacksLibraryRulesRuleRoute
+  '/app/work-orders/$workOrder/plans/$plan': typeof AppWorkOrdersWorkOrderPlansPlanRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/app'
+    | '/app/queue'
     | '/app/'
     | '/commands/$command'
     | '/docs/$doc'
     | '/commands/'
     | '/standards-packs/'
+    | '/app/work-orders/$workOrder/'
     | '/standards-packs/$library/packs/$pack'
     | '/standards-packs/$library/rules/$rule'
+    | '/app/work-orders/$workOrder/plans/$plan'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/app/queue'
     | '/'
     | '/app'
     | '/commands/$command'
     | '/docs/$doc'
     | '/commands'
     | '/standards-packs'
+    | '/app/work-orders/$workOrder'
     | '/standards-packs/$library/packs/$pack'
     | '/standards-packs/$library/rules/$rule'
+    | '/app/work-orders/$workOrder/plans/$plan'
   id:
     | '__root__'
     | '/_site'
     | '/app'
+    | '/app/queue'
     | '/_site/'
     | '/app/'
     | '/_site/commands/$command'
     | '/_site/docs/$doc'
     | '/_site/commands/'
     | '/_site/standards-packs/'
+    | '/app/work-orders/$workOrder/'
     | '/_site/standards-packs/$library/packs/$pack'
     | '/_site/standards-packs/$library/rules/$rule'
+    | '/app/work-orders/$workOrder/plans/$plan'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -177,6 +215,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SiteIndexRouteImport
       parentRoute: typeof SiteRoute
     }
+    '/app/queue': {
+      id: '/app/queue'
+      path: '/queue'
+      fullPath: '/app/queue'
+      preLoaderRoute: typeof AppQueueRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_site/standards-packs/': {
       id: '/_site/standards-packs/'
       path: '/standards-packs'
@@ -204,6 +249,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/commands/$command'
       preLoaderRoute: typeof SiteCommandsCommandRouteImport
       parentRoute: typeof SiteRoute
+    }
+    '/app/work-orders/$workOrder/': {
+      id: '/app/work-orders/$workOrder/'
+      path: '/work-orders/$workOrder'
+      fullPath: '/app/work-orders/$workOrder/'
+      preLoaderRoute: typeof AppWorkOrdersWorkOrderIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/work-orders/$workOrder/plans/$plan': {
+      id: '/app/work-orders/$workOrder/plans/$plan'
+      path: '/work-orders/$workOrder/plans/$plan'
+      fullPath: '/app/work-orders/$workOrder/plans/$plan'
+      preLoaderRoute: typeof AppWorkOrdersWorkOrderPlansPlanRouteImport
+      parentRoute: typeof AppRoute
     }
     '/_site/standards-packs/$library/rules/$rule': {
       id: '/_site/standards-packs/$library/rules/$rule'
@@ -247,11 +306,17 @@ const SiteRouteChildren: SiteRouteChildren = {
 const SiteRouteWithChildren = SiteRoute._addFileChildren(SiteRouteChildren)
 
 interface AppRouteChildren {
+  AppQueueRoute: typeof AppQueueRoute
   AppIndexRoute: typeof AppIndexRoute
+  AppWorkOrdersWorkOrderIndexRoute: typeof AppWorkOrdersWorkOrderIndexRoute
+  AppWorkOrdersWorkOrderPlansPlanRoute: typeof AppWorkOrdersWorkOrderPlansPlanRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppQueueRoute: AppQueueRoute,
   AppIndexRoute: AppIndexRoute,
+  AppWorkOrdersWorkOrderIndexRoute: AppWorkOrdersWorkOrderIndexRoute,
+  AppWorkOrdersWorkOrderPlansPlanRoute: AppWorkOrdersWorkOrderPlansPlanRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
