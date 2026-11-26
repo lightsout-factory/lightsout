@@ -34,7 +34,7 @@ describe('NotFound', () => {
 	test('offers a way back to the runs list', () => {
 		setupNotFound();
 
-		const home = screen.getByRole('link', { name: 'Back to runs' });
+		const home = screen.getByRole('link', { name: 'Back to home' });
 
 		expect(home).toHaveAttribute('href', '/');
 	});

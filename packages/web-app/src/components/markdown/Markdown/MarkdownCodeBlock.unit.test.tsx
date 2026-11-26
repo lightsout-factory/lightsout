@@ -38,4 +38,13 @@ describe('MarkdownCodeBlock', () => {
 
 		expect(document.querySelector('pre')?.textContent).toBe('pnpm install');
 	});
+
+	test('renders an empty text block when handed something other than the one code element', () => {
+		render(<MarkdownCodeBlock>loose words</MarkdownCodeBlock>);
+
+		expect({ copy: screen.getByRole('button', { name: 'Copy text' }), text: document.querySelector('pre')?.textContent?.trim() }).toStrictEqual({
+			copy: expect.anything(),
+			text: '',
+		});
+	});
 });

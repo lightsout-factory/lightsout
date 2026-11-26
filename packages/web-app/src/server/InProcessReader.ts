@@ -1,4 +1,4 @@
-import { getConfigView, getPlanDocument, getPlanWorkspace, getRunView, getStandardsView, listPlanWorkspaces, listRuns, readFriction } from '@lightsout/engine';
+import { getPlanWorkspace } from '@lightsout/engine';
 import type { LightsoutReader } from '#src/server/LightsoutReader.ts';
 
 interface ConstructorParams {
@@ -15,34 +15,6 @@ export class InProcessReader implements LightsoutReader {
 
 	constructor({ repoRoot }: ConstructorParams) {
 		this.repoRoot = repoRoot;
-	}
-
-	listRuns() {
-		return listRuns({ cwd: this.repoRoot });
-	}
-
-	getRun({ runId }: { runId: string }) {
-		return getRunView({ cwd: this.repoRoot, runId });
-	}
-
-	getStandards() {
-		return getStandardsView({ cwd: this.repoRoot });
-	}
-
-	getPlan({ path }: { path: string }) {
-		return getPlanDocument({ cwd: this.repoRoot, path });
-	}
-
-	getFriction() {
-		return readFriction({ cwd: this.repoRoot });
-	}
-
-	getConfig() {
-		return getConfigView({ cwd: this.repoRoot });
-	}
-
-	listPlanWorkspaces() {
-		return listPlanWorkspaces({ cwd: this.repoRoot });
 	}
 
 	getPlanWorkspace({ name }: { name: string }) {

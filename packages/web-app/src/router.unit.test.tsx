@@ -1,5 +1,4 @@
 import { describe, expect, jest, test } from '@jest/globals';
-import type { RunListing } from '@lightsout/engine';
 import { QueryClient } from '@tanstack/react-query';
 import type { AnyRouter } from '@tanstack/react-router';
 import type { ReactElement } from 'react';
@@ -8,16 +7,6 @@ import { NotFound } from '#src/components/boundaries/NotFound.tsx';
 import { getRouter } from '#src/router.tsx';
 
 // Mocked Imports
-// -------------------------
-// Building a router loads the generated route tree, which loads every route
-// module and everything those render — and the runs route reaches the engine's
-// filesystem reader at the far end of that chain. Stubbing the reader keeps the
-// graph off disk, leaving this file asserting on what `getRouter` itself
-// decides: where the app can navigate, and what it renders when a route throws
-// or matches nothing. Nothing here is called while a router is built.
-const mockListRuns = jest.fn<() => Promise<RunListing[]>>();
-
-jest.mock('#src/server/getReader.ts', () => ({ getReader: () => ({ listRuns: () => mockListRuns() }) }));
 // -------------------------
 // The query integration reaches the router's server-side header helpers, which
 // require an ESM-only cookie package that Jest's CommonJS loader cannot parse.
@@ -32,7 +21,6 @@ jest.mock('@tanstack/react-router-with-query', () => ({
 // -------------------------
 
 const setupRouter = () => {
-	mockListRuns.mockResolvedValue([]);
 	mockRouterWithQueryClient.mockImplementation((router) => router);
 };
 
@@ -72,13 +60,6 @@ describe('getRouter', () => {
 			'/_site/standards-packs/$library/rules/$rule',
 			'/app',
 			'/app/',
-			'/app/config',
-			'/app/friction',
-			'/app/plans/',
-			'/app/plans/$name',
-			'/app/runs',
-			'/app/runs_/$runId',
-			'/app/standards',
 			'__root__',
 		]);
 	});

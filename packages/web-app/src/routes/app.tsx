@@ -1,5 +1,5 @@
 import { createFileRoute, notFound } from '@tanstack/react-router';
-import { AppLayout } from '#src/layouts/AppLayout.tsx';
+import { SiteLayout } from '#src/layouts/SiteLayout.tsx';
 import { repoRootQueryOptions } from '#src/queries/repoRootQueryOptions.ts';
 import { isPublicDeployment } from '#src/utils/isPublicDeployment.ts';
 
@@ -20,5 +20,5 @@ export const Route = createFileRoute('/app')({
 
 		await context.queryClient.ensureQueryData(repoRootQueryOptions());
 	},
-	component: AppLayout,
+	component: SiteLayout,
 });

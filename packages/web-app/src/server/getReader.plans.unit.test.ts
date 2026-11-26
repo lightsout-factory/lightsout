@@ -87,58 +87,11 @@ const setupPlansReader = async ({ grade = gradeText }: { grade?: string } = {}):
 	return { reader: getReader() };
 };
 
-/**
- * A repo of somebody's own that nobody has planned in: its `.lightsout/` is
- * there and no plans folder was ever created.
- *
- * A second arrangement rather than a parameter, because what it arranges is a
- * missing folder rather than an empty one — the case the health tile's count
- * reads on a fresh clone.
- */
-const setupUnplannedRepo = async (): Promise<{ reader: LightsoutReader }> => {
-	const repoRoot = await mkdtemp(join(tmpdir(), 'lightsout-reader-unplanned-'));
-
-	await mkdir(join(repoRoot, '.lightsout'), { recursive: true });
-
-	process.env.LIGHTSOUT_REPO = repoRoot;
-
-	return { reader: getReader() };
-};
-
 afterEach(() => {
 	delete process.env.LIGHTSOUT_REPO;
 });
 
 describe('getReader plans', () => {
-	test('hands back the whole plans row unreshaped — every field the table, the health tile and the command cards read', async () => {
-		const { reader } = await setupPlansReader();
-
-		const listings = await reader.listPlanWorkspaces();
-
-		expect(listings).toEqual([
-			{
-				name: 'search-ranking/001-ranking',
-				stage: 'implemented',
-				grade: 'A',
-				hasNotes: true,
-				hasPlanFile: true,
-				phased: true,
-				phaseCount: 2,
-				runCount: 1,
-				implementedFiles: [expect.objectContaining({ name: 'implemented/phase0-spike.md' })],
-				updatedAt: expect.any(String),
-			},
-		]);
-	});
-
-	test('lists nothing for a repo nobody has planned in, rather than failing the page that counts open plans', async () => {
-		const { reader } = await setupUnplannedRepo();
-
-		const listings = await reader.listPlanWorkspaces();
-
-		expect(listings).toStrictEqual([]);
-	});
-
 	test('returns one workspace with its records parsed and its transcripts named rather than read', async () => {
 		const { reader } = await setupPlansReader();
 

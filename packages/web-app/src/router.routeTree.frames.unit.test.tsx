@@ -1,5 +1,4 @@
 import { afterEach, describe, expect, jest, test } from '@jest/globals';
-import type { RunListing, StandardsView } from '@lightsout/engine';
 import { QueryClient } from '@tanstack/react-query';
 import { createRouter, isNotFound } from '@tanstack/react-router';
 import { screen } from '@testing-library/react';
@@ -7,28 +6,11 @@ import type { ComponentType, ReactNode } from 'react';
 import { Theme } from '#src/constants/Theme.ts';
 import { ThemeProvider } from '#src/providers/ThemeProvider.tsx';
 import { repoRootQueryOptions } from '#src/queries/repoRootQueryOptions.ts';
-import { runsQueryOptions } from '#src/queries/runsQueryOptions.ts';
 import { routeTree } from '#src/routeTree.gen.ts';
-import { buildRunListing } from '#tests/helpers/buildRunListing.ts';
-import { buildStandardsView } from '#tests/helpers/buildStandardsView.ts';
 import { renderWithQueryClient } from '#tests/helpers/renderWithQueryClient.tsx';
 
 // Mocked Imports
 // -------------------------
-// The route tree loads every route module and everything those modules render,
-// and the runs route reaches the engine's filesystem reader at the far end of
-// that chain. Stubbing the reader keeps the whole graph off disk.
-const mockListRuns = jest.fn<() => Promise<RunListing[]>>();
-const mockGetStandards = jest.fn<() => Promise<StandardsView>>();
-
-jest.mock('#src/server/getReader.ts', () => ({
-	getReader: () => ({
-		listRuns: () => mockListRuns(),
-		getStandards: () => mockGetStandards(),
-		getFriction: () => Promise.resolve([]),
-		listPlanWorkspaces: () => Promise.resolve([]),
-	}),
-}));
 // -------------------------
 // Which repo is open is answered by walking the real filesystem, so the app
 // frame would otherwise report whatever directory Jest happened to start in.
@@ -39,11 +21,6 @@ const mockRequireLocalRepoRoot = jest.fn<() => string>();
 jest.mock('#src/server/requireLocalRepoRoot.ts', () => ({
 	requireLocalRepoRoot: () => mockRequireLocalRepoRoot(),
 }));
-// -------------------------
-// The runs page holds its filters in the URL, and outside a live router there is
-// nothing to read them from or navigate with.
-const mockNavigate = jest.fn<(options: { search: Record<string, unknown>; replace: boolean }) => void>();
-const mockSearch: Record<string, unknown> = {};
 // -------------------------
 // Only the pieces that need a live router around them are stood in for, so a
 // single route's component can be rendered on its own. Everything else — above
@@ -62,9 +39,6 @@ jest.mock('@tanstack/react-router', () => {
 				{children}
 			</a>
 		),
-		useRouter: () => ({ invalidate: () => Promise.resolve() }),
-		useSearch: () => mockSearch,
-		useNavigate: () => mockNavigate,
 	};
 });
 // -------------------------
@@ -84,21 +58,18 @@ interface FilePage {
 }
 
 interface SetupParams {
-	runs?: RunListing[];
 	/** The repository root the app is rendered against. */
 	repoRoot?: string;
 }
 
-const setupRouteTree = ({ runs = [buildRunListing()], repoRoot = '/repos/lightsout' }: SetupParams = {}) => {
-	mockListRuns.mockResolvedValue(runs);
-	mockGetStandards.mockResolvedValue(buildStandardsView());
+const setupRouteTree = ({ repoRoot = '/repos/lightsout' }: SetupParams = {}) => {
 	mockRequireLocalRepoRoot.mockReturnValue(repoRoot);
 
 	const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
 	const router = createRouter({ routeTree, context: { queryClient } });
 	const pages = (router as unknown as { routesById: Record<string, FilePage> }).routesById;
 
-	return { pages, queryClient, repoRoot, runs };
+	return { pages, queryClient, repoRoot };
 };
 
 /** The app frame's gate, on a local dev server or on the public site. */
@@ -125,7 +96,7 @@ const catchRefusal = async ({ attempt }: { attempt: () => Promise<void> }): Prom
 
 /** One of the two frames — `/_site` or `/app` — with a route open inside it. */
 const setupFrame = ({ id, ...params }: SetupParams & { id: string }) => {
-	const { pages, repoRoot, runs } = setupRouteTree(params);
+	const { pages, repoRoot } = setupRouteTree(params);
 	const Frame = pages[id].options.component;
 
 	renderWithQueryClient({
@@ -136,10 +107,7 @@ const setupFrame = ({ id, ...params }: SetupParams & { id: string }) => {
 				<Frame />
 			</ThemeProvider>
 		),
-		seed: [
-			{ queryKey: repoRootQueryOptions().queryKey, data: { repoRoot } },
-			{ queryKey: runsQueryOptions().queryKey, data: runs },
-		],
+		seed: [{ queryKey: repoRootQueryOptions().queryKey, data: { repoRoot } }],
 	});
 };
 
@@ -170,15 +138,12 @@ afterEach(() => {
 });
 
 describe('routeTree frames', () => {
-	test('fetches which repo is open before any app page loads, leaving run state to the pages that show it', async () => {
+	test('fetches which repo is open before any app page loads', async () => {
 		const { beforeLoad, queryClient, repoRoot } = setupAppGate();
 
 		await beforeLoad({ context: { queryClient } });
 
-		expect({ repoRoot: queryClient.getQueryData(repoRootQueryOptions().queryKey), runs: queryClient.getQueryData(runsQueryOptions().queryKey) }).toStrictEqual({
-			repoRoot: { repoRoot },
-			runs: undefined,
-		});
+		expect(queryClient.getQueryData(repoRootQueryOptions().queryKey)).toStrictEqual({ repoRoot });
 	});
 
 	test('answers not-found for the whole app on the public site, before any page under it loads', async () => {
@@ -195,14 +160,6 @@ describe('routeTree frames', () => {
 		await catchRefusal({ attempt: () => beforeLoad({ context: { queryClient } }) });
 
 		expect(mockRequireLocalRepoRoot).not.toHaveBeenCalled();
-	});
-
-	test('gives the app frame the local zone when a repo was found', () => {
-		setupFrame({ id: '/app', repoRoot: '/repos/other-project' });
-
-		const zone = screen.getByRole('navigation', { name: 'Your repo' });
-
-		expect(zone.textContent).toContain('Runs');
 	});
 
 	test('leaves the local zone out of the site frame, so the landing page is not wearing a sidebar', () => {

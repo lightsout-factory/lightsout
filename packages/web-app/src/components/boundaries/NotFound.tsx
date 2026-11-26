@@ -10,7 +10,7 @@ export const NotFound = ({ children }: Props) => (
 	<div className="flex flex-col items-start gap-3 p-8">
 		<p className="text-muted-foreground text-sm">{children ?? 'That page does not exist.'}</p>
 		<Button asChild size="sm">
-			<Link to="/">Back to runs</Link>
+			<Link to="/">Back to home</Link>
 		</Button>
 	</div>
 );

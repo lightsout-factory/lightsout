@@ -3,7 +3,7 @@
 	"version": "0.0.1",
 	"private": true,
 	"type": "module",
-	"description": "Local viewer for lightsout runs and the standards check.",
+	"description": "The lightsout site, and a local browser over the work orders and the queue.",
 	"license": "MIT",
 	"imports": {
 		"#src/*": "./src/*",
