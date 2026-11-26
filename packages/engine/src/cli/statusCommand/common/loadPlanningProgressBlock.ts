@@ -6,9 +6,10 @@ import type { PlanningProgress } from '#src/contracts/plan/progress/PlanningProg
 import { PlanningStep } from '#src/contracts/plan/progress/PlanningStep.ts';
 import type { PlanningStepRecord } from '#src/contracts/plan/progress/PlanningStepRecord.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
+import { buildPlanningStepRows } from '#src/plan/progress/buildPlanningStepRows.ts';
 import { getPlanningProgressPath } from '#src/plan/progress/getPlanningProgressPath.ts';
+import { isPlanningStepLive } from '#src/plan/progress/isPlanningStepLive.ts';
 import { readPlanningProgress } from '#src/plan/progress/readPlanningProgress.ts';
-import { isPidAlive } from '#src/runState/liveness/isPidAlive.ts';
 
 /** Newest start first, so a tie between two running entries goes to the one that started last. */
 const splitRunning = ({ steps }: { steps: PlanningStepRecord[] }) => {
@@ -17,37 +18,11 @@ const splitRunning = ({ steps }: { steps: PlanningStepRecord[] }) => {
 	const dead: PlanningStepRecord[] = [];
 
 	for (const entry of running) {
-		(isPidAlive({ pid: entry.pid }) ? live : dead).push(entry);
+		(isPlanningStepLive({ step: entry }) ? live : dead).push(entry);
 	}
 
 	return { live, dead };
 };
-
-/**
- * A running entry whose recording process is gone is drawn failed with no
- * clock: it can no longer finish, and drawing it running would make a crashed
- * plan look busy.
- */
-const planningRows = ({ steps, live, nowMs }: { steps: PlanningStepRecord[]; live: PlanningStepRecord[]; nowMs: number }) =>
-	Object.values(PlanningStep).map((step) => {
-		const entry = steps.find((candidate) => candidate.step === step);
-
-		if (entry === undefined) {
-			return { id: step, status: undefined, attempts: 0, durationMs: undefined };
-		}
-
-		let status = entry.status;
-		let durationMs = entry.durationMs;
-
-		if (entry.status === RunStatus.Running) {
-			const isLive = live.includes(entry);
-
-			status = isLive ? RunStatus.Running : RunStatus.Failed;
-			durationMs = isLive ? nowMs - Date.parse(entry.startedAt) : undefined;
-		}
-
-		return { id: step, status, attempts: entry.attempts, durationMs };
-	});
 
 /** Measured from the first step's start, because the time between steps is real planning time. */
 const planningTotals = ({
@@ -109,7 +84,7 @@ export const loadPlanningProgressBlock = async ({ cwd, name }: Params): Promise<
 	}
 
 	const { live, dead } = splitRunning({ steps: progress.steps });
-	const rows = planningRows({ steps: progress.steps, live, nowMs });
+	const rows = buildPlanningStepRows({ steps: progress.steps, live, nowMs });
 	const passed = rows.filter((row) => row.status === RunStatus.Passed).length;
 
 	return renderProgressBlock({

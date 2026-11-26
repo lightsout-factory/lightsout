@@ -215,6 +215,30 @@ describe('loadPlanningProgressBlock', () => {
 		expect(lines.at(-1)).toContain(localClock({ iso: '2026-09-10T10:12:10.000Z' }));
 	});
 
+	test('two running steps, one live and one dead, draw running and failed in step order', async () => {
+		// the record lists dedup before draft, so the rows follow step order, not record order
+		const { cwd } = await setupPlanningBlock({
+			record: recordOf({
+				steps: [
+					entryOf({ step: PlanningStep.Dedup, status: RunStatus.Running, pid: deadPid, startedAt: '2026-09-10T10:12:00.000Z' }),
+					entryOf({ step: PlanningStep.Draft, status: RunStatus.Running, pid: process.pid, startedAt: '2026-09-10T10:11:00.000Z' }),
+				],
+			}),
+		});
+
+		const lines = await loadPlanningProgressBlock({ cwd, name });
+
+		expect(lines.slice(2, 7)).toEqual([
+			notReached.verifyFacts,
+			expect.stringMatching(/^ ▶ {2}draft +running +1m 30s$/),
+			expect.stringMatching(/^ ✗ {2}dedup +failed +—$/),
+			notReached.grade,
+			notReached.publish,
+		]);
+		expect(lines.at(-1)).toMatch(/^ now {2}.*draft.*running/i);
+		expect(lines.at(-1)).not.toContain('dedup');
+	});
+
 	test.each([{ record: sampleRecord({ draftPid: process.pid }) }, { record: finishedRecord() }, { record: recordOf({ steps: [] }) }])(
 		'the title line carries the plan name and the planning tag, flush with the rule',
 		async ({ record }) => {

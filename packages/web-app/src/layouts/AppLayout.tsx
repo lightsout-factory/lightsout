@@ -1,19 +1,26 @@
-import { Outlet } from '@tanstack/react-router';
-import { TopNav } from '#src/layouts/TopNav.tsx';
-import { ZoneNav } from '#src/layouts/ZoneNav.tsx';
+import { Link, Outlet } from '@tanstack/react-router';
+import { SiteHeader } from '#src/layouts/SiteHeader.tsx';
+
+const repoLinkClasses = 'font-medium text-muted-foreground-strong transition-colors hover:text-foreground';
 
 /**
- * The main column is its own scroll container rather than the document, so a
- * wide table scrolls inside the page instead of pushing the layout sideways.
+ * The `/app` frame: the site's own header, so the local browser reads as part
+ * of the site, over a navigation of its two places. The document scrolls, as on
+ * the public site.
  */
 export const AppLayout = () => (
-	<div className="flex h-screen min-h-0 w-full flex-col">
-		<TopNav />
-		<div className="flex min-h-0 flex-1 flex-col lg:flex-row">
-			<ZoneNav />
-			<main className="min-w-0 flex-1 overflow-y-auto">
-				<Outlet />
-			</main>
-		</div>
+	<div className="relative min-h-screen w-full">
+		<SiteHeader />
+		<nav aria-label="Your repo" className="mx-auto flex w-full max-w-6xl items-center gap-6 px-4 pt-6 text-sm">
+			<Link to="/app" className={repoLinkClasses}>
+				Work orders
+			</Link>
+			<Link to="/app/queue" className={repoLinkClasses}>
+				Queue
+			</Link>
+		</nav>
+		<main>
+			<Outlet />
+		</main>
 	</div>
 );

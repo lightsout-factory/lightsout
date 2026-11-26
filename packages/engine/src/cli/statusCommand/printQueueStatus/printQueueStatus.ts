@@ -1,33 +1,22 @@
-import { QueueBoardState } from '#src/cli/common/constants/QueueBoardState.ts';
 import { renderQueueBoard } from '#src/cli/common/queueBoard/renderQueueBoard.ts';
 import { loadActiveTicketBlock } from '#src/cli/statusCommand/printQueueStatus/loadActiveTicketBlock.ts';
 import { renderTicketDetailBlock } from '#src/cli/statusCommand/printQueueStatus/renderTicketDetailBlock.ts';
 import { resolveQueueRun } from '#src/cli/statusCommand/printQueueStatus/resolveQueueRun.ts';
+import { QueueBoardState } from '#src/contracts/queue/QueueBoardState.ts';
 import type { QueueBoardTicket } from '#src/contracts/queue/QueueBoardTicket.ts';
 import { QueueLane } from '#src/contracts/queue/QueueLane.ts';
 import { PipelineKind } from '#src/contracts/run/PipelineKind.ts';
-import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import type { RunListing } from '#src/contracts/views/RunListing.ts';
 import { getQueueBoardPath } from '#src/queue/board/getQueueBoardPath.ts';
 import { readQueueBoard } from '#src/queue/board/readQueueBoard.ts';
 import { readQueueSummary } from '#src/queue/board/readQueueSummary.ts';
-
-const toBoardState = ({ listing }: { listing: RunListing }) => {
-	const going = listing.status === RunStatus.Running || listing.status === RunStatus.Pending;
-	let state: QueueBoardState = QueueBoardState.Finished;
-
-	if (going) {
-		state = listing.live ? QueueBoardState.Live : QueueBoardState.Stopped;
-	}
-
-	return state;
-};
+import { toQueueBoardState } from '#src/queue/board/toQueueBoardState.ts';
 
 const isActive = ({ ticket }: { ticket: QueueBoardTicket }) =>
 	ticket.lane === QueueLane.Building || ticket.lane === QueueLane.ShippingNow || (ticket.lane === QueueLane.Blocked && ticket.question !== undefined);
 
 const printBoard = async ({ cwd, listing }: { cwd: string; listing: RunListing }) => {
-	const state = toBoardState({ listing });
+	const state = toQueueBoardState({ listing });
 	// Read before the board: a finished queue's summary stands on its own, and a
 	// drain may end before any board was written.
 	const summary = state === QueueBoardState.Finished ? await readQueueSummary({ cwd, runId: listing.runId }) : undefined;

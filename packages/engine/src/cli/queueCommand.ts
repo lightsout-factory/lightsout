@@ -1,7 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { resolve } from 'node:path';
 import { pausedExitCode } from '#src/cli/common/constants/pausedExitCode.ts';
-import { QueueBoardState } from '#src/cli/common/constants/QueueBoardState.ts';
 import { unusableTicketPatternMessage } from '#src/cli/common/constants/unusableTicketPatternMessage.ts';
 import { createProgressPrinter } from '#src/cli/common/createProgressPrinter.ts';
 import { launchDetached } from '#src/cli/common/detach/launchDetached.ts';
@@ -19,6 +18,7 @@ import type { QueueDrainReport } from '#src/common/types/QueueDrainReport.ts';
 import type { QueueSettings } from '#src/common/types/QueueSettings.ts';
 import type { TrackerSettings } from '#src/common/types/TrackerSettings.ts';
 import type { LightsoutConfig } from '#src/contracts/LightsoutConfig/LightsoutConfig.ts';
+import { QueueBoardState } from '#src/contracts/queue/QueueBoardState.ts';
 import type { QueueSummary } from '#src/contracts/queue/QueueSummary.ts';
 import { toQueueBoardTickets } from '#src/queue/board/toQueueBoardTickets/toQueueBoardTickets.ts';
 import { writeQueueSummary } from '#src/queue/board/writeQueueSummary.ts';

@@ -161831,13 +161831,6 @@ var planCommand = async ({ flags, rest, cwd: launchingCwd }) => {
 import { randomUUID as randomUUID11 } from "node:crypto";
 import { resolve as resolve20 } from "node:path";
 
-// src/cli/common/constants/QueueBoardState.ts
-var QueueBoardState = {
-  Live: "live",
-  Stopped: "stopped",
-  Finished: "finished"
-};
-
 // src/cli/common/queueBoard/toInlineMarkdown.ts
 var toInlineMarkdown = ({ text, maxLength }) => {
   const characters = Array.from(text.replace(/\s+/g, " ").trim());
@@ -161852,6 +161845,13 @@ var formatTicketLink = ({ ticket }) => {
   return ticket.url === void 0 || ticket.url === "" ? label2 : `[${label2}](${ticket.url})`;
 };
 
+// src/contracts/queue/QueueBoardState.ts
+var QueueBoardState = {
+  Live: "live",
+  Stopped: "stopped",
+  Finished: "finished"
+};
+
 // src/contracts/queue/QueueLane.ts
 var QueueLane = {
   Parked: "parked",
@@ -161863,8 +161863,8 @@ var QueueLane = {
   Shipped: "shipped"
 };
 
-// src/cli/common/queueBoard/renderQueueBoard.ts
-var laneLabels = {
+// src/contracts/queue/queueLaneLabels.ts
+var queueLaneLabels = {
   [QueueLane.Parked]: "Parked",
   [QueueLane.Blocked]: "Blocked",
   [QueueLane.BuildQueue]: "Build Queue",
@@ -161873,6 +161873,8 @@ var laneLabels = {
   [QueueLane.ShippingNow]: "Shipping Now",
   [QueueLane.Shipped]: "Shipped"
 };
+
+// src/cli/common/queueBoard/renderQueueBoard.ts
 var lanesWithReason = /* @__PURE__ */ new Set([QueueLane.Shipped, QueueLane.Parked, QueueLane.Blocked]);
 var toClock = ({ at }) => `${String(at.getHours()).padStart(2, "0")}:${String(at.getMinutes()).padStart(2, "0")}`;
 var toHeading = ({ state, at }) => {
@@ -161894,7 +161896,7 @@ var toDetailLine = ({ ticket }) => {
 var toRow = ({ cells }) => `| ${cells.join(" | ")} |`;
 var renderQueueBoard = ({ tickets, state, at }) => {
   const lanes = Object.values(QueueLane);
-  const header = toRow({ cells: lanes.map((lane) => laneLabels[lane]) });
+  const header = toRow({ cells: lanes.map((lane) => queueLaneLabels[lane]) });
   const separator2 = toRow({ cells: lanes.map(() => "---") });
   const laneTickets = lanes.map((lane) => tickets.filter((ticket) => ticket.lane === lane));
   const columns = laneTickets.map((inLane) => inLane.map((ticket) => toCell3({ ticket })));
@@ -168433,17 +168435,12 @@ var renderProgressBlock = ({ title, tag, rows, diagnostics, totals, now }) => {
   return [titleLine, rule, ...painted, ...diagnostics, rule, totalsLine, ...nowLine === void 0 ? [] : [nowLine]];
 };
 
-// src/cli/statusCommand/common/loadPlanningProgressBlock.ts
-var splitRunning = ({ steps }) => {
-  const running = steps.filter((entry) => entry.status === RunStatus.Running).sort((left, right) => Date.parse(right.startedAt) - Date.parse(left.startedAt));
-  const live2 = [];
-  const dead = [];
-  for (const entry of running) {
-    (isPidAlive({ pid: entry.pid }) ? live2 : dead).push(entry);
-  }
-  return { live: live2, dead };
-};
-var planningRows = ({ steps, live: live2, nowMs }) => Object.values(PlanningStep).map((step) => {
+// src/plan/progress/buildPlanningStepRows.ts
+var buildPlanningStepRows = ({
+  steps,
+  live: live2,
+  nowMs
+}) => Object.values(PlanningStep).map((step) => {
   const entry = steps.find((candidate) => candidate.step === step);
   if (entry === void 0) {
     return { id: step, status: void 0, attempts: 0, durationMs: void 0 };
@@ -168457,6 +168454,20 @@ var planningRows = ({ steps, live: live2, nowMs }) => Object.values(PlanningStep
   }
   return { id: step, status, attempts: entry.attempts, durationMs };
 });
+
+// src/plan/progress/isPlanningStepLive.ts
+var isPlanningStepLive = ({ step }) => step.status === RunStatus.Running && isPidAlive({ pid: step.pid });
+
+// src/cli/statusCommand/common/loadPlanningProgressBlock.ts
+var splitRunning = ({ steps }) => {
+  const running = steps.filter((entry) => entry.status === RunStatus.Running).sort((left, right) => Date.parse(right.startedAt) - Date.parse(left.startedAt));
+  const live2 = [];
+  const dead = [];
+  for (const entry of running) {
+    (isPlanningStepLive({ step: entry }) ? live2 : dead).push(entry);
+  }
+  return { live: live2, dead };
+};
 var planningTotals = ({
   progress,
   live: live2,
@@ -168490,7 +168501,7 @@ var loadPlanningProgressBlock = async ({ cwd, name }) => {
     return [`the planning record ${recordPath} could not be read`];
   }
   const { live: live2, dead } = splitRunning({ steps: progress.steps });
-  const rows = planningRows({ steps: progress.steps, live: live2, nowMs });
+  const rows = buildPlanningStepRows({ steps: progress.steps, live: live2, nowMs });
   const passed = rows.filter((row) => row.status === RunStatus.Passed).length;
   return renderProgressBlock({
     title: name,
@@ -168501,6 +168512,28 @@ var loadPlanningProgressBlock = async ({ cwd, name }) => {
     now: planningNow({ progress, live: live2, dead })
   });
 };
+
+// src/ship/progress/buildShippingStepRows.ts
+var buildShippingStepRows = ({
+  progress,
+  live: live2,
+  nowMs
+}) => Object.values(ShippingStepId).map((id) => {
+  const step = progress?.steps.find((candidate) => candidate.id === id);
+  if (step === void 0 || step.status === RunStatus.Pending) {
+    return { id, status: void 0, attempts: 0, durationMs: void 0 };
+  }
+  let status = step.status;
+  let durationMs = step.durationMs;
+  if (step.status === RunStatus.Running) {
+    status = live2 ? RunStatus.Running : RunStatus.Failed;
+    durationMs = live2 && step.startedAt !== void 0 ? nowMs - Date.parse(step.startedAt) : void 0;
+  }
+  return { id, status, attempts: 1, durationMs };
+});
+
+// src/ship/progress/isShippingProgressLive.ts
+var isShippingProgressLive = ({ progress }) => progress.endedAt === void 0 && isPidAlive({ pid: progress.pid });
 
 // src/ship/progress/readShippingProgress.ts
 import { readFile as readFile64 } from "node:fs/promises";
@@ -168548,19 +168581,6 @@ var readShippingProgress = async ({ cwd, branch }) => {
 };
 
 // src/cli/statusCommand/common/loadShippingProgressBlock.ts
-var shippingRows = ({ progress, live: live2, nowMs }) => Object.values(ShippingStepId).map((id) => {
-  const step = progress?.steps.find((candidate) => candidate.id === id);
-  if (step === void 0 || step.status === RunStatus.Pending) {
-    return { id, status: void 0, attempts: 0, durationMs: void 0 };
-  }
-  let status = step.status;
-  let durationMs = step.durationMs;
-  if (step.status === RunStatus.Running) {
-    status = live2 ? RunStatus.Running : RunStatus.Failed;
-    durationMs = live2 && step.startedAt !== void 0 ? nowMs - Date.parse(step.startedAt) : void 0;
-  }
-  return { id, status, attempts: 1, durationMs };
-});
 var shippingElapsedMs = ({ progress, live: live2, nowMs }) => {
   if (progress === void 0) {
     return 0;
@@ -168583,12 +168603,12 @@ var loadShippingProgressBlock = async ({ cwd, branch }) => {
     return [`the shipping record ${path} could not be read`];
   }
   const unended = progress !== void 0 && progress.endedAt === void 0;
-  const live2 = unended && isPidAlive({ pid: progress.pid });
+  const live2 = progress !== void 0 && isShippingProgressLive({ progress });
   const lastProgress = progress?.lastProgress?.replace(/\s+/g, " ").trim();
   return renderProgressBlock({
     title: branch,
     tag: progress === void 0 ? "no attempt yet" : `attempt ${progress.attempt} of ${progress.maxAttempts}`,
-    rows: shippingRows({ progress, live: live2, nowMs }),
+    rows: buildShippingStepRows({ progress, live: live2, nowMs }),
     diagnostics: unended && !live2 ? [noLiveProcessLine({ progress })] : [],
     totals: `elapsed ${formatClockDuration({ ms: shippingElapsedMs({ progress, live: live2, nowMs }) })}`,
     now: progress === void 0 ? "no step has run yet" : lastProgress === "" ? void 0 : lastProgress
@@ -169241,8 +169261,8 @@ var readQueueSummary = async ({ cwd, runId }) => {
   return readJsonFile({ path: await getQueueSummaryPath({ cwd, runId }), schema: QueueSummary });
 };
 
-// src/cli/statusCommand/printQueueStatus/printQueueStatus.ts
-var toBoardState = ({ listing }) => {
+// src/queue/board/toQueueBoardState.ts
+var toQueueBoardState = ({ listing }) => {
   const going = listing.status === RunStatus.Running || listing.status === RunStatus.Pending;
   let state = QueueBoardState.Finished;
   if (going) {
@@ -169250,9 +169270,11 @@ var toBoardState = ({ listing }) => {
   }
   return state;
 };
+
+// src/cli/statusCommand/printQueueStatus/printQueueStatus.ts
 var isActive = ({ ticket }) => ticket.lane === QueueLane.Building || ticket.lane === QueueLane.ShippingNow || ticket.lane === QueueLane.Blocked && ticket.question !== void 0;
 var printBoard = async ({ cwd, listing }) => {
-  const state = toBoardState({ listing });
+  const state = toQueueBoardState({ listing });
   const summary = state === QueueBoardState.Finished ? await readQueueSummary({ cwd, runId: listing.runId }) : void 0;
   if (summary !== void 0) {
     for (const line of [...summary.boardLines, "", ...summary.reportLines]) {

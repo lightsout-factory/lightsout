@@ -13,17 +13,13 @@ import { Route as AppRouteImport } from './routes/app'
 import { Route as SiteRouteImport } from './routes/_site'
 import { Route as AppIndexRouteImport } from './routes/app.index'
 import { Route as SiteIndexRouteImport } from './routes/_site.index'
-import { Route as AppStandardsRouteImport } from './routes/app.standards'
-import { Route as AppRunsRouteImport } from './routes/app.runs'
-import { Route as AppFrictionRouteImport } from './routes/app.friction'
-import { Route as AppConfigRouteImport } from './routes/app.config'
-import { Route as AppPlansIndexRouteImport } from './routes/app.plans.index'
+import { Route as AppQueueRouteImport } from './routes/app.queue'
 import { Route as SiteStandardsPacksIndexRouteImport } from './routes/_site.standards-packs.index'
 import { Route as SiteCommandsIndexRouteImport } from './routes/_site.commands.index'
-import { Route as AppRunsRunIdRouteImport } from './routes/app.runs_.$runId'
-import { Route as AppPlansNameRouteImport } from './routes/app.plans.$name'
 import { Route as SiteDocsDocRouteImport } from './routes/_site.docs.$doc'
 import { Route as SiteCommandsCommandRouteImport } from './routes/_site.commands.$command'
+import { Route as AppWorkOrdersWorkOrderIndexRouteImport } from './routes/app.work-orders.$workOrder.index'
+import { Route as AppWorkOrdersWorkOrderPlansPlanRouteImport } from './routes/app.work-orders.$workOrder.plans.$plan'
 import { Route as SiteStandardsPacksLibraryRulesRuleRouteImport } from './routes/_site.standards-packs.$library.rules.$rule'
 import { Route as SiteStandardsPacksLibraryPacksPackRouteImport } from './routes/_site.standards-packs.$library.packs.$pack'
 
@@ -46,29 +42,9 @@ const SiteIndexRoute = SiteIndexRouteImport.update({
   path: '/',
   getParentRoute: () => SiteRoute,
 } as any)
-const AppStandardsRoute = AppStandardsRouteImport.update({
-  id: '/standards',
-  path: '/standards',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppRunsRoute = AppRunsRouteImport.update({
-  id: '/runs',
-  path: '/runs',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppFrictionRoute = AppFrictionRouteImport.update({
-  id: '/friction',
-  path: '/friction',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppConfigRoute = AppConfigRouteImport.update({
-  id: '/config',
-  path: '/config',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppPlansIndexRoute = AppPlansIndexRouteImport.update({
-  id: '/plans/',
-  path: '/plans/',
+const AppQueueRoute = AppQueueRouteImport.update({
+  id: '/queue',
+  path: '/queue',
   getParentRoute: () => AppRoute,
 } as any)
 const SiteStandardsPacksIndexRoute = SiteStandardsPacksIndexRouteImport.update({
@@ -81,16 +57,6 @@ const SiteCommandsIndexRoute = SiteCommandsIndexRouteImport.update({
   path: '/commands/',
   getParentRoute: () => SiteRoute,
 } as any)
-const AppRunsRunIdRoute = AppRunsRunIdRouteImport.update({
-  id: '/runs_/$runId',
-  path: '/runs/$runId',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppPlansNameRoute = AppPlansNameRouteImport.update({
-  id: '/plans/$name',
-  path: '/plans/$name',
-  getParentRoute: () => AppRoute,
-} as any)
 const SiteDocsDocRoute = SiteDocsDocRouteImport.update({
   id: '/docs/$doc',
   path: '/docs/$doc',
@@ -101,6 +67,18 @@ const SiteCommandsCommandRoute = SiteCommandsCommandRouteImport.update({
   path: '/commands/$command',
   getParentRoute: () => SiteRoute,
 } as any)
+const AppWorkOrdersWorkOrderIndexRoute =
+  AppWorkOrdersWorkOrderIndexRouteImport.update({
+    id: '/work-orders/$workOrder/',
+    path: '/work-orders/$workOrder/',
+    getParentRoute: () => AppRoute,
+  } as any)
+const AppWorkOrdersWorkOrderPlansPlanRoute =
+  AppWorkOrdersWorkOrderPlansPlanRouteImport.update({
+    id: '/work-orders/$workOrder/plans/$plan',
+    path: '/work-orders/$workOrder/plans/$plan',
+    getParentRoute: () => AppRoute,
+  } as any)
 const SiteStandardsPacksLibraryRulesRuleRoute =
   SiteStandardsPacksLibraryRulesRuleRouteImport.update({
     id: '/standards-packs/$library/rules/$rule',
@@ -117,113 +95,89 @@ const SiteStandardsPacksLibraryPacksPackRoute =
 export interface FileRoutesByFullPath {
   '/': typeof SiteIndexRoute
   '/app': typeof AppRouteWithChildren
-  '/app/config': typeof AppConfigRoute
-  '/app/friction': typeof AppFrictionRoute
-  '/app/runs': typeof AppRunsRoute
-  '/app/standards': typeof AppStandardsRoute
+  '/app/queue': typeof AppQueueRoute
   '/app/': typeof AppIndexRoute
   '/commands/$command': typeof SiteCommandsCommandRoute
   '/docs/$doc': typeof SiteDocsDocRoute
-  '/app/plans/$name': typeof AppPlansNameRoute
-  '/app/runs/$runId': typeof AppRunsRunIdRoute
   '/commands/': typeof SiteCommandsIndexRoute
   '/standards-packs/': typeof SiteStandardsPacksIndexRoute
-  '/app/plans/': typeof AppPlansIndexRoute
+  '/app/work-orders/$workOrder/': typeof AppWorkOrdersWorkOrderIndexRoute
   '/standards-packs/$library/packs/$pack': typeof SiteStandardsPacksLibraryPacksPackRoute
   '/standards-packs/$library/rules/$rule': typeof SiteStandardsPacksLibraryRulesRuleRoute
+  '/app/work-orders/$workOrder/plans/$plan': typeof AppWorkOrdersWorkOrderPlansPlanRoute
 }
 export interface FileRoutesByTo {
-  '/app/config': typeof AppConfigRoute
-  '/app/friction': typeof AppFrictionRoute
-  '/app/runs': typeof AppRunsRoute
-  '/app/standards': typeof AppStandardsRoute
+  '/app/queue': typeof AppQueueRoute
   '/': typeof SiteIndexRoute
   '/app': typeof AppIndexRoute
   '/commands/$command': typeof SiteCommandsCommandRoute
   '/docs/$doc': typeof SiteDocsDocRoute
-  '/app/plans/$name': typeof AppPlansNameRoute
-  '/app/runs/$runId': typeof AppRunsRunIdRoute
   '/commands': typeof SiteCommandsIndexRoute
   '/standards-packs': typeof SiteStandardsPacksIndexRoute
-  '/app/plans': typeof AppPlansIndexRoute
+  '/app/work-orders/$workOrder': typeof AppWorkOrdersWorkOrderIndexRoute
   '/standards-packs/$library/packs/$pack': typeof SiteStandardsPacksLibraryPacksPackRoute
   '/standards-packs/$library/rules/$rule': typeof SiteStandardsPacksLibraryRulesRuleRoute
+  '/app/work-orders/$workOrder/plans/$plan': typeof AppWorkOrdersWorkOrderPlansPlanRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_site': typeof SiteRouteWithChildren
   '/app': typeof AppRouteWithChildren
-  '/app/config': typeof AppConfigRoute
-  '/app/friction': typeof AppFrictionRoute
-  '/app/runs': typeof AppRunsRoute
-  '/app/standards': typeof AppStandardsRoute
+  '/app/queue': typeof AppQueueRoute
   '/_site/': typeof SiteIndexRoute
   '/app/': typeof AppIndexRoute
   '/_site/commands/$command': typeof SiteCommandsCommandRoute
   '/_site/docs/$doc': typeof SiteDocsDocRoute
-  '/app/plans/$name': typeof AppPlansNameRoute
-  '/app/runs_/$runId': typeof AppRunsRunIdRoute
   '/_site/commands/': typeof SiteCommandsIndexRoute
   '/_site/standards-packs/': typeof SiteStandardsPacksIndexRoute
-  '/app/plans/': typeof AppPlansIndexRoute
+  '/app/work-orders/$workOrder/': typeof AppWorkOrdersWorkOrderIndexRoute
   '/_site/standards-packs/$library/packs/$pack': typeof SiteStandardsPacksLibraryPacksPackRoute
   '/_site/standards-packs/$library/rules/$rule': typeof SiteStandardsPacksLibraryRulesRuleRoute
+  '/app/work-orders/$workOrder/plans/$plan': typeof AppWorkOrdersWorkOrderPlansPlanRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/app'
-    | '/app/config'
-    | '/app/friction'
-    | '/app/runs'
-    | '/app/standards'
+    | '/app/queue'
     | '/app/'
     | '/commands/$command'
     | '/docs/$doc'
-    | '/app/plans/$name'
-    | '/app/runs/$runId'
     | '/commands/'
     | '/standards-packs/'
-    | '/app/plans/'
+    | '/app/work-orders/$workOrder/'
     | '/standards-packs/$library/packs/$pack'
     | '/standards-packs/$library/rules/$rule'
+    | '/app/work-orders/$workOrder/plans/$plan'
   fileRoutesByTo: FileRoutesByTo
   to:
-    | '/app/config'
-    | '/app/friction'
-    | '/app/runs'
-    | '/app/standards'
+    | '/app/queue'
     | '/'
     | '/app'
     | '/commands/$command'
     | '/docs/$doc'
-    | '/app/plans/$name'
-    | '/app/runs/$runId'
     | '/commands'
     | '/standards-packs'
-    | '/app/plans'
+    | '/app/work-orders/$workOrder'
     | '/standards-packs/$library/packs/$pack'
     | '/standards-packs/$library/rules/$rule'
+    | '/app/work-orders/$workOrder/plans/$plan'
   id:
     | '__root__'
     | '/_site'
     | '/app'
-    | '/app/config'
-    | '/app/friction'
-    | '/app/runs'
-    | '/app/standards'
+    | '/app/queue'
     | '/_site/'
     | '/app/'
     | '/_site/commands/$command'
     | '/_site/docs/$doc'
-    | '/app/plans/$name'
-    | '/app/runs_/$runId'
     | '/_site/commands/'
     | '/_site/standards-packs/'
-    | '/app/plans/'
+    | '/app/work-orders/$workOrder/'
     | '/_site/standards-packs/$library/packs/$pack'
     | '/_site/standards-packs/$library/rules/$rule'
+    | '/app/work-orders/$workOrder/plans/$plan'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -261,39 +215,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SiteIndexRouteImport
       parentRoute: typeof SiteRoute
     }
-    '/app/standards': {
-      id: '/app/standards'
-      path: '/standards'
-      fullPath: '/app/standards'
-      preLoaderRoute: typeof AppStandardsRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/runs': {
-      id: '/app/runs'
-      path: '/runs'
-      fullPath: '/app/runs'
-      preLoaderRoute: typeof AppRunsRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/friction': {
-      id: '/app/friction'
-      path: '/friction'
-      fullPath: '/app/friction'
-      preLoaderRoute: typeof AppFrictionRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/config': {
-      id: '/app/config'
-      path: '/config'
-      fullPath: '/app/config'
-      preLoaderRoute: typeof AppConfigRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/plans/': {
-      id: '/app/plans/'
-      path: '/plans'
-      fullPath: '/app/plans/'
-      preLoaderRoute: typeof AppPlansIndexRouteImport
+    '/app/queue': {
+      id: '/app/queue'
+      path: '/queue'
+      fullPath: '/app/queue'
+      preLoaderRoute: typeof AppQueueRouteImport
       parentRoute: typeof AppRoute
     }
     '/_site/standards-packs/': {
@@ -310,20 +236,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SiteCommandsIndexRouteImport
       parentRoute: typeof SiteRoute
     }
-    '/app/runs_/$runId': {
-      id: '/app/runs_/$runId'
-      path: '/runs/$runId'
-      fullPath: '/app/runs/$runId'
-      preLoaderRoute: typeof AppRunsRunIdRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/plans/$name': {
-      id: '/app/plans/$name'
-      path: '/plans/$name'
-      fullPath: '/app/plans/$name'
-      preLoaderRoute: typeof AppPlansNameRouteImport
-      parentRoute: typeof AppRoute
-    }
     '/_site/docs/$doc': {
       id: '/_site/docs/$doc'
       path: '/docs/$doc'
@@ -337,6 +249,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/commands/$command'
       preLoaderRoute: typeof SiteCommandsCommandRouteImport
       parentRoute: typeof SiteRoute
+    }
+    '/app/work-orders/$workOrder/': {
+      id: '/app/work-orders/$workOrder/'
+      path: '/work-orders/$workOrder'
+      fullPath: '/app/work-orders/$workOrder/'
+      preLoaderRoute: typeof AppWorkOrdersWorkOrderIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/work-orders/$workOrder/plans/$plan': {
+      id: '/app/work-orders/$workOrder/plans/$plan'
+      path: '/work-orders/$workOrder/plans/$plan'
+      fullPath: '/app/work-orders/$workOrder/plans/$plan'
+      preLoaderRoute: typeof AppWorkOrdersWorkOrderPlansPlanRouteImport
+      parentRoute: typeof AppRoute
     }
     '/_site/standards-packs/$library/rules/$rule': {
       id: '/_site/standards-packs/$library/rules/$rule'
@@ -380,25 +306,17 @@ const SiteRouteChildren: SiteRouteChildren = {
 const SiteRouteWithChildren = SiteRoute._addFileChildren(SiteRouteChildren)
 
 interface AppRouteChildren {
-  AppConfigRoute: typeof AppConfigRoute
-  AppFrictionRoute: typeof AppFrictionRoute
-  AppRunsRoute: typeof AppRunsRoute
-  AppStandardsRoute: typeof AppStandardsRoute
+  AppQueueRoute: typeof AppQueueRoute
   AppIndexRoute: typeof AppIndexRoute
-  AppPlansNameRoute: typeof AppPlansNameRoute
-  AppRunsRunIdRoute: typeof AppRunsRunIdRoute
-  AppPlansIndexRoute: typeof AppPlansIndexRoute
+  AppWorkOrdersWorkOrderIndexRoute: typeof AppWorkOrdersWorkOrderIndexRoute
+  AppWorkOrdersWorkOrderPlansPlanRoute: typeof AppWorkOrdersWorkOrderPlansPlanRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
-  AppConfigRoute: AppConfigRoute,
-  AppFrictionRoute: AppFrictionRoute,
-  AppRunsRoute: AppRunsRoute,
-  AppStandardsRoute: AppStandardsRoute,
+  AppQueueRoute: AppQueueRoute,
   AppIndexRoute: AppIndexRoute,
-  AppPlansNameRoute: AppPlansNameRoute,
-  AppRunsRunIdRoute: AppRunsRunIdRoute,
-  AppPlansIndexRoute: AppPlansIndexRoute,
+  AppWorkOrdersWorkOrderIndexRoute: AppWorkOrdersWorkOrderIndexRoute,
+  AppWorkOrdersWorkOrderPlansPlanRoute: AppWorkOrdersWorkOrderPlansPlanRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
