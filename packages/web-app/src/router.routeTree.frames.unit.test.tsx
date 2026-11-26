@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, jest, test } from '@jest/globals';
 import { QueryClient } from '@tanstack/react-query';
 import { createRouter, isNotFound } from '@tanstack/react-router';
-import { screen } from '@testing-library/react';
+import { screen, within } from '@testing-library/react';
 import type { ComponentType, ReactNode } from 'react';
 import { Theme } from '#src/constants/Theme.ts';
 import { ThemeProvider } from '#src/providers/ThemeProvider.tsx';
@@ -176,6 +176,19 @@ describe('routeTree frames', () => {
 		const app = screen.queryByRole('link', { name: 'App' });
 
 		expect(app).not.toBeInTheDocument();
+	});
+
+	test('the app frame wears the site header and a Your repo navigation to work orders and the queue', () => {
+		setupFrame({ id: '/app' });
+
+		const siteNav = screen.queryByRole('navigation', { name: 'Site' });
+		const repoNav = screen.getByRole('navigation', { name: 'Your repo' });
+		const repoLinks = within(repoNav).getAllByRole('link');
+
+		expect({ siteHeader: siteNav !== null, repoHrefs: repoLinks.map((link) => link.getAttribute('href')) }).toStrictEqual({
+			siteHeader: true,
+			repoHrefs: ['/app', '/app/queue'],
+		});
 	});
 
 	test('links nowhere into the app from the landing page or the frame around it', () => {

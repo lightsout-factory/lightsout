@@ -1,19 +1,9 @@
-import { QueueBoardState } from '#src/cli/common/constants/QueueBoardState.ts';
 import { formatTicketLink } from '#src/cli/common/queueBoard/formatTicketLink.ts';
 import { toInlineMarkdown } from '#src/cli/common/queueBoard/toInlineMarkdown.ts';
+import { QueueBoardState } from '#src/contracts/queue/QueueBoardState.ts';
 import type { QueueBoardTicket } from '#src/contracts/queue/QueueBoardTicket.ts';
 import { QueueLane } from '#src/contracts/queue/QueueLane.ts';
-
-/** Keyed by `QueueLane` rather than `string`, so a new lane fails the typecheck here instead of drawing a blank header. */
-const laneLabels: Record<QueueLane, string> = {
-	[QueueLane.Parked]: 'Parked',
-	[QueueLane.Blocked]: 'Blocked',
-	[QueueLane.BuildQueue]: 'Build Queue',
-	[QueueLane.Building]: 'Building',
-	[QueueLane.ShipQueue]: 'Ship Queue',
-	[QueueLane.ShippingNow]: 'Shipping Now',
-	[QueueLane.Shipped]: 'Shipped',
-};
+import { queueLaneLabels } from '#src/contracts/queue/queueLaneLabels.ts';
 
 const lanesWithReason = new Set<QueueLane>([QueueLane.Shipped, QueueLane.Parked, QueueLane.Blocked]);
 
@@ -62,7 +52,7 @@ interface Params {
  */
 export const renderQueueBoard = ({ tickets, state, at }: Params): string[] => {
 	const lanes = Object.values(QueueLane);
-	const header = toRow({ cells: lanes.map((lane) => laneLabels[lane]) });
+	const header = toRow({ cells: lanes.map((lane) => queueLaneLabels[lane]) });
 	const separator = toRow({ cells: lanes.map(() => '---') });
 	const laneTickets = lanes.map((lane) => tickets.filter((ticket) => ticket.lane === lane));
 	const columns = laneTickets.map((inLane) => inLane.map((ticket) => toCell({ ticket })));

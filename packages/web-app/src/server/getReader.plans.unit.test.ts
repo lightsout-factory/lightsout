@@ -36,6 +36,32 @@ const gradeText = JSON.stringify({
 	covered: [],
 });
 
+/** The planning record this arrangement writes: two steps that finished, so no process liveness decides their rows. */
+const planningProgressText = JSON.stringify({
+	name: 'search-ranking/001-ranking',
+	updatedAt: '2026-01-01T12:01:00.000Z',
+	steps: [
+		{
+			step: 'verify-facts',
+			status: RunStatus.Passed,
+			attempts: 1,
+			pid: 4242,
+			startedAt: '2026-01-01T12:00:00.000Z',
+			finishedAt: '2026-01-01T12:00:30.000Z',
+			durationMs: 30_000,
+		},
+		{
+			step: 'draft',
+			status: RunStatus.Passed,
+			attempts: 2,
+			pid: 4242,
+			startedAt: '2026-01-01T12:00:40.000Z',
+			finishedAt: '2026-01-01T12:01:00.000Z',
+			durationMs: 20_000,
+		},
+	],
+});
+
 /**
  * A phased plan that got the whole way: notes it started from, an overview and
  * two open phases, one phase already archived, both JSON records, a transcript,
@@ -75,6 +101,7 @@ const setupPlansReader = async ({ grade = gradeText }: { grade?: string } = {}):
 			],
 		}),
 		[`${workspace}/draft-stream.jsonl`]: '{"type":"turn"}\n',
+		[`${workspace}/planning-progress.json`]: planningProgressText,
 	};
 
 	for (const [path, content] of Object.entries(files)) {
@@ -126,5 +153,33 @@ describe('getReader plans', () => {
 		const workspace = await reader.getPlanWorkspace({ name: 'search-ranking/001-ranking' });
 
 		expect({ grade: workspace.grade, problems: workspace.problems }).toEqual({ grade: undefined, problems: [expect.stringContaining('grade.json')] });
+	});
+
+	test('returns the plan text, phase texts and planning rows with the workspace', async () => {
+		const { reader } = await setupPlansReader();
+
+		const workspace = await reader.getPlanWorkspace({ name: 'search-ranking/001-ranking' });
+
+		expect({
+			planText: workspace.planText,
+			phases: workspace.phases,
+			planningSteps: workspace.planningSteps,
+			planningLive: workspace.planningLive,
+		}).toEqual({
+			planText: '# Search ranking\n',
+			phases: [
+				{ name: 'phase0-spike.md', text: '# Phase 0\n', implemented: true },
+				{ name: 'phase1-groundwork.md', text: '# Phase 1\n', implemented: false },
+				{ name: 'phase2-ranking.md', text: '# Phase 2\n', implemented: false },
+			],
+			planningSteps: [
+				{ id: 'verify-facts', status: 'passed', attempts: 1, durationMs: 30_000 },
+				{ id: 'draft', status: 'passed', attempts: 2, durationMs: 20_000 },
+				{ id: 'dedup', status: undefined, attempts: 0, durationMs: undefined },
+				{ id: 'grade', status: undefined, attempts: 0, durationMs: undefined },
+				{ id: 'publish', status: undefined, attempts: 0, durationMs: undefined },
+			],
+			planningLive: false,
+		});
 	});
 });

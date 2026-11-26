@@ -3,7 +3,6 @@ export { readConfig } from '#src/common/config/readConfig.ts';
 export type { RunSummary } from '#src/common/types/RunSummary.ts';
 export type { StepSummary } from '#src/common/types/StepSummary.ts';
 export {
-	AgentInvocation,
 	AgentUsage,
 	BatchReport,
 	CommandActor,
@@ -13,31 +12,24 @@ export {
 	CommandInvocation,
 	CommandRecordKind,
 	CommandStep,
-	ConfigFieldView,
-	ConfigView,
 	FixtureSide,
 	FrictionArea,
 	FrictionRecord,
 	GateEvidence,
 	GateResult,
 	PhaseReport,
-	PlanDocument,
-	PlanDocumentKind,
 	PlanStage,
 	PlanWorkspaceFile,
 	PlanWorkspaceListing,
 	PlanWorkspaceView,
+	QueueBoardState,
+	QueueView,
 	RuleExample,
 	RuleExampleKind,
-	RunBurnDown,
-	RunBurnDownBatch,
-	RunBurnDownBatchOutcome,
 	RunListing,
 	RunManifest,
 	RunStatus,
-	RunStepView,
 	RunUsage,
-	RunView,
 	StandardsFinding,
 	StandardsPackBundle,
 	StandardsPackFixture,
@@ -50,8 +42,10 @@ export {
 	StandardsSnapshot,
 	StandardsTopicView,
 	StandardsTrendPoint,
-	StandardsView,
 	StepRecord,
+	WorkOrderStatus,
+	WorkOrderSummary,
+	WorkOrderView,
 	WorkReport,
 	WritersReport,
 } from '#src/contracts/index.ts';
@@ -63,14 +57,11 @@ export { RunNotFoundError } from '#src/runState/RunNotFoundError.ts';
 export { readRunManifest } from '#src/runState/readRunManifest.ts';
 export { summarizeRun } from '#src/runState/summarizeRun/summarizeRun.ts';
 export { listStandardsSnapshots } from '#src/standardsCheck/listStandardsSnapshots.ts';
-export { ConfigNotFoundError } from '#src/views/ConfigNotFoundError.ts';
-export { getConfigView } from '#src/views/getConfigView/getConfigView.ts';
-export { getPlanDocument } from '#src/views/getPlanDocument.ts';
-export { getPlanWorkspace } from '#src/views/getPlanWorkspace.ts';
-export { getRunView } from '#src/views/getRunView/getRunView.ts';
-export { getStandardsView } from '#src/views/getStandardsView.ts';
-export { listPlanWorkspaces } from '#src/views/listPlanWorkspaces.ts';
+export { getPlanWorkspace } from '#src/views/getPlanWorkspace/getPlanWorkspace.ts';
+export { getQueueView } from '#src/views/getQueueView.ts';
+export { getWorkOrderView } from '#src/views/getWorkOrderView.ts';
 export { listRuns } from '#src/views/listRuns.ts';
+export { listWorkOrderSummaries } from '#src/views/listWorkOrderSummaries.ts';
 export { PlanWorkspaceNotFoundError } from '#src/views/PlanWorkspaceNotFoundError.ts';
 export { StandardsPackRuleNotFoundError } from '#src/views/StandardsPackRuleNotFoundError.ts';
 export { toStandardsPackRuleView } from '#src/views/toStandardsPackRuleView.ts';

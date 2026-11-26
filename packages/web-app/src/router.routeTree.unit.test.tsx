@@ -3,6 +3,7 @@ import { QueryClient } from '@tanstack/react-query';
 import { createRouter } from '@tanstack/react-router';
 import { screen } from '@testing-library/react';
 import type { ComponentType, ReactNode } from 'react';
+import { workOrderSummariesQueryOptions } from '#src/features/workOrders/queries/workOrderSummariesQueryOptions.ts';
 import { repoRootQueryOptions } from '#src/queries/repoRootQueryOptions.ts';
 import { routeTree } from '#src/routeTree.gen.ts';
 import appCssHref from '#src/styles/app.css?url';
@@ -115,7 +116,8 @@ const setupWorkOrdersPage = () => {
 	const { pages } = setupRouteTree();
 	const Page = pages['/app/'].options.component;
 
-	renderWithQueryClient({ ui: <Page /> });
+	// Seeded as the route's loader would fill it, so the page renders without a server call.
+	renderWithQueryClient({ ui: <Page />, seed: [{ queryKey: workOrderSummariesQueryOptions().queryKey, data: [] }] });
 };
 
 // The tree this file drives lives in `routeTree.gen.ts`, which TanStack Router
@@ -147,6 +149,9 @@ describe('routeTree', () => {
 			'/_site/standards-packs/$library/rules/$rule',
 			'/app',
 			'/app/',
+			'/app/queue',
+			'/app/work-orders/$workOrder/',
+			'/app/work-orders/$workOrder/plans/$plan',
 			'__root__',
 		]);
 	});

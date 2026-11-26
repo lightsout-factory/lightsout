@@ -3,35 +3,11 @@ import { localClock } from '#src/cli/statusCommand/common/localClock.ts';
 import { renderProgressBlock } from '#src/cli/statusCommand/common/renderProgressBlock.ts';
 import type { ShippingProgressReading } from '#src/common/types/ShippingProgressReading.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
-import { ShippingStepId } from '#src/contracts/ship/ShippingStepId.ts';
-import { isPidAlive } from '#src/runState/liveness/isPidAlive.ts';
+import { buildShippingStepRows } from '#src/ship/progress/buildShippingStepRows.ts';
+import { isShippingProgressLive } from '#src/ship/progress/isShippingProgressLive.ts';
 import { readShippingProgress } from '#src/ship/progress/readShippingProgress.ts';
 
 type RecordedProgress = ShippingProgressReading['progress'];
-
-/**
- * A running step in a record whose process is gone is drawn failed with no
- * clock: it can no longer finish, and drawing it running would make a crashed
- * ship look busy.
- */
-const shippingRows = ({ progress, live, nowMs }: { progress: RecordedProgress; live: boolean; nowMs: number }) =>
-	Object.values(ShippingStepId).map((id) => {
-		const step = progress?.steps.find((candidate) => candidate.id === id);
-
-		if (step === undefined || step.status === RunStatus.Pending) {
-			return { id, status: undefined, attempts: 0, durationMs: undefined };
-		}
-
-		let status = step.status;
-		let durationMs = step.durationMs;
-
-		if (step.status === RunStatus.Running) {
-			status = live ? RunStatus.Running : RunStatus.Failed;
-			durationMs = live && step.startedAt !== undefined ? nowMs - Date.parse(step.startedAt) : undefined;
-		}
-
-		return { id, status, attempts: 1, durationMs };
-	});
 
 const shippingElapsedMs = ({ progress, live, nowMs }: { progress: RecordedProgress; live: boolean; nowMs: number }) => {
 	if (progress === undefined) {
@@ -76,13 +52,13 @@ export const loadShippingProgressBlock = async ({ cwd, branch }: Params): Promis
 	}
 
 	const unended = progress !== undefined && progress.endedAt === undefined;
-	const live = unended && isPidAlive({ pid: progress.pid });
+	const live = progress !== undefined && isShippingProgressLive({ progress });
 	const lastProgress = progress?.lastProgress?.replace(/\s+/g, ' ').trim();
 
 	return renderProgressBlock({
 		title: branch,
 		tag: progress === undefined ? 'no attempt yet' : `attempt ${progress.attempt} of ${progress.maxAttempts}`,
-		rows: shippingRows({ progress, live, nowMs }),
+		rows: buildShippingStepRows({ progress, live, nowMs }),
 		diagnostics: unended && !live ? [noLiveProcessLine({ progress })] : [],
 		totals: `elapsed ${formatClockDuration({ ms: shippingElapsedMs({ progress, live, nowMs }) })}`,
 		now: progress === undefined ? 'no step has run yet' : lastProgress === '' ? undefined : lastProgress,

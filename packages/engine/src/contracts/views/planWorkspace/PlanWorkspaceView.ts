@@ -4,6 +4,8 @@ import { BrainstormDecisions } from '#src/contracts/plan/decisions/BrainstormDec
 import { DecisionsRecord } from '#src/contracts/plan/decisions/DecisionsRecord.ts';
 import { PlanFacts } from '#src/contracts/plan/facts/PlanFacts.ts';
 import { GradeReport } from '#src/contracts/plan/grade/GradeReport.ts';
+import { PlanningStep } from '#src/contracts/plan/progress/PlanningStep.ts';
+import { RunStatus } from '#src/contracts/run/RunStatus.ts';
 import { PlanWorkspaceFile } from '#src/contracts/views/planWorkspace/PlanWorkspaceFile.ts';
 import { PlanWorkspaceListing } from '#src/contracts/views/planWorkspace/PlanWorkspaceListing.ts';
 import { RunListing } from '#src/contracts/views/RunListing.ts';
@@ -34,6 +36,29 @@ export const PlanWorkspaceView = z.object({
 	runs: z.array(RunListing).default([]),
 	/** One line per file that exists but would not parse — a corrupt workspace is shown, not hidden. */
 	problems: z.array(z.string()).default([]),
+	/** The text of `planFile`; absent before drafting. */
+	planText: z.string().optional(),
+	/** The text of `notesFile`; absent when `/brainstorm` wrote none. */
+	notesText: z.string().optional(),
+	/**
+	 * Open phase files and the archived `implemented/` ones together, in phase-number
+	 * order, each named without the `implemented/` prefix. A phase that could not be
+	 * read keeps its place with empty text, and `problems` names it.
+	 */
+	phases: z.array(z.object({ name: z.string(), text: z.string(), implemented: z.boolean() })).default([]),
+	/** One row per planning step in step order; a running step whose process is gone reads as failed with no duration. */
+	planningSteps: z
+		.array(
+			z.object({
+				id: z.enum(PlanningStep),
+				status: z.enum(RunStatus).optional(),
+				attempts: z.number(),
+				durationMs: z.number().optional(),
+			}),
+		)
+		.default([]),
+	/** A planning step is running under a live process right now. */
+	planningLive: z.boolean().default(false),
 });
 
 export type PlanWorkspaceView = z.infer<typeof PlanWorkspaceView>;

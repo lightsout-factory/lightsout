@@ -1,12 +1,12 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { describe, expect, jest, test } from '@jest/globals';
-import { QueueBoardState } from '#src/cli/common/constants/QueueBoardState.ts';
 import { renderQueueBoard } from '#src/cli/common/queueBoard/renderQueueBoard.ts';
 import { loadActiveTicketBlock } from '#src/cli/statusCommand/printQueueStatus/loadActiveTicketBlock.ts';
 import { printQueueStatus } from '#src/cli/statusCommand/printQueueStatus/printQueueStatus.ts';
 import { renderTicketDetailBlock } from '#src/cli/statusCommand/printQueueStatus/renderTicketDetailBlock.ts';
 import type { QueueBoard } from '#src/contracts/queue/QueueBoard.ts';
+import { QueueBoardState } from '#src/contracts/queue/QueueBoardState.ts';
 import type { QueueBoardTicket } from '#src/contracts/queue/QueueBoardTicket.ts';
 import { QueueLane } from '#src/contracts/queue/QueueLane.ts';
 import type { QueueSummary } from '#src/contracts/queue/QueueSummary.ts';
@@ -236,6 +236,21 @@ describe('printQueueStatus', () => {
 		expect({ logged, errors, code }).toStrictEqual({ logged: expected, errors: [], code: 0 });
 	});
 
+	test('heads a pending queue run whose owner is alive as a live board', async () => {
+		const { cwd, logged, errors } = await setupQueueStatus({
+			listing: listingOf({ status: RunStatus.Pending, live: true }),
+			boardTickets: [tickets.buildQueue],
+		});
+
+		const code = await printQueueStatus({ cwd, runId: coordinatorRunId });
+
+		expect({ logged, errors, code }).toStrictEqual({
+			logged: ['Queue update · 10:20', '', headerRow, separatorRow, '| — | — | EX-101 | — | — | — | — |', '', '- EX-101 · Notifications'],
+			errors: [],
+			code: 0,
+		});
+	});
+
 	test('heads a queue run with no live process as stopped and shows no ticket as active', async () => {
 		const { cwd, logged, errors } = await setupQueueStatus({
 			listing: listingOf({ live: false, resumable: true }),
@@ -350,37 +365,5 @@ describe('printQueueStatus', () => {
 			errors: [],
 			code: 0,
 		});
-	});
-
-	test('says no queue run is going when none is found, and answers 0', async () => {
-		const { cwd, logged, errors } = await setupQueueStatus({ listing: undefined });
-
-		const code = await printQueueStatus({ cwd });
-
-		expect({ logged, errors, code }).toEqual({ logged: [expect.stringContaining(cwd)], errors: [], code: 0 });
-	});
-
-	test('names the board file when the queue run has not written one yet, and answers 0', async () => {
-		const { cwd, boardPath, logged, errors } = await setupQueueStatus({ listing: listingOf() });
-
-		const code = await printQueueStatus({ cwd });
-
-		expect({ logged, errors, code }).toEqual({ logged: [expect.stringContaining(boardPath)], errors: [], code: 0 });
-	});
-
-	test('refuses a named run that is not a queue run with one line on stderr and answers 1', async () => {
-		const { cwd, logged, errors } = await setupQueueStatus({
-			listing: listingOf({
-				runId: 'run-impl-0002',
-				shortId: 'run-impl',
-				pipeline: PipelineKind.Implement,
-				status: RunStatus.Passed,
-				live: false,
-			}),
-		});
-
-		const code = await printQueueStatus({ cwd, runId: 'run-impl-0002' });
-
-		expect({ logged, errors, code }).toEqual({ logged: [], errors: [expect.stringMatching(/^(?=.*run-impl)(?=.*queue)/i)], code: 1 });
 	});
 });

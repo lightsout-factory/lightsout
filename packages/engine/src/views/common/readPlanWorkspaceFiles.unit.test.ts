@@ -62,7 +62,7 @@ test('a workspace holding both prefers the overview, and the single plan beside 
 	expect({ plan: files.planFile?.name, others: [...files.others.keys()] }).toStrictEqual({ plan: 'overview.md', others: ['plan.md'] });
 });
 
-test('a file is stat’d rather than opened: its size and mtime are what comes back, with a path getPlanDocument can take', async () => {
+test('a file is stat’d rather than opened: its size and mtime are what comes back, with its repo-relative path', async () => {
 	const { cwd, dir } = await seedWorkspace({ files: { 'brainstorm-notes.md': 'rough idea' } });
 
 	await touch({ dir, path: 'brainstorm-notes.md', at: '2026-03-04T05:06:07.000Z' });

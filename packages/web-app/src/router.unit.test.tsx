@@ -60,6 +60,9 @@ describe('getRouter', () => {
 			'/_site/standards-packs/$library/rules/$rule',
 			'/app',
 			'/app/',
+			'/app/queue',
+			'/app/work-orders/$workOrder/',
+			'/app/work-orders/$workOrder/plans/$plan',
 			'__root__',
 		]);
 	});

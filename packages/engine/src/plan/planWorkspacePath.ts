@@ -7,9 +7,9 @@ interface Params {
 
 /**
  * Repo-relative with forward slashes on every platform: the spelling a run
- * manifest's `plan` field carries and `getPlanDocument` takes. It names the
- * folder `planWorkspaceDir` resolves, and the two spell the layout's segments
- * together rather than through a constant neither would be the only reader of.
+ * manifest's `plan` field carries. It names the folder `planWorkspaceDir`
+ * resolves, and the two spell the layout's segments together rather than
+ * through a constant neither would be the only reader of.
  */
 export const planWorkspacePath = ({ name }: Params): string => {
 	const address = parsePlanAddress({ name });

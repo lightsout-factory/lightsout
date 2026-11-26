@@ -136,6 +136,34 @@ const finishedRecord = () =>
 		],
 	});
 
+/** When the interrupted ship stamped its end — with checks still marked running. */
+const interruptedEndedAt = '2026-09-10T10:08:40.000Z';
+
+/**
+ * The ship stamped its end while checks was still marked running, under the
+ * test's own process, so its pid reads as alive. The end stamp, not the pid,
+ * says the ship is over.
+ */
+const endedWithRunningStepRecord = () =>
+	recordOf({
+		branch,
+		attempt: 1,
+		maxAttempts: 3,
+		pid: process.pid,
+		startedAt: shipStartedAt,
+		updatedAt: interruptedEndedAt,
+		endedAt: interruptedEndedAt,
+		lastProgress: 'waiting for checks on #41',
+		steps: [
+			passedStep({ id: ShippingStepId.Integrate, startedAt: shipStartedAt, durationMs: 60_000 }),
+			passedStep({ id: ShippingStepId.Push, startedAt: '2026-09-10T10:06:00.000Z', durationMs: 20_000 }),
+			passedStep({ id: ShippingStepId.PullRequest, startedAt: '2026-09-10T10:06:20.000Z', durationMs: 10_000 }),
+			{ id: ShippingStepId.Checks, status: RunStatus.Running, startedAt: '2026-09-10T10:06:30.000Z' },
+			pendingStep({ id: ShippingStepId.Merge }),
+			pendingStep({ id: ShippingStepId.Sync }),
+		],
+	});
+
 /**
  * A fresh checkout with only the clock faked, so every clock the block draws is
  * known while the file reads stay real. One work order claims `branch`, which is
@@ -266,5 +294,17 @@ describe('loadShippingProgressBlock', () => {
 		expect(text).toMatch(/shipping record/i);
 		expect(text).not.toContain('ship-progress.json');
 		expect(text).not.toContain('.lightsout');
+	});
+
+	test('an ended record with a step left running draws that step failed and no no-live-process line, even while its pid lives', async () => {
+		const { cwd } = await setupShippingBlock({ record: endedWithRunningStepRecord() });
+
+		const lines = await loadShippingProgressBlock({ cwd, branch });
+
+		const checksRow = lines[5] ?? '';
+
+		expect(checksRow).toMatch(/^ ✗ {2}checks +failed\b/);
+		expect(checksRow).not.toMatch(/\d+m \d{2}s/);
+		expect(lines.some((line) => line.includes('▶') || /no live process/i.test(line))).toBe(false);
 	});
 });
