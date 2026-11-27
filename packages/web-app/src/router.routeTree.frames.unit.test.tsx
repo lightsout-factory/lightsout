@@ -170,12 +170,21 @@ describe('routeTree frames', () => {
 		expect(zone).not.toBeInTheDocument();
 	});
 
-	test('offers the public pages no way into the app, even with a repo found, since they never read one', () => {
+	test('offers no App link on the public site, where there is no app to open', () => {
+		process.env.LIGHTSOUT_PUBLIC = '1';
 		setupFrame({ id: '/_site', repoRoot: '/repos/other-project' });
 
 		const app = screen.queryByRole('link', { name: 'App' });
 
 		expect(app).not.toBeInTheDocument();
+	});
+
+	test.each(['/_site', '/app'])('puts an App link first in the header of the %s frame on a local dev server', (id) => {
+		setupFrame({ id });
+
+		const links = within(screen.getByRole('navigation', { name: 'Site' })).getAllByRole('link');
+
+		expect(links.map((link) => ({ name: link.textContent, href: link.getAttribute('href') })).at(0)).toStrictEqual({ name: 'App', href: '/app' });
 	});
 
 	test('the app frame wears the site header and a Your repo navigation to work orders and the queue', () => {
@@ -191,7 +200,8 @@ describe('routeTree frames', () => {
 		});
 	});
 
-	test('links nowhere into the app from the landing page or the frame around it', () => {
+	test('links nowhere into the app from the landing page or the frame around it on the public site', () => {
+		process.env.LIGHTSOUT_PUBLIC = '1';
 		setupLandingInFrame();
 
 		const hrefs = screen.queryAllByRole('link').map((link) => link.getAttribute('href') ?? '');

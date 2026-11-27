@@ -393,3 +393,45 @@ test('a planning record that will not parse becomes a problem line and every pla
 		planningLive: false,
 	});
 });
+
+test('hands back how the grade moved: each pass from the ledger and each finding from the memory', async () => {
+	const pass = {
+		planName: name,
+		grade: PlanGrade.BelowA,
+		passed: false,
+		gradedAt: '2026-01-01T00:01:00.000Z',
+		scopeComplete: true,
+		scope: 'full',
+		covered: [],
+	};
+	const finding = {
+		id: 'f1',
+		phase: 'plan.md',
+		area: 'omitted-decision',
+		gap: 'ties are unordered',
+		decision: 'how do ties sort?',
+		firstSeen: '2026-01-01T00:00:00.000Z',
+		lastSeen: '2026-01-01T00:00:00.000Z',
+		status: 'noted',
+	};
+	const memory = { planName: name, findings: [finding], coverage: { readers: [] }, updatedAt: '2026-01-01T00:02:00.000Z' };
+	const { cwd } = await seedWorkspace({
+		files: { ...records, 'plan.md': '# plan', 'grade-history.jsonl': `${JSON.stringify(pass)}\n`, 'grade-memory.json': JSON.stringify(memory) },
+	});
+
+	const view = await getPlanWorkspace({ cwd, name });
+
+	expect({
+		passes: view.gradePasses.map((entry) => ({ gradedAt: entry.gradedAt, grade: entry.grade })),
+		findings: view.gradeFindings.map((entry) => entry.id),
+		problems: view.problems,
+	}).toStrictEqual({ passes: [{ gradedAt: '2026-01-01T00:01:00.000Z', grade: PlanGrade.BelowA }], findings: ['f1'], problems: [] });
+});
+
+test('a corrupt grade memory is reported beside every other problem', async () => {
+	const { cwd } = await seedWorkspace({ files: { 'plan.md': '# plan', 'grade-memory.json': '{ not json' } });
+
+	const view = await getPlanWorkspace({ cwd, name });
+
+	expect({ problems: view.problems, findings: view.gradeFindings }).toStrictEqual({ problems: ['grade-memory.json is not valid JSON'], findings: [] });
+});

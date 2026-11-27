@@ -18,6 +18,7 @@ import { buildPlanWorkspaceListing } from '#src/views/common/buildPlanWorkspaceL
 import { matchPlanRuns } from '#src/views/common/matchPlanRuns.ts';
 import { readPlanWorkspaceFiles } from '#src/views/common/readPlanWorkspaceFiles.ts';
 import type { PlanWorkspaceFiles } from '#src/views/common/types/PlanWorkspaceFiles.ts';
+import { readGradeTrail } from '#src/views/getPlanWorkspace/readGradeTrail.ts';
 import { readPlanRecord } from '#src/views/getPlanWorkspace/readPlanRecord.ts';
 import { listRuns } from '#src/views/listRuns.ts';
 import { PlanWorkspaceNotFoundError } from '#src/views/PlanWorkspaceNotFoundError.ts';
@@ -146,6 +147,7 @@ export const getPlanWorkspace = async ({ cwd, name }: Params): Promise<PlanWorks
 	const { facts, decisions, brainstormDecisions, grade, dedup, problems } = await readRecords({ rootPath, files });
 	const planning = await readPlanning({ rootPath, files });
 	const documents = await readDocuments({ rootPath, files });
+	const gradeTrail = await readGradeTrail({ rootPath, files });
 	const listing: PlanWorkspaceListing = buildPlanWorkspaceListing({
 		name,
 		files,
@@ -167,11 +169,13 @@ export const getPlanWorkspace = async ({ cwd, name }: Params): Promise<PlanWorks
 		dedup,
 		transcripts: files.transcripts,
 		runs,
-		problems: [...problems, ...(planning.problem === undefined ? [] : [planning.problem]), ...documents.problems],
+		problems: [...problems, planning.problem, gradeTrail.problem, ...documents.problems].filter((problem) => problem !== undefined),
 		planText: documents.planText,
 		notesText: documents.notesText,
 		phases: documents.phases,
 		planningSteps: planning.planningSteps,
 		planningLive: planning.planningLive,
+		gradePasses: gradeTrail.gradePasses,
+		gradeFindings: gradeTrail.gradeFindings,
 	};
 };
