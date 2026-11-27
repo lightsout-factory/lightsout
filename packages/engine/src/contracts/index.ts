@@ -167,6 +167,7 @@ export { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeveri
 export { StandardsSnapshot } from '#src/contracts/standardsCheck/StandardsSnapshot.ts';
 export { FixtureSide } from '#src/contracts/views/FixtureSide.ts';
 export { GateEvidence } from '#src/contracts/views/GateEvidence.ts';
+export { GradePass } from '#src/contracts/views/planWorkspace/GradePass.ts';
 export { PlanStage } from '#src/contracts/views/planWorkspace/PlanStage.ts';
 export { PlanWorkspaceFile } from '#src/contracts/views/planWorkspace/PlanWorkspaceFile.ts';
 export { PlanWorkspaceListing } from '#src/contracts/views/planWorkspace/PlanWorkspaceListing.ts';

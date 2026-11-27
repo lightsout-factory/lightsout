@@ -4,16 +4,23 @@ import { Wordmark } from '#src/components/icons/Wordmark.tsx';
 import { Button } from '#src/components/ui/Button.tsx';
 import { SitePagesMenu } from '#src/layouts/SitePagesMenu.tsx';
 import { ThemeToggle } from '#src/layouts/ThemeToggle.tsx';
+import { isPublicDeployment } from '#src/utils/isPublicDeployment.ts';
 
 const siteLinkClasses = 'font-medium text-muted-foreground-strong transition-colors hover:text-foreground';
 
 /**
  * Rendered in both the wide-screen row and the narrow-screen menu, so the two
  * cannot drift into offering different pages. Docs has no index of its own, so
- * it points at the configuration doc.
+ * it points at the configuration doc. The App link is left out on the
+ * public site, which has no app to open.
  */
 const SitePages = () => (
 	<>
+		{isPublicDeployment() ? null : (
+			<Link to="/app" className={siteLinkClasses}>
+				App
+			</Link>
+		)}
 		<Link to="/standards-packs" className={siteLinkClasses}>
 			Standards Packs
 		</Link>

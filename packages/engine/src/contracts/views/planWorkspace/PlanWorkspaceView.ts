@@ -4,8 +4,10 @@ import { BrainstormDecisions } from '#src/contracts/plan/decisions/BrainstormDec
 import { DecisionsRecord } from '#src/contracts/plan/decisions/DecisionsRecord.ts';
 import { PlanFacts } from '#src/contracts/plan/facts/PlanFacts.ts';
 import { GradeReport } from '#src/contracts/plan/grade/GradeReport.ts';
+import { GradeFindingRecord } from '#src/contracts/plan/memory/GradeFindingRecord.ts';
 import { PlanningStep } from '#src/contracts/plan/progress/PlanningStep.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
+import { GradePass } from '#src/contracts/views/planWorkspace/GradePass.ts';
 import { PlanWorkspaceFile } from '#src/contracts/views/planWorkspace/PlanWorkspaceFile.ts';
 import { PlanWorkspaceListing } from '#src/contracts/views/planWorkspace/PlanWorkspaceListing.ts';
 import { RunListing } from '#src/contracts/views/RunListing.ts';
@@ -59,6 +61,10 @@ export const PlanWorkspaceView = z.object({
 		.default([]),
 	/** A planning step is running under a live process right now. */
 	planningLive: z.boolean().default(false),
+	/** Every grading pass `grade-history.jsonl` holds, oldest first; empty on a machine that only fetched the plan, because the ledger never travels. */
+	gradePasses: z.array(GradePass).default([]),
+	/** Every finding `grade-memory.json` keeps across passes, in the order each was first raised, with how it was settled. */
+	gradeFindings: z.array(GradeFindingRecord).default([]),
 });
 
 export type PlanWorkspaceView = z.infer<typeof PlanWorkspaceView>;

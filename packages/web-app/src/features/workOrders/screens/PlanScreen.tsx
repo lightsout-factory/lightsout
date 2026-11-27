@@ -7,6 +7,10 @@ import { SiteSection } from '#src/components/site/SiteSection.tsx';
 import { MetadataTag } from '#src/components/ui/MetadataTag.tsx';
 import { Tabs } from '#src/components/ui/Tabs.tsx';
 import { DecisionTable } from '#src/features/workOrders/components/DecisionTable.tsx';
+import { DedupDetail } from '#src/features/workOrders/components/DedupDetail.tsx';
+import { FactsDetail } from '#src/features/workOrders/components/FactsDetail.tsx';
+import { GradeDetail } from '#src/features/workOrders/components/GradeDetail.tsx';
+import { GradeHistory } from '#src/features/workOrders/components/GradeHistory.tsx';
 import { planWorkspaceQueryOptions } from '#src/features/workOrders/queries/planWorkspaceQueryOptions.ts';
 import { formatLocalTime } from '#src/utils/formatLocalTime.ts';
 
@@ -87,11 +91,22 @@ const RunsList = ({ runs }: { runs: PlanWorkspaceView['runs'] }) =>
 		</ul>
 	);
 
+/** How the plan got here, in the order it happened: planned, graded, checked for duplicates, then built. */
 const StatusTab = ({ workspace }: { workspace: PlanWorkspaceView }) => (
-	<div className="flex flex-col gap-8">
+	<div className="flex flex-col gap-10">
 		<PlanningTable steps={workspace.planningSteps} />
-		<p className="text-sm">{workspace.grade === undefined ? 'Not graded' : `Grade ${workspace.grade.grade}`}</p>
-		<RunsList runs={workspace.runs} />
+		<SiteSection title="Grade">
+			<GradeDetail grade={workspace.grade} />
+		</SiteSection>
+		<SiteSection title="Grading history">
+			<GradeHistory passes={workspace.gradePasses} findings={workspace.gradeFindings} />
+		</SiteSection>
+		<SiteSection title="Duplicate check">
+			<DedupDetail dedup={workspace.dedup} />
+		</SiteSection>
+		<SiteSection title="Runs">
+			<RunsList runs={workspace.runs} />
+		</SiteSection>
 	</div>
 );
 
@@ -102,7 +117,7 @@ interface Props {
 	plan: string;
 }
 
-/** One plan, read-only: its text, how it was talked through, what was decided, and how planning and its runs went. */
+/** One plan, read-only: its text, how it was talked through, what was decided, what was confirmed in the code, and how planning and its runs went. */
 export const PlanScreen = ({ workOrder, plan }: Props) => {
 	const { data: workspace } = useSuspenseQuery(planWorkspaceQueryOptions({ workOrder, plan }));
 
@@ -127,6 +142,7 @@ export const PlanScreen = ({ workOrder, plan }: Props) => {
 					{ value: 'plan', label: 'Plan', content: <PlanTab workspace={workspace} /> },
 					{ value: 'brainstorm', label: 'Brainstorm', content: <BrainstormTab workspace={workspace} /> },
 					{ value: 'decisions', label: 'Decisions', content: <DecisionsTab workspace={workspace} /> },
+					{ value: 'facts', label: 'Facts', content: <FactsDetail facts={workspace.facts} /> },
 					{ value: 'status', label: 'Status', content: <StatusTab workspace={workspace} /> },
 				]}
 			/>

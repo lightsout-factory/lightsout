@@ -218,6 +218,46 @@ describe('PlanScreen', () => {
 		});
 	});
 
+	test('the Status tab shows the grade and the duplicate check each under its own heading', async () => {
+		const dedup = { planName: plan, reviewed: [], reviewedAt: '2026-01-01T00:03:00.000Z' };
+		await setupPlanScreen({ workspace: buildWorkspace({ planningSteps, grade: passedGrade, dedup }) });
+
+		chooseTab({ name: 'Status' });
+		const panel = screen.getByRole('tabpanel');
+		const sectionText = ({ title }: { title: string }) => within(panel).getByRole('heading', { name: title }).closest('section')?.textContent;
+
+		expect({ grade: sectionText({ title: 'Grade' }), dedup: sectionText({ title: 'Duplicate check' }) }).toStrictEqual({
+			grade: expect.stringMatching(/Grade A.*Passed.*No findings\./),
+			dedup: expect.stringMatching(/No duplicates found/),
+		});
+	});
+
+	test('the Status tab shows each grading pass under its own heading', async () => {
+		const gradePasses = [
+			{ grade: 'below-A', passed: false, gradedAt: '2026-01-01T00:01:00.000Z' },
+			{ grade: 'A', passed: true, gradedAt: '2026-01-01T00:04:00.000Z' },
+		];
+		await setupPlanScreen({ workspace: buildWorkspace({ planningSteps, grade: passedGrade, gradePasses }) });
+
+		chooseTab({ name: 'Status' });
+		const section = within(screen.getByRole('tabpanel')).getByRole('heading', { name: 'Grading history' }).closest('section');
+
+		expect(section?.textContent).toStrictEqual(expect.stringMatching(/Pass 1Grade below-A.*Pass 2Grade A/));
+	});
+
+	test('the Facts tab shows what the planner confirmed, or says nothing is recorded', async () => {
+		const facts = { request: 'Rank results by recency.', verification: { pathsChecked: 3, scriptsChecked: 1 }, verifiedAt: '2026-01-01T00:01:00.000Z' };
+		await setupPlanScreen({ workspace: buildWorkspace({ facts }) });
+
+		chooseTab({ name: 'Facts' });
+		const panel = screen.getByRole('tabpanel');
+
+		expect({
+			request: within(panel).queryAllByText('Rank results by recency.').length,
+			empty: within(panel).queryAllByText(/no facts recorded yet/i).length,
+		}).toStrictEqual({ request: 1, empty: 0 });
+	});
+
 	test('the Brainstorm tab says there are no notes and draws no table when brainstorming wrote nothing', async () => {
 		await setupPlanScreen({ workspace: buildWorkspace() });
 
