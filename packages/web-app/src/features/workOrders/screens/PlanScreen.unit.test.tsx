@@ -1,7 +1,8 @@
 import { describe, expect, test } from '@jest/globals';
-import { PlanWorkspaceView, RunStatus } from '@lightsout/engine';
+import { EvidenceProvenance, PlanEvidence, PlanWorkspaceView, RunStatus } from '@lightsout/engine';
 import { createMemoryHistory, createRootRoute, createRouter, RouterProvider } from '@tanstack/react-router';
 import { fireEvent, screen, within } from '@testing-library/react';
+import { planEvidenceQueryOptions } from '#src/features/workOrders/queries/planEvidenceQueryOptions.ts';
 import { planWorkspaceQueryOptions } from '#src/features/workOrders/queries/planWorkspaceQueryOptions.ts';
 import { PlanScreen } from '#src/features/workOrders/screens/PlanScreen.tsx';
 import { renderWithQueryClient } from '#tests/helpers/renderWithQueryClient.tsx';
@@ -159,6 +160,41 @@ const statusTabCases = [
 	{ grade: undefined, gradeText: /not graded/i },
 ];
 
+/** A plan merged two hours and seven minutes after planning began, with its recorded cost and the questions put to the user. */
+const buildEvidence = (): PlanEvidence =>
+	PlanEvidence.parse({
+		name: `${workOrder}/${plan}`,
+		headline: {
+			startedAt: '2026-01-01T10:00:00.000Z',
+			mergedAt: '2026-01-01T12:07:00.000Z',
+			questionsAsked: { value: 2, provenance: EvidenceProvenance.Measured },
+			recordedCostUsd: { value: 5.5, provenance: EvidenceProvenance.Measured },
+		},
+	});
+
+/** The page with both its workspace and its evidence seeded, so whichever tab opens reads from the cache and no server function runs. */
+const setupPlanScreenWithEvidence = async ({ workspace, evidence }: { workspace: PlanWorkspaceView; evidence: PlanEvidence }) => {
+	const rootRoute = createRootRoute({ component: () => <PlanScreen workOrder={workOrder} plan={plan} /> });
+	const router = createRouter({ routeTree: rootRoute, history: createMemoryHistory({ initialEntries: ['/'] }) });
+	await router.load();
+	renderWithQueryClient({
+		ui: <RouterProvider router={router} />,
+		seed: [
+			{ queryKey: planWorkspaceQueryOptions({ workOrder, plan }).queryKey, data: workspace },
+			{ queryKey: planEvidenceQueryOptions({ workOrder, plan }).queryKey, data: evidence },
+		],
+	});
+	await screen.findByRole('tablist');
+};
+
+/** Every text the Evidence or the Status tab could show, so each case states which of them its open panel holds. */
+const evidenceTabTexts = [/plan to merge/i, /recorded cost/i, /\$5\.50/, /questions asked of you/i, 'Grading history', 'Rank by recency'];
+
+const evidenceTabCases = [
+	{ tab: 'Evidence', expected: [/plan to merge/i, /recorded cost/i, /\$5\.50/, /questions asked of you/i] },
+	{ tab: 'Status', expected: ['Grading history', 'Rank by recency'] },
+];
+
 describe('PlanScreen', () => {
 	test.each(planTabCases)('opens on the Plan tab with the plan text then each phase as its own section', async ({ workspace, expected }) => {
 		await setupPlanScreen({ workspace });
@@ -297,5 +333,18 @@ describe('PlanScreen', () => {
 		const problems = [screen.getByText('grade.json could not be parsed'), screen.getByText('phase2-ranking.md could not be read')];
 
 		expect(problems.map((problem) => Boolean(problem.compareDocumentPosition(tablist) & Node.DOCUMENT_POSITION_FOLLOWING))).toStrictEqual([true, true]);
+	});
+
+	test.each(evidenceTabCases)('the Evidence tab shows the evidence summary and the Status tab keeps its detail', async ({ tab, expected }) => {
+		const gradePasses = [{ grade: 'A', passed: true, gradedAt: '2026-01-01T00:04:00.000Z' }];
+		await setupPlanScreenWithEvidence({
+			workspace: buildWorkspace({ planningSteps, runs: [failedRun], grade: passedGrade, gradePasses }),
+			evidence: buildEvidence(),
+		});
+
+		chooseTab({ name: tab });
+		const panel = screen.getByRole('tabpanel');
+
+		expect(evidenceTabTexts.filter((text) => within(panel).queryAllByText(text).length > 0)).toStrictEqual(expected);
 	});
 });

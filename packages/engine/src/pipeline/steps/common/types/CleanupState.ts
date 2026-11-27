@@ -13,6 +13,8 @@ export interface CleanupState {
 	remaining: StandardsFinding[];
 	inherited: StandardsFinding[];
 	uncertain: StandardsFinding[];
+	/** Blocking findings handed to a round so far, carried across a resume. */
+	targeted: StandardsFinding[];
 	finalReview: StandardsFinding[];
 	/** Absent until the loop ends, which is what a resume reads as "still running". */
 	endReason?: CleanupEndReason;

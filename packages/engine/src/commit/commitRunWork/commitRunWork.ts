@@ -3,6 +3,7 @@ import { readRunCommitAddress } from '#src/commit/commitRunWork/readRunCommitAdd
 import { commitWorkOrderWork } from '#src/commit/commitWorkOrderWork/commitWorkOrderWork.ts';
 import type { CommitAddress } from '#src/commit/common/types/CommitAddress.ts';
 import { composeCommitMessage } from '#src/commit/composeCommitMessage/composeCommitMessage.ts';
+import { readGitCommitLineCounts } from '#src/common/git/readGitCommitLineCounts.ts';
 import { readGitHeadCommit } from '#src/common/git/readGitHeadCommit.ts';
 import { resolveRunDir } from '#src/common/runs/resolveRunDir.ts';
 import { isGeneratedPath } from '#src/common/sourceFiles/isGeneratedPath.ts';
@@ -34,6 +35,38 @@ interface Params {
 	/** Forwarded to `commitWorkOrderWork`: leave generated changes uncommitted on disk instead of discarding them. Set only by a phase of a sequence. Default false. */
 	keepGenerated?: boolean;
 }
+
+/**
+ * Records the commit that just landed on the manifest, with the lines it added
+ * and removed when git can measure them.
+ *
+ * @returns undefined when the commit is recorded, or the one sentence saying why it could not be
+ */
+const recordLandedCommit = async ({ run, manifest, message }: { run: CommittingRun; manifest: RunManifest; message: string }) => {
+	// The subject recorded is the one that landed — the agent's, or the template
+	// it fell back to — which only the committed message can say.
+	const [subject = ''] = message.split('\n');
+	const sha = await readGitHeadCommit({ cwd: run.cwd });
+
+	// Never passed over: the result block reads the recorded commits, so a run
+	// that recorded none would report its own work as already in history.
+	if (sha === undefined) {
+		return `the work in ${run.cwd} was committed but git could not name the commit — resume the run so the tree is checked again`;
+	}
+
+	// A failed measurement records nothing: the commit still counts.
+	const lines = await readGitCommitLineCounts({ cwd: run.cwd, sha });
+
+	await run.update({
+		patch: {
+			commits: [...manifest.commits, { sha, subject, runId: manifest.runId }],
+			...(lines === undefined ? {} : { commitLines: [...(manifest.commitLines ?? []), { sha, ...lines }] }),
+		},
+	});
+	run.progress(`committed ${sha.slice(0, 7)} — ${subject}`);
+
+	return undefined;
+};
 
 /**
  * Commits before the run is stamped passed, so a long sequence that dies keeps
@@ -101,19 +134,5 @@ export const commitRunWork = async ({ run, driver, address, resumed, keepGenerat
 		return undefined;
 	}
 
-	// The subject recorded is the one that landed — the agent's, or the template
-	// it fell back to — which only the committed message can say.
-	const [subject = ''] = committed.message.split('\n');
-	const sha = await readGitHeadCommit({ cwd: run.cwd });
-
-	// Never passed over: the result block reads the recorded commits, so a run
-	// that recorded none would report its own work as already in history.
-	if (sha === undefined) {
-		return `the work in ${run.cwd} was committed but git could not name the commit — resume the run so the tree is checked again`;
-	}
-
-	await run.update({ patch: { commits: [...manifest.commits, { sha, subject, runId: manifest.runId }] } });
-	run.progress(`committed ${sha.slice(0, 7)} — ${subject}`);
-
-	return undefined;
+	return recordLandedCommit({ run, manifest, message: committed.message });
 };

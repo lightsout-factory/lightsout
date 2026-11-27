@@ -137,7 +137,24 @@ describe('getRunProgress', () => {
 
 		expect(progress.rows.map((row) => [row.id, row.cleanup])).toStrictEqual([
 			['clean-slate', undefined],
-			['refactor', { rounds: 2, endReason: 'budget-exhausted', remainingFindings: 2, carriedFindings: 2, reviewFindings: 1, failures: 1 }],
+			[
+				'refactor',
+				{
+					rounds: 2,
+					endReason: 'budget-exhausted',
+					remainingFindings: 2,
+					carriedFindings: 2,
+					reviewFindings: 1,
+					failures: 1,
+					targetedFindings: undefined,
+					fixedFindings: undefined,
+					fixedSites: [],
+					remainingSites: [
+						{ rule: 'file-size', files: ['src/views/getRunProgress.ts'] },
+						{ rule: 'file-size', files: ['src/views/getRunProgress.ts'] },
+					],
+				},
+			],
 			['verify', undefined],
 			['ship', undefined],
 		]);

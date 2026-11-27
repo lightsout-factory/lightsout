@@ -128698,6 +128698,8 @@ var RunManifest = external_exports.object({
   changedFiles: external_exports.array(external_exports.string()),
   /** A phased run's coordinator carries one per phase; every other run carries at most one. */
   commits: external_exports.array(RunCommit).default([]),
+  /** Lines each run commit added and removed, measured by git when the commit was made, keyed by its sha. Absent on a run that made no commit and on one an older engine wrote. */
+  commitLines: external_exports.array(external_exports.object({ sha: external_exports.string(), added: external_exports.number().int().nonnegative(), removed: external_exports.number().int().nonnegative() }).strict()).optional(),
   /**
    * Directory names under the packages dir. Expanded as changed files reveal
    * the blast radius, never shrunk. Empty in non-monorepo mode.
@@ -128921,6 +128923,24 @@ var renderStepTable = ({ steps, activeMs }) => {
 // src/cli/common/plural.ts
 var plural = ({ count: count2 }) => count2 === 1 ? "" : "s";
 
+// src/cli/common/render/describeCleanupDetail.ts
+var describeCleanupDetail = ({ cleanup }) => {
+  const shownSites = 5;
+  const texts = [];
+  if (cleanup.targetedFindings === 0) {
+    texts.push("no blocking findings handed to cleanup");
+  } else if (cleanup.targetedFindings !== void 0) {
+    texts.push(`found ${cleanup.targetedFindings} \xB7 fixed ${cleanup.fixedFindings ?? 0}`);
+  }
+  for (const site of cleanup.remainingSites.slice(0, shownSites)) {
+    texts.push(`remaining ${site.rule} \u2014 ${site.files.join(", ")}`);
+  }
+  if (cleanup.remainingSites.length > shownSites) {
+    texts.push(`+${cleanup.remainingSites.length - shownSites} more remaining`);
+  }
+  return texts;
+};
+
 // src/runState/summarizeRun/summarizeRun.ts
 import { readdir as readdir10 } from "node:fs/promises";
 import { join as join30 } from "node:path";
@@ -129019,6 +129039,8 @@ var RefactorStepReport = external_exports.object({
   inherited: external_exports.array(StandardsFinding),
   /** Findings whose provenance or worsening could not be established. */
   uncertain: external_exports.array(StandardsFinding),
+  /** Every blocking finding a cleanup round was handed, once per `siteKey`, in first-handed order. Absent on a record an older engine wrote. */
+  targeted: external_exports.array(StandardsFinding).optional(),
   failures: external_exports.array(external_exports.string()),
   /** The judgment reviewer's read before the first round. */
   initialReview: external_exports.array(StandardsFinding),
@@ -129030,18 +129052,25 @@ var RefactorStepReport = external_exports.object({
 });
 
 // src/common/buildCleanupSummary.ts
+var toSite = ({ finding: finding6 }) => ({ rule: finding6.rule, files: finding6.files.map((file2) => file2.path) });
 var buildCleanupSummary = ({ step }) => {
   const parsed = RefactorStepReport.safeParse(step.report);
   let summary;
   if (parsed.success) {
-    const { roundsUsed, endReason, remaining, inherited, uncertain, finalReview, failures } = parsed.data;
+    const { roundsUsed, endReason, remaining, inherited, uncertain, targeted, finalReview, failures } = parsed.data;
+    const standing = new Set(remaining.map((finding6) => finding6.siteKey));
+    const fixed = targeted?.filter((finding6) => !standing.has(finding6.siteKey));
     summary = {
       rounds: roundsUsed,
       endReason,
       remainingFindings: remaining.length,
       carriedFindings: inherited.length + uncertain.length,
       reviewFindings: finalReview.length,
-      failures: failures.length
+      failures: failures.length,
+      targetedFindings: targeted?.length,
+      fixedFindings: fixed?.length,
+      fixedSites: (fixed ?? []).map((finding6) => toSite({ finding: finding6 })),
+      remainingSites: remaining.map((finding6) => toSite({ finding: finding6 }))
     };
   }
   return summary;
@@ -129062,16 +129091,60 @@ var LedgerRecord = external_exports.object({
 var CommandRecord = external_exports.object({
   /** The pipeline step the execution was recorded under; absent on a record written outside a step. */
   step: external_exports.string().optional(),
+  kind: external_exports.string().optional(),
+  group: external_exports.string().optional(),
+  exitCode: external_exports.number().optional(),
+  testResultsDir: external_exports.string().optional(),
   durationMs: external_exports.number().optional(),
   rerun: external_exports.literal(true).optional(),
-  skipped: external_exports.literal(true).optional()
+  skipped: external_exports.literal(true).optional(),
+  crashed: external_exports.literal(true).optional(),
+  timedOut: external_exports.literal(true).optional()
 });
+var sameGate = ({ a, b }) => a.kind === b.kind && a.group === b.group;
+var isFailedGateRun = ({ commands: commands2, index }) => {
+  const command = commands2[index];
+  if (!command || command.skipped || command.rerun || command.crashed || command.timedOut || (command.exitCode ?? 0) === 0) {
+    return false;
+  }
+  const next = commands2.slice(index + 1).find((later) => !later.skipped && sameGate({ a: later, b: command }));
+  return !(next?.rerun && next.exitCode === 0);
+};
+var isFixedLater = ({ commands: commands2, index }) => {
+  const command = commands2[index];
+  const later = commands2.slice(index + 1);
+  return command !== void 0 && later.some((next) => !next.skipped && !next.rerun && next.exitCode === 0 && sameGate({ a: next, b: command }));
+};
+var listTestResultExecutions = ({ commands: commands2 }) => {
+  const executions = /* @__PURE__ */ new Map();
+  for (const { step, group, kind, testResultsDir: testResultsDir2 } of commands2) {
+    const key = JSON.stringify([step, group, kind]);
+    if (testResultsDir2 !== void 0 && step !== void 0 && group !== void 0 && kind !== void 0 && !executions.has(key)) {
+      executions.set(key, { step, group, kind });
+    }
+  }
+  return [...executions.values()];
+};
+var summarizeGates = ({ commands: commands2, selfChecks }) => {
+  const failed = commands2.flatMap((_, index) => isFailedGateRun({ commands: commands2, index }) ? [index] : []);
+  return {
+    gates: {
+      commands: commands2.filter((command) => !command.skipped).length,
+      reruns: commands2.filter((command) => command.rerun).length,
+      skipped: commands2.filter((command) => command.skipped).length,
+      failed: failed.length,
+      fixed: failed.filter((index) => isFixedLater({ commands: commands2, index })).length,
+      selfChecks: selfChecks.filter((command) => !command.skipped).length
+    },
+    testResultExecutions: listTestResultExecutions({ commands: commands2 })
+  };
+};
 var summarizeRun = async ({ cwd, manifest }) => {
   const runDir = await resolveRunDir({ cwd, runId: manifest.runId });
   const ledger = await readJsonlRecords({ path: join30(runDir, "agents.jsonl"), schema: LedgerRecord });
-  const commands2 = (await readJsonlRecords({ path: join30(runDir, "commands.jsonl"), schema: CommandRecord })).filter(
-    (command) => !isSelfCheckStep({ step: command.step })
-  );
+  const recorded = await readJsonlRecords({ path: join30(runDir, "commands.jsonl"), schema: CommandRecord });
+  const commands2 = recorded.filter((command) => !isSelfCheckStep({ step: command.step }));
+  const selfChecks = recorded.filter((command) => isSelfCheckStep({ step: command.step }));
   const agentFiles = await readdir10(join30(runDir, "agents")).catch(() => []);
   const friction = (await readFriction({ cwd })).filter((entry) => entry.runId === manifest.runId);
   const perStepUsage = /* @__PURE__ */ new Map();
@@ -129110,11 +129183,7 @@ var summarizeRun = async ({ cwd, manifest }) => {
       changedFiles: step.changedFiles,
       ...perStepUsage.get(step.id) ?? { invocations: 0, outputTokens: 0, costUsd: 0 }
     })),
-    gates: {
-      commands: commands2.filter((command) => !command.skipped).length,
-      reruns: commands2.filter((command) => command.rerun).length,
-      skipped: commands2.filter((command) => command.skipped).length
-    },
+    ...summarizeGates({ commands: commands2, selfChecks }),
     verificationRepairs: [...verificationRepairs.entries()].map(([gateFamily, attempts]) => ({ gateFamily, attempts })),
     cleanup,
     rejectedReports: agentFiles.filter((name) => name.startsWith("rejected-")).length,
@@ -129186,7 +129255,10 @@ var renderDetailLines = ({ manifest, summary, ok }) => {
     lines.push(label({ name: "retries", value: `${summary.rejectedReports} rejected report${plural({ count: summary.rejectedReports })} re-emitted` }));
   }
   if (summary.cleanup) {
-    lines.push(label({ name: "cleanup", value: describeCleanup({ cleanup: summary.cleanup }) }));
+    lines.push(
+      label({ name: "cleanup", value: describeCleanup({ cleanup: summary.cleanup }) }),
+      ...describeCleanupDetail({ cleanup: summary.cleanup }).map((text) => label({ name: "", value: text }))
+    );
   }
   if (summary.frictionByArea.length > 0) {
     const total = summary.frictionByArea.reduce((count2, entry) => count2 + entry.count, 0);
@@ -134119,7 +134191,45 @@ var composeCommitMessage = async ({ cwd, driver, config: config2, address, runId
   return buildRunCommitMessage({ subject, body, unit: address.unit, runId });
 };
 
+// src/common/git/readGitCommitLineCounts.ts
+var countColumn = ({ column }) => {
+  const count2 = Number(column);
+  return Number.isInteger(count2) && count2 >= 0 ? count2 : 0;
+};
+var readGitCommitLineCounts = async ({ cwd, sha }) => {
+  const answer = await runCommand({ command: `git show --numstat --format= ${sha}`, cwd, timeoutMs: gitTimeoutMs }).catch(() => void 0);
+  if (answer?.exitCode !== 0) {
+    return void 0;
+  }
+  let added = 0;
+  let removed = 0;
+  for (const line of answer.stdout.split("\n")) {
+    const [addedColumn, removedColumn] = line.split("	");
+    if (line.trim() !== "") {
+      added += countColumn({ column: addedColumn });
+      removed += countColumn({ column: removedColumn });
+    }
+  }
+  return { added, removed };
+};
+
 // src/commit/commitRunWork/commitRunWork.ts
+var recordLandedCommit = async ({ run, manifest, message }) => {
+  const [subject = ""] = message.split("\n");
+  const sha = await readGitHeadCommit({ cwd: run.cwd });
+  if (sha === void 0) {
+    return `the work in ${run.cwd} was committed but git could not name the commit \u2014 resume the run so the tree is checked again`;
+  }
+  const lines = await readGitCommitLineCounts({ cwd: run.cwd, sha });
+  await run.update({
+    patch: {
+      commits: [...manifest.commits, { sha, subject, runId: manifest.runId }],
+      ...lines === void 0 ? {} : { commitLines: [...manifest.commitLines ?? [], { sha, ...lines }] }
+    }
+  });
+  run.progress(`committed ${sha.slice(0, 7)} \u2014 ${subject}`);
+  return void 0;
+};
 var commitRunWork = async ({ run, driver, address, resumed, keepGenerated = false }) => {
   const manifest = run.current();
   const generated = run.config.generated ?? [];
@@ -134162,14 +134272,7 @@ var commitRunWork = async ({ run, driver, address, resumed, keepGenerated = fals
     run.progress("nothing left to commit \u2014 this unit\u2019s work is already in the branch\u2019s history");
     return void 0;
   }
-  const [subject = ""] = committed.message.split("\n");
-  const sha = await readGitHeadCommit({ cwd: run.cwd });
-  if (sha === void 0) {
-    return `the work in ${run.cwd} was committed but git could not name the commit \u2014 resume the run so the tree is checked again`;
-  }
-  await run.update({ patch: { commits: [...manifest.commits, { sha, subject, runId: manifest.runId }] } });
-  run.progress(`committed ${sha.slice(0, 7)} \u2014 ${subject}`);
-  return void 0;
+  return recordLandedCommit({ run, manifest, message: committed.message });
 };
 
 // src/pipeline/approvedTests/removeApprovedTests.ts
@@ -137348,6 +137451,7 @@ var buildCleanupRecord = ({ context, state }) => ({
     remaining: state.remaining,
     inherited: state.inherited,
     uncertain: state.uncertain,
+    targeted: state.targeted,
     failures: state.failures,
     initialReview: context.initialReview,
     finalReview: state.finalReview,
@@ -137367,6 +137471,19 @@ var fingerprintScopeFiles = async ({ run }) => {
     })
   );
   return Object.fromEntries(entries.flat());
+};
+
+// src/pipeline/steps/refactorStep/addTargetedFindings.ts
+var addTargetedFindings = ({ targeted, findings }) => {
+  const seen = new Set(targeted.map((finding6) => finding6.siteKey));
+  const added = [];
+  for (const finding6 of findings) {
+    if (!seen.has(finding6.siteKey)) {
+      seen.add(finding6.siteKey);
+      added.push(finding6);
+    }
+  }
+  return [...targeted, ...added];
 };
 
 // src/pipeline/steps/refactorStep/describePersistingFindings.ts
@@ -150355,6 +150472,7 @@ var runCleanupRounds = async ({ context, state }) => {
     } else if (state.roundsUsed >= context.budget) {
       state.endReason = CleanupEndReason.BudgetExhausted;
     } else {
+      state.targeted = addTargetedFindings({ targeted: state.targeted, findings: check2.workList });
       const parked = await runCleanupRound({ context, state, findings: check2.workList, advisories });
       if (parked) {
         return parked;
@@ -150390,6 +150508,7 @@ var refactorStep = ({ run, gitPrefix, planContent, overviewContent, standards, t
       remaining: [],
       inherited: [],
       uncertain: [],
+      targeted: prior?.targeted ?? [],
       finalReview: []
     };
     const parked = await runCleanupRounds({ context, state });
@@ -168675,7 +168794,7 @@ var cleanupLines = ({ row }) => {
   if (cleanup.failures > 0) {
     parts.push(`failed ${cleanup.failures}`);
   }
-  return [` cleanup       ${parts.join(" \xB7 ")}`];
+  return [` cleanup       ${parts.join(" \xB7 ")}`, ...describeCleanupDetail({ cleanup }).flatMap((text) => wrapLabelled({ label: "", text }))];
 };
 var renderRunProgress = ({ progress }) => {
   const stopped = (progress.status === RunStatus.Running || progress.status === RunStatus.Pending) && !progress.live;

@@ -49,6 +49,8 @@ export const RunManifest = z.object({
 	changedFiles: z.array(z.string()),
 	/** A phased run's coordinator carries one per phase; every other run carries at most one. */
 	commits: z.array(RunCommit).default([]),
+	/** Lines each run commit added and removed, measured by git when the commit was made, keyed by its sha. Absent on a run that made no commit and on one an older engine wrote. */
+	commitLines: z.array(z.object({ sha: z.string(), added: z.number().int().nonnegative(), removed: z.number().int().nonnegative() }).strict()).optional(),
 	/**
 	 * Directory names under the packages dir. Expanded as changed files reveal
 	 * the blast radius, never shrunk. Empty in non-monorepo mode.

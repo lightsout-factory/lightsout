@@ -34,6 +34,10 @@ const cleanupOf = (overrides: Partial<CleanupSummary> = {}): CleanupSummary => (
 	carriedFindings: 0,
 	reviewFindings: 0,
 	failures: 0,
+	targetedFindings: undefined,
+	fixedFindings: undefined,
+	fixedSites: [],
+	remainingSites: [],
 	...overrides,
 });
 
@@ -56,6 +60,47 @@ const sampleBlock = [
 	' elapsed 70m 03s · 79 files · $43.54',
 	' now  step refactor — pass 1/3',
 ];
+
+/** Three cleanup rows in one block: one with found, fixed and a remaining site, one whose remaining site outruns the block width, and one older-shaped record with no detail at all. */
+const setupCleanupDetail = () => {
+	const longFiles = Array.from({ length: 5 }, (_, index) => `packages/engine/src/pipeline/steps/buildSteps/someDeeplyNestedModule${index}.ts`);
+	const detailed = cleanupOf({
+		rounds: 2,
+		endReason: 'budget-exhausted',
+		remainingFindings: 1,
+		targetedFindings: 3,
+		fixedFindings: 2,
+		fixedSites: [
+			{ rule: 'acme/max-nesting', files: ['src/b.ts'] },
+			{ rule: 'acme/no-dup', files: ['src/c.ts', 'src/d.ts'] },
+		],
+		remainingSites: [{ rule: 'acme/max-nesting', files: ['src/a.ts'] }],
+	});
+	const wrapping = cleanupOf({
+		rounds: 1,
+		endReason: 'declined-twice',
+		remainingFindings: 1,
+		targetedFindings: undefined,
+		fixedFindings: undefined,
+		fixedSites: [],
+		remainingSites: [{ rule: 'acme/max-nesting', files: longFiles }],
+	});
+	const older = cleanupOf({ endReason: 'no-work', targetedFindings: undefined, fixedFindings: undefined, fixedSites: [], remainingSites: [] });
+	const rows = [
+		rowOf({ id: 'refactor', cleanup: detailed }),
+		rowOf({ id: 'phase2-refactor', cleanup: wrapping }),
+		rowOf({ id: 'phase3-refactor', cleanup: older }),
+	];
+	const progress = sampleRunProgress({ rows, status: RunStatus.Passed });
+
+	return {
+		progress,
+		detailedLine: ' cleanup       2 rounds · budget-exhausted · remaining 1',
+		wrappedLine: ' cleanup       1 round · declined-twice · remaining 1',
+		plainLine: ' cleanup       0 rounds · no-work',
+		longFiles,
+	};
+};
 
 describe('renderRunProgress', () => {
 	test('renders the chosen layout, line for line', () => {
@@ -264,5 +309,32 @@ describe('renderRunProgress', () => {
 		const lines = renderRunProgress({ progress });
 
 		expect(lines).toStrictEqual(block);
+	});
+
+	test('renderRunProgress: prints wrapped cleanup detail beneath the cleanup line, never replacing it', () => {
+		const { progress, detailedLine, wrappedLine, plainLine, longFiles } = setupCleanupDetail();
+
+		const lines = renderRunProgress({ progress });
+		const plainLines = lines.map((text) => plain({ text }));
+
+		const detailedAt = plainLines.indexOf(detailedLine);
+		const wrappedAt = plainLines.indexOf(wrappedLine);
+		const plainAt = plainLines.indexOf(plainLine);
+		const wrapped = plainLines.slice(wrappedAt + 1, plainAt);
+		const wrappedText = wrapped.map((text) => text.trim()).join(' ');
+
+		expect(plainLines.filter((text) => /^ cleanup\b/.test(text))).toHaveLength(3);
+		expect(plainLines.slice(detailedAt, detailedAt + 4)).toStrictEqual([
+			detailedLine,
+			expect.stringMatching(/^ {15}\S.*\b3\b.*\b2\b/),
+			expect.stringMatching(/^ {15}\S.*acme\/max-nesting.*src\/a\.ts/),
+			wrappedLine,
+		]);
+		expect(wrapped.length).toBeGreaterThan(1);
+		expect(wrapped.every((text) => /^ {15}\S/.test(text) && text.length <= 96)).toBe(true);
+		expect(wrappedText).toMatch(/acme\/max-nesting/);
+		expect(wrappedText).toContain(longFiles.join(', '));
+		expect(plainLines[plainAt + 1]).toMatch(/^─+$/);
+		expect(Math.max(...plainLines.map((text) => text.length))).toBeLessThanOrEqual(96);
 	});
 });

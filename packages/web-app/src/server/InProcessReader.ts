@@ -1,4 +1,4 @@
-import { getPlanWorkspace, getQueueView, getWorkOrderView, listWorkOrderSummaries } from '@lightsout/engine';
+import { getPlanEvidence, getPlanWorkspace, getQueueView, getWorkOrderEvidence, getWorkOrderView, listWorkOrderSummaries } from '@lightsout/engine';
 import type { LightsoutReader } from '#src/server/LightsoutReader.ts';
 
 interface ConstructorParams {
@@ -27,6 +27,14 @@ export class InProcessReader implements LightsoutReader {
 
 	getPlanWorkspace({ name }: { name: string }) {
 		return getPlanWorkspace({ cwd: this.repoRoot, name });
+	}
+
+	getPlanEvidence({ name }: { name: string }) {
+		return getPlanEvidence({ cwd: this.repoRoot, name });
+	}
+
+	getWorkOrderEvidence({ name }: { name: string }) {
+		return getWorkOrderEvidence({ cwd: this.repoRoot, name });
 	}
 
 	getQueueView() {

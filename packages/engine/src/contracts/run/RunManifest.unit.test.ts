@@ -266,3 +266,20 @@ test('RunManifest: a recorded configPath that is not a string fails the read bou
 	// read the recorded config's origin from
 	expect(parsed.success).toBe(false);
 });
+
+test('RunManifest: commitLines is optional, and an entry with an unknown key is refused', () => {
+	const entry = { sha: 'abc1234', added: 3, removed: 1 };
+
+	const absent = RunManifest.parse({ ...base, harness: 'codex' });
+	const recorded = RunManifest.parse({ ...base, harness: 'codex', commitLines: [entry] });
+	const unknownKey = RunManifest.safeParse({ ...base, harness: 'codex', commitLines: [{ ...entry, files: 2 }] });
+
+	// a run that made no commit, or one an older engine wrote, records no line
+	// counts and still reads back
+	expect(absent.commitLines).toBeUndefined();
+	// a well-formed entry round-trips whole, so the refusal below is the strict
+	// entry rejecting the extra key rather than a malformed entry
+	expect(recorded.commitLines).toStrictEqual([entry]);
+	// the entry is strict — a key the engine never writes fails the read boundary
+	expect(unknownKey.success).toBe(false);
+});

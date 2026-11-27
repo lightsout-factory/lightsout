@@ -182,4 +182,33 @@ describe('getReader plans', () => {
 			planningLive: false,
 		});
 	});
+
+	test("reads a plan's evidence and rejects a plan no folder answers to", async () => {
+		const { reader } = await setupPlansReader();
+
+		const evidence = await reader.getPlanEvidence({ name: 'search-ranking/001-ranking' });
+
+		expect({
+			name: evidence.name,
+			headlineQuestions: evidence.headline.questionsAsked,
+			planQuestions: evidence.plan?.questionsAsked,
+			pathsChecked: evidence.plan?.pathsChecked,
+			scriptsChecked: evidence.plan?.scriptsChecked,
+			tests: evidence.tests,
+			checks: evidence.checks,
+			cleanup: evidence.cleanup,
+			problems: evidence.problems,
+		}).toStrictEqual({
+			name: 'search-ranking/001-ranking',
+			headlineQuestions: { value: 1, provenance: 'measured' },
+			planQuestions: { value: 1, provenance: 'measured' },
+			pathsChecked: { value: 4, provenance: 'measured' },
+			scriptsChecked: { value: 2, provenance: 'measured' },
+			tests: undefined,
+			checks: undefined,
+			cleanup: undefined,
+			problems: [],
+		});
+		await expect(reader.getPlanEvidence({ name: 'never-planned/001-plan' })).rejects.toThrow(/never-planned/);
+	});
 });

@@ -1,6 +1,7 @@
 import { describe, expect, test } from '@jest/globals';
-import type { WorkOrderSummary, WorkOrderView } from '@lightsout/engine';
+import type { WorkOrderEvidenceTotals, WorkOrderSummary, WorkOrderView } from '@lightsout/engine';
 import {
+	EvidenceProvenance,
 	PlanProgress,
 	RunStatus,
 	ShipBlockReason,
@@ -12,6 +13,7 @@ import {
 } from '@lightsout/engine/contracts';
 import { createMemoryHistory, createRootRoute, createRouter, RouterProvider } from '@tanstack/react-router';
 import { screen, within } from '@testing-library/react';
+import { workOrderEvidenceQueryOptions } from '#src/features/workOrders/queries/workOrderEvidenceQueryOptions.ts';
 import { workOrderViewQueryOptions } from '#src/features/workOrders/queries/workOrderViewQueryOptions.ts';
 import { WorkOrderScreen } from '#src/features/workOrders/screens/WorkOrderScreen.tsx';
 import { renderWithQueryClient } from '#tests/helpers/renderWithQueryClient.tsx';
@@ -53,6 +55,44 @@ const setupWorkOrderScreen = async ({ view = buildView() }: { view?: WorkOrderVi
 	renderWithQueryClient({
 		ui: <RouterProvider router={router} />,
 		seed: [{ queryKey: workOrderViewQueryOptions({ name: view.summary.name }).queryKey, data: view }],
+	});
+	await screen.findByRole('heading', { level: 1, name: view.summary.name });
+};
+
+/**
+ * The screen under the same router, with the cache also holding the evidence
+ * totals the page fetches, so the totals render from the seed and no server
+ * function is reached.
+ */
+const setupWorkOrderScreenWithEvidence = async ({
+	plansCovered,
+	plansCounted,
+	problems = [],
+}: {
+	plansCovered: number;
+	plansCounted: number;
+	problems?: string[];
+}) => {
+	const view = buildView();
+	const totals: WorkOrderEvidenceTotals = {
+		headline: {
+			startedAt: '2026-11-20T09:00:00.000Z',
+			questionsAsked: { value: 2, provenance: EvidenceProvenance.Measured },
+		},
+		plansCovered,
+		plansCounted,
+		problems,
+	};
+	const rootRoute = createRootRoute({ component: () => <WorkOrderScreen name={view.summary.name} /> });
+	const router = createRouter({ routeTree: rootRoute, history: createMemoryHistory({ initialEntries: ['/'] }) });
+
+	await router.load();
+	renderWithQueryClient({
+		ui: <RouterProvider router={router} />,
+		seed: [
+			{ queryKey: workOrderViewQueryOptions({ name: view.summary.name }).queryKey, data: view },
+			{ queryKey: workOrderEvidenceQueryOptions({ name: view.summary.name }).queryKey, data: totals },
+		],
 	});
 	await screen.findByRole('heading', { level: 1, name: view.summary.name });
 };
@@ -234,5 +274,25 @@ describe('WorkOrderScreen', () => {
 			expect.stringMatching(/19 Nov 2026, 14:30.*excluded plan 002-ranking/s),
 			expect.stringMatching(/20 Nov 2026, 08:00.*ship requested for 001-search-basics/s),
 		]);
+	});
+
+	test.each([
+		{ plansCovered: 1, plansCounted: 2, expected: expect.stringMatching(/Across 1 of 2 plans/) },
+		{ plansCovered: 0, plansCounted: 2, expected: undefined },
+	])('shows the evidence totals with the plans they cover, and nothing when no plan has evidence', async ({ plansCovered, plansCounted, expected }) => {
+		await setupWorkOrderScreenWithEvidence({ plansCovered, plansCounted });
+
+		const evidenceText = screen.queryByRole('heading', { level: 2, name: 'Evidence' })?.closest('section')?.textContent ?? undefined;
+
+		expect(evidenceText).toStrictEqual(expected);
+	});
+
+	test("lists each covered plan's evidence problem beneath the totals", async () => {
+		const problem = '001-search-basics: the run manifest of a1b2c3d4 could not be read';
+		await setupWorkOrderScreenWithEvidence({ plansCovered: 1, plansCounted: 1, problems: [problem] });
+
+		const evidence = within(sectionTitled({ title: 'Evidence' })).queryAllByText(problem);
+
+		expect(evidence).toHaveLength(1);
 	});
 });

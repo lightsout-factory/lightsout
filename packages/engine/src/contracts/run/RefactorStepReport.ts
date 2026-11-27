@@ -19,6 +19,8 @@ export const RefactorStepReport = z.object({
 	inherited: z.array(StandardsFinding),
 	/** Findings whose provenance or worsening could not be established. */
 	uncertain: z.array(StandardsFinding),
+	/** Every blocking finding a cleanup round was handed, once per `siteKey`, in first-handed order. Absent on a record an older engine wrote. */
+	targeted: z.array(StandardsFinding).optional(),
 	failures: z.array(z.string()),
 	/** The judgment reviewer's read before the first round. */
 	initialReview: z.array(StandardsFinding),

@@ -98,4 +98,20 @@ describe('RefactorStepReport', () => {
 		expect(parsed.endReason).toBeUndefined();
 		expect(parsed.roundsUsed).toBe(2);
 	});
+
+	test('RefactorStepReport: an older record without targeted still parses, and a malformed targeted entry is refused', () => {
+		const { report } = setupReport();
+		const malformed = {
+			...report,
+			targeted: [setupFinding({ rule: 'acme/max-nesting', severity: 'off', siteKey: 'acme/max-nesting:src/a.ts' })],
+		};
+
+		const olderRecord = RefactorStepReport.parse(report);
+		const malformedRecord = RefactorStepReport.safeParse(malformed);
+
+		// a record an older engine wrote carries no targeted list and must stay readable;
+		// an entry that is not a standards finding must never pass as one
+		expect(olderRecord.targeted).toBeUndefined();
+		expect(malformedRecord.success).toBe(false);
+	});
 });
