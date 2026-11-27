@@ -1,5 +1,6 @@
 import { formatCost } from '@lightsout/shared';
 import { plural } from '#src/cli/common/plural.ts';
+import { describeCleanupDetail } from '#src/cli/common/render/describeCleanupDetail.ts';
 import { formatClockDuration } from '#src/cli/statusCommand/common/formatClockDuration.ts';
 import { renderProgressBlock } from '#src/cli/statusCommand/common/renderProgressBlock.ts';
 import type { RunProgress } from '#src/common/types/RunProgress.ts';
@@ -81,7 +82,7 @@ const cleanupLines = ({ row }: { row: RunProgressRow }) => {
 		parts.push(`failed ${cleanup.failures}`);
 	}
 
-	return [` cleanup       ${parts.join(' · ')}`];
+	return [` cleanup       ${parts.join(' · ')}`, ...describeCleanupDetail({ cleanup }).flatMap((text) => wrapLabelled({ label: '', text }))];
 };
 
 interface Params {

@@ -2,6 +2,7 @@ import { basename } from 'node:path';
 import { formatCost, formatDuration, formatShortRunId, formatTokenCount } from '@lightsout/shared';
 import { renderStepTable } from '#src/cli/common/implementRun/finishImplementRun/renderResult/renderStepTable.ts';
 import { plural } from '#src/cli/common/plural.ts';
+import { describeCleanupDetail } from '#src/cli/common/render/describeCleanupDetail.ts';
 import { bold } from '#src/cli/common/terminal/bold.ts';
 import { paintStatus } from '#src/cli/common/terminal/paintStatus.ts';
 import type { CleanupSummary } from '#src/common/types/CleanupSummary.ts';
@@ -113,7 +114,10 @@ const renderDetailLines = ({ manifest, summary, ok }: { manifest: RunManifest; s
 	}
 
 	if (summary.cleanup) {
-		lines.push(label({ name: 'cleanup', value: describeCleanup({ cleanup: summary.cleanup }) }));
+		lines.push(
+			label({ name: 'cleanup', value: describeCleanup({ cleanup: summary.cleanup }) }),
+			...describeCleanupDetail({ cleanup: summary.cleanup }).map((text) => label({ name: '', value: text })),
+		);
 	}
 
 	if (summary.frictionByArea.length > 0) {

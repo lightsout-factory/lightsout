@@ -13,4 +13,12 @@ export interface CleanupSummary {
 	reviewFindings: number;
 	/** Cleanup-agent attempts that timed out or returned nothing usable. */
 	failures: number;
+	/** Blocking findings cleanup rounds were handed; undefined on a record that predates `targeted`. */
+	targetedFindings: number | undefined;
+	/** Of those, the ones whose `siteKey` no remaining finding carries; undefined with `targetedFindings`. */
+	fixedFindings: number | undefined;
+	/** Each targeted finding whose `siteKey` no remaining finding carries, as its rule and files, in first-handed order; empty on a record that predates `targeted`. */
+	fixedSites: { rule: string; files: string[] }[];
+	/** Each remaining finding's rule and files, in recorded order. */
+	remainingSites: { rule: string; files: string[] }[];
 }

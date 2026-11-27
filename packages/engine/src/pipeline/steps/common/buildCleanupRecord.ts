@@ -20,6 +20,7 @@ export const buildCleanupRecord = ({ context, state }: Params): StepRecord => ({
 		remaining: state.remaining,
 		inherited: state.inherited,
 		uncertain: state.uncertain,
+		targeted: state.targeted,
 		failures: state.failures,
 		initialReview: context.initialReview,
 		finalReview: state.finalReview,

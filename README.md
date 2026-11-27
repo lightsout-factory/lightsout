@@ -81,6 +81,8 @@ Only `gates` is required. `standards-pack` turns on the built-in standards; leav
 
 The engine also has terminal commands — `doctor`, `ship`, `resume`, `stop`, `report`, `standards-check` and more. When Claude Code's agent runs them, `lightsout <command>` works once the plugin is enabled; otherwise run `node <plugin folder>/dist/cli.mjs <command>` (Claude Code installs the plugin under `~/.claude/plugins/cache/lightsout/lightsout/<version>`). See every command, its flags and what it does step by step on the [Commands page](https://lightsout.dev/commands).
 
+`lightsout status` and the end-of-run report print, beneath the cleanup line, how many blocking standards findings cleanup was handed and how many it fixed, and each finding still remaining with its rule and files. In the web app, a plan's page has an Evidence tab that summarises what lightsout did for that plan — grading rounds, questions answered without you, checks failed and fixed, tests written and reviewed, standards findings fixed and remaining, agents, time and recorded cost — and a work order's page shows the totals across its plans.
+
 ## Ticket trackers
 
 Lightsout can work from Linear or Jira tickets: the queue drains them, and each ticket gets one branch and one pull request. Install the add-on for your tracker:

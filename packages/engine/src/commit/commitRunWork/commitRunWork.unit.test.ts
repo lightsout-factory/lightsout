@@ -26,6 +26,13 @@ const mockReadGitHeadCommit = jest.fn<(params: { cwd: string }) => Promise<strin
 jest.mock('#src/common/git/readGitHeadCommit.ts', () => ({
 	readGitHeadCommit: (params: { cwd: string }) => mockReadGitHeadCommit(params),
 }));
+
+const actualLineCounts = jest.requireActual<typeof import('#src/common/git/readGitCommitLineCounts.ts')>('#src/common/git/readGitCommitLineCounts.ts');
+const mockReadGitCommitLineCounts = jest.fn<(params: { cwd: string; sha: string }) => Promise<{ added: number; removed: number } | undefined>>();
+
+jest.mock('#src/common/git/readGitCommitLineCounts.ts', () => ({
+	readGitCommitLineCounts: (params: { cwd: string; sha: string }) => mockReadGitCommitLineCounts(params),
+}));
 // -------------------------
 
 /**
@@ -88,6 +95,18 @@ const setupRebuiltOutput = async () => {
 	const tree = () => execSync('git status --porcelain', { cwd: commit.cwd }).toString();
 
 	return { ...commit, builtOutput, tree };
+};
+
+/** A run rewriting a committed file (two lines added, one removed) beside a run already in history, counted by real git. */
+const setupMeasuredCommits = async () => {
+	mockReadGitCommitLineCounts.mockImplementation(actualLineCounts.readGitCommitLineCounts);
+	const landed = await setup({ changedFiles: ['src/thing.ts'] });
+
+	writeRepoFile({ cwd: landed.cwd, path: 'src/thing.ts', content: 'export const a = 1;\nexport const b = 2;\n' });
+	execSync('git add -- src/thing.ts && git commit -qm thing', { cwd: landed.cwd, stdio: 'ignore' });
+	writeRepoFile({ cwd: landed.cwd, path: 'src/thing.ts', content: 'export const a = 1;\nexport const c = 3;\nexport const d = 4;\n' });
+
+	return { landed, alreadyCommitted: await setup({ changedFiles: ['src/thing.ts'] }) };
 };
 
 /** Two identical rebuilt-output runs, so keeping and the default discard can be compared over the same tree. */
@@ -347,6 +366,33 @@ describe('commitRunWork', () => {
 				output: '// built on the branch\n',
 				tree: '',
 			},
+		});
+	});
+
+	test('commitRunWork: records the lines the landed commit added and removed, and nothing when no commit was made', async () => {
+		const { landed, alreadyCommitted } = await setupMeasuredCommits();
+
+		await commitRunWork({ run: landed.run, driver: landed.driver, resumed: false });
+		await commitRunWork({ run: alreadyCommitted.run, driver: alreadyCommitted.driver, resumed: false });
+
+		expect({ landed: landed.manifestNow().commitLines, alreadyCommitted: alreadyCommitted.manifestNow().commitLines }).toStrictEqual({
+			landed: [{ sha: headCommitOf({ cwd: landed.cwd }), added: 2, removed: 1 }],
+			alreadyCommitted: undefined,
+		});
+	});
+
+	test('commitRunWork: a failed line count never fails the commit', async () => {
+		const { cwd, run, manifestNow, driver } = await setup({ dirty: { 'src/thing.ts': 'export const thing = 1;\n' }, changedFiles: ['src/thing.ts'] });
+
+		// a git that cannot count the lines of the commit it just made
+		mockReadGitCommitLineCounts.mockResolvedValue(undefined);
+
+		const uncommitted = await commitRunWork({ run, driver, resumed: false });
+
+		expect({ uncommitted, commits: manifestNow().commits, commitLines: manifestNow().commitLines }).toStrictEqual({
+			uncommitted: undefined,
+			commits: [{ sha: headCommitOf({ cwd }), subject: plainSubject, runId }],
+			commitLines: undefined,
 		});
 	});
 });

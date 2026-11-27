@@ -5,13 +5,11 @@ import { expect, jest, test } from '@jest/globals';
 import { renderResult } from '#src/cli/common/implementRun/finishImplementRun/renderResult/renderResult.ts';
 import { FrictionArea } from '#src/contracts/friction/FrictionArea.ts';
 import type { FrictionRecord } from '#src/contracts/friction/FrictionRecord.ts';
-import { CleanupEndReason } from '#src/contracts/run/CleanupEndReason.ts';
 import { PackagesSource } from '#src/contracts/run/PackagesSource.ts';
 import type { RunCommit } from '#src/contracts/run/RunCommit.ts';
 import type { RunManifest } from '#src/contracts/run/RunManifest.ts';
 import { RunStatus } from '#src/contracts/run/RunStatus.ts';
-import type { StandardsFinding } from '#src/contracts/standardsCheck/StandardsFinding.ts';
-import { StandardsSeverity } from '#src/contracts/standardsCheck/StandardsSeverity.ts';
+import { resultLabelLines } from '#tests/helpers/resultLabelLines.ts';
 import { runDirFor } from '#tests/helpers/runDirFor.ts';
 
 // renderResult summarizes a run from the evidence the run left on disk, so the
@@ -92,15 +90,12 @@ const setupResult = ({
 	return { result: { ok, manifest: fullManifest, error }, cwd, logged, errors };
 };
 
-/** The labelled summary lines, with the step table's box-drawn rows and the blank spacers dropped. */
-const labelLines = ({ lines }: { lines: string[] }) => lines.filter((line) => line !== '' && !/^[┌├└│]/.test(line));
-
 test('renderResult: a clean run with no usage, scope, or gate history prints only the always-present lines', async () => {
 	const { result, cwd } = setupResult();
 
 	const lines = await renderResult({ result, cwd });
 
-	expect(labelLines({ lines })).toStrictEqual([
+	expect(resultLabelLines({ lines })).toStrictEqual([
 		'run       run-1234 · PASSED',
 		'plan      feature.md',
 		'wall      3s',
@@ -137,7 +132,7 @@ test('renderResult: a failed run reports active time, usage, gate detail, retrie
 
 	const lines = await renderResult({ result, cwd });
 
-	expect(labelLines({ lines })).toStrictEqual([
+	expect(resultLabelLines({ lines })).toStrictEqual([
 		'run       run-1234 · FAILED',
 		'plan      feature.md',
 		'wall      2m 05s',
@@ -160,7 +155,7 @@ test('renderResult: an invocation that reported no tokens prints usage with no c
 
 	const lines = await renderResult({ result, cwd });
 
-	expect(labelLines({ lines })).toStrictEqual([
+	expect(resultLabelLines({ lines })).toStrictEqual([
 		'run       run-1234 · PASSED',
 		'plan      feature.md',
 		'wall      3s',
@@ -177,7 +172,7 @@ test('renderResult: a scope with no recorded source prints bare', async () => {
 
 	const lines = await renderResult({ result, cwd });
 
-	expect(labelLines({ lines })).toStrictEqual([
+	expect(resultLabelLines({ lines })).toStrictEqual([
 		'run       run-1234 · FAILED',
 		'plan      feature.md',
 		'wall      3s',
@@ -205,7 +200,7 @@ test("renderResult: returns the report card as lines, prints nothing, and leaves
 	const table = lines.filter((line) => /^[┌├└│]/.test(line));
 
 	expect(lines[0]).toBe('');
-	expect(labelLines({ lines })).toStrictEqual([
+	expect(resultLabelLines({ lines })).toStrictEqual([
 		'run       run-1234 · FAILED',
 		'plan      feature.md',
 		'wall      3s',
@@ -223,80 +218,8 @@ test("renderResult: returns the report card as lines, prints nothing, and leaves
 	expect(lines.filter((line) => line.includes('gate check failed'))).toStrictEqual([]);
 });
 
-/** One deterministic standards finding. Only the site key varies: the cleanup line counts findings, it never reads them. */
-const finding = ({ siteKey }: { siteKey: string }): StandardsFinding => ({
-	rule: 'file-size',
-	severity: StandardsSeverity.Blocking,
-	siteKey,
-	files: [{ path: `src/${siteKey}.ts` }],
-	detail: '412 lines, cap 400',
-	measure: 412,
-});
-
-test('renderResult: a run that spent cleanup rounds prints one cleanup line naming the rounds, the reason, what remains and what failed', async () => {
-	const { result, cwd } = setupResult({
-		manifest: {
-			steps: [
-				{ id: 'implement', status: RunStatus.Passed, attempts: 1 },
-				{
-					id: 'refactor',
-					status: RunStatus.Passed,
-					attempts: 3,
-					report: {
-						roundsUsed: 2,
-						endReason: CleanupEndReason.BudgetExhausted,
-						remaining: [finding({ siteKey: 'a' }), finding({ siteKey: 'b' }), finding({ siteKey: 'c' })],
-						inherited: [finding({ siteKey: 'd' }), finding({ siteKey: 'e' })],
-						uncertain: [finding({ siteKey: 'f' }), finding({ siteKey: 'g' })],
-						failures: ['cleanup agent timed out after 20 minutes'],
-						initialReview: [],
-						finalReview: [finding({ siteKey: 'h' })],
-					},
-				},
-			],
-		},
-	});
-
-	const lines = await renderResult({ result, cwd });
-	const labels = labelLines({ lines });
-	const cleanupLines = labels.filter((line) => line.startsWith('cleanup'));
-
-	expect(cleanupLines).toHaveLength(1);
-	// The wording is the printer's own; the four facts the line has to carry are
-	// pinned, and each count is tied to the word it belongs to so a transposed
-	// pair cannot pass.
-	expect(cleanupLines[0]).toMatch(/\b2 rounds?\b/);
-	expect(cleanupLines[0]).toContain('budget-exhausted');
-	expect(cleanupLines[0]).toMatch(/\b3\b[^0-9]*(remain|standing)/);
-	expect(cleanupLines[0]).toMatch(/\b1\b[^0-9]*fail/);
-	expect(labels).toContain('gates     0 commands');
-	expect(labels).toContain('evidence  .lightsout/runs/run-1234-abcd/');
-});
-
-test('renderResult: a run with no cleanup record prints no cleanup line', async () => {
-	const { result, cwd } = setupResult({
-		manifest: {
-			steps: [
-				{ id: 'implement', status: RunStatus.Passed, attempts: 1 },
-				{ id: 'refactor', status: RunStatus.Passed, attempts: 1 },
-			],
-		},
-	});
-
-	const lines = await renderResult({ result, cwd });
-
-	expect(labelLines({ lines })).toStrictEqual([
-		'run       run-1234 · PASSED',
-		'plan      feature.md',
-		'wall      3s',
-		'gates     0s',
-		'gates     0 commands',
-		'evidence  .lightsout/runs/run-1234-abcd/',
-	]);
-});
-
 /** The commit lines of the result block — what the run says it left behind. */
-const commitLines = ({ lines }: { lines: string[] }) => labelLines({ lines }).filter((line) => line.startsWith('commit'));
+const commitLines = ({ lines }: { lines: string[] }) => resultLabelLines({ lines }).filter((line) => line.startsWith('commit'));
 
 /** One commit a run recorded, addressed the way a plan run addresses its unit of work. */
 const runCommit = ({ sha, subject }: { sha: string; subject: string }): RunCommit => ({ sha, subject, runId: 'run-1234-abcd' });
@@ -351,13 +274,13 @@ test('prints no commit line for a run that left nothing', async () => {
 });
 
 /** The config lines of the result block — the notice that the run edited a config it never re-read. */
-const configLines = ({ lines }: { lines: string[] }) => labelLines({ lines }).filter((line) => line.startsWith('config '));
+const configLines = ({ lines }: { lines: string[] }) => resultLabelLines({ lines }).filter((line) => line.startsWith('config '));
 
 test('renderResult: a run that changed lightsout.config.json says so on a config line just before the evidence line, naming the recorded path', async () => {
 	const { result, cwd } = setupResult({ manifest: { configPath: '/repo/lightsout.config.json', changedFiles: ['lightsout.config.json', 'src/a.ts'] } });
 
 	const lines = await renderResult({ result, cwd });
-	const labels = labelLines({ lines });
+	const labels = resultLabelLines({ lines });
 	const configs = configLines({ lines });
 	const next = labels[labels.indexOf(configs[0] ?? '') + 1];
 

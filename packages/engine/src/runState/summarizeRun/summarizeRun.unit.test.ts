@@ -149,7 +149,7 @@ test('summarizeRun separates gates that ran from re-runs and skips', async () =>
 
 	const summary = await summarizeRun({ cwd, manifest: planted });
 
-	expect(summary.gates).toStrictEqual({ commands: 2, reruns: 1, skipped: 2 });
+	expect(summary.gates).toStrictEqual({ commands: 2, reruns: 1, skipped: 2, failed: 0, fixed: 0, selfChecks: 0 });
 	// every recorded duration counts toward gate time
 	expect(summary.gateMs).toBe(175);
 });
@@ -250,7 +250,7 @@ test('summarizeRun: leaves self-check gate executions out of the gate counts, re
 
 	// the agent's own check is not the run's gate work, so it bills to neither
 	// the counts nor the clock — a record written outside any step still does
-	expect(summary.gates).toStrictEqual({ commands: 3, reruns: 1, skipped: 1 });
+	expect(summary.gates).toStrictEqual({ commands: 3, reruns: 1, skipped: 1, failed: 0, fixed: 0, selfChecks: 2 });
 	expect(summary.gateMs).toBe(175);
 });
 
@@ -286,6 +286,14 @@ test('summarizeRun reports the refactor step cleanup outcome alongside, never in
 		carriedFindings: 4,
 		reviewFindings: 5,
 		failures: 2,
+		// a record written before targeted was recorded has no found or fixed figures
+		targetedFindings: undefined,
+		fixedFindings: undefined,
+		fixedSites: [],
+		remainingSites: [
+			{ rule: 'file-size', files: ['packages/engine/src/0.ts'] },
+			{ rule: 'file-size', files: ['packages/engine/src/1.ts'] },
+		],
 	});
 	// the cleanup rounds bill to cleanup alone — the gate repairs are untouched
 	expect(summary.verificationRepairs).toStrictEqual([
@@ -312,4 +320,71 @@ test('summarizeRun leaves cleanup undefined for a run that recorded no cleanup p
 	expect(summary.verificationRepairs).toStrictEqual([]);
 	expect(summary.rejectedReports).toBe(0);
 	expect(summary.frictionByArea).toStrictEqual([]);
+});
+
+/** One `commands.jsonl` gate record, shaped as the gate runner writes it; a case names only what it varies. */
+const gateRecord = (overrides: Record<string, unknown>) => ({
+	at: '2026-07-03T00:01:00.000Z',
+	step: 'verify-implement',
+	kind: 'test',
+	group: 'engine',
+	command: 'pnpm run test',
+	durationMs: 10,
+	...overrides,
+});
+
+test('summarizeRun: counts failed and fixed gate runs by kind and group, and self-checks on their own', async () => {
+	const { cwd, manifest: planted } = plantEvidence({
+		commands: [
+			gateRecord({ kind: 'test', exitCode: 1 }),
+			gateRecord({ kind: 'check', exitCode: 2 }),
+			gateRecord({ kind: 'test', exitCode: 0 }),
+			gateRecord({ step: 'self-check-implement', kind: 'build', exitCode: 1 }),
+			gateRecord({ step: 'self-check-implement', kind: 'build', exitCode: 0 }),
+		],
+	});
+
+	const summary = await summarizeRun({ cwd, manifest: planted });
+
+	expect(summary.gates).toStrictEqual({ commands: 3, reruns: 0, skipped: 0, failed: 2, fixed: 1, selfChecks: 2 });
+});
+
+test('summarizeRun: a flake that passed on rerun, a crash and a timeout are not failed gate runs', async () => {
+	const { cwd, manifest: planted } = plantEvidence({
+		commands: [
+			gateRecord({ kind: 'test', exitCode: 1 }),
+			gateRecord({ kind: 'test', exitCode: 0, rerun: true }),
+			gateRecord({ kind: 'test', group: 'web-app', exitCode: 1, crashed: true }),
+			gateRecord({ kind: 'build', exitCode: -1, timedOut: true }),
+			gateRecord({ kind: 'test', group: 'web-app', exitCode: 0 }),
+			gateRecord({ kind: 'build', exitCode: 0 }),
+		],
+	});
+
+	const summary = await summarizeRun({ cwd, manifest: planted });
+
+	expect(summary.gates).toEqual(expect.objectContaining({ failed: 0, fixed: 0 }));
+});
+
+test('summarizeRun: lists each gate execution that recorded test results once, self-checks left out', async () => {
+	const { cwd, manifest: planted } = plantEvidence({
+		commands: [
+			gateRecord({ kind: 'test', exitCode: 0, testResultsDir: '.lightsout/runs/run-summary/test-results/verify-implement/engine/test' }),
+			gateRecord({ kind: 'test', exitCode: 0, rerun: true, testResultsDir: '.lightsout/runs/run-summary/test-results/verify-implement/engine/test' }),
+			gateRecord({ kind: 'testCoverage', exitCode: 0, testResultsDir: '.lightsout/runs/run-summary/test-results/verify-implement/engine/testCoverage' }),
+			gateRecord({
+				step: 'self-check-implement',
+				kind: 'test',
+				exitCode: 0,
+				testResultsDir: '.lightsout/runs/run-summary/test-results/self-check-implement/engine/test',
+			}),
+		],
+	});
+
+	const summary = await summarizeRun({ cwd, manifest: planted });
+
+	expect(summary.testResultExecutions).toStrictEqual([
+		{ step: 'verify-implement', group: 'engine', kind: 'test' },
+		{ step: 'verify-implement', group: 'engine', kind: 'testCoverage' },
+	]);
 });

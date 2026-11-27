@@ -92,6 +92,24 @@ describe('getReader work orders', () => {
 		});
 	});
 
+	test("reads a work order's evidence totals and answers undefined for a name no folder holds", async () => {
+		const { reader } = await setupWorkOrdersReader();
+
+		const [totals, missing] = await Promise.all([reader.getWorkOrderEvidence({ name: 'a-older' }), reader.getWorkOrderEvidence({ name: 'never-opened' })]);
+
+		expect({
+			plansCounted: totals?.plansCounted,
+			plansCovered: totals?.plansCovered,
+			problems: totals?.problems,
+			missing,
+		}).toStrictEqual({
+			plansCounted: 1,
+			plansCovered: 0,
+			problems: [],
+			missing: undefined,
+		});
+	});
+
 	test('reads the queue view, answering no drain in a repo whose queue never ran', async () => {
 		const { reader } = await setupWorkOrdersReader({ workOrders: [] });
 

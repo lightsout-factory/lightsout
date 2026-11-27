@@ -11,7 +11,9 @@ export interface RunSummary {
 	/** Share of all input the model read from cache — the run's cost-efficiency dial. */
 	cacheReadShare: number | undefined;
 	steps: StepSummary[];
-	gates: { commands: number; reruns: number; skipped: number };
+	gates: { commands: number; reruns: number; skipped: number; failed: number; fixed: number; selfChecks: number };
+	/** Each gate execution that recorded a test-results directory (self-checks left out), once per step, group and kind, in first-seen order. */
+	testResultExecutions: { step: string; group: string; kind: string }[];
 	/** Sum of the authoritative per-step verification repair counters, in first-seen step/family order. */
 	verificationRepairs: { gateFamily: string; attempts: number }[];
 	/** The implementation cleanup pass's outcome; undefined for a run whose refactor step recorded none. */

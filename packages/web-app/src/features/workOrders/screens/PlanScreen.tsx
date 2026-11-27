@@ -1,6 +1,6 @@
 import type { PlanWorkspaceView } from '@lightsout/engine/contracts';
 import { formatDuration } from '@lightsout/shared';
-import { useSuspenseQuery } from '@tanstack/react-query';
+import { useQuery, useSuspenseQuery } from '@tanstack/react-query';
 import { Markdown } from '#src/components/markdown/Markdown/Markdown.tsx';
 import { SitePageFrame } from '#src/components/site/SitePageFrame.tsx';
 import { SiteSection } from '#src/components/site/SiteSection.tsx';
@@ -11,6 +11,8 @@ import { DedupDetail } from '#src/features/workOrders/components/DedupDetail.tsx
 import { FactsDetail } from '#src/features/workOrders/components/FactsDetail.tsx';
 import { GradeDetail } from '#src/features/workOrders/components/GradeDetail.tsx';
 import { GradeHistory } from '#src/features/workOrders/components/GradeHistory.tsx';
+import { PlanEvidenceDetail } from '#src/features/workOrders/components/PlanEvidenceDetail/PlanEvidenceDetail.tsx';
+import { planEvidenceQueryOptions } from '#src/features/workOrders/queries/planEvidenceQueryOptions.ts';
 import { planWorkspaceQueryOptions } from '#src/features/workOrders/queries/planWorkspaceQueryOptions.ts';
 import { formatLocalTime } from '#src/utils/formatLocalTime.ts';
 
@@ -110,6 +112,21 @@ const StatusTab = ({ workspace }: { workspace: PlanWorkspaceView }) => (
 	</div>
 );
 
+/** Fetched only when the tab opens: Radix mounts only the active tab's content, and the summary reads large records. */
+const EvidenceTab = ({ workOrder, plan }: { workOrder: string; plan: string }) => {
+	const { data: evidence, isPending, isError } = useQuery(planEvidenceQueryOptions({ workOrder, plan }));
+
+	if (isPending) {
+		return <p className={noteClass}>Loading evidence…</p>;
+	}
+
+	if (isError) {
+		return <p className={noteClass}>Evidence could not be read.</p>;
+	}
+
+	return <PlanEvidenceDetail evidence={evidence} />;
+};
+
 interface Props {
 	/** The work order's folder name. */
 	workOrder: string;
@@ -144,6 +161,7 @@ export const PlanScreen = ({ workOrder, plan }: Props) => {
 					{ value: 'decisions', label: 'Decisions', content: <DecisionsTab workspace={workspace} /> },
 					{ value: 'facts', label: 'Facts', content: <FactsDetail facts={workspace.facts} /> },
 					{ value: 'status', label: 'Status', content: <StatusTab workspace={workspace} /> },
+					{ value: 'evidence', label: 'Evidence', content: <EvidenceTab workOrder={workOrder} plan={plan} /> },
 				]}
 			/>
 		</SitePageFrame>

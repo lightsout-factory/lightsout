@@ -1,10 +1,12 @@
 import { PlanProgress, RunStatus, ShipStatus, WorkOrderMode, type WorkOrderView } from '@lightsout/engine/contracts';
 import { formatDuration } from '@lightsout/shared';
-import { useSuspenseQuery } from '@tanstack/react-query';
+import { useQuery, useSuspenseQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
 import { SitePageFrame } from '#src/components/site/SitePageFrame.tsx';
 import { SiteSection } from '#src/components/site/SiteSection.tsx';
 import { MetadataTag } from '#src/components/ui/MetadataTag.tsx';
+import { EvidenceHeadlineRow } from '#src/features/workOrders/components/EvidenceHeadlineRow.tsx';
+import { workOrderEvidenceQueryOptions } from '#src/features/workOrders/queries/workOrderEvidenceQueryOptions.ts';
 import { workOrderViewQueryOptions } from '#src/features/workOrders/queries/workOrderViewQueryOptions.ts';
 import { formatLocalTime } from '#src/utils/formatLocalTime.ts';
 
@@ -57,6 +59,29 @@ const TicketBodyNote = ({ build }: { build: WorkOrderView['ticketBodyBuild'] }) 
 	const progress = build === undefined ? '' : ` · ${progressLabels[build.progress]} since ${formatLocalTime({ iso: build.startedAt })}`;
 
 	return <p className="text-muted-foreground text-sm">Built from the ticket body{progress}</p>;
+};
+
+/** Fetched after the page paints, and drawn only once a plan has evidence; the count keeps a part-built total honest. */
+const EvidenceTotals = ({ name }: { name: string }) => {
+	const { data: totals } = useQuery(workOrderEvidenceQueryOptions({ name }));
+
+	if (totals === undefined || totals.plansCovered === 0) {
+		return null;
+	}
+
+	return (
+		<SiteSection title="Evidence">
+			<EvidenceHeadlineRow headline={totals.headline} />
+			<p className="text-muted-foreground text-sm">
+				Across {totals.plansCovered} of {totals.plansCounted} plans
+			</p>
+			{totals.problems.map((problem) => (
+				<p key={problem} className="text-sm">
+					{problem}
+				</p>
+			))}
+		</SiteSection>
+	);
 };
 
 const PlansSection = ({ view }: { view: WorkOrderView }) => (
@@ -148,6 +173,7 @@ export const WorkOrderScreen = ({ name }: Props) => {
 	return (
 		<SitePageFrame crumbs={[{ label: 'Work orders', link: { to: '/app' } }, { label: name }]}>
 			<WorkOrderHeader view={view} />
+			<EvidenceTotals name={name} />
 			<PlansSection view={view} />
 			<ShipSection view={view} />
 			<HistorySection view={view} />

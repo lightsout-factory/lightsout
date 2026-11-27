@@ -12,12 +12,17 @@ export {
 	CommandInvocation,
 	CommandRecordKind,
 	CommandStep,
+	EvidenceCount,
+	EvidenceHeadline,
+	EvidenceProvenance,
+	EvidenceSectionState,
 	FixtureSide,
 	FrictionArea,
 	FrictionRecord,
 	GateEvidence,
 	GateResult,
 	PhaseReport,
+	PlanEvidence,
 	PlanStage,
 	PlanWorkspaceFile,
 	PlanWorkspaceListing,
@@ -43,6 +48,7 @@ export {
 	StandardsTopicView,
 	StandardsTrendPoint,
 	StepRecord,
+	WorkOrderEvidenceTotals,
 	WorkOrderStatus,
 	WorkOrderSummary,
 	WorkOrderView,
@@ -57,8 +63,10 @@ export { RunNotFoundError } from '#src/runState/RunNotFoundError.ts';
 export { readRunManifest } from '#src/runState/readRunManifest.ts';
 export { summarizeRun } from '#src/runState/summarizeRun/summarizeRun.ts';
 export { listStandardsSnapshots } from '#src/standardsCheck/listStandardsSnapshots.ts';
+export { getPlanEvidence } from '#src/views/getPlanEvidence/getPlanEvidence.ts';
 export { getPlanWorkspace } from '#src/views/getPlanWorkspace/getPlanWorkspace.ts';
 export { getQueueView } from '#src/views/getQueueView.ts';
+export { getWorkOrderEvidence } from '#src/views/getWorkOrderEvidence.ts';
 export { getWorkOrderView } from '#src/views/getWorkOrderView.ts';
 export { listRuns } from '#src/views/listRuns.ts';
 export { listWorkOrderSummaries } from '#src/views/listWorkOrderSummaries.ts';

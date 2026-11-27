@@ -12,6 +12,7 @@ import { fingerprintScopeFiles } from '#src/pipeline/steps/common/fingerprintSco
 import { sourceFiles } from '#src/pipeline/steps/common/sourceFiles.ts';
 import type { CleanupContext } from '#src/pipeline/steps/common/types/CleanupContext.ts';
 import type { CleanupState } from '#src/pipeline/steps/common/types/CleanupState.ts';
+import { addTargetedFindings } from '#src/pipeline/steps/refactorStep/addTargetedFindings.ts';
 import { describePersistingFindings } from '#src/pipeline/steps/refactorStep/describePersistingFindings.ts';
 import { readPriorCleanup } from '#src/pipeline/steps/refactorStep/readPriorCleanup.ts';
 import { reviewAdvisories } from '#src/pipeline/steps/refactorStep/reviewAdvisories.ts';
@@ -81,6 +82,8 @@ const runCleanupRounds = async ({ context, state }: { context: CleanupContext; s
 		} else if (state.roundsUsed >= context.budget) {
 			state.endReason = CleanupEndReason.BudgetExhausted;
 		} else {
+			state.targeted = addTargetedFindings({ targeted: state.targeted, findings: check.workList });
+
 			const parked = await runCleanupRound({ context, state, findings: check.workList, advisories });
 
 			if (parked) {
@@ -131,6 +134,7 @@ export const refactorStep = ({ run, gitPrefix, planContent, overviewContent, sta
 			remaining: [],
 			inherited: [],
 			uncertain: [],
+			targeted: prior?.targeted ?? [],
 			finalReview: [],
 		};
 
